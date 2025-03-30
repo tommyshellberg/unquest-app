@@ -66,6 +66,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         imageWidth: 150,
       },
     ],
+    ['expo-secure-store'],
     [
       'expo-font',
       {

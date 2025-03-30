@@ -50,6 +50,9 @@ dependencies:
   expo-router:
     specifier: ~4.0.17
     version: 4.0.19(expo-constants@17.0.8)(expo-linking@7.0.5)(expo@52.0.41)(react-dom@18.3.1)(react-native-reanimated@3.16.7)(react-native-safe-area-context@4.12.0)(react-native-screens@4.4.0)(react-native@0.76.7)(react@18.3.1)
+  expo-secure-store:
+    specifier: ~14.0.1
+    version: 14.0.1(expo@52.0.41)
   expo-splash-screen:
     specifier: ~0.29.21
     version: 0.29.22(expo@52.0.41)
@@ -7178,6 +7181,14 @@ packages:
       - react-dom
       - react-native
       - supports-color
+    dev: false
+
+  /expo-secure-store@14.0.1(expo@52.0.41):
+    resolution: {integrity: sha512-QUS+j4+UG4jRQalgnpmTvvrFnMVLqPiUZRzYPnG3+JrZ5kwVW2w6YS3WWerPoR7C6g3y/a2htRxRSylsDs+TaQ==}
+    peerDependencies:
+      expo: '*'
+    dependencies:
+      expo: 52.0.41(@babel/core@7.26.10)(@babel/preset-env@7.26.9)(@expo/metro-runtime@4.0.1)(react-native@0.76.7)(react@18.3.1)
     dev: false
 
   /expo-splash-screen@0.29.22(expo@52.0.41):
