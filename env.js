@@ -37,8 +37,8 @@ require('dotenv').config({
 const BUNDLE_ID = 'com.vaedros.unquest'; // ios bundle id
 const PACKAGE = 'com.vaedros.unquest'; // android package name
 const NAME = 'unQuest'; // app name
-const EXPO_ACCOUNT_OWNER = 'expo-owner'; // expo account owner
-const EAS_PROJECT_ID = 'c3e1075b-6fe7-4686-aa49-35b46a229044'; // eas project id
+const EXPO_ACCOUNT_OWNER = 'tshellberg'; // expo account owner
+const EAS_PROJECT_ID = '30766cfb-793b-416b-ac27-d37f2e0dff9a'; // eas project id
 const SCHEME = 'unquest'; // app scheme
 
 /**

@@ -1,6 +1,6 @@
 module.exports = {
-  white: '#ffffff',
-  black: '#000000',
+  white: '#D7D4D0',
+  black: '#283428',
   charcoal: {
     50: '#F2F2F2',
     100: '#E5E5E5',
@@ -13,7 +13,7 @@ module.exports = {
     800: '#383838',
     850: '#2E2E2E',
     900: '#1E1E1E',
-    950: '#121212',
+    950: '#636D64',
   },
   neutral: {
     50: '#FAFAFA',
