@@ -4,8 +4,8 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 
 import { setupNotifications } from '@/lib/services/notifications';
-import { useAccountStore } from '@/store/account-store';
 import { useCharacterStore } from '@/store/character-store';
+import { useUserStore } from '@/store/user-store';
 
 import AppIntroductionScreen from './app-introduction';
 
@@ -31,9 +31,9 @@ jest.mock('expo-asset', () => ({
 // Mock dependencies
 jest.mock('expo-router');
 jest.mock('@/store/character-store');
-jest.mock('@/store/account-store');
+jest.mock('@/store/user-store');
 jest.mock('expo-notifications');
-jest.mock('@/services/notifications', () => ({
+jest.mock('@/lib/services/notifications', () => ({
   setupNotifications: jest.fn(),
 }));
 
@@ -51,8 +51,8 @@ describe('AppIntroductionScreen', () => {
     (useCharacterStore as jest.Mock).mockImplementation((selector) =>
       selector({ character: null })
     );
-    (useAccountStore as jest.Mock).mockImplementation((selector) =>
-      selector({ account: null })
+    (useUserStore as jest.Mock).mockImplementation((selector) =>
+      selector({ user: null })
     );
 
     // Mock notifications permissions
@@ -192,10 +192,16 @@ describe('AppIntroductionScreen', () => {
     expect(getByText('Welcome to unQuest')).toBeTruthy();
   });
 
-  it('detects existing account data', () => {
-    // Mock existing account data
-    (useAccountStore as jest.Mock).mockImplementation((selector) =>
-      selector({ account: { currentScreenTime: 120, targetScreenTime: 60 } })
+  it('detects existing user data', () => {
+    // Mock existing user data
+    (useUserStore as jest.Mock).mockImplementation((selector) =>
+      selector({
+        user: {
+          id: '123',
+          email: 'test@example.com',
+          screenTimeGoals: { currentTime: 120, targetTime: 60 },
+        },
+      })
     );
 
     const { getByText } = render(<AppIntroductionScreen />);

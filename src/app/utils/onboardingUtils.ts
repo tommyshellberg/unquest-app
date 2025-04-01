@@ -1,6 +1,7 @@
-import { useCharacterStore } from "@/store/character-store";
-import { useAccountStore } from "@/store/account-store";
-import * as Notifications from "expo-notifications";
+import * as Notifications from 'expo-notifications';
+
+import { useCharacterStore } from '@/store/character-store';
+import { useUserStore } from '@/store/user-store';
 
 export interface OnboardingState {
   hasCharacter: boolean;
@@ -14,7 +15,7 @@ export async function checkOnboardingState(): Promise<OnboardingState> {
     const character = useCharacterStore.getState().character;
 
     // Check for screen time goals
-    const account = useAccountStore.getState().account;
+    const user = useUserStore.getState().user;
 
     // Check notification permissions
     const { status } = await Notifications.getPermissionsAsync();
@@ -22,12 +23,12 @@ export async function checkOnboardingState(): Promise<OnboardingState> {
     return {
       hasCharacter: !!character,
       hasScreenTimeGoal: !!(
-        account?.averageScreenTimeMinutes && account?.screenTimeGoalMinutes
+        user?.screenTimeGoals?.currentTime && user?.screenTimeGoals?.targetTime
       ),
-      hasNotificationPermission: status === "granted",
+      hasNotificationPermission: status === 'granted',
     };
   } catch (error) {
-    console.error("Error checking onboarding state:", error);
+    console.error('Error checking onboarding state:', error);
     return {
       hasCharacter: false,
       hasScreenTimeGoal: false,

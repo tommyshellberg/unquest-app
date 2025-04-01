@@ -1,3 +1,4 @@
+import { Env } from '@env';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import React, { useState } from 'react';
@@ -102,7 +103,8 @@ export const LoginForm = ({ onSubmit, onCancel }: LoginFormProps) => {
           ) : (
             <Text className="mb-6 max-w-xs text-center text-gray-500">
               Enter your email address below to receive a magic link for login.
-              No password is required.
+              No password is required. The URL for the magic link is:{' '}
+              {Env.API_URL}/auth/magiclink
             </Text>
           )}
 

@@ -4,14 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { INITIAL_POIS } from '@/app/data/pois';
 import { getItem, removeItem, setItem } from '@/lib/storage';
 
-export type POI = {
-  slug: string;
-  name: string;
-  x: number;
-  y: number;
-  isRevealed: boolean;
-  mapId: string;
-};
+import { type POI } from './types';
 
 interface POIState {
   pois: POI[];

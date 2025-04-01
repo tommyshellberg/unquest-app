@@ -263,7 +263,7 @@ export default function Index() {
           <Button
             label="Wake up"
             onPress={() => handleQuestOptionSelect(firstStoryQuest.id)}
-            className="bg-forest mb-2 rounded-md"
+            className="mb-2 rounded-md bg-emerald-700"
           />
         );
       } else {
@@ -279,7 +279,7 @@ export default function Index() {
             key={option.id}
             label={option.text}
             onPress={() => handleQuestOptionSelect(option.nextQuestId)}
-            className={`min-h-[48px] flex-1 justify-center rounded-md py-1 ${index === 0 ? 'bg-forest mr-1' : 'bg-stone ml-1'}`}
+            className={`min-h-[48px] flex-1 justify-center rounded-md py-1 ${index === 0 ? 'mr-1 bg-emerald-700' : 'ml-1 bg-sky-700'}`}
             textClassName="text-sm font-bold text-amber-100 text-center px-1 leading-tight"
             disabled={!option.nextQuestId} // Disable if nextQuestId is null
           />
@@ -391,7 +391,7 @@ export default function Index() {
               <Button
                 label="Create Custom Quest"
                 onPress={handleStartCustomQuest}
-                className="bg-forest mb-2 rounded-md"
+                className="mb-2 rounded-md bg-emerald-700"
               />
             )}
           </View>

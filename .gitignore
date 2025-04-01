@@ -61,3 +61,8 @@ coverage/
 logs/
 
 .env.local
+
+# Expo
+.expo
+dist/
+web-build/

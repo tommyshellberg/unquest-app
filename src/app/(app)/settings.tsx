@@ -2,31 +2,31 @@ import { Env } from '@env';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import React, { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Switch } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Item } from '@/components/settings/item';
-import { ItemsContainer } from '@/components/settings/items-container';
-import {
-  colors,
-  FocusAwareStatusBar,
-  ScrollView,
-  Text,
-  View,
-} from '@/components/ui';
-import { translate, useAuth } from '@/lib';
+import { FocusAwareStatusBar, ScrollView, Text, View } from '@/components/ui';
+import { useAuth } from '@/lib';
 import {
   areNotificationsEnabled,
   requestNotificationPermissions,
 } from '@/lib/services/notifications';
 import { setItem } from '@/lib/storage';
+import { useCharacterStore } from '@/store/character-store';
+import { useQuestStore } from '@/store/quest-store';
+import { useUserStore } from '@/store/user-store';
 
 // Constants
 const APP_VERSION = Env.VERSION || '1.0.0';
 const NOTIFICATIONS_ENABLED_KEY = 'notificationsEnabled';
 
 export default function Settings() {
-  const signOut = useAuth.use.signOut();
+  const insets = useSafeAreaInsets();
+  const { signOut } = useAuth();
+  const resetQuestStore = useQuestStore((state) => state.reset);
+  const resetCharacter = useCharacterStore((state) => state.resetCharacter);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const user = useUserStore((state) => state.user);
 
   // Load notification settings on mount
   useEffect(() => {
@@ -39,9 +39,9 @@ export default function Settings() {
   }, []);
 
   // Handle notification toggle
-  const handleNotificationsToggle = async () => {
+  const handleNotificationsToggle = async (value: boolean) => {
     try {
-      if (!notificationsEnabled) {
+      if (value) {
         // Requesting permissions
         const granted = await requestNotificationPermissions();
 
@@ -61,11 +61,6 @@ export default function Settings() {
         // Disabling notifications
         await setItem(NOTIFICATIONS_ENABLED_KEY, 'false');
         setNotificationsEnabled(false);
-
-        Alert.alert(
-          'Notifications Disabled',
-          "You won't receive quest updates. You can re-enable notifications anytime."
-        );
       }
     } catch (error) {
       console.error('Error toggling notifications:', error);
@@ -88,9 +83,9 @@ export default function Settings() {
   // Handle app data reset
   const handleReset = async () => {
     try {
-      // Clear storage
-      // Note: You'll need to implement a proper reset for your stores
-      // This is just a placeholder - replace with your actual store reset logic
+      // Reset all stores
+      resetQuestStore();
+      resetCharacter();
       Alert.alert('App Data Reset', 'The app data has been reset.');
     } catch (error) {
       console.error('Failed to reset app data:', error);
@@ -109,138 +104,191 @@ export default function Settings() {
     );
   };
 
-  const handleEmail = () => {
-    Linking.openURL('mailto:hello@unquestapp.com');
+  const handleEmail = (email: string) => {
+    Linking.openURL(`mailto:${email}`);
   };
 
-  // Define icon color for consistency
-  const iconColor = colors.neutral[500];
+  // Define icon colors and backgrounds for consistency with the design
+  const iconBgColor = 'bg-[#E7DBC9]/50';
+  const iconColor = '#3B7A57';
+  const contactEmail = 'hello@unquestapp.com';
 
   return (
-    <>
+    <View className="flex-1 bg-[#E7DBC9]">
       <FocusAwareStatusBar />
 
-      <ScrollView>
-        <View className="flex-1 px-4 pt-16">
-          <Text className="text-xl font-bold">
-            {translate('settings.title')}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: insets.bottom }}
+      >
+        <View className="px-4 pt-10">
+          <Text className="mb-6 text-4xl font-semibold text-[#3B7A57]">
+            Settings
           </Text>
 
           {/* Account Section */}
-          <ItemsContainer title="Account">
-            <Item
-              text="Your Account"
-              value="email@example.com"
-              icon={<Feather name="user" size={24} color={iconColor} />}
-            />
-            <Item text="Logout" onPress={handleLogout} />
-          </ItemsContainer>
+          <View className="mb-8">
+            <View className="flex-row items-center">
+              <View
+                className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+              >
+                <Feather name="user" size={24} color={iconColor} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-xl font-medium">Account</Text>
+                <Text className="text-neutral-600">
+                  {user?.email || 'Not signed in'}
+                </Text>
+              </View>
+              <Feather name="chevron-right" size={20} color="#888" />
+            </View>
+
+            <View
+              className="mt-4 rounded-full bg-[#5E8977] px-6 py-4"
+              onTouchEnd={handleLogout}
+            >
+              <Text className="text-center font-medium text-white">Logout</Text>
+            </View>
+          </View>
 
           {/* Preferences Section */}
-          <ItemsContainer title="Preferences">
-            <Item
-              text="Notifications"
-              icon={<Feather name="bell" size={24} color={iconColor} />}
-              value={notificationsEnabled ? 'Enabled' : 'Disabled'}
-              rightElement={
-                <View className="flex-row items-center">
-                  <View
-                    className={`h-6 w-10 rounded-full ${notificationsEnabled ? 'bg-primary' : 'bg-gray-300'} flex items-center justify-center`}
-                    onTouchEnd={handleNotificationsToggle}
-                  >
-                    <View
-                      className={`absolute size-4 rounded-full bg-white ${notificationsEnabled ? 'right-1' : 'left-1'}`}
-                    />
-                  </View>
-                </View>
-              }
-            />
-            <Item
-              text="Reminders"
-              value="Coming Soon"
-              icon={<Feather name="clock" size={24} color={iconColor} />}
-            />
-          </ItemsContainer>
+          <View className="mb-4">
+            <Text className="mb-2 text-base uppercase text-neutral-500">
+              PREFERENCES
+            </Text>
+          </View>
 
-          {/* Support Section */}
-          <ItemsContainer title="Support">
-            <Item
-              text="Contact Us"
-              value="hello@unquestapp.com"
-              icon={<Feather name="mail" size={24} color={iconColor} />}
-              onPress={handleEmail}
-            />
-            <Item
-              text="Request a Feature"
-              value="hello@unquestapp.com"
-              icon={<Feather name="lightbulb" size={24} color={iconColor} />}
-              onPress={handleEmail}
-            />
-          </ItemsContainer>
-
-          {/* Legal Section */}
-          <ItemsContainer title="Legal">
-            <Item
-              text="Privacy Policy"
-              value="Coming Soon"
-              icon={<Feather name="shield" size={24} color={iconColor} />}
-              onPress={() => {}}
-            />
-            <Item
-              text="Terms of Service"
-              icon={<Feather name="file-text" size={24} color={iconColor} />}
-              onPress={() => {}}
-            />
-          </ItemsContainer>
-
-          {/* Danger Zone */}
-          <ItemsContainer title="Danger Zone">
-            <View className="p-4">
-              <Text className="mb-4 text-center text-gray-600">
-                This will delete all your progress.
-              </Text>
+          {/* Notifications */}
+          <View className="mb-4 flex-row items-center justify-between">
+            <View className="flex-row items-center">
               <View
-                className="rounded-md bg-red-500 px-4 py-2"
-                onTouchEnd={resetAppData}
+                className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
               >
-                <Text className="text-center font-medium text-white">
-                  Reset App Data
+                <Feather name="bell" size={24} color={iconColor} />
+              </View>
+              <View>
+                <Text className="text-xl font-medium">Notifications</Text>
+                <Text className="text-neutral-600">
+                  {notificationsEnabled ? 'Enabled' : 'Disabled'}
                 </Text>
               </View>
             </View>
-          </ItemsContainer>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={handleNotificationsToggle}
+              trackColor={{ false: '#D1D1D6', true: '#5E8977' }}
+            />
+          </View>
 
-          {/* About and Version */}
-          <ItemsContainer title="About">
-            <Item text="App Name" value={Env.NAME} />
-            <Item text="Version" value={APP_VERSION} />
-          </ItemsContainer>
+          {/* Reminders */}
+          <View className="mb-8 flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View
+                className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+              >
+                <Feather name="clock" size={24} color={iconColor} />
+              </View>
+              <View>
+                <Text className="text-xl font-medium">Reminders</Text>
+                <Text className="text-neutral-600">Coming Soon</Text>
+              </View>
+            </View>
+            <Feather name="chevron-right" size={20} color="#888" />
+          </View>
 
-          {/* Social and Links */}
-          <ItemsContainer title="Connect">
-            <Item
-              text="Share"
-              icon={<Feather name="share-2" size={24} color={iconColor} />}
-              onPress={() => {}}
-            />
-            <Item
-              text="Rate"
-              icon={<Feather name="star" size={24} color={iconColor} />}
-              onPress={() => {}}
-            />
-            <Item
-              text="Website"
-              icon={<Feather name="globe" size={24} color={iconColor} />}
-              onPress={() => {}}
-            />
-            <Item
-              text="GitHub"
-              icon={<Feather name="github" size={24} color={iconColor} />}
-              onPress={() => {}}
-            />
-          </ItemsContainer>
+          {/* Support Section */}
+          <View className="mb-4">
+            <Text className="mb-2 text-base uppercase text-neutral-500">
+              SUPPORT
+            </Text>
+          </View>
+
+          {/* Contact Us */}
+          <View
+            className="mb-4 flex-row items-center justify-between"
+            onTouchEnd={() => handleEmail(contactEmail)}
+          >
+            <View className="flex-row items-center">
+              <View
+                className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+              >
+                <Feather name="mail" size={24} color={iconColor} />
+              </View>
+              <View>
+                <Text className="text-xl font-medium">Contact Us</Text>
+                <Text className="text-neutral-600">{contactEmail}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Request a Feature */}
+          <View
+            className="mb-8 flex-row items-center justify-between"
+            onTouchEnd={() => handleEmail(contactEmail)}
+          >
+            <View className="flex-row items-center">
+              <View
+                className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+              >
+                <Feather name="lightbulb" size={24} color={iconColor} />
+              </View>
+              <View>
+                <Text className="text-xl font-medium">Request a Feature</Text>
+                <Text className="text-neutral-600">{contactEmail}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Legal Section */}
+          <View className="mb-4">
+            <Text className="mb-2 text-base uppercase text-neutral-500">
+              LEGAL
+            </Text>
+          </View>
+
+          {/* Privacy Policy */}
+          <View className="mb-8 flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View
+                className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+              >
+                <Feather name="shield" size={24} color={iconColor} />
+              </View>
+              <View>
+                <Text className="text-xl font-medium">Privacy Policy</Text>
+                <Text className="text-neutral-600">Coming Soon</Text>
+              </View>
+            </View>
+            <Feather name="chevron-right" size={20} color="#888" />
+          </View>
+
+          {/* Danger Zone */}
+          <View className="mb-4">
+            <Text className="mb-2 text-base uppercase text-neutral-500">
+              DANGER ZONE
+            </Text>
+          </View>
+
+          <View className="mb-8 px-4">
+            <Text className="mb-4 text-center text-neutral-600">
+              This will delete all your progress.
+            </Text>
+            <View
+              className="rounded-full bg-red-400 px-6 py-4"
+              onTouchEnd={resetAppData}
+            >
+              <Text className="text-center font-medium text-white">
+                Reset App Data
+              </Text>
+            </View>
+          </View>
+
+          {/* Version Info */}
+          <Text className="mb-6 mt-8 text-center text-neutral-500">
+            Version {APP_VERSION}
+          </Text>
         </View>
       </ScrollView>
-    </>
+    </View>
   );
 }

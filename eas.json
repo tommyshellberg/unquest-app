@@ -20,6 +20,23 @@
         "FLIPPER_DISABLE": "1"
       }
     },
+    "preview": {
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "ios": {
+        "image": "latest"
+      },
+      "distribution": "internal",
+      "pnpm": "9.12.3",
+      "developmentClient": false,
+      "env": {
+        "APP_ENV": "preview",
+        "EXPO_NO_DOTENV": "1",
+        "FLIPPER_DISABLE": "1"
+      }
+    },
     "staging": {
       "channel": "staging",
       "distribution": "internal",

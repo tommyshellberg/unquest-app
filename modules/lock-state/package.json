@@ -1,0 +1,13 @@
+{
+  "name": "lock-state",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "expo": {
+    "modules": {
+      "android": {
+        "package": "expo.modules.lockstate"
+      },
+      "ios": {}
+    }
+  }
+}

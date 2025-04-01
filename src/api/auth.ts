@@ -31,6 +31,12 @@ export interface RegisterResponse {
  */
 export const requestMagicLink = async (email: string): Promise<void> => {
   try {
+    console.log(
+      'trying to request magic link from URL:',
+      authClient.defaults.baseURL + '/auth/magiclink'
+    );
+    console.log('email:', email);
+    console.log('authClient', authClient);
     const response = await authClient.post('/auth/magiclink', { email });
     return response.data;
   } catch (error) {
@@ -50,9 +56,14 @@ export const verifyMagicLink = async (
     if (typeof token !== 'string') {
       throw new Error('Token is not a string');
     }
+    console.log(
+      'trying to request magic link from URL:',
+      authClient.defaults.baseURL + '/auth/magiclink/verify?token=${token}'
+    );
     const response = await authClient.get(
       `/auth/magiclink/verify?token=${token}`
     );
+    console.log('response', response);
     // Expect the API to return tokens in the nested format:
     // { access: { token: string, expires: string }, refresh: { token: string, expires: string } }
     await tokenService.storeTokens(response.data);

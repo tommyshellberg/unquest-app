@@ -10,8 +10,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { apiClient } from '@/api/common/client';
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
-import { useAccountStore } from '@/store/account-store';
+import { useUserStore } from '@/store/user-store';
 
 // Generate time options in 30-minute increments (30m to 12h)
 const TIME_OPTIONS = Array.from({ length: 24 }, (_, i) => {
@@ -26,12 +27,16 @@ const TIME_OPTIONS = Array.from({ length: 24 }, (_, i) => {
 
 export default function ScreenTimeGoalScreen() {
   const router = useRouter();
-  const createAccount = useAccountStore((state) => state.createAccount);
   const navigation = useNavigation();
+
+  // Replace accountStore with userStore
+  const user = useUserStore((state) => state.user);
+  const updateUser = useUserStore((state) => state.updateUser);
 
   // Use -1 as the "invalid" placeholder value.
   const [currentTime, setCurrentTime] = useState<number>(-1);
   const [targetTime, setTargetTime] = useState<number>(-1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Animation shared values:
   const headerAnim = useSharedValue(0);
@@ -86,14 +91,39 @@ export default function ScreenTimeGoalScreen() {
     transform: [{ translateY: 20 * (1 - buttonAnim.value) }],
   }));
 
-  const handleContinue = () => {
-    // Prevent navigation if either drop-down value is invalid
-    if (currentTime < 30 || targetTime < 30) return;
-    // Save screen time goals to the account store
-    createAccount(currentTime, targetTime);
+  const handleContinue = async () => {
+    // Prevent navigation if either drop-down value is invalid or if already submitting
+    if (currentTime < 30 || targetTime < 30 || isSubmitting) return;
 
-    // Navigate to home instead of app-introduction
-    router.replace('/(app)/index');
+    setIsSubmitting(true);
+
+    try {
+      // 1. Update local state with user store
+      updateUser({
+        ...user,
+        screenTimeGoals: {
+          currentTime,
+          targetTime,
+        },
+      });
+
+      // 2. Update on the server
+      await apiClient.patch('/users/me', {
+        screenTimeGoals: {
+          currentTime,
+          targetTime,
+        },
+      });
+
+      // 3. Navigate to home
+      router.replace('/(app)/index');
+    } catch (error) {
+      console.error('Error updating user screen time goals:', error);
+      // Even if server update fails, continue with local update
+      router.replace('/(app)/index');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Hide header and drawer for onboarding flow
@@ -196,10 +226,10 @@ export default function ScreenTimeGoalScreen() {
         {/* Animate Continue button (disabled if either value is invalid) */}
         <Animated.View style={buttonAnimatedStyle} className="mt-auto py-6">
           <Button
-            label="Set My Goal"
+            label={isSubmitting ? 'Saving...' : 'Set My Goal'}
             onPress={handleContinue}
-            disabled={currentTime < 30 || targetTime < 30}
-            className={`${currentTime < 30 || targetTime < 30 ? 'bg-gray-500 opacity-50' : ''}`}
+            disabled={currentTime < 30 || targetTime < 30 || isSubmitting}
+            className={`${currentTime < 30 || targetTime < 30 || isSubmitting ? 'bg-gray-500 opacity-50' : ''}`}
           />
         </Animated.View>
       </View>

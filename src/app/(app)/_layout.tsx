@@ -1,10 +1,15 @@
-/* eslint-disable react/no-unstable-nested-components */
 import { Feather } from '@expo/vector-icons';
-import { Redirect, SplashScreen, Tabs } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import {
+  router,
+  SplashScreen,
+  Tabs,
+  useRootNavigationState,
+} from 'expo-router';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { View } from 'react-native';
 
 import { useAuth, useIsFirstTime } from '@/lib';
+import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useQuestStore } from '@/store/quest-store';
 
 // Tab icon component
@@ -33,6 +38,11 @@ function CenterButton({ focused, color }) {
 export default function TabLayout() {
   const status = useAuth.use.status();
   const [isFirstTime] = useIsFirstTime();
+  const navigationState = useRootNavigationState();
+  const hasRedirectedToCompletedRef = useRef(false);
+
+  // Activate lock detection for the whole main app.
+  useLockStateDetection();
 
   // Quest state from store
   const failedQuest = useQuestStore((state) => state.failedQuest);
@@ -52,20 +62,44 @@ export default function TabLayout() {
     }
   }, [hideSplash, status]);
 
-  // Redirection logic
-  if (isFirstTime) {
-    return <Redirect href="/onboarding" />;
-  }
-  if (status === 'signOut') {
-    return <Redirect href="/login" />;
+  useEffect(() => {
+    if (!navigationState?.key) {
+      return;
+    }
+
+    if (recentCompletedQuest && !hasRedirectedToCompletedRef.current) {
+      console.log('Redirecting to quest-complete');
+      hasRedirectedToCompletedRef.current = true;
+      router.replace('/quest-complete');
+    }
+  }, [recentCompletedQuest]);
+
+  useEffect(() => {
+    console.log('recentCompletedQuest changed:', recentCompletedQuest);
+    if (!recentCompletedQuest) {
+      console.log('Resetting completed quest redirect flag to false');
+      hasRedirectedToCompletedRef.current = false;
+    }
+  }, [recentCompletedQuest]);
+
+  // Check if navigation is ready
+  const isNavigationReady = navigationState?.key !== undefined;
+  if (!isNavigationReady) {
+    return null;
   }
 
-  // Only redirect for failed or completed quests
-  if (failedQuest) {
-    return <Redirect href="/failed-quest" />;
+  if (isFirstTime) {
+    router.replace('/onboarding');
+    return null;
   }
-  if (recentCompletedQuest) {
-    return <Redirect href="/quest-complete" />;
+  if (status === 'signOut') {
+    router.replace('/login');
+    return null;
+  }
+  if (failedQuest) {
+    console.log('Redirecting to failed-quest');
+    router.replace('/failed-quest');
+    return null;
   }
 
   return (
@@ -142,9 +176,23 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Hide active-quest from tabs */}
+      {/* Hide special screens from tabs */}
       <Tabs.Screen
         name="active-quest"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="quest-complete"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="failed-quest"
         options={{
           href: null,
         }}
@@ -152,38 +200,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 0, 0, 0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  centerButtonContainer: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    top: -20, // Adjust this to position the button higher
-    width: 50,
-    height: 50,
-  },
-  centerButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-});

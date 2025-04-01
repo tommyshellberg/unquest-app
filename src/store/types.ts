@@ -64,3 +64,12 @@ export interface Account {
   created: Timestamp;
   lastActive: Timestamp;
 }
+
+export type POI = {
+  slug: string;
+  name: string;
+  x: number;
+  y: number;
+  isRevealed: boolean;
+  mapId: string;
+};

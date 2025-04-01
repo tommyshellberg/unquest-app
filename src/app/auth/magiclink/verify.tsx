@@ -5,17 +5,21 @@ import { ActivityIndicator } from 'react-native';
 import { verifyMagicLink } from '@/api/auth';
 import { apiClient } from '@/api/common/client';
 import { Text, View } from '@/components/ui';
-import { useAccountStore } from '@/store/account-store';
 import { useCharacterStore } from '@/store/character-store';
+import { useUserStore } from '@/store/user-store';
 
 export default function MagicLinkVerifyScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const token = params.token as string;
   const [loading, setLoading] = useState(true);
+
   const character = useCharacterStore((state) => state.character);
   const createCharacter = useCharacterStore((state) => state.createCharacter);
-  const account = useAccountStore((state) => state.account);
+
+  // Replace account-store with user-store
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
 
   useEffect(() => {
     if (!token) {
@@ -44,6 +48,21 @@ export default function MagicLinkVerifyScreen() {
             const userResponse = await apiClient.get('/users/me');
             console.log('User data response:', userResponse.data);
 
+            // Store user data in user store
+            if (
+              userResponse.data &&
+              userResponse.data.id &&
+              userResponse.data.email
+            ) {
+              setUser({
+                id: userResponse.data.id,
+                email: userResponse.data.email,
+                name: userResponse.data.name,
+                avatar: userResponse.data.avatar,
+                createdAt: userResponse.data.createdAt,
+              });
+            }
+
             // Check if the response has character data with required fields
             if (
               userResponse.data &&
@@ -61,7 +80,7 @@ export default function MagicLinkVerifyScreen() {
 
               // User has complete character data on server, navigate to home
               console.log('Navigating to home with server character data');
-              router.replace('/(app)/home');
+              router.replace('/(app)/index');
             } else {
               // No complete character data on server, navigate to app-introduction
               console.log(
@@ -82,7 +101,7 @@ export default function MagicLinkVerifyScreen() {
           console.log(
             'User already has local character data, navigating to home'
           );
-          router.replace('/(app)/home');
+          router.replace('/(app)/index');
         }
       } catch (error) {
         console.error('Error verifying magic link:', error);
@@ -98,13 +117,13 @@ export default function MagicLinkVerifyScreen() {
     }
 
     verifyToken();
-  }, [token, router, params, character, account, createCharacter]);
+  }, [token, router, params, character, user, createCharacter, setUser]);
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
-        <Text>Verifying your login...</Text>
+        <Text className="mt-4">Verifying your login...</Text>
       </View>
     );
   }

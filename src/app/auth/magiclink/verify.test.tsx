@@ -4,8 +4,8 @@ import React from 'react';
 
 import { verifyMagicLink } from '@/api/auth';
 import { apiClient } from '@/api/common/client';
-import { useAccountStore } from '@/store/account-store';
 import { useCharacterStore } from '@/store/character-store';
+import { useUserStore } from '@/store/user-store';
 
 import MagicLinkVerifyScreen from '../magiclink/verify';
 
@@ -18,7 +18,7 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock the auth service
-jest.mock('@/services/auth', () => ({
+jest.mock('@/api/auth', () => ({
   verifyMagicLink: jest.fn(),
 }));
 
@@ -27,19 +27,22 @@ jest.mock('@/store/character-store', () => ({
   useCharacterStore: jest.fn(),
 }));
 
-jest.mock('@/store/account-store', () => ({
-  useAccountStore: jest.fn(),
+jest.mock('@/store/user-store', () => ({
+  useUserStore: jest.fn(),
 }));
 
 // Mock the API client
-jest.mock('@/services/api', () => ({
-  get: jest.fn(),
+jest.mock('@/api/common/client', () => ({
+  apiClient: {
+    get: jest.fn(),
+  },
 }));
 
 describe('MagicLinkVerifyScreen', () => {
   // Setup common variables
   let mockReplace: jest.Mock;
   let mockCreateCharacter: jest.Mock;
+  let mockSetUser: jest.Mock;
 
   beforeEach(() => {
     // Reset mocks before each test
@@ -62,9 +65,15 @@ describe('MagicLinkVerifyScreen', () => {
       });
     });
 
-    // Setup account store mock
-    (useAccountStore as jest.Mock).mockImplementation((selector) =>
-      selector({ account: null })
+    // Setup user store mock with setUser function
+    mockSetUser = jest.fn();
+    (useUserStore as jest.Mock).mockImplementation((selector) =>
+      selector({
+        user: null,
+        setUser: mockSetUser,
+        updateUser: jest.fn(),
+        clearUser: jest.fn(),
+      })
     );
   });
 
@@ -137,7 +146,7 @@ describe('MagicLinkVerifyScreen', () => {
 
     // Mock API response with no character data
     (apiClient.get as jest.Mock).mockResolvedValue({
-      data: { user: { id: '123', email: 'test@example.com' } },
+      data: { id: '123', email: 'test@example.com' },
     });
 
     render(<MagicLinkVerifyScreen />);
@@ -145,6 +154,13 @@ describe('MagicLinkVerifyScreen', () => {
     // Check that it redirects to app-introduction
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/onboarding/app-introduction');
+      // Verify that setUser was called
+      expect(mockSetUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: '123',
+          email: 'test@example.com',
+        })
+      );
     });
 
     // Verify that verifyMagicLink was called with the correct token
@@ -168,7 +184,8 @@ describe('MagicLinkVerifyScreen', () => {
     const mockCharacter = { name: 'TestChar', type: 'wizard' };
     (apiClient.get as jest.Mock).mockResolvedValue({
       data: {
-        user: { id: '123', email: 'test@example.com' },
+        id: '123',
+        email: 'test@example.com',
         character: mockCharacter,
       },
     });
@@ -177,10 +194,17 @@ describe('MagicLinkVerifyScreen', () => {
 
     // Check that it redirects to home and creates character
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/(app)/home');
+      expect(mockReplace).toHaveBeenCalledWith('/(app)/index');
       expect(mockCreateCharacter).toHaveBeenCalledWith(
         mockCharacter.type,
         mockCharacter.name
+      );
+      // Verify that setUser was called with the correct data
+      expect(mockSetUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: '123',
+          email: 'test@example.com',
+        })
       );
     });
   });
@@ -201,7 +225,8 @@ describe('MagicLinkVerifyScreen', () => {
     // Mock API response with incomplete character data (missing type)
     (apiClient.get as jest.Mock).mockResolvedValue({
       data: {
-        user: { id: '123', email: 'test@example.com' },
+        id: '123',
+        email: 'test@example.com',
         character: { name: 'TestChar' }, // Missing type
       },
     });
@@ -211,6 +236,13 @@ describe('MagicLinkVerifyScreen', () => {
     // Check that it redirects to app-introduction
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/onboarding/app-introduction');
+      // Verify that setUser was called
+      expect(mockSetUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: '123',
+          email: 'test@example.com',
+        })
+      );
     });
   });
 
@@ -246,7 +278,7 @@ describe('MagicLinkVerifyScreen', () => {
 
     // Check that it redirects to home without API call
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/(app)/home');
+      expect(mockReplace).toHaveBeenCalledWith('/(app)/index');
       expect(apiClient.get).not.toHaveBeenCalled();
     });
   });

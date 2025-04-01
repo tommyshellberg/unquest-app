@@ -71,15 +71,12 @@ const withEnvSuffix = (name) => {
  */
 
 const client = z.object({
-  APP_ENV: z.enum(['development', 'staging', 'production']),
+  APP_ENV: z.enum(['development', 'staging', 'production', 'preview']),
   NAME: z.string(),
   SCHEME: z.string(),
   BUNDLE_ID: z.string(),
   PACKAGE: z.string(),
   VERSION: z.string(),
-
-  // ADD YOUR CLIENT ENV VARS HERE
-  API_URL: z.string(),
 });
 
 const buildTime = z.object({
@@ -98,9 +95,6 @@ const _clientEnv = {
   BUNDLE_ID: withEnvSuffix(BUNDLE_ID),
   PACKAGE: withEnvSuffix(PACKAGE),
   VERSION: packageJSON.version,
-
-  // ADD YOUR ENV VARS HERE TOO
-  API_URL: process.env.API_URL,
 };
 
 /**
@@ -109,7 +103,6 @@ const _clientEnv = {
 const _buildTimeEnv = {
   EXPO_ACCOUNT_OWNER,
   EAS_PROJECT_ID,
-  // ADD YOUR ENV VARS HERE TOO
 };
 
 /**

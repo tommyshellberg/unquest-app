@@ -13,8 +13,8 @@ import Animated, {
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { setupNotifications } from '@/lib/services/notifications';
-import { useAccountStore } from '@/store/account-store';
 import { useCharacterStore } from '@/store/character-store';
+import { useUserStore } from '@/store/user-store';
 
 enum OnboardingStep {
   WELCOME,
@@ -29,9 +29,9 @@ export default function AppIntroductionScreen() {
   );
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const character = useCharacterStore((state) => state.character);
-  const account = useAccountStore((state) => state.account);
+  const user = useUserStore((state) => state.user);
 
-  const hasExistingData = !!character || !!account;
+  const hasExistingData = !!character || !!user;
 
   // Animation values for a smooth fade/scale-in effect.
   const contentOpacity = useSharedValue(0);

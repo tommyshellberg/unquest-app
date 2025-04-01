@@ -1,0 +1,9 @@
+{
+  "platforms": ["android", "ios"],
+  "android": {
+    "modules": ["expo.modules.lockstate.LockStateModule"]
+  },
+  "ios": {
+    "modules": ["LockStateModule"]
+  }
+}

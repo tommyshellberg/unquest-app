@@ -1,13 +1,15 @@
 import { create } from 'zustand';
 
+import { useUserStore } from '@/store/user-store';
+
 import { createSelectors } from '../utils';
-import type { TokenType } from './utils';
+import type { TokenType, UserLoginResponse } from './utils';
 import { getToken, removeToken, setToken } from './utils';
 
 interface AuthState {
   token: TokenType | null;
   status: 'idle' | 'signOut' | 'signIn';
-  signIn: (data: TokenType) => void;
+  signIn: (data: UserLoginResponse) => void;
   signOut: () => void;
   hydrate: () => void;
 }
@@ -15,19 +17,30 @@ interface AuthState {
 const _useAuth = create<AuthState>((set, get) => ({
   status: 'idle',
   token: null,
-  signIn: (token) => {
+  signIn: (response) => {
+    const { token, user } = response;
     setToken(token);
+
+    // Set user data in user store
+    if (user) {
+      useUserStore.getState().setUser(user);
+    }
+
     set({ status: 'signIn', token });
   },
   signOut: () => {
     removeToken();
+
+    // Clear user data
+    useUserStore.getState().clearUser();
+
     set({ status: 'signOut', token: null });
   },
   hydrate: () => {
     try {
       const userToken = getToken();
       if (userToken !== null) {
-        get().signIn(userToken);
+        get().signIn({ token: userToken });
       } else {
         get().signOut();
       }
@@ -41,5 +54,6 @@ const _useAuth = create<AuthState>((set, get) => ({
 export const useAuth = createSelectors(_useAuth);
 
 export const signOut = () => _useAuth.getState().signOut();
-export const signIn = (token: TokenType) => _useAuth.getState().signIn(token);
+export const signIn = (response: UserLoginResponse) =>
+  _useAuth.getState().signIn(response);
 export const hydrateAuth = () => _useAuth.getState().hydrate();
