@@ -93,7 +93,7 @@ export default function ScreenTimeGoalScreen() {
     createAccount(currentTime, targetTime);
 
     // Navigate to home instead of app-introduction
-    router.replace('/(app)/home');
+    router.replace('/(app)/index');
   };
 
   // Hide header and drawer for onboarding flow

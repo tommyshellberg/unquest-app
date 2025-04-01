@@ -34,7 +34,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>exp+unquest</string>
+          <string>exp+unquest-app</string>
         </array>
       </dict>
     </array>
