@@ -1,3 +1,4 @@
+import Slider from '@react-native-community/slider';
 import { format } from 'date-fns';
 import React from 'react';
 import { type Control, Controller } from 'react-hook-form';
@@ -50,27 +51,22 @@ export const CombinedQuestInput = ({
         </Text>
       </View>
 
-      {/* Temporary replacement for Slider with basic input */}
+      {/* Slider for duration */}
       <Controller
         control={control}
         render={({ field: { onChange, value } }) => (
           <View className="mt-5">
-            {/* Simplified slider replacement */}
-            <View className="my-4 flex-row items-center justify-between">
-              <Text className="text-base text-[#777]">1 min</Text>
-              <Input
-                value={value.toString()}
-                onChangeText={(text) => {
-                  const num = parseInt(text);
-                  if (!isNaN(num) && num >= 1 && num <= 120) {
-                    onChange(num);
-                  }
-                }}
-                keyboardType="numeric"
-                className="w-16 rounded-md border border-[#3B7A57] bg-white px-2 py-1 text-center"
-              />
-              <Text className="text-base text-[#777]">120 min</Text>
-            </View>
+            <Slider
+              style={{ width: '100%', height: 40 }}
+              minimumValue={1}
+              maximumValue={120}
+              step={1}
+              value={value}
+              onValueChange={onChange}
+              minimumTrackTintColor="#3B7A57" // Forest green
+              maximumTrackTintColor="#EAEAE5"
+              thumbTintColor="#3B7A57"
+            />
 
             <View className="mt-4 flex-row justify-between">
               <View className="w-[48%] items-center rounded-lg bg-[#EAEAE5] p-3">

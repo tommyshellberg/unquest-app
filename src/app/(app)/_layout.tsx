@@ -2,7 +2,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Redirect, SplashScreen, Tabs } from 'expo-router';
 import React, { useCallback, useEffect } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useAuth, useIsFirstTime } from '@/lib';
 import { useQuestStore } from '@/store/quest-store';
@@ -35,8 +35,6 @@ export default function TabLayout() {
   const [isFirstTime] = useIsFirstTime();
 
   // Quest state from store
-  const activeQuest = useQuestStore((state) => state.activeQuest);
-  const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const failedQuest = useQuestStore((state) => state.failedQuest);
   const recentCompletedQuest = useQuestStore(
     (state) => state.recentCompletedQuest
@@ -62,12 +60,9 @@ export default function TabLayout() {
     return <Redirect href="/login" />;
   }
 
-  // Quest state redirection
+  // Only redirect for failed or completed quests
   if (failedQuest) {
     return <Redirect href="/failed-quest" />;
-  }
-  if (activeQuest || pendingQuest) {
-    return <Redirect href="/active-quest" />;
   }
   if (recentCompletedQuest) {
     return <Redirect href="/quest-complete" />;
@@ -115,7 +110,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="quick-quest"
+        name="custom-quest"
         options={{
           title: 'Quick Quest',
           tabBarIcon: ({ focused, color }) => (
@@ -146,6 +141,49 @@ export default function TabLayout() {
           tabBarButtonTestID: 'settings-tab',
         }}
       />
+
+      {/* Hide active-quest from tabs */}
+      <Tabs.Screen
+        name="active-quest"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  centerButtonContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -20, // Adjust this to position the button higher
+    width: 50,
+    height: 50,
+  },
+  centerButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+});

@@ -179,6 +179,7 @@ export default function Index() {
     if (selectedQuest) {
       prepareQuest(selectedQuest);
       await QuestTimer.prepareQuest(selectedQuest);
+      console.log('Navigating to active quest from index');
       // Navigate to active quest
       router.replace('/active-quest');
     }

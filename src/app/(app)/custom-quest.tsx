@@ -72,6 +72,7 @@ export default function CustomQuestScreen() {
       await QuestTimer.prepareQuest(customQuest);
 
       // Navigate back to active quest screen
+      console.log('Navigating to active quest from custom quest');
       router.replace('/(app)/active-quest');
     } catch (error) {
       console.error('Error preparing quest:', error);
