@@ -32,7 +32,7 @@ const MODES = [
   { id: 'custom', name: 'Free Play Mode', color: 'rgba(146, 185, 191, 0.9)' },
 ];
 
-export default function Index() {
+export default function Home() {
   const router = useRouter();
   const activeQuest = useQuestStore((state) => state.activeQuest);
   const refreshAvailableQuests = useQuestStore(

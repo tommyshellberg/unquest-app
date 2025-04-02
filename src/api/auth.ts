@@ -1,6 +1,7 @@
 import { Env } from '@env';
 import axios from 'axios';
 
+import { apiClient } from './common';
 import * as tokenService from './token';
 
 // Create a separate axios instance for auth requests to avoid circular dependencies
@@ -31,12 +32,6 @@ export interface RegisterResponse {
  */
 export const requestMagicLink = async (email: string): Promise<void> => {
   try {
-    console.log(
-      'trying to request magic link from URL:',
-      authClient.defaults.baseURL + '/auth/magiclink'
-    );
-    console.log('email:', email);
-    console.log('authClient', authClient);
     const response = await authClient.post('/auth/magiclink', { email });
     return response.data;
   } catch (error) {
@@ -106,7 +101,7 @@ export const refreshAccessToken =
         return null;
       }
 
-      const response = await authClient.post('/auth/refresh-tokens', {
+      const response = await apiClient.post('/auth/refresh-tokens', {
         refreshToken,
       });
 

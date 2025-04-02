@@ -12,7 +12,7 @@ import { updateUserCharacter } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 import { type Character, type CharacterType } from '@/store/types';
 
-import { CHARACTERS } from '../data/characters';
+import CHARACTERS from '../data/characters';
 
 // Get screen dimensions and define card dimensions
 const screenWidth = Dimensions.get('window').width;

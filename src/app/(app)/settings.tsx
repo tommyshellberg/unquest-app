@@ -113,6 +113,8 @@ export default function Settings() {
   const iconColor = '#3B7A57';
   const contactEmail = 'hello@unquestapp.com';
 
+  console.log('user', user);
+
   return (
     <View className="flex-1 bg-[#E7DBC9]">
       <FocusAwareStatusBar />

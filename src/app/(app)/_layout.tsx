@@ -70,10 +70,12 @@ export default function TabLayout() {
     if (!navigationState?.key) return;
 
     if (isFirstTime) {
+      console.log('routing to onboarding');
       router.replace('/onboarding');
       return;
     }
     if (status === 'signOut') {
+      console.log('routing to login');
       router.replace('/login');
       return;
     }

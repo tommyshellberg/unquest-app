@@ -18,7 +18,7 @@ export default function QuestCompleteScreen() {
   useEffect(() => {
     if (!recentCompletedQuest) {
       console.log('no quest to display, redirecting to home');
-      router.replace('/home');
+      router.replace('/index');
     }
   }, [recentCompletedQuest]);
 

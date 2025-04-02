@@ -9,7 +9,7 @@ export type Character = {
   profileImage: ImageSourcePropType;
 };
 
-export const CHARACTERS: Character[] = [
+const CHARACTERS: Character[] = [
   {
     id: 'alchemist',
     type: 'Alchemist',
@@ -63,3 +63,5 @@ export const CHARACTERS: Character[] = [
     profileImage: require('@/../assets/images/characters/bard-profile.png'),
   },
 ];
+
+export default CHARACTERS;
