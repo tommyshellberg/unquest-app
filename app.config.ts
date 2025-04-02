@@ -29,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'unquest-app',
   version: Env.VERSION.toString(),
   orientation: 'portrait',
-  icon: './assets/icon.png',
+  icon: './assets/images/icon.png',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
   updates: {
@@ -42,28 +42,33 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     config: {
       usesNonExemptEncryption: false, // Avoid the export compliance warning on the app store
     },
+    infoPlist: {
+      BGTaskSchedulerPermittedIdentifiers: ['$(PRODUCT_BUNDLE_IDENTIFIER)'],
+    },
   },
   experiments: {
     typedRoutes: true,
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#2E3C4B',
+      foregroundImage: './assets/images/adaptive-icon.png',
+      backgroundColor: '#051c25',
     },
     package: Env.PACKAGE,
-  },
-  web: {
-    favicon: './assets/favicon.png',
-    bundler: 'metro',
+    permissions: [
+      'android.permission.FOREGROUND_SERVICE',
+      'android.permission.FOREGROUND_SERVICE_DATA_SYNC',
+    ],
   },
   plugins: [
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#2E3C4B',
-        image: './assets/splash-icon.png',
-        imageWidth: 150,
+        image: './assets/images/splash-icon.png',
+        imageWidth: 200,
+        resizeMode: 'contain',
+        backgroundColor: '#051c25',
+        autoHide: false,
       },
     ],
     ['expo-secure-store'],
@@ -71,6 +76,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-font',
       {
         fonts: ['./assets/fonts/Inter.ttf'],
+      },
+    ],
+    [
+      'expo-notifications',
+      {
+        color: '#051c25',
       },
     ],
     'expo-localization',

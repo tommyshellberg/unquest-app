@@ -5,7 +5,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -21,19 +21,46 @@ export const unstable_settings = {
   initialRouteName: '(app)',
 };
 
-hydrateAuth();
-loadSelectedTheme();
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-// Set the animation options. This is optional.
-SplashScreen.setOptions({
-  duration: 500,
-  fade: true,
+// Keep the splash screen visible until we explicitly hide it
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* reloading the app might trigger some race conditions, ignore them */
 });
 
+// Perform the hydration here so it happens as early as possible
+const hydrationPromise = Promise.all([hydrateAuth(), loadSelectedTheme()]);
+
 export default function RootLayout() {
+  const [appIsReady, setAppIsReady] = React.useState(false);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Wait for hydration to complete
+        await hydrationPromise;
+      } catch (e) {
+        console.warn('Error during app initialization:', e);
+      } finally {
+        // Tell the application to render
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      // This tells the splash screen to hide only when the root view is ready
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
+  }
+
   return (
-    <Providers>
+    <Providers onLayout={onLayoutRootView}>
       <Stack>
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
@@ -43,12 +70,19 @@ export default function RootLayout() {
   );
 }
 
-function Providers({ children }: { children: React.ReactNode }) {
+function Providers({
+  children,
+  onLayout,
+}: {
+  children: React.ReactNode;
+  onLayout?: () => void;
+}) {
   const theme = useThemeConfig();
   return (
     <GestureHandlerRootView
       style={styles.container}
       className={theme.dark ? `dark` : undefined}
+      onLayout={onLayout}
     >
       <KeyboardProvider>
         <ThemeProvider value={theme}>

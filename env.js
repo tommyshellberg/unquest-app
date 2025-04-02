@@ -77,6 +77,9 @@ const client = z.object({
   BUNDLE_ID: z.string(),
   PACKAGE: z.string(),
   VERSION: z.string(),
+
+  // ADD YOUR CLIENT ENV VARS HERE
+  API_URL: z.string(),
 });
 
 const buildTime = z.object({
@@ -95,6 +98,9 @@ const _clientEnv = {
   BUNDLE_ID: withEnvSuffix(BUNDLE_ID),
   PACKAGE: withEnvSuffix(PACKAGE),
   VERSION: packageJSON.version,
+
+  // ADD YOUR ENV VARS HERE TOO
+  API_URL: process.env.API_URL,
 };
 
 /**

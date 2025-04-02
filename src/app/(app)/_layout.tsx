@@ -1,11 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import {
-  router,
-  SplashScreen,
-  Tabs,
-  useRootNavigationState,
-} from 'expo-router';
-import React, { useCallback, useEffect, useRef } from 'react';
+import { router, Tabs, useRootNavigationState } from 'expo-router';
+import React, { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
 import { useAuth, useIsFirstTime } from '@/lib';
@@ -41,39 +36,27 @@ export default function TabLayout() {
   const navigationState = useRootNavigationState();
   const hasRedirectedToCompletedRef = useRef(false);
 
-  // Activate lock detection for the whole main app.
-  useLockStateDetection();
-
   // Quest state from store
   const failedQuest = useQuestStore((state) => state.failedQuest);
   const recentCompletedQuest = useQuestStore(
     (state) => state.recentCompletedQuest
   );
 
-  const hideSplash = useCallback(async () => {
-    await SplashScreen.hideAsync();
-  }, []);
+  // Activate lock detection for the whole main app.
+  useLockStateDetection();
 
+  // Handle completed quest redirect
   useEffect(() => {
-    if (status !== 'idle') {
-      setTimeout(() => {
-        hideSplash();
-      }, 1000);
-    }
-  }, [hideSplash, status]);
-
-  useEffect(() => {
-    if (!navigationState?.key) {
-      return;
-    }
+    if (!navigationState?.key) return;
 
     if (recentCompletedQuest && !hasRedirectedToCompletedRef.current) {
       console.log('Redirecting to quest-complete');
       hasRedirectedToCompletedRef.current = true;
       router.replace('/quest-complete');
     }
-  }, [recentCompletedQuest]);
+  }, [recentCompletedQuest, navigationState?.key]);
 
+  // Reset completed quest flag
   useEffect(() => {
     console.log('recentCompletedQuest changed:', recentCompletedQuest);
     if (!recentCompletedQuest) {
@@ -82,23 +65,27 @@ export default function TabLayout() {
     }
   }, [recentCompletedQuest]);
 
-  // Check if navigation is ready
-  const isNavigationReady = navigationState?.key !== undefined;
-  if (!isNavigationReady) {
-    return null;
-  }
+  // Handle auth and onboarding redirects
+  useEffect(() => {
+    if (!navigationState?.key) return;
 
-  if (isFirstTime) {
-    router.replace('/onboarding');
-    return null;
-  }
-  if (status === 'signOut') {
-    router.replace('/login');
-    return null;
-  }
-  if (failedQuest) {
-    console.log('Redirecting to failed-quest');
-    router.replace('/failed-quest');
+    if (isFirstTime) {
+      router.replace('/onboarding');
+      return;
+    }
+    if (status === 'signOut') {
+      router.replace('/login');
+      return;
+    }
+    if (failedQuest) {
+      console.log('Redirecting to failed-quest');
+      router.replace('/failed-quest');
+      return;
+    }
+  }, [isFirstTime, status, failedQuest, navigationState?.key]);
+
+  // Check if navigation is ready
+  if (!navigationState?.key) {
     return null;
   }
 
