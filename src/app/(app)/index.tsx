@@ -10,10 +10,10 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { getMapNameForQuest } from 'utils/map-utils';
 
 import { getRefreshToken } from '@/api/token';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
+import { getMapNameForQuest } from '@/app/utils/map-utils';
 import QuestCard from '@/components/home/quest-card';
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
@@ -242,11 +242,6 @@ export default function Home() {
     opacity: headerOpacity.value,
   }));
 
-  const contentStyle = useAnimatedStyle(() => ({
-    opacity: contentOpacity.value,
-    transform: [{ translateY: contentTranslateY.value }],
-  }));
-
   // Render story quest option buttons
   const renderStoryOptions = () => {
     if (activeIndex !== 0) return null; // Only show for story mode
@@ -289,13 +284,7 @@ export default function Home() {
   };
 
   // Render item for the carousel
-  const renderCarouselItem = ({
-    item,
-    index,
-  }: {
-    item: any;
-    index: number;
-  }) => {
+  const renderCarouselItem = ({ item }: { item: any }) => {
     return (
       <View className="w-full" style={{ width: cardWidth }}>
         <QuestCard
@@ -304,6 +293,7 @@ export default function Home() {
           subtitle={item.subtitle}
           duration={item.duration}
           xp={item.xp}
+          key={item.id}
           description={item.recap || ''}
           progress={item.progress}
           showProgress={item.mode === 'story'}
@@ -359,11 +349,6 @@ export default function Home() {
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id}
               initialScrollIndex={0} // Start at the first item
-              getItemLayout={(_data, index) => ({
-                length: cardWidth,
-                offset: cardWidth * index,
-                index,
-              })}
               contentContainerStyle={{
                 paddingHorizontal: (screenWidth - cardWidth) / 2,
                 paddingBottom: 24, // Add some bottom padding

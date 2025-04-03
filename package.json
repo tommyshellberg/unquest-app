@@ -46,6 +46,7 @@
     "@gorhom/bottom-sheet": "^5.0.5",
     "@hookform/resolvers": "^3.9.0",
     "@react-native-community/slider": "4.5.5",
+    "@react-native-masked-view/masked-view": "0.3.2",
     "@react-native-picker/picker": "2.9.0",
     "@shopify/flash-list": "1.7.3",
     "@tanstack/react-query": "^5.52.1",

@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Image, Pressable } from 'react-native';
 
-import { getCharacterAvatar } from '@/../utils/character-utils';
+import { getCharacterAvatar } from '@/app/utils/character-utils';
 import { Card, Text, View } from '@/components/ui';
 
 type InvitationItemProps = {
