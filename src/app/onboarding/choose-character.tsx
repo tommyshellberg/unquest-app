@@ -125,10 +125,10 @@ export default function ChooseCharacterScreen() {
       await updateUserCharacter(newCharacter as Character);
       console.log('User character successfully updated on the server');
     } catch (error) {
-      console.error('Error updating user character on the server', error);
+      console.log('Error updating user character on the server', error);
+    } finally {
+      router.push('/onboarding/screen-time-goal');
     }
-
-    router.push('/onboarding/screen-time-goal');
   };
 
   return (
