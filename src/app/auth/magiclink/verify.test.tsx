@@ -1,9 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import React from 'react';
 
 import { verifyMagicLink } from '@/api/auth';
 import { apiClient } from '@/api/common/client';
+import { render, screen, waitFor } from '@/lib/test-utils';
 import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
 
@@ -14,6 +14,9 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),
   useRouter: jest.fn(() => ({
     replace: jest.fn(),
+  })),
+  useNavigation: jest.fn(() => ({
+    setOptions: jest.fn(),
   })),
 }));
 
@@ -47,6 +50,12 @@ describe('MagicLinkVerifyScreen', () => {
   beforeEach(() => {
     // Reset mocks before each test
     jest.clearAllMocks();
+
+    // Setup navigation mock
+    const mockSetOptions = jest.fn();
+    (useNavigation as jest.Mock).mockReturnValue({
+      setOptions: mockSetOptions,
+    });
 
     // Setup router mock
     mockReplace = jest.fn();
