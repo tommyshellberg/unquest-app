@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
 import { useEffect } from 'react';
 
 // Import the modules directly
@@ -31,6 +32,7 @@ export default function useLockStateDetection() {
         if (data?.screen === 'quest-complete') {
           // The navigation will be handled by the useCompletedQuestCheck hook
           // when the recentCompletedQuest state is detected
+          router.replace('/(app)/quest-complete');
         }
       }
     );

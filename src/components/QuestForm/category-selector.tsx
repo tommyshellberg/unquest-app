@@ -40,7 +40,7 @@ export const CategorySelector = ({
   };
 
   return (
-    <View className="my-2.5 rounded-xl bg-white p-4 shadow-sm">
+    <View className="my-2.5 rounded-xl bg-[#F5F5F0] p-4 shadow-sm">
       <Text className="mb-2 text-base text-[#666]">What type of activity?</Text>
       <Controller
         control={control}

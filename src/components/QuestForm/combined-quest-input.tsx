@@ -23,26 +23,42 @@ export const CombinedQuestInput = ({
 
   return (
     <View className="my-5 rounded-xl bg-[#F5F5F0] p-5 shadow-sm">
-      <View className="mb-2.5 flex-row items-center">
-        <Text className="text-2xl font-medium text-[#333]">I want to</Text>
-        <Controller
-          control={control}
-          rules={{
-            required: "Please enter what you'll be doing",
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder="go for a run"
-              className="ml-2 h-10 flex-1 border-b border-[#3B7A57] bg-transparent px-2 text-2xl"
-              placeholderTextColor="#999"
-              error={errors.questName?.message}
-            />
+      <View className="mb-2.5">
+        <View className="flex-row items-center">
+          <Text className="text-2xl font-medium text-[#333]">I want to</Text>
+          <Controller
+            control={control}
+            rules={{
+              required: "Please enter what you'll be doing",
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="go for a run"
+                className="ml-2 h-10 flex-1 border-b border-[#3B7A57] bg-transparent px-2 text-2xl"
+                placeholderTextColor="#999"
+                error=""
+                autoCapitalize="none"
+                autoComplete="off"
+                autoFocus={true}
+                inputMode="text"
+                multiline={false}
+                style={{ includeFontPadding: false }}
+              />
+            )}
+            name="questName"
+          />
+        </View>
+        {/* Fixed-height error container to prevent layout shift */}
+        <View className="h-5 pl-20">
+          {errors.questName?.message && (
+            <Text className="text-sm text-red-500">
+              {errors.questName?.message}
+            </Text>
           )}
-          name="questName"
-        />
+        </View>
       </View>
 
       <View className="mb-2.5 flex-row items-center">

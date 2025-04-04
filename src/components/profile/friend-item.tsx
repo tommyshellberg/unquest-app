@@ -1,4 +1,3 @@
-import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Image, Pressable } from 'react-native';
 
@@ -31,17 +30,11 @@ export function FriendItem({ friend, onDelete }: FriendItemProps) {
       </View>
 
       <View className="flex-row items-center space-x-2">
-        <View className="rounded-full bg-teal-700 px-2 py-1">
-          <Text className="text-xs font-bold text-white">
-            Lvl {friend.character?.level || 1}
-          </Text>
-        </View>
-
         <Pressable
-          className="size-8 items-center justify-center rounded-full bg-red-500"
+          className="items-center justify-center rounded-full"
           onPress={() => onDelete(friend)}
         >
-          <Feather name="x" size={16} color="white" />
+          <Text className="text-red-500">Remove</Text>
         </Pressable>
       </View>
     </Card>

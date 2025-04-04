@@ -1968,6 +1968,27 @@ PODS:
     - React-logger (= 0.76.8)
     - React-perflogger (= 0.76.8)
     - React-utils (= 0.76.8)
+  - RNCMaskedView (0.3.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNCPicker (2.9.0):
     - DoubleConversion
     - glog
@@ -2315,6 +2336,7 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -2525,6 +2547,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNCMaskedView:
+    :path: "../node_modules/@react-native-masked-view/masked-view"
   RNCPicker:
     :path: "../node_modules/@react-native-picker/picker"
   RNFlashList:
@@ -2639,6 +2663,7 @@ SPEC CHECKSUMS:
   React-utils: 945a79dd54aad2c9ee213ee01da246acec920a2c
   ReactCodegen: 6d884ae1e7d4a51a4ca6d3a1a428a89daa8335fd
   ReactCommon: 2b7118eace1eab072a4ccdae57303eaefc2a3941
+  RNCMaskedView: 8542667cb39fff458c1a1a3f9e70205042636129
   RNCPicker: cee1bca865d795657e931de5aad98b1650f3237b
   RNFlashList: c989a55fd69b28ca158551cdf2d885348d50e154
   RNGestureHandler: 16ef3dc2d7ecb09f240f25df5255953c4098819b

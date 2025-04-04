@@ -1,13 +1,20 @@
-import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { memo, useCallback, useEffect, useState } from 'react';
-import { Dimensions, FlatList, Image, TextInput } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Dimensions,
+  FlatList,
+  Image,
+  ImageBackground,
+  TextInput,
+} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { Card } from '@/components/ui/card';
+import { Chip } from '@/components/ui/chip';
 import { updateUserCharacter } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 import { type Character, type CharacterType } from '@/store/types';
@@ -27,41 +34,36 @@ interface CardProps {
 
 const CardComponent = ({ item, isSelected }: CardProps) => {
   return (
-    <View className="w-full items-center justify-center">
-      <View
-        className={`w-full items-center overflow-hidden rounded-lg bg-gray-900 p-4
-          ${isSelected ? 'scale-100 border-2 border-amber-100 opacity-100' : 'scale-90 opacity-60'}`}
+    <View
+      className="items-center justify-center px-2"
+      style={{ width: cardWidth }}
+    >
+      <Card
+        className={`elevation-2 aspect-[0.75] w-full ${isSelected ? 'scale-100' : 'scale-90 opacity-60'}`}
       >
-        {/* Card Header: Display the character type */}
-        <Text className="mb-2 text-lg text-amber-100">{item.type}</Text>
-        <Text className="mb-2 text-base text-amber-100">{item.title}</Text>
+        <ImageBackground
+          source={item.image}
+          className="size-full"
+          resizeMode="cover"
+        >
+          <View className="justify-start p-4">
+            {/* Character Type Pill */}
+            <Chip className="mb-4">{item.type}</Chip>
 
-        {/* Card Body: Character image */}
-        <View className="mb-2 w-full items-center">
-          <Image
-            source={item.image}
-            className="h-[200px] w-full rounded-md"
-            resizeMode="cover"
-          />
-        </View>
+            {/* Character Title */}
+            <Text className="mb-2 text-xl font-bold">{item.title}</Text>
 
-        {/* Card Footer: Character description */}
-        <Text className="mb-2 text-center text-base text-amber-100">
-          {item.description}
-        </Text>
-      </View>
+            {/* Character Description */}
+            <Text className="text-base">{item.description}</Text>
+          </View>
+        </ImageBackground>
+      </Card>
     </View>
   );
 };
 
-// Memoize the Card so that it only re‑renders when the "isSelected" prop changes.
-const Card = memo(CardComponent, (prevProps, nextProps) => {
-  return prevProps.isSelected === nextProps.isSelected;
-});
-
 export default function ChooseCharacterScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
   const createCharacter = useCharacterStore((state) => state.createCharacter);
 
   // Initialize with the first character selected
@@ -96,7 +98,7 @@ export default function ChooseCharacterScreen() {
   const renderItem = useCallback(
     ({ item }: { item: (typeof CHARACTERS)[0] }) => {
       const isSelected = selectedCharacter === item.id;
-      return <Card item={item} isSelected={isSelected} />;
+      return <CardComponent item={item} isSelected={isSelected} />;
     },
     [selectedCharacter]
   );
@@ -129,16 +131,8 @@ export default function ChooseCharacterScreen() {
     router.push('/onboarding/screen-time-goal');
   };
 
-  // Hide header and drawer for onboarding flow
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-      gestureEnabled: false, // Disable swipe gesture for drawer
-    });
-  }, []);
-
   return (
-    <View className="flex-1 bg-gray-900">
+    <View className="flex-1">
       <FocusAwareStatusBar />
 
       <Image
@@ -154,21 +148,21 @@ export default function ChooseCharacterScreen() {
       <View className="mb-10 px-6">
         <Text className="mb-2">Name Your Character</Text>
         <TextInput
-          className="h-10 rounded border border-stone-500 px-2 text-white"
+          className="h-10 rounded border px-2"
           value={inputName}
           onChangeText={(text) => {
             const filtered = text.replace(/[^a-zA-Z0-9\s]/g, '');
             setInputName(filtered);
           }}
           placeholder="Enter character name"
-          placeholderTextColor="#E7DBC9"
         />
       </View>
 
-      <Animated.View style={animatedScrollStyle} className="mb-4">
-        <View className="mx-6 mb-6">
-          <Text>Next, choose a character type.</Text>
-        </View>
+      <View className="mx-6 mb-2">
+        <Text>Next, choose a character type.</Text>
+      </View>
+
+      <Animated.View style={animatedScrollStyle} className="mb-4 flex-1">
         <FlatList
           data={CHARACTERS}
           horizontal
@@ -202,7 +196,7 @@ export default function ChooseCharacterScreen() {
             label="Continue"
             onPress={handleContinue}
             disabled={!debouncedName.trim()}
-            className={`rounded-full ${!debouncedName.trim() ? 'bg-gray-500 opacity-50' : ''}`}
+            className="rounded-full"
           />
         </View>
       </Animated.View>

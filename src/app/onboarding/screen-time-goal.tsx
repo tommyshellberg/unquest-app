@@ -115,13 +115,11 @@ export default function ScreenTimeGoalScreen() {
         },
       });
 
-      // 3. Navigate to home
-      router.replace('/(app)/index');
+      console.log('User screen time goals updated on the server');
     } catch (error) {
       console.error('Error updating user screen time goals:', error);
-      // Even if server update fails, continue with local update
-      router.replace('/(app)/index');
     } finally {
+      router.replace('/');
       setIsSubmitting(false);
     }
   };
@@ -135,7 +133,7 @@ export default function ScreenTimeGoalScreen() {
   }, [navigation]);
 
   return (
-    <View className="flex-1 bg-gray-900">
+    <View className="flex-1">
       <FocusAwareStatusBar />
 
       <Image
@@ -158,11 +156,11 @@ export default function ScreenTimeGoalScreen() {
           style={firstDropdownAnimatedStyle}
           className="mt-[5%] gap-4"
         >
-          <Text className="font-semibold text-white">
+          <Text className="font-semibold">
             What's your current daily screen time?
           </Text>
           <View
-            className={`overflow-hidden rounded-lg bg-amber-100 ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
+            className={`overflow-hidden rounded-lg ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
           >
             <Picker
               selectedValue={currentTime}
@@ -193,11 +191,11 @@ export default function ScreenTimeGoalScreen() {
             style={secondDropdownAnimatedStyle}
             className="mt-[5%] gap-4"
           >
-            <Text className="text-base font-semibold text-white">
+            <Text className="text-base font-semibold">
               What's your daily screen time goal?
             </Text>
             <View
-              className={`overflow-hidden rounded-lg bg-amber-100 ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
+              className={`overflow-hidden rounded-lg ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
             >
               <Picker
                 selectedValue={targetTime}
@@ -205,17 +203,12 @@ export default function ScreenTimeGoalScreen() {
                 className="w-full"
                 itemStyle={{ fontSize: 18, height: 150 }}
               >
-                <Picker.Item
-                  label="Select target screen time"
-                  value={-1}
-                  color="#ccc"
-                />
+                <Picker.Item label="Select target screen time" value={-1} />
                 {TIME_OPTIONS.map((option) => (
                   <Picker.Item
                     key={option.value}
                     label={option.label}
                     value={option.value}
-                    color="#334738" // Forest color
                   />
                 ))}
               </Picker>

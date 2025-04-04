@@ -1,4 +1,5 @@
 import { BlurView } from 'expo-blur';
+import { router } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Image, Pressable, StatusBar } from 'react-native';
 import Animated, {
@@ -32,6 +33,12 @@ export default function ActiveQuestScreen() {
   const cardScale = useSharedValue(0.9);
   const buttonOpacity = useSharedValue(0);
   const buttonScale = useSharedValue(0.9);
+
+  useEffect(() => {
+    if (!displayQuest) {
+      router.replace('/');
+    }
+  }, [displayQuest]);
 
   useEffect(() => {
     // Simple animation sequence

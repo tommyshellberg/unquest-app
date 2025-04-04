@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 
@@ -20,6 +20,12 @@ export default function MagicLinkVerifyScreen() {
   // Replace account-store with user-store
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
 
   useEffect(() => {
     if (!token) {
