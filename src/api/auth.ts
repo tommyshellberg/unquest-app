@@ -5,6 +5,7 @@ import { apiClient } from './common';
 import * as tokenService from './token';
 
 // Create a separate axios instance for auth requests to avoid circular dependencies
+console.log('API URL:', Env.API_URL);
 export const authClient = axios.create({
   baseURL: Env.API_URL,
   headers: {
@@ -50,6 +51,10 @@ export const verifyMagicLink = async (
     if (typeof token !== 'string') {
       throw new Error('Token is not a string');
     }
+    console.log(
+      'trying to request magic link from URL:',
+      authClient.defaults.baseURL + '/auth/magiclink/verify?token=${token}'
+    );
     const response = await authClient.get(
       `/auth/magiclink/verify?token=${token}`
     );

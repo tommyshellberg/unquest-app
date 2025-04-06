@@ -1,3 +1,4 @@
+import { Env } from '@env';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import React, { useState } from 'react';
@@ -8,7 +9,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import * as z from 'zod';
 
 import { requestMagicLink } from '@/api/auth';
-import { Button, colors, ControlledInput, Text, View } from '@/components/ui';
+import { Button, ControlledInput, Text, View } from '@/components/ui';
 
 const schema = z.object({
   email: z
@@ -102,7 +103,8 @@ export const LoginForm = ({ onSubmit, onCancel }: LoginFormProps) => {
           ) : (
             <Text className="mb-6 max-w-xs text-center text-gray-500">
               Enter your email address below to receive a magic link for login.
-              No password is required.
+              No password is required. The URL for the magic link is:{' '}
+              {Env.API_URL}/auth/magiclink
             </Text>
           )}
 
@@ -137,13 +139,12 @@ export const LoginForm = ({ onSubmit, onCancel }: LoginFormProps) => {
             label={emailSent ? 'Send Again' : 'Send Link'}
             onPress={handleSubmit(handleMagicLinkRequest)}
             disabled={isLoading || !formState.isValid}
-            variant="default"
             className="flex-1"
           >
             {isLoading ? (
               <ActivityIndicator
                 size="small"
-                color={colors.primary[50]}
+                color="white"
                 testID="login-loading"
               />
             ) : null}
