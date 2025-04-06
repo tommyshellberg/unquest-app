@@ -15,7 +15,6 @@
         "image": "latest"
       },
       "env": {
-        "EXPO_NO_DOTENV": "1",
         "APP_ENV": "production",
         "FLIPPER_DISABLE": "1"
       }
@@ -33,7 +32,6 @@
       "developmentClient": false,
       "env": {
         "APP_ENV": "preview",
-        "EXPO_NO_DOTENV": "1",
         "FLIPPER_DISABLE": "1"
       }
     },
@@ -50,7 +48,6 @@
       },
       "env": {
         "APP_ENV": "staging",
-        "EXPO_NO_DOTENV": "1",
         "FLIPPER_DISABLE": "1"
       }
     },
@@ -65,8 +62,7 @@
         "image": "latest"
       },
       "env": {
-        "APP_ENV": "development",
-        "EXPO_NO_DOTENV": "1"
+        "APP_ENV": "development"
       }
     },
     "simulator": {
@@ -79,8 +75,7 @@
         "image": "latest"
       },
       "env": {
-        "APP_ENV": "development",
-        "EXPO_NO_DOTENV": "1"
+        "APP_ENV": "development"
       }
     }
   },

@@ -37,6 +37,8 @@ build/
 *.p12
 *.key
 *.mobileprovision
+android/
+ios/
 
 # IDE
 .idea/
