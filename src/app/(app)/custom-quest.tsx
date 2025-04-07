@@ -80,7 +80,7 @@ export default function CustomQuestScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#e7e3d4]">
+    <View className="bg-background flex-1">
       <SafeAreaView edges={['top']} className="flex-1">
         <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
           <Pressable onPress={() => router.back()}>

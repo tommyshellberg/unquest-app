@@ -116,7 +116,7 @@ export default function Settings() {
   console.log('user', user);
 
   return (
-    <View className="flex-1 bg-[#E7DBC9]">
+    <View className="bg-background flex-1">
       <FocusAwareStatusBar />
 
       <ScrollView
@@ -142,11 +142,11 @@ export default function Settings() {
                   {user?.email || 'Not signed in'}
                 </Text>
               </View>
-              <Feather name="chevron-right" size={20} color="#888" />
             </View>
 
             <View
-              className="mt-4 rounded-full bg-[#5E8977] px-6 py-4"
+              className="mx-auto mt-4 rounded-xl bg-red-300 p-2"
+              style={{ width: '50%' }}
               onTouchEnd={handleLogout}
             >
               <Text className="text-center font-medium text-white">Logout</Text>
@@ -276,7 +276,8 @@ export default function Settings() {
               This will delete all your progress.
             </Text>
             <View
-              className="rounded-full bg-red-400 px-6 py-4"
+              className="mx-auto rounded-full bg-red-300 p-2"
+              style={{ width: '50%' }}
               onTouchEnd={resetAppData}
             >
               <Text className="text-center font-medium text-white">

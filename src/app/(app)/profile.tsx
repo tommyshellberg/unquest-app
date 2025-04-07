@@ -92,7 +92,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <View className="flex-1 bg-neutral-200">
+    <View className="bg-background flex-1">
       <FocusAwareStatusBar />
 
       <ScrollView

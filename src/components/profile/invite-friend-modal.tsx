@@ -92,9 +92,10 @@ export function InviteFriendModal({
             <Button
               label="Send Invite"
               onPress={handleSubmit(onSubmit)}
-              className="ml-2 flex-1 bg-teal-700"
+              className={`ml-2 flex-1 ${isValid ? 'opacity-100' : 'opacity-50'} bg-primary-400`}
               loading={isPending}
               disabled={isPending || !isValid}
+              textClassName="font-bold text-white"
             />
           )}
         </View>

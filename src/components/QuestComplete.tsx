@@ -155,10 +155,8 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
           <Animated.View style={buttonStyle}>
             <Button
               label="Continue Journey"
-              variant="default"
-              size="lg"
               onPress={onClaim}
-              className="min-w-[200px] rounded-full bg-primary-400"
+              className="min-w-[200px] rounded-xl bg-primary-400"
               textClassName="text-white font-semibold"
             />
           </Animated.View>

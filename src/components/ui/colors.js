@@ -1,6 +1,7 @@
 module.exports = {
   white: '#FFF1DC',
   black: '#000000',
+  background: '#e7e3d4',
 
   primary: {
     100: '#E0F7F6',

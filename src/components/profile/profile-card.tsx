@@ -18,7 +18,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
         className="mb-4 size-24 rounded-full"
       />
       <Text className="text-2xl font-bold">{character.name}</Text>
-      <Text className="text-gray-600">
+      <Text>
         Level {character.level} {character.type}
       </Text>
     </Card>

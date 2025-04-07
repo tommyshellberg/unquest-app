@@ -91,7 +91,6 @@ export default function QuestCompleteScreen() {
       quest={recentCompletedQuest}
       onClaim={handleClaimReward}
       story={getQuestCompletionText()}
-      hasAudio={recentCompletedQuest.mode === 'story'}
     />
   );
 }

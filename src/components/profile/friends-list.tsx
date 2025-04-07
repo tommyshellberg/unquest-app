@@ -81,11 +81,7 @@ export function FriendsList({
             <Text className="mb-3 text-center text-gray-600">
               Don't see someone you want to connect with?
             </Text>
-            <Button
-              label="Invite friends"
-              onPress={onInvite}
-              className="bg-teal-700"
-            />
+            <Button label="Invite friends" onPress={onInvite} />
           </Card>
         )}
 
