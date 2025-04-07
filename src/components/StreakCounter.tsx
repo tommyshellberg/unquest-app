@@ -21,8 +21,6 @@ export function StreakCounter({ animate = false, size = 'large' }: Props) {
   );
   const [isStreakActive, setIsStreakActive] = useState(true);
 
-  console.log('dailyQuestStreak', dailyQuestStreak);
-
   // Animation value
   const scale = useSharedValue(animate ? 0.5 : 1);
 
@@ -54,12 +52,12 @@ export function StreakCounter({ animate = false, size = 'large' }: Props) {
     <Animated.View className="items-center justify-center" style={streakStyle}>
       <View
         className={`
-          bg-background-light 
+          bg-muted-200 
           items-center 
           justify-center
           shadow-lg
           ${size === 'large' ? 'size-[90px] rounded-[45px]' : 'size-[40px] rounded-[20px]'}
-          ${!isStreakActive ? 'bg-background-dark/70' : ''}
+          ${!isStreakActive ? 'bg-muted-400' : ''}
         `}
       >
         <Text

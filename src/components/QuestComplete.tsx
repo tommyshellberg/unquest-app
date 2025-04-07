@@ -129,7 +129,7 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
           className="my-4 min-h-[200px] w-full flex-1"
           style={storyStyle}
         >
-          <Card className="flex-1 rounded-xl bg-white">
+          <Card className="flex-1 rounded-xl bg-neutral-100">
             <ScrollView className="flex-1 p-4">
               <Text className="text-base leading-6 text-neutral-800">
                 {story || 'Congratulations on completing your quest!'}

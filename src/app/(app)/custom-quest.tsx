@@ -114,8 +114,10 @@ export default function CustomQuestScreen() {
               size="lg"
               disabled={!isValid}
               onPress={handleSubmit(onSubmit)}
-              className="mt-5 rounded-md bg-black py-2.5"
-              textClassName="text-lg font-semibold"
+              className={`mt-5 rounded-md bg-primary-400 py-2.5 ${
+                isValid ? 'opacity-100' : 'opacity-50'
+              }`}
+              textClassName="text-lg font-semibold text-white"
             />
           </View>
         </ScrollView>
