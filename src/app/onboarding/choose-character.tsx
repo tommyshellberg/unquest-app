@@ -46,15 +46,23 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
           className="size-full"
           resizeMode="cover"
         >
+          {/* Add semi-transparent overlay */}
+          <View
+            className="bg-muted-500 absolute inset-0"
+            style={{ opacity: 0.6 }}
+          />
+
           <View className="justify-start p-4">
             {/* Character Type Pill */}
             <Chip className="mb-4">{item.type}</Chip>
 
             {/* Character Title */}
-            <Text className="mb-2 text-xl font-bold">{item.title}</Text>
+            <Text className="mb-2 text-xl font-bold text-white">
+              {item.title}
+            </Text>
 
             {/* Character Description */}
-            <Text className="text-base">{item.description}</Text>
+            <Text className="text-base text-white">{item.description}</Text>
           </View>
         </ImageBackground>
       </Card>
@@ -198,7 +206,8 @@ export default function ChooseCharacterScreen() {
             label="Continue"
             onPress={handleContinue}
             disabled={!debouncedName.trim()}
-            className="rounded-full"
+            className={`rounded-xl bg-primary-500 ${!debouncedName.trim() ? 'opacity-50' : ''}`}
+            textClassName="text-white font-bold"
           />
         </View>
       </Animated.View>

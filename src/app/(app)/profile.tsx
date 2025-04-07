@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { RefreshControl, ScrollView } from 'react-native';
 
 import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
@@ -11,7 +11,7 @@ import { ProfileCard } from '@/components/profile/profile-card';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
 import { StatsCard } from '@/components/profile/stats-card';
-import { FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { FocusAwareStatusBar, View } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 // Import hooks
 import { useProfileData } from '@/lib/hooks/use-profile-data';
@@ -22,6 +22,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   const character = useCharacterStore((state) => state.character);
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
+  // Add a state to track if we need to redirect
+  const [isRedirecting, setIsRedirecting] = React.useState(false);
 
   // Get profile data from custom hook
   const { userEmail, fetchUserDetails } = useProfileData();
@@ -59,25 +61,28 @@ export default function ProfileScreen() {
     inviteMutation,
   } = useFriendManagement(userEmail);
 
-  // Check if character exists and redirect if not
-  React.useEffect(() => {
-    if (!character) {
-      router.replace('/onboarding/choose-character');
+  // Check if character exists and handle redirect
+  useEffect(() => {
+    if (!character && !isRedirecting) {
+      // Set redirecting state to prevent double redirects
+      setIsRedirecting(true);
+      // Use setTimeout to ensure this happens after the current render cycle
+      setTimeout(() => {
+        router.replace('/onboarding/choose-character');
+      }, 0);
     }
-  }, [character, router]);
+  }, [character, router, isRedirecting]);
 
   // Fetch user details when the component mounts
-  React.useEffect(() => {
-    fetchUserDetails();
-  }, [fetchUserDetails]);
+  useEffect(() => {
+    if (character) {
+      fetchUserDetails();
+    }
+  }, [fetchUserDetails, character]);
 
-  // If no character, render a loading state until the redirect happens
-  if (!character) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <Text>Loading character data...</Text>
-      </View>
-    );
+  // Don't render anything while redirecting
+  if (!character || isRedirecting) {
+    return null; // Return empty instead of a loading view
   }
 
   // Calculate total minutes from completed quests

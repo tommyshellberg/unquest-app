@@ -12,6 +12,7 @@ import Animated, {
 
 import { apiClient } from '@/api/common/client';
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { muted } from '@/components/ui/colors';
 import { useUserStore } from '@/store/user-store';
 
 // Generate time options in 30-minute increments (30m to 12h)
@@ -171,14 +172,14 @@ export default function ScreenTimeGoalScreen() {
               <Picker.Item
                 label="Select current screen time"
                 value={-1}
-                color="#ccc"
+                color={muted[500]}
               />
               {TIME_OPTIONS.map((option) => (
                 <Picker.Item
                   key={option.value}
                   label={option.label}
                   value={option.value}
-                  color="#334738" // Forest color
+                  color={muted[500]}
                 />
               ))}
             </Picker>
@@ -219,10 +220,12 @@ export default function ScreenTimeGoalScreen() {
         {/* Animate Continue button (disabled if either value is invalid) */}
         <Animated.View style={buttonAnimatedStyle} className="mt-auto py-6">
           <Button
-            label={isSubmitting ? 'Saving...' : 'Set My Goal'}
+            label={'Set My Goal'}
             onPress={handleContinue}
             disabled={currentTime < 30 || targetTime < 30 || isSubmitting}
-            className={`${currentTime < 30 || targetTime < 30 || isSubmitting ? 'bg-gray-500 opacity-50' : ''}`}
+            className={`${currentTime < 30 || targetTime < 30 || isSubmitting ? 'bg-primary-500 opacity-50' : ''}`}
+            textClassName="text-white font-bold"
+            loading={isSubmitting}
           />
         </Animated.View>
       </View>
