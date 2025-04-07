@@ -134,11 +134,14 @@ export default function ChooseCharacterScreen() {
     <View className="flex-1">
       <FocusAwareStatusBar />
 
-      <Image
-        source={require('@/../assets/images/background/onboarding.jpg')}
-        className="absolute inset-0 size-full"
-        resizeMode="cover"
-      />
+      <View className="absolute inset-0">
+        <Image
+          source={require('@/../assets/images/background/onboarding.jpg')}
+          className="size-full"
+          resizeMode="cover"
+        />
+        <View className="absolute inset-0 bg-white/10" />
+      </View>
 
       <View className="mb-4 mt-12 gap-4 p-6">
         <Text className="text-xl font-bold">Choose Your Character</Text>

@@ -1,15 +1,15 @@
-import { Env } from '@env';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import * as Linking from 'expo-linking';
 import React, { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { ActivityIndicator } from 'react-native';
+import { StyleSheet, TextInput } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import * as z from 'zod';
 
 import { requestMagicLink } from '@/api/auth';
-import { Button, ControlledInput, Text, View } from '@/components/ui';
+import { Button, Image, Text, View } from '@/components/ui';
 
 const schema = z.object({
   email: z
@@ -31,23 +31,35 @@ export const LoginForm = ({ onSubmit, onCancel }: LoginFormProps) => {
   const [error, setError] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [sendAttempts, setSendAttempts] = useState(0);
+  const [email, setEmail] = useState('');
 
-  const { handleSubmit, control, formState } = useForm<FormType>({
+  const { handleSubmit, formState } = useForm<FormType>({
     resolver: zodResolver(schema),
     defaultValues: {
       email: '',
     },
+    mode: 'onChange',
   });
 
-  const handleMagicLinkRequest: SubmitHandler<FormType> = async (data) => {
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleMagicLinkRequest = async () => {
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
     setSendAttempts((prev) => prev + 1);
 
     try {
-      await requestMagicLink(data.email);
+      await requestMagicLink(email);
       setEmailSent(true);
-      onSubmit?.(data);
+      onSubmit?.({ email });
     } catch (err) {
       console.error('Magic link request failed:', err);
 
@@ -73,84 +85,126 @@ export const LoginForm = ({ onSubmit, onCancel }: LoginFormProps) => {
     }
   };
 
+  const handleContactSupport = () => {
+    Linking.openURL('mailto:hello@unquestapp.com?subject=Login%20Help');
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior="padding"
       keyboardVerticalOffset={10}
     >
-      <View className="flex-1 justify-center p-4">
-        <View className="items-center justify-center">
-          <Text
-            testID="form-title"
-            className="pb-6 text-center text-4xl font-bold"
-          >
-            Welcome to unQuest
-          </Text>
-
-          {emailSent ? (
-            <Text className="mb-6 max-w-xs text-center text-gray-500">
-              Email sent! It may take a few minutes to arrive. Please check your
-              SPAM folder.
-              {sendAttempts > 1 && (
-                <>
-                  {' '}
-                  If you still don't receive it, please contact{' '}
-                  <Text className="text-blue-500">hello@unquestapp.com</Text>.
-                </>
-              )}
-            </Text>
-          ) : (
-            <Text className="mb-6 max-w-xs text-center text-gray-500">
-              Enter your email address below to receive a magic link for login.
-              No password is required. The URL for the magic link is:{' '}
-              {Env.API_URL}/auth/magiclink
-            </Text>
-          )}
-
-          {error ? (
-            <Text className="mb-4 text-center text-red-500">{error}</Text>
-          ) : null}
+      <View className="flex-1 bg-white">
+        <View className="absolute inset-0 w-full flex-1">
+          <Image
+            source={require('@/../assets/images/background/onboarding.jpg')}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </View>
+        {/* Logo at the top */}
+        <View className="mt-12 items-center">
+          <Image
+            source={require('@/../assets/images/unquestlogo-downscaled.png')}
+            style={{ width: 100, height: 100 }}
+          />
+          <Text className="mt-2 text-3xl font-bold">Welcome to unQuest</Text>
         </View>
 
-        <ControlledInput
-          testID="email-input"
-          control={control}
-          name="email"
-          label="Email"
-          placeholder="Enter your email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+        {/* Form in bottom half */}
+        <View className="mb-12 flex-1 justify-end">
+          {/* Form card */}
+          <View className="mx-6 rounded-xl bg-neutral-50 shadow-sm">
+            {emailSent ? (
+              <View className="p-6">
+                <Text className="mb-4 text-center text-charcoal-800">
+                  Email sent! It may take a few minutes to arrive. Please check
+                  your SPAM folder.
+                  {sendAttempts > 1 && (
+                    <>
+                      {' '}
+                      If you still don't receive it, please contact{' '}
+                      <Text
+                        className="text-primary-500 underline"
+                        onPress={handleContactSupport}
+                      >
+                        hello@unquestapp.com
+                      </Text>
+                    </>
+                  )}
+                </Text>
+                <Button
+                  testID="login-button"
+                  label="Send Again"
+                  onPress={handleMagicLinkRequest}
+                  disabled={isLoading}
+                  className="mt-4 rounded-xl bg-primary-500"
+                  textClassName="text-white font-bold text-lg"
+                />
+              </View>
+            ) : (
+              <View className="p-6">
+                {/* Email input with label on left */}
+                <View className="mb-6 flex-row items-center border-b border-neutral-300 pb-2">
+                  <Text className="w-28 font-medium text-neutral-500">
+                    EMAIL
+                  </Text>
+                  <TextInput
+                    testID="email-input"
+                    placeholder="Enter your email"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={email}
+                    onChangeText={setEmail}
+                    style={styles.input}
+                  />
+                </View>
 
-        <View className="mt-4 flex-row justify-between">
-          {onCancel && (
-            <Button
-              testID="cancel-button"
-              label="Back"
-              onPress={onCancel}
-              variant="outline"
-              className="mr-2 flex-1"
-            />
+                {error ? (
+                  <Text className="mb-4 text-center text-red-400">{error}</Text>
+                ) : null}
+
+                <Button
+                  testID="login-button"
+                  label="Send Link"
+                  loading={isLoading}
+                  onPress={handleMagicLinkRequest}
+                  disabled={isLoading || !isValidEmail(email)}
+                  className={`rounded-xl bg-primary-500 ${!isValidEmail(email) ? 'opacity-50' : ''}`}
+                  textClassName="text-white font-bold"
+                />
+              </View>
+            )}
+          </View>
+
+          {/* Terms and privacy */}
+          <Text className="mt-4 px-6 text-center text-sm text-charcoal-900">
+            By signing in to this app you agree with our{' '}
+            <Text className="text-charcoal-600 underline">Terms of Use</Text>{' '}
+            and{' '}
+            <Text className="text-charcoal-600 underline">Privacy Policy</Text>.
+          </Text>
+
+          {/* Help link - only shown after second attempt */}
+          {sendAttempts >= 2 && (
+            <Text
+              className="mt-6 text-center text-primary-500 underline"
+              onPress={handleContactSupport}
+            >
+              Having trouble?
+            </Text>
           )}
-
-          <Button
-            testID="login-button"
-            label={emailSent ? 'Send Again' : 'Send Link'}
-            onPress={handleSubmit(handleMagicLinkRequest)}
-            disabled={isLoading || !formState.isValid}
-            className="flex-1"
-          >
-            {isLoading ? (
-              <ActivityIndicator
-                size="small"
-                color="white"
-                testID="login-loading"
-              />
-            ) : null}
-          </Button>
         </View>
       </View>
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#000',
+    paddingVertical: 8,
+  },
+});
