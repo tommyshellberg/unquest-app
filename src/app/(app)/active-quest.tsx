@@ -131,7 +131,7 @@ export default function ActiveQuestScreen() {
         >
           <Pressable
             onPress={handleCancelQuest}
-            className="items-center rounded-full bg-[#3B7A57] px-6 py-3"
+            className="items-center rounded-full bg-primary-400 px-6 py-3"
           >
             <Text className="text-base font-semibold text-white">
               Cancel Quest

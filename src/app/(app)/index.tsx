@@ -255,11 +255,15 @@ export default function Home() {
 
       if (firstStoryQuest) {
         return (
-          <Button
-            label="Wake up"
-            onPress={() => handleQuestOptionSelect(firstStoryQuest.id)}
-            className="mb-2 rounded-md bg-emerald-700"
-          />
+          <View className="items-center justify-center">
+            <Button
+              label="Wake up"
+              onPress={() => handleQuestOptionSelect(firstStoryQuest.id)}
+              className="mb-2 rounded-md bg-primary-400"
+              textClassName="text-white font-bold"
+              style={{ width: cardWidth }}
+            />
+          </View>
         );
       } else {
         return null;
@@ -268,14 +272,14 @@ export default function Home() {
 
     // Otherwise show buttons for each option in a row
     return (
-      <View className="w-full flex-row justify-between gap-2">
+      <View className="w-full flex-row justify-between gap-2 px-2">
         {storyOptions.map((option: QuestOption, index: number) => (
           <Button
             key={option.id}
             label={option.text}
             onPress={() => handleQuestOptionSelect(option.nextQuestId)}
-            className={`min-h-[48px] flex-1 justify-center rounded-md py-1 ${index === 0 ? 'mr-1 bg-emerald-700' : 'ml-1 bg-sky-700'}`}
-            textClassName="text-sm font-bold text-amber-100 text-center px-1 leading-tight"
+            className={`flex-1 justify-center rounded-xl ${index === 0 ? 'mr-1 bg-primary-400' : 'ml-1 bg-neutral-400'}`}
+            textClassName="text-sm text-white text-center leading-tight"
             disabled={!option.nextQuestId} // Disable if nextQuestId is null
           />
         ))}
@@ -368,7 +372,7 @@ export default function Home() {
 
         {/* Footer area with buttons */}
         {!activeQuest && (
-          <View className="mt-auto w-full px-4 pb-8">
+          <View className="mt-auto items-center justify-center pb-8">
             {activeIndex === 0 ? (
               renderStoryOptions()
             ) : (
@@ -376,7 +380,9 @@ export default function Home() {
               <Button
                 label="Create Custom Quest"
                 onPress={handleStartCustomQuest}
-                className="mb-2 rounded-md bg-emerald-700"
+                className="mb-2 rounded-md bg-primary-400"
+                textClassName="text-white font-bold"
+                style={{ width: cardWidth }}
               />
             )}
           </View>

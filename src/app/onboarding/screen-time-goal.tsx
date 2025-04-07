@@ -192,7 +192,7 @@ export default function ScreenTimeGoalScreen() {
             style={secondDropdownAnimatedStyle}
             className="mt-[5%] gap-4"
           >
-            <Text className="text-base font-semibold">
+            <Text className="font-semibold">
               What's your daily screen time goal?
             </Text>
             <View

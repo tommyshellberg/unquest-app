@@ -3,10 +3,10 @@ import { router, Tabs, useRootNavigationState } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
+import { white } from '@/components/ui/colors';
 import { useAuth, useIsFirstTime } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useQuestStore } from '@/store/quest-store';
-
 // Tab icon component
 function TabBarIcon({ name, color, size = 24, focused = false }) {
   return (
@@ -23,8 +23,8 @@ function TabBarIcon({ name, color, size = 24, focused = false }) {
 function CenterButton({ focused, color }) {
   return (
     <View className="-mt-5 items-center justify-center">
-      <View className="size-14 items-center justify-center rounded-full bg-teal-600">
-        <Feather name="compass" size={26} color="#E7DBC9" />
+      <View className="bg-secondary-300 size-14 items-center justify-center rounded-full">
+        <Feather name="compass" size={28} color={white} />
       </View>
     </View>
   );
@@ -100,10 +100,12 @@ export default function TabLayout() {
         tabBarInactiveTintColor: '#666666',
         tabBarLabelStyle: {
           fontSize: 12,
-          marginBottom: 4,
+          marginBottom: 6,
+          paddingTop: 2,
         },
         tabBarStyle: {
-          height: 60,
+          height: 68,
+          paddingBottom: 6,
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
@@ -135,7 +137,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="custom-quest"
         options={{
-          title: 'Quick Quest',
+          title: 'Fast Quest',
           tabBarIcon: ({ focused, color }) => (
             <CenterButton focused={focused} color={color} />
           ),

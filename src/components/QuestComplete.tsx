@@ -158,8 +158,8 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
               variant="default"
               size="lg"
               onPress={onClaim}
-              className="min-w-[200px] rounded-full bg-[#3B7A57]"
-              textClassName="text-lg font-semibold"
+              className="min-w-[200px] rounded-full bg-primary-400"
+              textClassName="text-white font-semibold"
             />
           </Animated.View>
         </View>
