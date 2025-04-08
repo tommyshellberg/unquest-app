@@ -113,8 +113,6 @@ export default function Settings() {
   const iconColor = '#3B7A57';
   const contactEmail = 'hello@unquestapp.com';
 
-  console.log('user', user);
-
   return (
     <View className="bg-background flex-1">
       <FocusAwareStatusBar />
@@ -124,7 +122,7 @@ export default function Settings() {
         contentContainerStyle={{ paddingBottom: insets.bottom }}
       >
         <View className="px-4 pt-10">
-          <Text className="mb-6 text-4xl font-semibold text-[#3B7A57]">
+          <Text className="mb-6 text-2xl font-bold text-primary-400">
             Settings
           </Text>
 

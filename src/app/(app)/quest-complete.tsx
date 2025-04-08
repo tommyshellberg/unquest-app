@@ -23,6 +23,7 @@ export default function QuestCompleteScreen() {
   }, [recentCompletedQuest]);
 
   // Clear recentCompletedQuest when component unmounts
+  // @todo: maybe clear it when we mount the screen to avoid any issues with unmounting.
   useEffect(() => {
     console.log('QuestCompleteScreen mounting');
     // Return cleanup function that will run when component unmounts
