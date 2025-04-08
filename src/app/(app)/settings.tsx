@@ -234,7 +234,7 @@ export default function Settings() {
               <View
                 className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
               >
-                <Feather name="lightbulb" size={24} color={iconColor} />
+                <Feather name="help-circle" size={24} color={iconColor} />
               </View>
               <View>
                 <Text className="text-xl font-medium">Request a Feature</Text>

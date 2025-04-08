@@ -24,7 +24,9 @@ import Animated, {
 
 import { MAP_IMAGES, type MapId } from '@/app/data/maps';
 import { getMapForQuest, getMapNameForQuest } from '@/app/utils/map-utils';
-import { FocusAwareStatusBar, Image, Text, View } from '@/components/ui';
+import { Image, Text, View } from '@/components/ui';
+import { muted } from '@/components/ui/colors';
+import { white } from '@/components/ui/colors';
 import { usePOIStore } from '@/store/poi-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -83,6 +85,14 @@ export default function MapScreen() {
   // Get the map image
   const mapImage = MAP_IMAGES[mapId];
 
+  useEffect(() => {
+    console.log('ismaploaded', isMapLoaded);
+  }, [isMapLoaded]);
+
+  useEffect(() => {
+    console.log('map screen mounting');
+  }, []);
+
   // Preload the map image when the mapImage changes.
   useEffect(() => {
     if (mapImage) {
@@ -109,7 +119,7 @@ export default function MapScreen() {
       if (poiScale) poiScale.value = 1;
       if (newMaskScale) newMaskScale.value = 0.1;
     };
-  }, []);
+  }, [translateX, translateY, poiScale, newMaskScale]);
 
   // This effect positions the map based on the state of `lastRevealedPOISlug`
   useEffect(() => {
@@ -236,7 +246,7 @@ export default function MapScreen() {
 
   if (loadError) {
     return (
-      <View className="flex-1 items-center justify-center bg-charcoal-950/90">
+      <View className="flex-1 items-center justify-center bg-[rgba(61,73,78,0.92)]">
         <Text className="p-5 text-center text-base text-red-400">
           Error loading map: {loadError}
         </Text>
@@ -246,9 +256,6 @@ export default function MapScreen() {
 
   return (
     <GestureHandlerRootView className="flex-1">
-      {/* Make status bar translucent/hidden so map extends behind it */}
-      <FocusAwareStatusBar hidden />
-
       {/* Show a loading overlay until the map image loads */}
       {!isMapLoaded && (
         <View className="absolute inset-0 z-10 items-center justify-center bg-black/50">
@@ -258,20 +265,29 @@ export default function MapScreen() {
 
       {/* Map title */}
       <View className="absolute left-4 top-10 z-10 overflow-hidden rounded-lg bg-white/10 px-3 py-1 backdrop-blur-sm">
-        <Text className="text-xl font-bold text-teal-700 drop-shadow-md">
+        <Text className="text-xl font-bold text-primary-400 drop-shadow-md">
           {getMapNameForQuest(lastCompletedQuest?.id || '')}
         </Text>
       </View>
 
       <PanGestureHandler onGestureEvent={panGesture}>
-        <Animated.View className="flex-1 bg-charcoal-950/90">
+        <Animated.View
+          className="flex-1"
+          style={[
+            { backgroundColor: 'rgba(61, 73, 78, 0.92)' }, // This specific background color was crucial in the original
+          ]}
+        >
           <MaskedView
-            className="flex-1"
+            style={{ flex: 1 }} // Direct style needed for MaskedView
             androidRenderingMode="software"
             maskElement={
               <Animated.View
                 style={[
-                  { width: IMAGE_WIDTH, height: IMAGE_HEIGHT },
+                  {
+                    width: IMAGE_WIDTH,
+                    height: IMAGE_HEIGHT,
+                    backgroundColor: 'transparent',
+                  },
                   imageStyle,
                 ]}
               >
@@ -291,7 +307,10 @@ export default function MapScreen() {
                     >
                       <Image
                         source={MASK_IMAGE}
-                        style={{ width: maskWidth, height: maskHeight }}
+                        style={{
+                          width: maskWidth,
+                          height: maskHeight,
+                        }}
                         contentFit="cover"
                       />
                     </Animated.View>
@@ -301,11 +320,21 @@ export default function MapScreen() {
             }
           >
             <Animated.View
-              style={[{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }, imageStyle]}
+              style={[
+                {
+                  width: IMAGE_WIDTH,
+                  height: IMAGE_HEIGHT,
+                  backgroundColor: 'transparent',
+                },
+                imageStyle,
+              ]}
             >
               <Image
                 source={mapImage}
-                style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
+                style={{
+                  width: IMAGE_WIDTH,
+                  height: IMAGE_HEIGHT,
+                }}
                 onLoad={handleLoad}
                 onError={handleError}
                 contentFit="cover"
@@ -323,7 +352,7 @@ export default function MapScreen() {
                         top: poi.y,
                         padding: 4,
                         borderRadius: 4,
-                        backgroundColor: poi.isRevealed ? 'white' : 'grey',
+                        backgroundColor: poi.isRevealed ? white : muted[400],
                         opacity: poi.isRevealed ? 1 : 0.5,
                       },
                       isLastRevealed ? poiAnimatedStyle : undefined,

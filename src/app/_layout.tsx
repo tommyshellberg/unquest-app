@@ -3,6 +3,7 @@ import '../../global.css';
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
@@ -22,6 +23,13 @@ export const unstable_settings = {
   initialRouteName: '(app)',
 };
 
+Sentry.init({
+  dsn: 'https://6d85dbe3783d343a049b93fa8afaf144@o4508966745997312.ingest.us.sentry.io/4508966747570176',
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
+
 // Keep the splash screen visible until we explicitly hide it
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -30,7 +38,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 // Perform the hydration here so it happens as early as possible
 const hydrationPromise = Promise.all([hydrateAuth(), loadSelectedTheme()]);
 
-export default function RootLayout() {
+function RootLayout() {
   const [appIsReady, setAppIsReady] = React.useState(false);
 
   useEffect(() => {
@@ -106,3 +114,5 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+export default Sentry.wrap(RootLayout);

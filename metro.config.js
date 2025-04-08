@@ -1,9 +1,9 @@
-/* eslint-env node */
-
-const { getDefaultConfig } = require('expo/metro-config');
 const { withNativeWind } = require('nativewind/metro');
+const {
+  getSentryExpoConfig
+} = require("@sentry/react-native/metro");
 
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
 
 // Add test file patterns to exclude from the bundle
 config.resolver.blacklistRE = [

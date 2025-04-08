@@ -66,3 +66,4 @@ logs/
 .expo
 dist/
 web-build/
+.env.local

@@ -88,6 +88,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     ['app-icon-badge', appIconBadgeConfig],
     ['react-native-edge-to-edge'],
+    [
+      '@sentry/react-native/expo',
+      {
+        url: 'https://sentry.io/',
+        project: 'react-native',
+        organization: 'vaedros-software-llc',
+      },
+    ],
   ],
   extra: {
     ...ClientEnv,
