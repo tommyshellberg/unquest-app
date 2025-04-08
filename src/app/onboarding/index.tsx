@@ -5,7 +5,6 @@ import {
   Button,
   FocusAwareStatusBar,
   Image,
-  SafeAreaView,
   Text,
   View,
 } from '@/components/ui';
@@ -52,13 +51,13 @@ export default function Onboarding() {
         </View>
 
         {/* Bottom button section */}
-        <SafeAreaView className="mb-10">
+        <View className="mb-10">
           <Button
             testID="get-started-button"
             label="Begin Your Journey"
             onPress={handleGetStarted}
           />
-        </SafeAreaView>
+        </View>
       </View>
     </View>
   );

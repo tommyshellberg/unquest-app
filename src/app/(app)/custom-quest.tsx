@@ -7,14 +7,7 @@ import { CategorySelector } from '@/components/QuestForm/category-selector';
 import { CombinedQuestInput } from '@/components/QuestForm/combined-quest-input';
 import { PaperPlanes } from '@/components/QuestForm/paper-planes';
 // Import UI components from our project
-import {
-  Button,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  View,
-} from '@/components/ui';
+import { Button, Pressable, ScrollView, Text, View } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
 import { type CustomQuestTemplate } from '@/store/types';
@@ -81,47 +74,45 @@ export default function CustomQuestScreen() {
 
   return (
     <View className="bg-background flex-1">
-      <SafeAreaView edges={['top']} className="flex-1">
-        <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
-          <Pressable onPress={() => router.back()}>
-            <Text className="text-base text-[#333]">Cancel</Text>
-          </Pressable>
-          <Text className="text-lg font-semibold">Custom quest</Text>
-          <View className="w-14" />
+      <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
+        <Pressable onPress={() => router.back()}>
+          <Text className="text-base text-[#333]">Cancel</Text>
+        </Pressable>
+        <Text className="text-lg font-semibold">Custom quest</Text>
+        <View className="w-14" />
+      </View>
+
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View className="p-5">
+          {/* Paper planes illustration */}
+          <PaperPlanes />
+
+          {/* Combined Quest Name and Duration Field */}
+          <CombinedQuestInput
+            control={control}
+            questDuration={questDuration}
+            errors={errors}
+          />
+
+          <View className="my-1.5 h-px bg-[#EEEEEE]" />
+
+          {/* Category Dropdown */}
+          <CategorySelector control={control} questCategory={questCategory} />
+
+          {/* Continue Button (Large, Full-Width) */}
+          <Button
+            label="Continue"
+            variant="default"
+            size="lg"
+            disabled={!isValid}
+            onPress={handleSubmit(onSubmit)}
+            className={`mt-5 rounded-md bg-primary-400 py-2.5 ${
+              isValid ? 'opacity-100' : 'opacity-50'
+            }`}
+            textClassName="text-lg font-semibold text-white"
+          />
         </View>
-
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="p-5">
-            {/* Paper planes illustration */}
-            <PaperPlanes />
-
-            {/* Combined Quest Name and Duration Field */}
-            <CombinedQuestInput
-              control={control}
-              questDuration={questDuration}
-              errors={errors}
-            />
-
-            <View className="my-1.5 h-px bg-[#EEEEEE]" />
-
-            {/* Category Dropdown */}
-            <CategorySelector control={control} questCategory={questCategory} />
-
-            {/* Continue Button (Large, Full-Width) */}
-            <Button
-              label="Continue"
-              variant="default"
-              size="lg"
-              disabled={!isValid}
-              onPress={handleSubmit(onSubmit)}
-              className={`mt-5 rounded-md bg-primary-400 py-2.5 ${
-                isValid ? 'opacity-100' : 'opacity-50'
-              }`}
-              textClassName="text-lg font-semibold text-white"
-            />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+      </ScrollView>
     </View>
   );
 }

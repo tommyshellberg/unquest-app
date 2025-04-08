@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { APIProvider } from '@/api';
+import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme } from '@/lib';
 import { useThemeConfig } from '@/lib/use-theme-config';
 
@@ -79,22 +80,24 @@ function Providers({
 }) {
   const theme = useThemeConfig();
   return (
-    <GestureHandlerRootView
-      style={styles.container}
-      className={theme.dark ? `dark` : undefined}
-      onLayout={onLayout}
-    >
-      <KeyboardProvider>
-        <ThemeProvider value={theme}>
-          <APIProvider>
-            <BottomSheetModalProvider>
-              {children}
-              <FlashMessage position="top" />
-            </BottomSheetModalProvider>
-          </APIProvider>
-        </ThemeProvider>
-      </KeyboardProvider>
-    </GestureHandlerRootView>
+    <SafeAreaView className="bg-background dark:bg-background flex-1">
+      <GestureHandlerRootView
+        style={styles.container}
+        className={theme.dark ? `dark` : undefined}
+        onLayout={onLayout}
+      >
+        <KeyboardProvider>
+          <ThemeProvider value={theme}>
+            <APIProvider>
+              <BottomSheetModalProvider>
+                {children}
+                <FlashMessage position="top" />
+              </BottomSheetModalProvider>
+            </APIProvider>
+          </ThemeProvider>
+        </KeyboardProvider>
+      </GestureHandlerRootView>
+    </SafeAreaView>
   );
 }
 
