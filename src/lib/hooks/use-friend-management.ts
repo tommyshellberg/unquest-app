@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { useModal } from '@/components/ui';
 import {
   acceptFriendInvitation,
   getUserFriends,
@@ -241,15 +242,19 @@ export function useFriendManagement(userEmail: string) {
   );
 
   const handleInviteFriends = useCallback(() => {
+    console.log('setting invite modal visible');
     setInviteModalVisible(true);
   }, []);
+
+  const modal = useModal();
 
   const handleCloseInviteModal = useCallback(() => {
     setInviteModalVisible(false);
     setInviteError('');
     setInviteSuccess('');
     formMethods.reset();
-  }, [formMethods]);
+    modal.dismiss();
+  }, [formMethods, modal]);
 
   // Refresh handler
   const onRefresh = useCallback(async () => {

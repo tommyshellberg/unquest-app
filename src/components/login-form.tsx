@@ -4,7 +4,7 @@ import * as Linking from 'expo-linking';
 import React, { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { StyleSheet, TextInput } from 'react-native';
+import { TextInput } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import * as z from 'zod';
 
@@ -144,8 +144,8 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
             ) : (
               <View className="p-6">
                 {/* Email input with label on left */}
-                <View className="mb-6 flex-row items-center border-b border-neutral-300 pb-2">
-                  <Text className="w-28 font-medium text-neutral-500">
+                <View className="mb-6 flex-row items-center border-b border-neutral-300 pb-2 dark:border-neutral-300">
+                  <Text className="w-28 font-medium text-neutral-500 dark:text-neutral-500">
                     EMAIL
                   </Text>
                   <TextInput
@@ -155,7 +155,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
                     autoCapitalize="none"
                     value={email}
                     onChangeText={setEmail}
-                    style={styles.input}
+                    className="placeholder:text-muted-200 dark:placeholder:text-muted-200 flex-1 py-2 text-primary-500 dark:text-primary-500"
                   />
                 </View>
 
@@ -169,8 +169,8 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
                   loading={isLoading}
                   onPress={handleMagicLinkRequest}
                   disabled={isLoading || !isValidEmail(email)}
-                  className={`rounded-xl bg-primary-500 ${!isValidEmail(email) ? 'opacity-50' : ''}`}
-                  textClassName="text-white font-bold"
+                  className={`rounded-xl bg-primary-500 dark:bg-primary-500 ${!isValidEmail(email) ? 'opacity-50' : ''}`}
+                  textClassName="text-white dark:text-white font-bold"
                 />
               </View>
             )}
@@ -198,12 +198,3 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#000',
-    paddingVertical: 8,
-  },
-});

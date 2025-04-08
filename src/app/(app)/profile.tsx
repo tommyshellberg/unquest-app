@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { RefreshControl, ScrollView } from 'react-native';
 
 import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
@@ -11,7 +11,7 @@ import { ProfileCard } from '@/components/profile/profile-card';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
 import { StatsCard } from '@/components/profile/stats-card';
-import { FocusAwareStatusBar, View } from '@/components/ui';
+import { FocusAwareStatusBar, useModal, View } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 // Import hooks
 import { useProfileData } from '@/lib/hooks/use-profile-data';
@@ -43,7 +43,6 @@ export default function ProfileScreen() {
     inviteError,
     inviteSuccess,
     formMethods,
-    handleInviteFriends,
     handleCloseInviteModal,
     handleDeleteFriend,
     handleConfirmDelete,
@@ -60,6 +59,19 @@ export default function ProfileScreen() {
     rescindMutation,
     inviteMutation,
   } = useFriendManagement(userEmail);
+
+  // Create the modal instance at the parent level
+  const inviteModal = useModal();
+
+  // Update the handleInviteFriends to use modal.present
+  const handleInviteFriends = useCallback(() => {
+    inviteModal.present();
+  }, [inviteModal]);
+
+  // Update the handleCloseInviteModal to use modal.dismiss
+  const _handleCloseInviteModal = useCallback(() => {
+    handleCloseInviteModal();
+  }, [handleCloseInviteModal]);
 
   // Check if character exists and handle redirect
   useEffect(() => {
@@ -142,8 +154,8 @@ export default function ProfileScreen() {
 
       {/* Modals */}
       <InviteFriendModal
-        visible={inviteModalVisible}
-        onClose={handleCloseInviteModal}
+        modalRef={inviteModal.ref}
+        onClose={_handleCloseInviteModal}
         onSubmit={handleSendFriendRequest}
         formMethods={formMethods}
         error={inviteError}

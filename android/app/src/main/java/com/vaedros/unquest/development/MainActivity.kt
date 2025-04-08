@@ -1,4 +1,4 @@
-package com.vaedros.unquest.staging
+package com.vaedros.unquest.development
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

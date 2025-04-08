@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import { type BottomSheetModal } from '@gorhom/bottom-sheet';
+import React from 'react';
 import { Controller } from 'react-hook-form';
 
 import { Button, Input, Text, View } from '@/components/ui';
-import { Modal, useModal } from '@/components/ui/modal';
+import { Modal } from '@/components/ui/modal';
 
 type InviteFriendModalProps = {
-  visible: boolean;
+  modalRef: React.RefObject<BottomSheetModal>;
   onClose: () => void;
   onSubmit: (data: any) => void;
   formMethods: any;
@@ -15,7 +16,7 @@ type InviteFriendModalProps = {
 };
 
 export function InviteFriendModal({
-  visible,
+  modalRef,
   onClose,
   onSubmit,
   formMethods,
@@ -23,27 +24,11 @@ export function InviteFriendModal({
   success,
   isPending,
 }: InviteFriendModalProps) {
-  const { ref, present, dismiss } = useModal();
   const { control, handleSubmit, formState } = formMethods;
   const { errors, isValid } = formState;
 
-  // Show or hide the modal based on the visible prop
-  useEffect(() => {
-    if (visible) {
-      present();
-    } else {
-      dismiss();
-    }
-  }, [visible, present, dismiss]);
-
-  // Handle close - call the parent's onClose callback
-  const handleClose = React.useCallback(() => {
-    dismiss();
-    onClose();
-  }, [dismiss, onClose]);
-
   return (
-    <Modal ref={ref} snapPoints={['60%']} title="Invite a Friend">
+    <Modal ref={modalRef} snapPoints={['60%']} title="Invite a Friend">
       <View className="p-4">
         <Text className="mb-4 text-center text-gray-600">
           Enter your friend's email address to send them a friend request.
@@ -83,7 +68,7 @@ export function InviteFriendModal({
         <View className="mt-4 flex-row justify-between">
           <Button
             label={success ? 'Done' : 'Cancel'}
-            onPress={handleClose}
+            onPress={onClose}
             variant="outline"
             className="mr-2 flex-1"
           />

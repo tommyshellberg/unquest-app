@@ -158,7 +158,7 @@ export default function ChooseCharacterScreen() {
       <View className="mb-10 px-6">
         <Text className="mb-2">Name Your Character</Text>
         <TextInput
-          className="h-10 rounded border px-2"
+          className="placeholder:text-muted-200 dark:placeholder:text-muted-200 h-10 rounded border px-2 text-primary-400 dark:text-primary-400"
           value={inputName}
           onChangeText={(text) => {
             const filtered = text.replace(/[^a-zA-Z0-9\s]/g, '');

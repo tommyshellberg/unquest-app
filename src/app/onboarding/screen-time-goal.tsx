@@ -12,7 +12,7 @@ import Animated, {
 
 import { apiClient } from '@/api/common/client';
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
-import { muted } from '@/components/ui/colors';
+import { muted, primary } from '@/components/ui/colors';
 import { useUserStore } from '@/store/user-store';
 
 // Generate time options in 30-minute increments (30m to 12h)
@@ -161,13 +161,13 @@ export default function ScreenTimeGoalScreen() {
             What's your current daily screen time?
           </Text>
           <View
-            className={`overflow-hidden rounded-lg ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
+            className={`overflow-hidden rounded-lg bg-white ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
           >
             <Picker
               selectedValue={currentTime}
               onValueChange={(itemValue) => setCurrentTime(itemValue)}
               className="w-full"
-              itemStyle={{ fontSize: 18, height: 150 }}
+              itemStyle={{ fontSize: 18, height: 150, color: primary[400] }}
             >
               <Picker.Item
                 label="Select current screen time"
@@ -179,7 +179,7 @@ export default function ScreenTimeGoalScreen() {
                   key={option.value}
                   label={option.label}
                   value={option.value}
-                  color={muted[500]}
+                  color={primary[400]}
                 />
               ))}
             </Picker>
@@ -196,20 +196,25 @@ export default function ScreenTimeGoalScreen() {
               What's your daily screen time goal?
             </Text>
             <View
-              className={`overflow-hidden rounded-lg ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
+              className={`overflow-hidden rounded-lg bg-white ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
             >
               <Picker
                 selectedValue={targetTime}
                 onValueChange={(itemValue) => setTargetTime(itemValue)}
                 className="w-full"
-                itemStyle={{ fontSize: 18, height: 150 }}
+                itemStyle={{ fontSize: 18, height: 150, color: primary[400] }}
               >
-                <Picker.Item label="Select target screen time" value={-1} />
+                <Picker.Item
+                  label="Select target screen time"
+                  value={-1}
+                  color={muted[500]}
+                />
                 {TIME_OPTIONS.map((option) => (
                   <Picker.Item
                     key={option.value}
                     label={option.label}
                     value={option.value}
+                    color={primary[400]}
                   />
                 ))}
               </Picker>
