@@ -3,6 +3,7 @@ import { router, Tabs, useRootNavigationState } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
+import { getAccessToken } from '@/api/token';
 import { white } from '@/components/ui/colors';
 import { useAuth, useIsFirstTime } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
@@ -31,6 +32,7 @@ function CenterButton({ focused, color }) {
 }
 
 export default function TabLayout() {
+  // is this status not stateful? Does the layout not re-render when the status changes?
   const status = useAuth.use.status();
   const [isFirstTime] = useIsFirstTime();
   const navigationState = useRootNavigationState();
@@ -65,26 +67,32 @@ export default function TabLayout() {
     }
   }, [recentCompletedQuest]);
 
-  // Handle auth and onboarding redirects
+  // Handle auth check and redirects.
   useEffect(() => {
     if (!navigationState?.key) return;
 
-    if (isFirstTime) {
-      console.log('routing to onboarding');
-      router.replace('/onboarding');
-      return;
+    async function checkAuth() {
+      if (isFirstTime) {
+        router.replace('/onboarding');
+        return;
+      }
+
+      // Check for the presence of an access token
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        console.log('routing to login - no access token found');
+        router.replace('/login');
+        return;
+      }
+
+      if (failedQuest) {
+        console.log('Redirecting to failed-quest');
+        router.replace('/failed-quest');
+        return;
+      }
     }
-    if (status === 'signOut') {
-      console.log('routing to login');
-      router.replace('/login');
-      return;
-    }
-    if (failedQuest) {
-      console.log('Redirecting to failed-quest');
-      router.replace('/failed-quest');
-      return;
-    }
-  }, [isFirstTime, status, failedQuest, navigationState?.key]);
+    checkAuth();
+  }, [isFirstTime, failedQuest, navigationState?.key]);
 
   // Check if navigation is ready
   if (!navigationState?.key) {

@@ -19,13 +19,18 @@ const _useAuth = create<AuthState>((set, get) => ({
   token: null,
   signIn: (response) => {
     const { token, user } = response;
+    console.log('setting tokens:', token);
     setToken(token);
 
-    // Set user data in user store
+    // Update user store if a user is provided, but don't return early if not.
     if (user) {
       useUserStore.getState().setUser(user);
+      console.log('user set in user store', user);
+    } else {
+      console.log('no user provided in response, but proceeding with signIn');
     }
 
+    // Always update the auth state to signIn regardless of the presence of a user.
     set({ status: 'signIn', token });
   },
   signOut: () => {

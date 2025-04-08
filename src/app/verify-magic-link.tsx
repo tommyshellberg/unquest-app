@@ -31,8 +31,10 @@ export default function VerifyMagicLinkScreen() {
 
         // Call signIn with the received tokens
         signIn({
-          access: tokens.access.token,
-          refresh: tokens.refresh.token,
+          token: {
+            access: tokens.access.token,
+            refresh: tokens.refresh.token,
+          },
         });
 
         // Navigate to the main app screen or appropriate next screen

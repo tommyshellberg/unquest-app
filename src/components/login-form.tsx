@@ -23,10 +23,9 @@ export type FormType = z.infer<typeof schema>;
 
 export type LoginFormProps = {
   onSubmit?: SubmitHandler<FormType>;
-  onCancel?: () => void;
 };
 
-export const LoginForm = ({ onSubmit, onCancel }: LoginFormProps) => {
+export const LoginForm = ({ onSubmit }: LoginFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [emailSent, setEmailSent] = useState(false);
@@ -47,7 +46,7 @@ export const LoginForm = ({ onSubmit, onCancel }: LoginFormProps) => {
   };
 
   const handleMagicLinkRequest = async () => {
-    if (!email || !email.includes('@')) {
+    if (!email || !isValidEmail(email)) {
       setError('Please enter a valid email address');
       return;
     }

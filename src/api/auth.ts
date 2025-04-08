@@ -58,7 +58,6 @@ export const verifyMagicLink = async (
     const response = await authClient.get(
       `/auth/magiclink/verify?token=${token}`
     );
-    console.log('response', response);
     // Expect the API to return tokens in the nested format:
     // { access: { token: string, expires: string }, refresh: { token: string, expires: string } }
     await tokenService.storeTokens(response.data);

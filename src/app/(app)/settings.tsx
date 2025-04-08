@@ -142,13 +142,17 @@ export default function Settings() {
               </View>
             </View>
 
-            <View
-              className="mx-auto mt-4 rounded-xl bg-red-300 p-2"
-              style={{ width: '50%' }}
-              onTouchEnd={handleLogout}
-            >
-              <Text className="text-center font-medium text-white">Logout</Text>
-            </View>
+            {user && (
+              <View
+                className="mx-auto mt-4 rounded-xl bg-red-300 p-2"
+                style={{ width: '50%' }}
+                onTouchEnd={handleLogout}
+              >
+                <Text className="text-center font-medium text-white">
+                  Logout
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Preferences Section */}
