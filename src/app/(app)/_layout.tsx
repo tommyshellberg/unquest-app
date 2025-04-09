@@ -1,11 +1,11 @@
 import { Feather } from '@expo/vector-icons';
-import { router, Tabs, useRootNavigationState } from 'expo-router';
+import { router, Tabs, usePathname, useRootNavigationState } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
 import { getAccessToken } from '@/api/token';
 import { white } from '@/components/ui/colors';
-import { useAuth, useIsFirstTime } from '@/lib';
+import { useIsFirstTime } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useQuestStore } from '@/store/quest-store';
 // Tab icon component
@@ -32,11 +32,10 @@ function CenterButton({ focused, color }) {
 }
 
 export default function TabLayout() {
-  // is this status not stateful? Does the layout not re-render when the status changes?
-  const status = useAuth.use.status();
   const [isFirstTime] = useIsFirstTime();
   const navigationState = useRootNavigationState();
   const hasRedirectedToCompletedRef = useRef(false);
+  const pathname = usePathname();
 
   // Quest state from store
   const failedQuest = useQuestStore((state) => state.failedQuest);
@@ -54,7 +53,7 @@ export default function TabLayout() {
     if (recentCompletedQuest && !hasRedirectedToCompletedRef.current) {
       console.log('Redirecting to quest-complete');
       hasRedirectedToCompletedRef.current = true;
-      router.replace('/quest-complete');
+      router.replace('/(app)/quest-complete');
     }
   }, [recentCompletedQuest, navigationState?.key]);
 
@@ -66,6 +65,18 @@ export default function TabLayout() {
       hasRedirectedToCompletedRef.current = false;
     }
   }, [recentCompletedQuest]);
+
+  useEffect(() => {
+    if (pathname.includes('failed-quest')) {
+      console.log('skipping redirect for failed-quest');
+      return;
+    }
+    if (failedQuest) {
+      console.log('Redirecting to failed-quest');
+      router.replace('/failed-quest');
+      return;
+    }
+  }, [failedQuest, pathname]);
 
   // Handle auth check and redirects.
   useEffect(() => {
@@ -84,15 +95,9 @@ export default function TabLayout() {
         router.replace('/login');
         return;
       }
-
-      if (failedQuest) {
-        console.log('Redirecting to failed-quest');
-        router.replace('/failed-quest');
-        return;
-      }
     }
     checkAuth();
-  }, [isFirstTime, failedQuest, navigationState?.key]);
+  }, [isFirstTime, failedQuest, navigationState?.key, pathname]);
 
   // Check if navigation is ready
   if (!navigationState?.key) {
@@ -101,24 +106,30 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
         tabBarActiveTintColor: '#334738', // Forest color
         tabBarInactiveTintColor: '#666666',
+        tabBarStyle: {
+          height: 68,
+          paddingBottom: 6,
+          backgroundColor: white,
+          borderTopWidth: 1,
+          borderTopColor: '#E5E5E5',
+          // Hide the tab bar for specific screens
+          display: ['quest-complete', 'active-quest', 'failed-quest'].includes(
+            route.name
+          )
+            ? 'none'
+            : 'flex',
+        },
         tabBarLabelStyle: {
           fontSize: 12,
           marginBottom: 6,
           paddingTop: 2,
         },
-        tabBarStyle: {
-          height: 68,
-          paddingBottom: 6,
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 1,
-          borderTopColor: '#E5E5E5',
-        },
-      }}
+      })}
     >
       <Tabs.Screen
         name="index"

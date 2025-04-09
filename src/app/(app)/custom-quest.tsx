@@ -7,7 +7,14 @@ import { CategorySelector } from '@/components/QuestForm/category-selector';
 import { CombinedQuestInput } from '@/components/QuestForm/combined-quest-input';
 import { PaperPlanes } from '@/components/QuestForm/paper-planes';
 // Import UI components from our project
-import { Button, Pressable, ScrollView, Text, View } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
 import { type CustomQuestTemplate } from '@/store/types';
@@ -74,6 +81,7 @@ export default function CustomQuestScreen() {
 
   return (
     <View className="bg-background flex-1">
+      <FocusAwareStatusBar />
       <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
         <Pressable onPress={() => router.back()}>
           <Text className="text-base text-[#333]">Cancel</Text>

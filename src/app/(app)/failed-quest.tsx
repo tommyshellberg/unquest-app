@@ -30,7 +30,7 @@ export default function QuestFailed() {
     headerAnim.value = withTiming(1, { duration: 500 });
     messageAnim.value = withDelay(600, withTiming(1, { duration: 500 }));
     buttonAnim.value = withDelay(1200, withTiming(1, { duration: 500 }));
-  }, []);
+  }, [headerAnim, messageAnim, buttonAnim]);
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerAnim.value,
@@ -54,13 +54,16 @@ export default function QuestFailed() {
     };
   }, [resetFailedQuest]);
 
-  const handleKeepGoing = () => {
-    router.replace('/');
+  const onAcknowledge = () => {
+    resetFailedQuest();
+    setTimeout(() => {
+      router.replace('/');
+    }, 100);
   };
 
   return (
     <View className="flex-1">
-      <FocusAwareStatusBar hidden />
+      <FocusAwareStatusBar />
 
       {/* Background image */}
       <View className="absolute inset-0">
@@ -104,7 +107,7 @@ export default function QuestFailed() {
         >
           <Button
             label="Keep Going!"
-            onPress={handleKeepGoing}
+            onPressOut={onAcknowledge}
             className="rounded-full bg-primary-400"
             textClassName="text-white font-semibold"
           />

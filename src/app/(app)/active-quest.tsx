@@ -1,7 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Image, Pressable, StatusBar } from 'react-native';
+import { Image, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -85,7 +85,6 @@ export default function ActiveQuestScreen() {
           paddingTop: insets.top + 16, // Spacing with safe area
         }}
       >
-        <StatusBar hidden />
         <Animated.View
           className="mb-8 items-center"
           style={headerAnimatedStyle}

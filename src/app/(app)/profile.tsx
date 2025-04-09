@@ -36,7 +36,6 @@ export default function ProfileScreen() {
     isLoadingInvitations,
     refreshing,
     onRefresh,
-    inviteModalVisible,
     deleteModalVisible,
     rescindModalVisible,
     invitationToRescind,

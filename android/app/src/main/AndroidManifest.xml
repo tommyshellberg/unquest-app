@@ -37,5 +37,6 @@
         <data android:scheme="com.vaedros.unquest"/>
       </intent-filter>
     </activity>
+    <service android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask" android:foregroundServiceType="dataSync"/>
   </application>
 </manifest>

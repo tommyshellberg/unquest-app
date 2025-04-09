@@ -25,6 +25,7 @@ import Animated, {
 import { MAP_IMAGES, type MapId } from '@/app/data/maps';
 import { getMapForQuest, getMapNameForQuest } from '@/app/utils/map-utils';
 import { Image, Text, View } from '@/components/ui';
+import { FocusAwareStatusBar } from '@/components/ui';
 import { muted } from '@/components/ui/colors';
 import { white } from '@/components/ui/colors';
 import { usePOIStore } from '@/store/poi-store';
@@ -256,6 +257,8 @@ export default function MapScreen() {
 
   return (
     <GestureHandlerRootView className="flex-1">
+      <FocusAwareStatusBar />
+
       {/* Show a loading overlay until the map image loads */}
       {!isMapLoaded && (
         <View className="absolute inset-0 z-10 items-center justify-center bg-black/50">

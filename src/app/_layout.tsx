@@ -7,7 +7,6 @@ import * as Sentry from '@sentry/react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -90,8 +89,7 @@ function Providers({
   return (
     <SafeAreaView className="bg-background dark:bg-background flex-1">
       <GestureHandlerRootView
-        style={styles.container}
-        className={theme.dark ? `dark` : undefined}
+        className={theme.dark ? `dark flex-1` : undefined}
         onLayout={onLayout}
       >
         <KeyboardProvider>
@@ -108,11 +106,5 @@ function Providers({
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default Sentry.wrap(RootLayout);

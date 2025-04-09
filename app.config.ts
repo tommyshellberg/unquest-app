@@ -58,6 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     permissions: [
       'android.permission.FOREGROUND_SERVICE',
       'android.permission.FOREGROUND_SERVICE_DATA_SYNC',
+      'android.permission.WAKE_LOCK',
     ],
   },
   plugins: [
