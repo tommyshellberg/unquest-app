@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { primary } from '@/components/ui/colors';
 import { getItem, setItem } from '@/lib/storage';
 
 // Channel IDs
@@ -15,7 +16,7 @@ export async function setupNotificationChannels() {
       description: 'Notifications for quest completion and updates',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF9500', // Use your app's primary color
+      lightColor: primary[300],
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       sound: 'default',
     });
@@ -67,7 +68,7 @@ export const scheduleQuestCompletionNotification = async () => {
         priority: Notifications.AndroidNotificationPriority.MAX,
         sound: true,
         vibrate: [0, 250, 250, 250],
-        color: '#FF9500', // Use your app's primary color
+        color: primary[400],
       },
       trigger:
         Platform.OS === 'android'

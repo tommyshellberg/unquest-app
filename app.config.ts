@@ -40,7 +40,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: false,
     bundleIdentifier: Env.BUNDLE_ID,
     config: {
-      usesNonExemptEncryption: false, // Avoid the export compliance warning on the app store
+      usesNonExemptEncryption: false,
     },
     infoPlist: {
       BGTaskSchedulerPermittedIdentifiers: ['$(PRODUCT_BUNDLE_IDENTIFIER)'],
@@ -83,6 +83,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         color: '#051c25',
+        enableBackgroundRemoteNotifications: true,
       },
     ],
     'expo-localization',
@@ -103,5 +104,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     eas: {
       projectId: Env.EAS_PROJECT_ID,
     },
+    development: true,
   },
 });

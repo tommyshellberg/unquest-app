@@ -96,8 +96,8 @@ export const useQuestStore = create<QuestState>()(
               completedQuests: [...state.completedQuests, completedQuest],
             }));
 
-            // Reveal the associated POI
-            if (activeQuest.mode === 'story') {
+            // Reveal the associated POI only if it exists
+            if (activeQuest.mode === 'story' && activeQuest.poiSlug) {
               const poiStore = usePOIStore.getState();
               poiStore.revealLocation(activeQuest.poiSlug);
             }

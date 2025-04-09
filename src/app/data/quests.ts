@@ -409,7 +409,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'The lake blocked my path, forcing me back along the shoreline. As darkness fell, an abandoned village appeared—silent, still, but perhaps not as empty as it seems.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 18,
     reward: { xp: 100 },
-    poiSlug: 'empty-village',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-6.mp3'),
     story: `
       At the edge of dusk, the village rises before me, skeletal houses crouching beside the water's edge. Doors hang open, windows empty, the whole place forgotten by time. As I step carefully between buildings, the silence seems to watch me back, unblinking.
@@ -436,7 +436,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'The village sat silent and abandoned, holding secrets that demanded exploration. With darkness falling, I chose to investigate the homes first.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 18,
     reward: { xp: 100 },
-    poiSlug: 'empty-village',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-6a.mp3'),
     story: `
       I step into the nearest house, floorboards creaking beneath my weight. Dust blankets every surface, and a table stands overturned. Beside it, a sheet of parchment catches my eye, ink faded but readable:
@@ -461,7 +461,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'With darkness pressing close, I chose to inspect the village stables, hoping to find some useful clue to this place’s abandonment.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 18,
     reward: { xp: 100 },
-    poiSlug: 'empty-village',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-6b.mp3'),
     story: `
       I push open the creaking stable doors, the smell of rotted wood and mold heavy in the air. Straw litters the floor, undisturbed for years. As I step further in, my boot catches on something—a trapdoor, hidden beneath loose hay.
@@ -485,7 +485,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'I woke in the dead of night, a stranger holding a blade to my throat. With no words exchanged, he silently forced me from the village into the darkness.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 21,
     reward: { xp: 100 },
-    poiSlug: 'ancient-temple',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-7.mp3'),
     story: `
       The stranger walks behind me, close enough that I can hear his breath, the scrape of boots against stone. The sword stays at my back—not digging, not threatening, just there. A warning.
@@ -518,7 +518,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'The stranger leads me to a half-buried temple. I decided not to trust the stranger, making a desperate dash for freedom.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 21,
     reward: { xp: 50 },
-    poiSlug: 'ancient-temple',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-7a.mp3'),
     story: `
       My muscles tense, adrenaline surging—I see my chance. Without another thought, I lunge toward the narrow gap between pillars, gravel kicking up behind me. I almost reach the shadows before Rowan grabs my arm, twisting me sharply but without causing real harm.
@@ -544,7 +544,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'The stranger leads me to a half-buried temple. Though cautious, I decided to trust the stranger and followed him inside.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 21,
     reward: { xp: 50 },
-    poiSlug: 'ancient-temple',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-7b.mp3'),
     story: `
       Rowan nudges me forward with quiet urgency, sword lowered but still close enough to discourage resistance. We step through the temple's weathered entrance, the air thick with dust and echoes of time. 
@@ -569,7 +569,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'Rowan led me north to an ancient temple, revealing his name and offering shelter. Despite lingering doubts, I decided to trust him—at least for now.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 24,
     reward: { xp: 100 },
-    poiSlug: 'stone-shrine',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-8.mp3'),
     story: `
   I wake to a dusty sunbeam passing over my eyes. A shadow moves in the doorway. Rowan. He jerks his chin toward the outside, a silent command.
@@ -599,7 +599,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'Rowan began explaining the fall of Vaedros, but paused to have me collect wood for the fire. There was more he needed to say, and I felt certain it concerned me directly.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 24,
     reward: { xp: 50 },
-    poiSlug: 'stone-shrine-woods',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-8a.mp3'),
     story: `
   I gather fallen branches from beneath hollow trees, wondering again if I should run. But Rowan's words hold me—something about them rings true. I'm not ready to leave yet.
@@ -624,7 +624,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       "Rowan started to explain Vaedros's fall, pausing to have me fetch water. I could sense he had more to reveal, something about my role in all this.",
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 24,
     reward: { xp: 50 },
-    poiSlug: 'stone-shrine-stream',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-8b.mp3'),
     story: `
   I fill a dented pot from a nearby stream, water trickling gently over moss-covered stones. It occurs to me briefly—I could run, disappear now—but something holds me here. Rowan seems to know more than he's saying.
@@ -650,7 +650,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       "Rowan explained the fall of Vaedros, hinting that we've met before. Sleep was brief and restless, shattered by the arrival of soldiers searching our camp.",
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 27,
     reward: { xp: 100 },
-    poiSlug: 'glass-ruin',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-9.mp3'),
     story: `
   I wake to a hand clamped over my mouth.
@@ -683,7 +683,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'Soldiers have discovered our campsite, leaving us cornered. With no better option, I reach for a heavy iron candlestick, bracing for the fight.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 27,
     reward: { xp: 50 },
-    poiSlug: 'glass-ruin-fight',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-9a.mp3'),
     story: `
   I grip the candleholder, its iron base thick with years of melted wax, its weight unfamiliar in my hands.
@@ -707,7 +707,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       "The soldiers found us. Cornered and desperate, I grab a sturdy wooden table leg, hoping it's enough.",
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 27,
     reward: { xp: 50 },
-    poiSlug: 'glass-ruin-fight',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-9b.mp3'),
     story: `
   I grip the table leg, splintered wood rough against my palm, its heft oddly comforting despite our odds.
@@ -731,7 +731,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'Discovered by soldiers, Rowan and I brace ourselves for a fight we can’t avoid. Our only advantage is surprise—and desperation.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 30,
     reward: { xp: 100 },
-    poiSlug: 'glass-ruins-fight',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-10.mp3'),
     story: `
       I grip my makeshift weapon tighter, knuckles white. The soldiers enter cautiously, eyes scanning the shadows.  
@@ -761,7 +761,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'Cornered by soldiers, you and Rowan stood your ground. Amid the chaos, you shouted a warning to Rowan just before a deadly strike.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 30,
     reward: { xp: 100 },
-    poiSlug: 'glass-ruins-fight',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-10a.mp3'),
     story: `
       The soldier raises his blade behind Rowan, poised for a killing blow.  
@@ -791,7 +791,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
       'Trapped and facing death, you lunged to shield Rowan from a lethal attack, taking the blow yourself.',
     durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 30,
     reward: { xp: 100 },
-    poiSlug: 'glass-ruins-fight',
+    poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-10b.mp3'),
     story: `
       Without thinking, I shove Rowan aside, feeling the sting of a blade grazing my shoulder. Warmth spreads down my sleeve—blood, sharp and real—but I’m alive.
