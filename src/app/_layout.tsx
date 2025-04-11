@@ -87,7 +87,7 @@ function Providers({
 }) {
   const theme = useThemeConfig();
   return (
-    <SafeAreaView className="bg-background dark:bg-background flex-1">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background">
       <GestureHandlerRootView
         className={theme.dark ? `dark flex-1` : undefined}
         onLayout={onLayout}

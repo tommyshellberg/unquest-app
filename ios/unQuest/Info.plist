@@ -23,7 +23,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.0.1</string>
+    <string>0.0.3</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -32,7 +32,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>unquest</string>
-          <string>com.vaedros.unquest.staging</string>
+          <string>com.vaedros.unquest</string>
         </array>
       </dict>
       <dict>

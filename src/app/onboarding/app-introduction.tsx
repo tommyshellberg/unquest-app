@@ -12,7 +12,10 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
-import { setupNotifications } from '@/lib/services/notifications';
+import {
+  requestNotificationPermissions,
+  setupNotifications,
+} from '@/lib/services/notifications';
 import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
 
@@ -74,15 +77,12 @@ export default function AppIntroductionScreen() {
   // Request notification permissions
   const requestPermissions = async () => {
     try {
+      // Initialize notifications
       setupNotifications();
-      const { status } = await Notifications.requestPermissionsAsync({
-        ios: {
-          allowAlert: true,
-          allowBadge: true,
-          allowSound: true,
-        },
-      });
-      setPermissionsGranted(status === 'granted');
+
+      // Use our unified permission request that handles both OneSignal and Expo notifications
+      const granted = await requestNotificationPermissions();
+      setPermissionsGranted(granted);
     } catch (error) {
       console.error('Error requesting permissions:', error);
       // Even if there's an error, we'll continue the flow

@@ -1,5 +1,7 @@
-import * as Notifications from 'expo-notifications';
+import { Env } from '@env';
+import * as ExpoNotifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { LogLevel, OneSignal } from 'react-native-onesignal';
 
 import { primary } from '@/components/ui/colors';
 import { getItem, setItem } from '@/lib/storage';
@@ -11,13 +13,14 @@ const NOTIFICATIONS_ENABLED_KEY = 'notificationsEnabled';
 // Create notification channels (Android only)
 export async function setupNotificationChannels() {
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync(QUEST_CHANNEL_ID, {
+    await ExpoNotifications.setNotificationChannelAsync(QUEST_CHANNEL_ID, {
       name: 'Quest Notifications',
       description: 'Notifications for quest completion and updates',
-      importance: Notifications.AndroidImportance.MAX,
+      importance: ExpoNotifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: primary[300],
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+      lockscreenVisibility:
+        ExpoNotifications.AndroidNotificationVisibility.PUBLIC,
       sound: 'default',
     });
   }
@@ -30,9 +33,9 @@ export const areNotificationsEnabled = async (): Promise<boolean> => {
     const userPreference = getItem<string>(NOTIFICATIONS_ENABLED_KEY);
     if (userPreference === 'false') return false;
 
-    // Check system permission
-    const { granted } = await Notifications.getPermissionsAsync();
-    return granted;
+    // Check system permission - using OneSignal to check
+    const permissionStatus = await OneSignal.Notifications.getPermissionAsync();
+    return permissionStatus;
   } catch (error) {
     console.error('Error checking notification status:', error);
     return false;
@@ -43,7 +46,7 @@ export const areNotificationsEnabled = async (): Promise<boolean> => {
 export const clearAllNotifications = async () => {
   try {
     // This will clear all notifications from our app
-    await Notifications.dismissAllNotificationsAsync();
+    await ExpoNotifications.dismissAllNotificationsAsync();
     console.log('All notifications cleared');
   } catch (error) {
     console.error('Error clearing notifications:', error);
@@ -59,13 +62,13 @@ export const scheduleQuestCompletionNotification = async () => {
   }
 
   try {
-    await Notifications.scheduleNotificationAsync({
+    await ExpoNotifications.scheduleNotificationAsync({
       content: {
         title: 'Quest Completed!',
         body: 'Your quest has been completed successfully. Claim your reward!',
         data: { screen: 'quest-complete' },
         // These properties are valid in the content object
-        priority: Notifications.AndroidNotificationPriority.MAX,
+        priority: ExpoNotifications.AndroidNotificationPriority.MAX,
         sound: true,
         vibrate: [0, 250, 250, 250],
         color: primary[400],
@@ -84,9 +87,27 @@ export const scheduleQuestCompletionNotification = async () => {
   }
 };
 
+// Initialize OneSignal and setup notification handlers
 export function setupNotifications() {
-  // Configure how notifications appear when the app is in the foreground
-  Notifications.setNotificationHandler({
+  // Initialize OneSignal first
+  if (Env.ONESIGNAL_APP_ID) {
+    // Enable verbose logging for debugging (can be removed for production)
+    if (__DEV__) {
+      OneSignal.Debug.setLogLevel(LogLevel.Verbose);
+    }
+
+    // Initialize OneSignal
+    OneSignal.initialize(Env.ONESIGNAL_APP_ID);
+
+    // Setup notification handling
+    OneSignal.Notifications.addEventListener('click', (event) => {
+      console.log('OneSignal notification clicked:', event);
+      // Handle notification clicks here
+    });
+  }
+
+  // Configure Expo notifications for local notifications
+  ExpoNotifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
       shouldPlaySound: true,
@@ -98,15 +119,15 @@ export function setupNotifications() {
   setupNotificationChannels();
 }
 
-// Request notification permissions
+// Request notification permissions - use OneSignal for iOS to enable Live Activities
 export const requestNotificationPermissions = async (): Promise<boolean> => {
   try {
-    const { granted } = await Notifications.requestPermissionsAsync();
-    if (granted) {
-      await setItem(NOTIFICATIONS_ENABLED_KEY, 'true');
-    } else {
-      await setItem(NOTIFICATIONS_ENABLED_KEY, 'false');
-    }
+    // Use OneSignal to request permissions
+    const granted = await OneSignal.Notifications.requestPermission(true);
+
+    // Store the setting in our local storage
+    await setItem(NOTIFICATIONS_ENABLED_KEY, granted ? 'true' : 'false');
+
     return granted;
   } catch (error) {
     console.error('Error requesting notification permissions:', error);

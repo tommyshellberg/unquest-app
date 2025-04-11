@@ -67,3 +67,8 @@ logs/
 dist/
 web-build/
 .env.local
+
+# Sensitive
+*.jks
+credentials/
+credentials.json
