@@ -8,6 +8,7 @@ import { white } from '@/components/ui/colors';
 import { useIsFirstTime } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useQuestStore } from '@/store/quest-store';
+
 // Tab icon component
 function TabBarIcon({ name, color, size = 24, focused = false }) {
   return (
@@ -24,7 +25,7 @@ function TabBarIcon({ name, color, size = 24, focused = false }) {
 function CenterButton({ focused, color }) {
   return (
     <View className="-mt-5 items-center justify-center">
-      <View className="bg-secondary-300 size-14 items-center justify-center rounded-full">
+      <View className="size-14 items-center justify-center rounded-full bg-secondary-300">
         <Feather name="compass" size={28} color={white} />
       </View>
     </View>

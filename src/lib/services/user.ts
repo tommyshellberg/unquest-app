@@ -67,6 +67,7 @@ export interface InvitationsResponse {
 export const getUserDetails = async (): Promise<UserDetails> => {
   try {
     const response = await apiClient.get('/users/me');
+    console.log('response data: ', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching user details:', error);

@@ -21,6 +21,7 @@ interface QuestState {
   completedQuests: Quest[];
   recentCompletedQuest: Quest | null;
   lastCompletedQuestTimestamp: number | null;
+  currentLiveActivityId: string | null;
   cancelQuest: () => void;
   startQuest: (quest: Quest) => void;
   completeQuest: (ignoreDuration?: boolean) => Quest | null;
@@ -31,6 +32,7 @@ interface QuestState {
   reset: () => void;
   getCompletedQuests: () => Quest[];
   prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => void;
+  setLiveActivityId: (id: string | null) => void;
 }
 
 // Create type-safe functions for Zustand's storage
@@ -57,6 +59,7 @@ export const useQuestStore = create<QuestState>()(
       completedQuests: [],
       recentCompletedQuest: null,
       lastCompletedQuestTimestamp: null,
+      currentLiveActivityId: null,
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
         set({ pendingQuest: quest, availableQuests: [] });
       },
@@ -71,11 +74,11 @@ export const useQuestStore = create<QuestState>()(
 
       completeQuest: (ignoreDuration = false) => {
         const { activeQuest, lastCompletedQuestTimestamp } = get();
-        console.log('completeQuest', activeQuest);
+        console.log('completeQuest called for quest:', activeQuest?.id);
         if (activeQuest && activeQuest.startTime) {
           const completionTime = Date.now();
           const duration = (completionTime - activeQuest.startTime) / 1000;
-          // @todo: does the background task need to be passing true for ignoreDuration?
+
           if (ignoreDuration || duration >= activeQuest.durationMinutes * 60) {
             // Quest completed successfully
             const completedQuest = {
@@ -83,62 +86,74 @@ export const useQuestStore = create<QuestState>()(
               completedAt: completionTime,
             };
 
-            // Update the streak BEFORE updating lastCompletedQuestTimestamp
-            // Use getState() instead of hooks
             const characterStore = useCharacterStore.getState();
             characterStore.updateStreak(lastCompletedQuestTimestamp);
 
-            // Now update the store state with the new timestamp
             set((state) => ({
-              activeQuest: null,
+              activeQuest: null, // Quest is no longer active
               recentCompletedQuest: completedQuest,
               lastCompletedQuestTimestamp: completionTime,
               completedQuests: [...state.completedQuests, completedQuest],
+              currentLiveActivityId: null, // Clear activity ID on completion
             }));
 
-            // Reveal the associated POI only if it exists
             if (activeQuest.mode === 'story' && activeQuest.poiSlug) {
               const poiStore = usePOIStore.getState();
               poiStore.revealLocation(activeQuest.poiSlug);
             }
 
-            // Add XP for completing the quest - use getState() instead of hooks
             characterStore.addXP(completedQuest.reward.xp);
-
+            console.log('Quest completed successfully:', completedQuest.id);
             return completedQuest;
           } else {
-            // Quest failed
-            get().failQuest();
+            // Duration not met
+            console.warn(
+              'CompleteQuest called but duration not met for quest:',
+              activeQuest.id
+            );
+            get().failQuest(); // Fail the quest if duration condition isn't met
             return null;
           }
         }
+        console.warn(
+          'CompleteQuest called but no active quest found or quest has no start time.'
+        );
         return null;
       },
 
       cancelQuest: () => {
         const { activeQuest, pendingQuest } = get();
         if (activeQuest || pendingQuest) {
-          set({ activeQuest: null, pendingQuest: null });
+          console.log('Cancelling quest:', activeQuest?.id || pendingQuest?.id);
+          // End any active live activity when quest is canceled
+          QuestTimer.stopQuest();
+          set({
+            activeQuest: null,
+            pendingQuest: null,
+            currentLiveActivityId: null,
+          });
         }
-        QuestTimer.stopQuest();
       },
 
       failQuest: () => {
         const { activeQuest, pendingQuest } = get();
-        if (activeQuest || pendingQuest) {
+        const failedQuestDetails = activeQuest || pendingQuest;
+        if (failedQuestDetails) {
+          console.log('Failing quest:', failedQuestDetails.id);
+          // End any active live activity when quest fails
+          QuestTimer.stopQuest();
           set({
-            failedQuest: activeQuest || pendingQuest,
+            failedQuest: failedQuestDetails,
             activeQuest: null,
             pendingQuest: null,
+            currentLiveActivityId: null,
           });
         }
-        QuestTimer.stopQuest();
       },
 
       refreshAvailableQuests: () => {
         const { activeQuest, completedQuests } = get();
         if (!activeQuest) {
-          // Get the next quest in AVAILABLE_QUESTS that hasn't been completed
           const nextQuest = AVAILABLE_QUESTS.find(
             (quest) =>
               !completedQuests.some((completed) => completed.id === quest.id)
@@ -146,7 +161,6 @@ export const useQuestStore = create<QuestState>()(
           if (nextQuest) {
             set({ availableQuests: [nextQuest] });
           } else {
-            // All quests completed
             set({ availableQuests: [] });
           }
         }
@@ -164,7 +178,13 @@ export const useQuestStore = create<QuestState>()(
         return get().completedQuests;
       },
 
+      setLiveActivityId: (id: string | null) => {
+        console.log('Setting Live Activity ID in store:', id);
+        set({ currentLiveActivityId: id });
+      },
+
       reset: () => {
+        console.log('Resetting quest store');
         set({
           activeQuest: null,
           pendingQuest: null,
@@ -173,10 +193,10 @@ export const useQuestStore = create<QuestState>()(
           failedQuest: null,
           recentCompletedQuest: null,
           lastCompletedQuestTimestamp: null,
+          currentLiveActivityId: null, // Reset activity ID
         });
-
-        // Reset streak when quests are reset
         useCharacterStore.getState().resetStreak();
+        // Need a way to signal QuestTimer to stop without direct import
       },
     }),
     {
@@ -186,6 +206,19 @@ export const useQuestStore = create<QuestState>()(
         setItem: setItemForStorage,
         removeItem: removeItemForStorage,
       })),
+      onRehydrateStorage: (state) => {
+        console.log('Quest store hydration starts');
+        return (state, error) => {
+          if (error) {
+            console.error(
+              'An error occurred during quest store hydration:',
+              error
+            );
+          } else {
+            console.log('Quest store hydration finished.');
+          }
+        };
+      },
     }
   )
 );

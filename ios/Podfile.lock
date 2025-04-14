@@ -1594,6 +1594,8 @@ PODS:
     - Yoga
   - react-native-bg-actions (1.0.17):
     - React-Core
+  - react-native-get-random-values (1.11.0):
+    - React-Core
   - react-native-keyboard-controller (1.17.0):
     - DoubleConversion
     - glog
@@ -2400,6 +2402,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-bg-actions (from `../node_modules/react-native-bg-actions`)
+  - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
   - react-native-mmkv (from `../node_modules/react-native-mmkv`)
   - react-native-onesignal (from `../node_modules/react-native-onesignal`)
@@ -2583,6 +2586,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-bg-actions:
     :path: "../node_modules/react-native-bg-actions"
+  react-native-get-random-values:
+    :path: "../node_modules/react-native-get-random-values"
   react-native-keyboard-controller:
     :path: "../node_modules/react-native-keyboard-controller"
   react-native-mmkv:
@@ -2736,6 +2741,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: d126b87e242b2ad54c095c098cd73b18ebcf2798
   React-microtasksnativemodule: a68e53dbdea90ce0c96aa2566695141079c7dc5f
   react-native-bg-actions: df114b96b3bec0d97403769fefdbd3b752e32821
+  react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-keyboard-controller: e5c1e0997e0162a9bdef112412e8ed0c36dfca0f
   react-native-mmkv: eca12be5e3400be2d995a2edaa3c6c2e67b5e3ec
   react-native-onesignal: 33ade92bd91578374c31c5a5a91f45f49c2d6614
@@ -2784,6 +2790,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 9f2ca179441625f0b05abb2a72517acdb35b36bd
 
-PODFILE CHECKSUM: e20da041bca2cda9fdd9f7fa91c59b9fdbec942e
+PODFILE CHECKSUM: f6c4f1df303ea4b04438222e56654384f850a1ce
 
 COCOAPODS: 1.16.2

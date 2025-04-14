@@ -104,6 +104,5 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     eas: {
       projectId: Env.EAS_PROJECT_ID,
     },
-    development: true,
   },
 });

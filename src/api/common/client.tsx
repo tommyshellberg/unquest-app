@@ -1,8 +1,10 @@
 import { Env } from '@env';
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
+import { signOut } from '@/lib/auth';
+import { getToken } from '@/lib/auth/utils';
+
 import { refreshAccessToken } from '../auth';
-import { getAccessToken, getRefreshToken, isTokenExpired } from '../token';
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
@@ -14,9 +16,9 @@ const apiClient = axios.create({
 
 // Track if we're currently refreshing the token
 let isRefreshing = false;
-// Store pending requests
+// Store pending requests using Promises for better handling
 let failedQueue: {
-  resolve: (value?: unknown) => void;
+  resolve: (token: string) => void;
   reject: (reason?: any) => void;
 }[] = [];
 
@@ -28,8 +30,8 @@ interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
 // Process the failed queue
 const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
+    if (error || !token) {
+      prom.reject(error || new Error('Token refresh failed'));
     } else {
       prom.resolve(token);
     }
@@ -37,30 +39,17 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Updated request interceptor: now checks token expiry before refreshing
+// SIMPLIFIED Request Interceptor: Only attach the token
 apiClient.interceptors.request.use(
-  async (config) => {
-    try {
-      // Retrieve the stored access token and check if it's expired
-      const accessToken = await getAccessToken();
-      const tokenExpired = !accessToken || (await isTokenExpired());
-      let token = accessToken;
+  (config) => {
+    const tokenData = getToken();
+    const accessToken = tokenData?.access;
 
-      // Only refresh token if missing or expired
-      if (tokenExpired) {
-        const refreshToken = await getRefreshToken();
-        if (refreshToken) {
-          const tokens = await refreshAccessToken();
-          token = tokens?.access.token ?? null;
-        }
-      }
-
-      // If we have a valid token now, set it on the headers
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (error) {
-      console.log('No authentication available, continuing without token');
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+      console.log('Attaching token to request:', config.url);
+    } else {
+      console.log('No token found, sending request without auth:', config.url);
     }
     return config;
   },
@@ -69,49 +58,73 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Add response interceptor for handling auth errors
+// Response Interceptor: Handles 401 and token refresh
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as CustomInternalAxiosRequestConfig;
-    if (!originalRequest) {
+
+    if (!error.response || !originalRequest) {
+      console.error('Axios error without response or config:', error);
       return Promise.reject(error);
     }
-    // Handle 401 errors
-    if (error.response?.status === 401 && !originalRequest._retry) {
+
+    if (error.response.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
+        console.log('Adding request to refresh queue:', originalRequest.url);
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
+          .then((newToken) => {
+            console.log(
+              'Retrying request with new token (from queue):',
+              originalRequest.url
+            );
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return apiClient(originalRequest);
           })
           .catch((err) => {
+            console.error('Refresh failed while request was queued:', err);
             return Promise.reject(err);
           });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
+      console.log(
+        'Received 401. Attempting token refresh for:',
+        originalRequest.url
+      );
 
       try {
         const newTokens = await refreshAccessToken();
-        if (newTokens?.access.token) {
-          // Update the request with the new token
+
+        if (newTokens?.access?.token) {
+          console.log('Token refresh successful.');
           originalRequest.headers.Authorization = `Bearer ${newTokens.access.token}`;
 
-          // Process any queued requests
           processQueue(null, newTokens.access.token);
 
-          // Retry the original request
+          console.log(
+            'Retrying original request with new token:',
+            originalRequest.url
+          );
           return apiClient(originalRequest);
         } else {
-          processQueue(new Error('Token refresh failed'));
-          return Promise.reject(new Error('Token refresh failed'));
+          console.error(
+            'Token refresh failed: No new access token string received.'
+          );
+          const refreshError = new Error(
+            'Token refresh failed: No new access token string received.'
+          );
+          processQueue(refreshError);
+          signOut();
+          return Promise.reject(refreshError);
         }
       } catch (refreshError) {
+        console.error('Token refresh failed catastrophically:', refreshError);
         processQueue(refreshError as Error);
+        signOut();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

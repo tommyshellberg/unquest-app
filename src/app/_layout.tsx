@@ -13,8 +13,10 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { APIProvider } from '@/api';
 import { SafeAreaView } from '@/components/ui';
-import { hydrateAuth, loadSelectedTheme } from '@/lib';
+import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import { useThemeConfig } from '@/lib/use-theme-config';
+import { Env } from '@env';
+import { OneSignal, LogLevel } from 'react-native-onesignal';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -38,34 +40,52 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 const hydrationPromise = Promise.all([hydrateAuth(), loadSelectedTheme()]);
 
 function RootLayout() {
-  const [appIsReady, setAppIsReady] = React.useState(false);
+  // Get auth status
+  const authStatus = useAuth((state) => state.status);
+  const [hydrationFinished, setHydrationFinished] = React.useState(false);
 
   useEffect(() => {
     async function prepare() {
       try {
-        // Wait for hydration to complete
         await hydrationPromise;
+        console.log('Hydration promise resolved');
       } catch (e) {
         console.warn('Error during app initialization:', e);
       } finally {
-        // Tell the application to render
-        setAppIsReady(true);
+        // Indicate that the initial async operations are done
+        setHydrationFinished(true);
       }
     }
-
     prepare();
   }, []);
 
-  const onLayoutRootView = useCallback(async () => {
-    if (appIsReady) {
-      // This tells the splash screen to hide only when the root view is ready
-      await SplashScreen.hideAsync();
-    }
-  }, [appIsReady]);
+  useEffect(() => {
+    if (Env.ONESIGNAL_APP_ID) {
+      // Enable verbose logging for debugging (can be removed for production)
+      if (__DEV__) {
+        OneSignal.Debug.setLogLevel(LogLevel.Verbose);
+      }
 
-  if (!appIsReady) {
+      // Initialize OneSignal
+      OneSignal.initialize(Env.ONESIGNAL_APP_ID);
+      OneSignal.LiveActivities.setupDefault();
+    }
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    // Check both flags: hydration promise resolved AND auth status is final
+    if (hydrationFinished && authStatus !== 'hydrating') {
+      await SplashScreen.hideAsync();
+      console.log('Splash screen hidden (Layout Ready & Auth Status Final)');
+    }
+  }, [hydrationFinished, authStatus]);
+
+  // Return null until hydration promise is done AND auth status is final
+  if (!hydrationFinished || authStatus === 'hydrating') {
     return null;
   }
+
+  console.log('RootLayout rendering, Final Auth Status:', authStatus);
 
   return (
     <Providers onLayout={onLayoutRootView}>

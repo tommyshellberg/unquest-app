@@ -1,7 +1,7 @@
 import { Env } from '@env';
 import * as ExpoNotifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { LogLevel, OneSignal } from 'react-native-onesignal';
+import { OneSignal } from 'react-native-onesignal';
 
 import { primary } from '@/components/ui/colors';
 import { getItem, setItem } from '@/lib/storage';
@@ -91,13 +91,12 @@ export const scheduleQuestCompletionNotification = async () => {
 export function setupNotifications() {
   // Initialize OneSignal first
   if (Env.ONESIGNAL_APP_ID) {
-    // Enable verbose logging for debugging (can be removed for production)
-    if (__DEV__) {
-      OneSignal.Debug.setLogLevel(LogLevel.Verbose);
+    // --- Add OneSignal Live Activities Setup ---
+    if (Platform.OS === 'ios') {
+      OneSignal.LiveActivities.setupDefault();
+      console.log('OneSignal Live Activities setupDefault called.');
     }
-
-    // Initialize OneSignal
-    OneSignal.initialize(Env.ONESIGNAL_APP_ID);
+    // --- End Live Activities Setup ---
 
     // Setup notification handling
     OneSignal.Notifications.addEventListener('click', (event) => {
@@ -107,6 +106,7 @@ export function setupNotifications() {
   }
 
   // Configure Expo notifications for local notifications
+
   ExpoNotifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,

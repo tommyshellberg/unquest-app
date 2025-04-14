@@ -69,3 +69,8 @@ end
 target 'OneSignalNotificationServiceExtension' do
   pod 'OneSignalXCFramework', '>= 5.0.0', '< 6.0'
 end
+
+target 'liveactivitiesExtension' do
+  # use_frameworks! :linkage => :static
+    pod 'OneSignalXCFramework', '>= 5.0.0', '< 6.0'
+  end
