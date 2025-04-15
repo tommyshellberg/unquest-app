@@ -72,7 +72,6 @@ export default function QuestFailed() {
           className="size-full"
           resizeMode="cover"
         />
-        <View className="absolute inset-0 bg-black/20" />
       </View>
 
       <View className="flex-1 px-6 py-8">
@@ -87,15 +86,15 @@ export default function QuestFailed() {
         {/* Message Section */}
         <Animated.View
           style={messageAnimatedStyle}
-          className="flex-1 items-center justify-center px-6"
+          className="my-6 flex-1 items-center px-6"
         >
-          <Text className="mb-4 text-center text-lg font-semibold">
+          <Text className="mb-4">
             It's okay to fail – every setback teaches you a lesson.
           </Text>
-          <Text className="mb-4 text-center text-base">
+          <Text className="mb-4 text-base">
             Resist unlocking out of boredom.
           </Text>
-          <Text className="text-center text-base">
+          <Text className="text-base">
             Using your phone less helps build focus and mindfulness.
           </Text>
         </Animated.View>

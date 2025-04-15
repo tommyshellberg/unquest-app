@@ -203,7 +203,7 @@ describe('MagicLinkVerifyScreen', () => {
 
     // Check that it redirects to home and creates character
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/(app)/index');
+      expect(mockReplace).toHaveBeenCalledWith('/(app)/');
       expect(mockCreateCharacter).toHaveBeenCalledWith(
         mockCharacter.type,
         mockCharacter.name
@@ -287,7 +287,7 @@ describe('MagicLinkVerifyScreen', () => {
 
     // Check that it redirects to home without API call
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/(app)/index');
+      expect(mockReplace).toHaveBeenCalledWith('/(app)/');
       expect(apiClient.get).not.toHaveBeenCalled();
     });
   });

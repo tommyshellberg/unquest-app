@@ -1,8 +1,9 @@
 import { Env } from '@env';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Switch } from 'react-native';
+import { ActivityIndicator, Alert, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FocusAwareStatusBar, ScrollView, Text, View } from '@/components/ui';
@@ -11,6 +12,7 @@ import {
   areNotificationsEnabled,
   requestNotificationPermissions,
 } from '@/lib/services/notifications';
+import { getUserDetails } from '@/lib/services/user';
 import { setItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
@@ -22,11 +24,13 @@ const NOTIFICATIONS_ENABLED_KEY = 'notificationsEnabled';
 
 export default function Settings() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { signOut } = useAuth();
   const resetQuestStore = useQuestStore((state) => state.reset);
   const resetCharacter = useCharacterStore((state) => state.resetCharacter);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const user = useUserStore((state) => state.user);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load notification settings on mount
   useEffect(() => {
@@ -37,6 +41,25 @@ export default function Settings() {
 
     checkNotifications();
   }, []);
+
+  // Fetch user data if needed
+  useEffect(() => {
+    const fetchUserIfNeeded = async () => {
+      try {
+        setIsLoading(true);
+        if (!user) {
+          const userData = await getUserDetails();
+          useUserStore.getState().setUser(userData);
+        }
+      } catch (error) {
+        console.error('Error fetching user data in Settings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserIfNeeded();
+  }, [user]);
 
   // Handle notification toggle
   const handleNotificationsToggle = async (value: boolean) => {
@@ -75,7 +98,10 @@ export default function Settings() {
       {
         text: 'Logout',
         style: 'destructive',
-        onPress: signOut,
+        onPress: async () => {
+          await signOut();
+          router.replace('/login');
+        },
       },
     ]);
   };
@@ -113,8 +139,21 @@ export default function Settings() {
   const iconColor = '#3B7A57';
   const contactEmail = 'hello@unquestapp.com';
 
+  console.log('user', user);
+
+  // In your render method, handle loading state
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <FocusAwareStatusBar />
+        <ActivityIndicator size="large" color="#5E8977" />
+        <Text className="mt-4">Loading settings...</Text>
+      </View>
+    );
+  }
+
   return (
-    <View className="bg-background flex-1">
+    <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       <ScrollView

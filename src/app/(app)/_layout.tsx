@@ -1,12 +1,13 @@
 import { Feather } from '@expo/vector-icons';
 import { router, Tabs, usePathname, useRootNavigationState } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { AppState, Platform, View } from 'react-native';
 
 import { getAccessToken } from '@/api/token';
 import { white } from '@/components/ui/colors';
 import { useIsFirstTime } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
+import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
 
 // Tab icon component
@@ -37,12 +38,15 @@ export default function TabLayout() {
   const navigationState = useRootNavigationState();
   const hasRedirectedToCompletedRef = useRef(false);
   const pathname = usePathname();
+  const appState = useRef(AppState.currentState);
 
   // Quest state from store
   const failedQuest = useQuestStore((state) => state.failedQuest);
   const recentCompletedQuest = useQuestStore(
     (state) => state.recentCompletedQuest
   );
+  const pendingQuest = useQuestStore((state) => state.pendingQuest);
+  const activeQuest = useQuestStore((state) => state.activeQuest);
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
@@ -60,6 +64,7 @@ export default function TabLayout() {
 
   // Reset completed quest flag
   useEffect(() => {
+    if (!navigationState?.key) return;
     console.log('recentCompletedQuest changed:', recentCompletedQuest);
     if (!recentCompletedQuest) {
       console.log('Resetting completed quest redirect flag to false');
@@ -68,6 +73,7 @@ export default function TabLayout() {
   }, [recentCompletedQuest]);
 
   useEffect(() => {
+    if (!navigationState?.key) return;
     if (pathname.includes('failed-quest')) {
       console.log('skipping redirect for failed-quest');
       return;
@@ -78,6 +84,33 @@ export default function TabLayout() {
       return;
     }
   }, [failedQuest, pathname]);
+
+  // AppState listener to handle live activity cleanup
+  useEffect(() => {
+    // Skip for non-iOS devices
+    if (Platform.OS !== 'ios') return;
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      // Check if app is coming from background to active (foreground)
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        // Only clean up live activities if there's no pending or active quest
+        // This prevents showing outdated live activities when returning to the app
+        // but doesn't interfere with pending quest setup
+        if (!pendingQuest && !activeQuest) {
+          console.log(
+            'App became active: cleaning up live activities (no pending or active quest)'
+          );
+          QuestTimer.endLiveActivity();
+        }
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => subscription.remove();
+  }, [pendingQuest, activeQuest]);
 
   // Handle auth check and redirects.
   useEffect(() => {

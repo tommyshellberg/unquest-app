@@ -154,15 +154,75 @@ export const useQuestStore = create<QuestState>()(
       refreshAvailableQuests: () => {
         const { activeQuest, completedQuests } = get();
         if (!activeQuest) {
-          const nextQuest = AVAILABLE_QUESTS.find(
-            (quest) =>
-              !completedQuests.some((completed) => completed.id === quest.id)
-          );
-          if (nextQuest) {
-            set({ availableQuests: [nextQuest] });
-          } else {
-            set({ availableQuests: [] });
+          // If no quests completed, start with quest-1
+          if (completedQuests.length === 0) {
+            const firstQuest = AVAILABLE_QUESTS.find((q) => q.id === 'quest-1');
+            if (firstQuest) {
+              set({ availableQuests: [firstQuest] });
+              return;
+            }
           }
+
+          // Find the last completed quest
+          const sortedCompletedQuests = [...completedQuests].sort(
+            (a, b) => (b.completedAt || 0) - (a.completedAt || 0)
+          );
+
+          const lastCompleted = sortedCompletedQuests[0];
+          if (!lastCompleted) {
+            set({ availableQuests: [] });
+            return;
+          }
+
+          // Find the quest template that matches the lastCompleted.id
+          const lastCompletedTemplate = AVAILABLE_QUESTS.find(
+            (q) => q.id === lastCompleted.id
+          );
+
+          if (lastCompletedTemplate && 'options' in lastCompletedTemplate) {
+            // For quests with options, find the next quest IDs
+            const nextQuestIds = lastCompletedTemplate.options.map(
+              (opt) => opt.nextQuestId
+            );
+
+            // Find those quests from available quests
+            const nextQuests = AVAILABLE_QUESTS.filter(
+              (q) =>
+                nextQuestIds.includes(q.id) &&
+                !completedQuests.some((completed) => completed.id === q.id)
+            );
+
+            if (nextQuests.length > 0) {
+              set({ availableQuests: nextQuests });
+              return;
+            }
+          } else {
+            // For quests without options or if we can't find the template,
+            // try to infer the next level based on quest ID patterns
+
+            // Extract quest level number (e.g., "1" from "quest-1" or "quest-1a")
+            const idMatch = lastCompleted.id.match(/quest-(\d+)/);
+            if (idMatch) {
+              const currentLevel = parseInt(idMatch[1]);
+              const nextLevel = currentLevel + 1;
+
+              // Look for quests at the next level
+              const nextLevelQuests = AVAILABLE_QUESTS.filter(
+                (q) =>
+                  q.id.startsWith(`quest-${nextLevel}`) &&
+                  !q.id.includes('a') &&
+                  !q.id.includes('b') &&
+                  !completedQuests.some((completed) => completed.id === q.id)
+              );
+
+              if (nextLevelQuests.length > 0) {
+                set({ availableQuests: [nextLevelQuests[0]] });
+                return;
+              }
+            }
+          }
+
+          set({ availableQuests: [] });
         }
       },
 

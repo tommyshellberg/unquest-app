@@ -49,7 +49,7 @@ export default function ScreenTimeGoalScreen() {
   useEffect(() => {
     headerAnim.value = withTiming(1, { duration: 500 });
     firstDropdownAnim.value = withDelay(600, withTiming(1, { duration: 500 }));
-  }, []);
+  }, [firstDropdownAnim, headerAnim]);
 
   // Animate second drop-down when first drop-down has a valid value:
   useEffect(() => {
@@ -117,10 +117,11 @@ export default function ScreenTimeGoalScreen() {
       });
 
       console.log('User screen time goals updated on the server');
+
+      // Navigate with replace instead of push to avoid transition animations
+      router.navigate('/');
     } catch (error) {
       console.error('Error updating user screen time goals:', error);
-    } finally {
-      router.replace('/');
       setIsSubmitting(false);
     }
   };

@@ -86,7 +86,7 @@ export default function MagicLinkVerifyScreen() {
 
               // User has complete character data on server, navigate to home
               console.log('Navigating to home with server character data');
-              router.replace('/(app)/index');
+              router.replace('/(app)/');
             } else {
               // No complete character data on server, navigate to app-introduction
               console.log(
@@ -107,7 +107,7 @@ export default function MagicLinkVerifyScreen() {
           console.log(
             'User already has local character data, navigating to home'
           );
-          router.replace('/(app)/index');
+          router.replace('/(app)/');
         }
       } catch (error) {
         console.error('Error verifying magic link:', error);

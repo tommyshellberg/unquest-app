@@ -17,7 +17,7 @@ jest.mock('@/api/auth', () => ({
 describe('LoginForm Form ', () => {
   it('renders correctly', async () => {
     setup(<LoginForm />);
-    expect(await screen.findByTestId('form-title')).toBeOnTheScreen();
+    expect(await screen.findByText(/welcome to unquest/i)).toBeOnTheScreen();
   });
 
   it('should display required error when email is empty', async () => {

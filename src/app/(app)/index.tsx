@@ -58,7 +58,9 @@ export default function Home() {
   // Calculate story progress
   const storyProgress =
     completedQuests.filter((quest) => quest.mode === 'story').length /
-    AVAILABLE_QUESTS.filter((quest) => quest.mode === 'story').length;
+    AVAILABLE_QUESTS.filter(
+      (quest) => quest.mode === 'story' && !/quest-\d+b$/.test(quest.id)
+    ).length;
 
   // Animation values
   const headerOpacity = useSharedValue(0);
@@ -165,7 +167,7 @@ export default function Home() {
     headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
     contentOpacity.value = withDelay(1000, withTiming(1, { duration: 1000 }));
     contentTranslateY.value = withDelay(1000, withSpring(0));
-  }, []);
+  }, [contentOpacity, contentTranslateY, headerOpacity]);
 
   // Function to handle quest option selection
   const handleQuestOptionSelect = async (nextQuestId: string) => {
@@ -220,7 +222,7 @@ export default function Home() {
       title: 'Start Custom Quest',
       subtitle: 'Free Play Mode',
       duration: 30,
-      xp: 50,
+      xp: 60,
     },
   ];
 

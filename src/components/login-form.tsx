@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import * as Linking from 'expo-linking';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { TextInput } from 'react-native';
@@ -23,14 +23,22 @@ export type FormType = z.infer<typeof schema>;
 
 export type LoginFormProps = {
   onSubmit?: SubmitHandler<FormType>;
+  initialError?: string | null;
 };
 
-export const LoginForm = ({ onSubmit }: LoginFormProps) => {
+export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [sendAttempts, setSendAttempts] = useState(0);
   const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    if (initialError) {
+      setError(initialError);
+      setEmailSent(false);
+    }
+  }, [initialError]);
 
   const { handleSubmit, formState } = useForm<FormType>({
     resolver: zodResolver(schema),
@@ -113,10 +121,10 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
         {/* Form in bottom half */}
         <View className="mb-12 flex-1 justify-end">
           {/* Form card */}
-          <View className="mx-6 rounded-xl bg-neutral-50 shadow-sm">
+          <View className="mx-6 rounded-xl bg-white shadow-sm">
             {emailSent ? (
               <View className="p-6">
-                <Text className="mb-4 text-center text-charcoal-800">
+                <Text className="mb-4 text-center text-neutral-500">
                   Email sent! It may take a few minutes to arrive. Please check
                   your SPAM folder.
                   {sendAttempts > 1 && (
@@ -155,7 +163,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
                     autoCapitalize="none"
                     value={email}
                     onChangeText={setEmail}
-                    className="placeholder:text-muted-200 dark:placeholder:text-muted-200 flex-1 py-2 text-primary-500 dark:text-primary-500"
+                    className="flex-1 py-2 text-primary-500 placeholder:text-muted-200 dark:text-primary-500 dark:placeholder:text-muted-200"
                   />
                 </View>
 
@@ -177,7 +185,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
           </View>
 
           {/* Terms and privacy */}
-          <Text className="mt-4 px-6 text-center text-sm text-charcoal-900">
+          <Text className="text-charcoal-900 mt-4 px-6 text-center text-sm">
             By signing in to this app you agree with our{' '}
             <Text className="text-charcoal-600 underline">Terms of Use</Text>{' '}
             and{' '}

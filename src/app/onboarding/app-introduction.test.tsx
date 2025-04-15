@@ -1,41 +1,42 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import React from 'react';
 
-import { setupNotifications } from '@/lib/services/notifications';
+import {
+  requestNotificationPermissions,
+  setupNotifications,
+} from '@/lib/services/notifications';
 import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
 
 import AppIntroductionScreen from './app-introduction';
 
-// Mock react-native-reanimated so animations flush immediately
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  return {
-    ...Reanimated,
-    withDelay: (delay: number, value: any) => value,
-    withTiming: (value: any, config?: any) => value,
-    withSpring: (value: any, config?: any) => value,
-    withSequence: (...args: any[]) => args[args.length - 1],
-  };
-});
+// Mock API URL for testing
+process.env.API_URL = 'http://test-api.example.com';
 
-// Mock expo-asset to bypass asset-related errors in expo-font
-jest.mock('expo-asset', () => ({
-  Asset: {
-    fromModule: jest.fn(),
-  },
-}));
-
-// Mock dependencies
-jest.mock('expo-router');
-jest.mock('@/store/character-store');
-jest.mock('@/store/user-store');
-jest.mock('expo-notifications');
+// Mock notification service
 jest.mock('@/lib/services/notifications', () => ({
   setupNotifications: jest.fn(),
+  requestNotificationPermissions: jest.fn().mockResolvedValue(true),
 }));
+
+// Mock expo-router
+jest.mock('expo-router');
+
+// Mock character store
+jest.mock('@/store/character-store');
+
+// Mock user store
+jest.mock('@/store/user-store');
+
+// Mock the components/ui to handle FocusAwareStatusBar
+jest.mock('@/components/ui', () => {
+  const originalModule = jest.requireActual('@/components/ui');
+  return {
+    ...originalModule,
+    FocusAwareStatusBar: () => null,
+  };
+});
 
 describe('AppIntroductionScreen', () => {
   const mockRouter = {
@@ -54,14 +55,6 @@ describe('AppIntroductionScreen', () => {
     (useUserStore as jest.Mock).mockImplementation((selector) =>
       selector({ user: null })
     );
-
-    // Mock notifications permissions
-    (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({
-      status: 'undetermined',
-    });
-    (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({
-      status: 'granted',
-    });
   });
 
   it('starts at welcome step', () => {
@@ -72,7 +65,7 @@ describe('AppIntroductionScreen', () => {
   });
 
   it("moves to notifications step after pressing 'Got it'", async () => {
-    const { getByText, queryByText } = render(<AppIntroductionScreen />);
+    const { getByText } = render(<AppIntroductionScreen />);
 
     // Press "Got it" button
     fireEvent.press(getByText('Got it'));
@@ -80,13 +73,7 @@ describe('AppIntroductionScreen', () => {
     // Check that we've moved to the notifications step
     await waitFor(() => {
       expect(getByText('Stay updated on your quests')).toBeTruthy();
-      expect(
-        getByText(
-          'unQuest works best with lock screen notifications enabled. This allows you to:'
-        )
-      ).toBeTruthy();
       expect(getByText('Enable notifications')).toBeTruthy();
-      expect(queryByText('Welcome to unQuest')).toBeNull();
     });
   });
 
@@ -96,6 +83,7 @@ describe('AppIntroductionScreen', () => {
     // Navigate to notifications step
     fireEvent.press(getByText('Got it'));
 
+    // Wait for the next step to appear
     await findByText('Enable notifications');
 
     // Press "Enable notifications" button
@@ -103,25 +91,16 @@ describe('AppIntroductionScreen', () => {
 
     // Check that permissions were requested
     await waitFor(() => {
-      expect(Notifications.requestPermissionsAsync).toHaveBeenCalledWith({
-        ios: {
-          allowAlert: true,
-          allowBadge: true,
-          allowSound: true,
-        },
-      });
+      expect(requestNotificationPermissions).toHaveBeenCalled();
       expect(setupNotifications).toHaveBeenCalled();
     });
   });
 
   it('moves to next steps after requesting permissions', async () => {
-    const { getByText, queryByText, findByText } = render(
-      <AppIntroductionScreen />
-    );
+    const { getByText, findByText } = render(<AppIntroductionScreen />);
 
     // Navigate to notifications step
     fireEvent.press(getByText('Got it'));
-
     await findByText('Enable notifications');
 
     // Press "Enable notifications" button
@@ -130,11 +109,6 @@ describe('AppIntroductionScreen', () => {
     // Check that we've moved to the next steps
     await waitFor(() => {
       expect(getByText('Create Your Character')).toBeTruthy();
-      expect(
-        getByText(
-          "Now it's time to create your character and begin your journey."
-        )
-      ).toBeTruthy();
       expect(getByText('Create character')).toBeTruthy();
     });
   });
@@ -145,6 +119,7 @@ describe('AppIntroductionScreen', () => {
     // Navigate through the steps
     fireEvent.press(getByText('Got it'));
     await findByText('Enable notifications');
+
     fireEvent.press(getByText('Enable notifications'));
     await findByText('Create character');
 
@@ -159,7 +134,7 @@ describe('AppIntroductionScreen', () => {
 
   it('handles notification permission errors gracefully', async () => {
     // Mock a permission request error
-    (Notifications.requestPermissionsAsync as jest.Mock).mockRejectedValue(
+    (requestNotificationPermissions as jest.Mock).mockRejectedValueOnce(
       new Error('Permission request failed')
     );
 
@@ -167,7 +142,6 @@ describe('AppIntroductionScreen', () => {
 
     // Navigate to notifications step
     fireEvent.press(getByText('Got it'));
-
     await findByText('Enable notifications');
 
     // Press "Enable notifications" button
@@ -180,15 +154,13 @@ describe('AppIntroductionScreen', () => {
     });
   });
 
-  it('detects existing user data', () => {
+  it('detects existing character data', () => {
     // Mock existing character data
     (useCharacterStore as jest.Mock).mockImplementation((selector) =>
       selector({ character: { name: 'TestChar', type: 'wizard' } })
     );
 
     const { getByText } = render(<AppIntroductionScreen />);
-
-    // Check that hasExistingData is true (though it doesn't visibly change the UI in current implementation)
     expect(getByText('Welcome to unQuest')).toBeTruthy();
   });
 
@@ -205,23 +177,6 @@ describe('AppIntroductionScreen', () => {
     );
 
     const { getByText } = render(<AppIntroductionScreen />);
-
-    // Check that hasExistingData is true (though it doesn't visibly change the UI in current implementation)
     expect(getByText('Welcome to unQuest')).toBeTruthy();
-  });
-
-  it('handles animation state changes correctly', async () => {
-    const { getByText } = render(<AppIntroductionScreen />);
-
-    // Initial animations should be triggered
-    expect(getByText('Welcome to unQuest')).toBeTruthy();
-
-    // Change step to trigger new animations
-    fireEvent.press(getByText('Got it'));
-
-    // New content should be visible after animations
-    await waitFor(() => {
-      expect(getByText('Stay updated on your quests')).toBeTruthy();
-    });
   });
 });

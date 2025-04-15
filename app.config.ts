@@ -45,6 +45,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       BGTaskSchedulerPermittedIdentifiers: ['$(PRODUCT_BUNDLE_IDENTIFIER)'],
     },
+    buildNumber: Env.VERSION.split('.').pop() || '0',
   },
   experiments: {
     typedRoutes: true,
@@ -60,6 +61,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.FOREGROUND_SERVICE_DATA_SYNC',
       'android.permission.WAKE_LOCK',
     ],
+    // use the last digit of semver
+    versionCode: parseInt(Env.VERSION.split('.').pop() || '0'),
   },
   plugins: [
     [

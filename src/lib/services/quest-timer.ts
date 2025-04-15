@@ -199,7 +199,7 @@ export default class QuestTimer {
         name: 'ic_launcher',
         type: 'mipmap',
       },
-      color: '#228B22', // forest green
+      color: '#77c5bf',
       progressBar: {
         max: 100,
         value: 0,
@@ -209,8 +209,8 @@ export default class QuestTimer {
         questDuration: questTemplate.durationMinutes * 60 * 1000,
         questTitle: questTemplate.title,
         questDescription:
-          ('description' in questTemplate
-            ? questTemplate.description
+          ('recap' in questTemplate
+            ? questTemplate.recap
             : questTemplate.title) || 'Focus on your quest',
         questId: questTemplate.id,
       },
@@ -423,7 +423,10 @@ export default class QuestTimer {
           if (questStoreState.activeQuest?.id === this.questTemplate.id) {
             questStoreState.completeQuest(true); // Mark quest as complete in the store
           }
-          await scheduleQuestCompletionNotification(); // Schedule completion notification
+          // for now only schedule for Android
+          if (Platform.OS === 'android') {
+            await scheduleQuestCompletionNotification(); // Schedule completion notification
+          }
           await this.stopQuest(); // Stop background service and clear data
           break; // Exit loop
         }

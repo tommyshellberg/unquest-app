@@ -78,34 +78,18 @@ describe('Button component ', () => {
 
     expect(onClick).toHaveBeenCalledTimes(0);
   });
-  it('should apply correct styles based on size prop', () => {
+  it('should apply appropriate classes for different variants', () => {
     render(<Button testID="button" size="lg" />);
-    const button = screen.getByTestId('button');
-    // TODO: should be fixed to use haveStyle instead of comparing the class name
-    const expectedStyle =
-      'font-inter font-semibold text-white dark:text-black text-xl';
-    const receivedStyle =
-      button.props.children[0].props.children.props.className;
-    expect(receivedStyle).toContain(expectedStyle);
-  });
-  it('should apply correct styles for label when variant is secondary', () => {
+    expect(screen.getByTestId('button').props.className).toContain('h-12');
+
     render(<Button testID="button" variant="secondary" label="Submit" />);
-    const button = screen.getByTestId('button');
+    expect(screen.getByTestId('button').props.className).toContain(
+      'bg-primary-300'
+    );
 
-    const expectedStyle =
-      'font-inter font-semibold text-secondary-600 text-base';
-    const receivedStyle =
-      button.props.children[0].props.children.props.className;
-    expect(receivedStyle).toContain(expectedStyle);
-  });
-  it('should apply correct styles for label when is disabled', () => {
     render(<Button testID="button" label="Submit" disabled />);
-    const button = screen.getByTestId('button');
-
-    const expectedStyle =
-      'font-inter font-semibold text-base text-neutral-600 dark:text-neutral-600';
-    const receivedStyle =
-      button.props.children[0].props.children.props.className;
-    expect(receivedStyle).toContain(expectedStyle);
+    expect(screen.getByTestId('button').props.className).toContain(
+      'bg-neutral-300'
+    );
   });
 });

@@ -1,5 +1,6 @@
 import { Env } from '@env';
 
+import { calculateRewardFromDuration } from '@/app/utils/quest-utils';
 import {
   type CustomQuestTemplate,
   type StoryQuestTemplate,
@@ -46,7 +47,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Awaken in a Dark Forest',
     recap: 'You awoke alone in a dark forest with no memory of who you are.',
     durationMinutes: questDuration(3),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(3) },
     poiSlug: 'darkwood-awakening',
     audioFile: require('@/../assets/audio/quest-1a.mp3'), // @todo: add audio file
     story: `
@@ -70,7 +71,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'You awoke in a dense, unfamiliar forest with no memory of how you got there. After scouting the area for danger, you spotted a structure in the distance and made your way toward it.',
     durationMinutes: questDuration(3),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(3) },
     poiSlug: 'darkwood-awakening',
     audioFile: require('@/../assets/audio/quest-1b.mp3'), // @todo: add audio file
     story: `
@@ -95,7 +96,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'After waking in the forest with no memory, you followed a mysterious map and discovered a small abandoned hut where you found shelter for the night.',
     durationMinutes: questDuration(6),
-    reward: { xp: 120 },
+    reward: { xp: calculateRewardFromDuration(6) },
     poiSlug: 'hut-of-whispers',
     audioFile: require('@/../assets/audio/quest-2.mp3'),
     story: `
@@ -124,7 +125,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'You uncovered an old fishing pole and supplies, hinting at a water source nearby. Peering through the window, you caught a faint glimmer in the distance—a river, your best lead forward.',
     durationMinutes: questDuration(6),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(6) },
     poiSlug: 'modest-hut',
     audioFile: require('@/../assets/audio/quest-2a.mp3'),
     story: `
@@ -148,7 +149,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       "Inside the hut, you studied the mysterious map, its strange ink revealing an unsettling phrase: 'Balance must be restored.' Beneath it, a faint winding line pointed south—a river, hidden beyond the trees, waiting to be found.",
     durationMinutes: questDuration(6),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(6) },
     poiSlug: 'modest-hut',
     audioFile: require('@/../assets/audio/quest-2b.mp3'),
     story: `
@@ -172,7 +173,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'In the weathered hut, you discovered cryptic words on your map about restoring balance. Morning revealed you were at the edge of a raging river.',
     durationMinutes: questDuration(9),
-    reward: { xp: 150 },
+    reward: { xp: calculateRewardFromDuration(9) },
     poiSlug: 'weary-crossing',
     audioFile: require('@/../assets/audio/quest-3.mp3'),
     story: `
@@ -202,7 +203,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'Rather than risk a reckless attempt, you decide to construct a proper raft. The work takes time, but with careful planning, you prepare for a controlled crossing.',
     durationMinutes: questDuration(9),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(9) },
     poiSlug: 'riverbank-crossing',
     audioFile: require('@/../assets/audio/quest-3a.mp3'),
     story: `
@@ -227,7 +228,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'Rather than spending precious time crafting a proper raft, you chose to risk crossing the river in a hollowed log, hoping speed would compensate for caution.',
     durationMinutes: questDuration(9),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(9) },
     poiSlug: 'riverbank-crossing',
     audioFile: require('@/../assets/audio/quest-3b.mp3'),
     story: `
@@ -250,7 +251,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'The river was the only way forward. After a harrowing crossing, I reached the other side—only to find a land scattered with ruins, remnants of something long forgotten.',
     durationMinutes: questDuration(12),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(12) },
     poiSlug: 'ruined-archway',
     audioFile: require('@/../assets/audio/quest-4.mp3'),
     story: `
@@ -282,7 +283,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       "The arch held a message—one about balance, light, and darkness. And somehow, impossibly, my name was carved into its surface. I couldn't leave without learning more.",
     durationMinutes: questDuration(12),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(12) },
     poiSlug: 'ruined-archway',
     audioFile: require('@/../assets/audio/quest-4a.mp3'),
     story: `
@@ -310,7 +311,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       "The arch held carvings of light and darkness, of balance broken. My name was there, carved into its surface like a relic of the past. But answers wouldn't keep me warm at night, so I chose to move on.",
     durationMinutes: questDuration(12),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(12) },
     poiSlug: 'ruined-archway',
     audioFile: require('@/../assets/audio/quest-4b.mp3'),
     story: `
@@ -333,7 +334,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       "The arch held more than just old carvings. It held my name. It held warnings. *The King must not claim the seal.* I don't know what it means, but I left the ruins with more questions than answers.",
     durationMinutes: questDuration(15),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(15) },
     poiSlug: 'lake-overlook',
     audioFile: require('@/../assets/audio/quest-5.mp3'),
     story: `
@@ -363,7 +364,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'Frustrated by the endless questions without answers, I stood at the edge of the lake, tempted to toss the map away and be done with it.',
     durationMinutes: questDuration(15),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(15) },
     poiSlug: 'rugged-outcropping',
     audioFile: require('@/../assets/audio/quest-5a.mp3'),
     story: `
@@ -389,7 +390,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'Blocked by the lake, I noticed a crumbling statue half-submerged in the shallows and decided it might hold some answers.',
     durationMinutes: questDuration(15),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(15) },
     poiSlug: 'rugged-outcropping',
     audioFile: require('@/../assets/audio/quest-5b.mp3'),
     story: `
@@ -414,7 +415,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'The lake blocked my path, forcing me back along the shoreline. As darkness fell, an abandoned village appeared—silent, still, but perhaps not as empty as it seems.',
     durationMinutes: questDuration(18),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(18) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-6.mp3'),
     story: `
@@ -441,7 +442,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'The village sat silent and abandoned, holding secrets that demanded exploration. With darkness falling, I chose to investigate the homes first.',
     durationMinutes: questDuration(18),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(18) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-6a.mp3'),
     story: `
@@ -466,7 +467,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       "With darkness pressing close, I chose to inspect the village stables, hoping to find some useful clue to this place's abandonment.",
     durationMinutes: questDuration(18),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(18) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-6b.mp3'),
     story: `
@@ -490,7 +491,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'I woke in the dead of night, a stranger holding a blade to my throat. With no words exchanged, he silently forced me from the village into the darkness.',
     durationMinutes: questDuration(21),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(21) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-7.mp3'),
     story: `
@@ -523,7 +524,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'The stranger led me to a half-buried temple. I decided not to trust the stranger, making a desperate dash for freedom.',
     durationMinutes: questDuration(21),
-    reward: { xp: 50 },
+    reward: { xp: calculateRewardFromDuration(21) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-7a.mp3'),
     story: `
@@ -549,7 +550,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'The stranger led me to a half-buried temple. Though cautious, I decided to trust the stranger and followed him inside.',
     durationMinutes: questDuration(21),
-    reward: { xp: 50 },
+    reward: { xp: calculateRewardFromDuration(21) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-7b.mp3'),
     story: `
@@ -574,7 +575,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'Rowan led me north to an ancient temple, revealing his name and offering shelter. Despite lingering doubts, I decided to trust him—at least for now.',
     durationMinutes: questDuration(24),
-    reward: { xp: 100 },
+    reward: { xp: calculateRewardFromDuration(24) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-8.mp3'),
     story: `
@@ -604,7 +605,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       'Rowan began explaining the fall of Vaedros, but paused to have me collect wood for the fire. There was more he needed to say, and I felt certain it concerned me directly.',
     durationMinutes: questDuration(24),
-    reward: { xp: 50 },
+    reward: { xp: calculateRewardFromDuration(24) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-8a.mp3'),
     story: `
@@ -629,7 +630,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     recap:
       "Rowan started to explain Vaedros's fall, pausing to have me fetch water. I could sense he had more to reveal, something about my role in all this.",
     durationMinutes: questDuration(24),
-    reward: { xp: 50 },
+    reward: { xp: calculateRewardFromDuration(24) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
     audioFile: require('@/../assets/audio/quest-8b.mp3'),
     story: `

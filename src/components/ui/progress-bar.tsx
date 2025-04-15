@@ -8,9 +8,14 @@ import Animated, {
 } from 'react-native-reanimated';
 import { twMerge } from 'tailwind-merge';
 
+import { primary, white } from './colors';
+
 type Props = {
   initialProgress?: number;
   className?: string;
+  height?: number;
+  backgroundColor?: string;
+  progressColor?: string;
 };
 
 export type ProgressBarRef = {
@@ -18,8 +23,18 @@ export type ProgressBarRef = {
 };
 
 export const ProgressBar = forwardRef<ProgressBarRef, Props>(
-  ({ initialProgress = 0, className = '' }, ref) => {
+  (
+    {
+      initialProgress = 0,
+      className = '',
+      height = 8,
+      backgroundColor = white,
+      progressColor = primary[400],
+    },
+    ref
+  ) => {
     const progress = useSharedValue<number>(initialProgress ?? 0);
+
     useImperativeHandle(ref, () => {
       return {
         setProgress: (value: number) => {
@@ -33,13 +48,22 @@ export const ProgressBar = forwardRef<ProgressBarRef, Props>(
 
     const style = useAnimatedStyle(() => {
       return {
-        width: `${progress.value}%`,
-        backgroundColor: '#000',
-        height: 2,
+        width: `${Math.max(0, Math.min(100, progress.value))}%`,
+        backgroundColor: progressColor,
+        height: height,
+        borderRadius: height / 2,
       };
     });
+
     return (
-      <View className={twMerge(` bg-[#EAEAEA]`, className)}>
+      <View
+        className={twMerge('overflow-hidden', className)}
+        style={{
+          backgroundColor,
+          height: height,
+          borderRadius: height / 2,
+        }}
+      >
         <Animated.View style={style} />
       </View>
     );

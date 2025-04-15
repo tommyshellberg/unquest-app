@@ -108,6 +108,7 @@ describe('ChooseCharacterScreen', () => {
   });
 
   it('should send a patch request with the correct data and navigate on a successful update', async () => {
+    // Set up the mock to resolve successfully
     (updateUserCharacter as jest.Mock).mockResolvedValue({ success: true });
 
     const { getByPlaceholderText, getByText, UNSAFE_getAllByType } = render(
@@ -119,7 +120,7 @@ describe('ChooseCharacterScreen', () => {
     fireEvent.changeText(input, 'Arthur');
 
     // Flush debounce by advancing timers.
-    await act(async () => {
+    act(() => {
       jest.advanceTimersByTime(500);
     });
 
@@ -143,25 +144,31 @@ describe('ChooseCharacterScreen', () => {
 
     // Tap the Continue button.
     const continueButton = getByText('Continue');
-    fireEvent.press(continueButton);
 
-    await waitFor(() => {
-      // Ensure updateUserCharacter was called with the expected character object.
-      expect(updateUserCharacter).toHaveBeenCalledWith({
-        level: 1,
-        currentXP: 0,
-        xpToNextLevel: 100,
-        type: 'knight',
-        name: 'Arthur',
-      });
-      // Verify the navigation call.
-      expect(mockPush).toHaveBeenCalledWith('/onboarding/screen-time-goal');
-      // Verify the local store was updated.
-      expect(mockCreateCharacter).toHaveBeenCalledWith('knight', 'Arthur');
+    // We need to handle promise resolution manually in tests
+    await act(async () => {
+      fireEvent.press(continueButton);
+      // Flush promises
+      await Promise.resolve();
+      // Advance any timers that may be used internally
+      jest.runAllTimers();
     });
+
+    // Now verify the expectations
+    expect(updateUserCharacter).toHaveBeenCalledWith({
+      level: 1,
+      currentXP: 0,
+      xpToNextLevel: 100,
+      type: 'knight',
+      name: 'Arthur',
+    });
+
+    expect(mockCreateCharacter).toHaveBeenCalledWith('knight', 'Arthur');
+    expect(mockPush).toHaveBeenCalledWith('/onboarding/screen-time-goal');
   });
 
   it('should gracefully handle a failed API request and still navigate', async () => {
+    // Set up the mock to reject with an error
     (updateUserCharacter as jest.Mock).mockRejectedValue(
       new Error('API error')
     );
@@ -174,24 +181,31 @@ describe('ChooseCharacterScreen', () => {
     fireEvent.changeText(input, 'Merlin');
 
     // Flush debounce.
-    await act(async () => {
+    act(() => {
       jest.advanceTimersByTime(500);
     });
 
     const continueButton = getByText('Continue');
-    fireEvent.press(continueButton);
 
-    await waitFor(() => {
-      expect(updateUserCharacter).toHaveBeenCalledWith({
-        level: 1,
-        currentXP: 0,
-        xpToNextLevel: 100,
-        type: 'alchemist', // The default selected character, per the mock, is the first one.
-        name: 'Merlin',
-      });
-      // Even on API error, we navigate to the next screen.
-      expect(mockPush).toHaveBeenCalledWith('/onboarding/screen-time-goal');
-      expect(mockCreateCharacter).toHaveBeenCalledWith('alchemist', 'Merlin');
+    // We need to handle promise rejection manually in tests
+    await act(async () => {
+      fireEvent.press(continueButton);
+      // Flush promises
+      await Promise.resolve();
+      // Advance any timers that may be used internally
+      jest.runAllTimers();
     });
+
+    // Now verify the expectations
+    expect(updateUserCharacter).toHaveBeenCalledWith({
+      level: 1,
+      currentXP: 0,
+      xpToNextLevel: 100,
+      type: 'alchemist', // The default selected character
+      name: 'Merlin',
+    });
+
+    expect(mockCreateCharacter).toHaveBeenCalledWith('alchemist', 'Merlin');
+    expect(mockPush).toHaveBeenCalledWith('/onboarding/screen-time-goal');
   });
 });

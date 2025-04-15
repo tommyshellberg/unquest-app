@@ -35,6 +35,9 @@ export default function QuestCard({
   // Create a reference to control the progress bar
   const progressBarRef = useRef<ProgressBarRef>(null);
 
+  console.log('progress', progress);
+  console.log('xp', xp);
+
   // Update the progress bar when the progress prop changes
   useEffect(() => {
     if (progressBarRef.current) {

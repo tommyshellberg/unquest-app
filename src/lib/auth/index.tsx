@@ -18,16 +18,25 @@ interface AuthState {
 const _useAuth = create<AuthState>((set, get) => ({
   status: 'idle',
   token: null,
-  signIn: (response) => {
+  signIn: async (response) => {
     const { token, user } = response;
     console.log('setting tokens:', token);
     setToken(token);
 
-    if (user) {
-      useUserStore.getState().setUser(user);
-      console.log('user set in user store', user);
-    } else {
-      console.log('no user provided in response, but proceeding with signIn');
+    // Always fetch fresh user details after sign in
+    try {
+      // Use existing user data if available, but then fetch fresh data
+      if (user) {
+        useUserStore.getState().setUser(user);
+        console.log('user set in user store from response', user);
+      }
+
+      // Fetch fresh user details regardless
+      const freshUserDetails = await getUserDetails();
+      useUserStore.getState().setUser(freshUserDetails);
+      console.log('user set in user store from fresh fetch', freshUserDetails);
+    } catch (error) {
+      console.error('Failed to fetch user details after login:', error);
     }
 
     set({ status: 'signIn', token });
