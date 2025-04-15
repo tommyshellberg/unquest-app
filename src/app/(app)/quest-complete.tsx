@@ -22,19 +22,6 @@ export default function QuestCompleteScreen() {
     }
   }, [recentCompletedQuest]);
 
-  // Clear recentCompletedQuest when component unmounts
-  // @todo: maybe clear it when we mount the screen to avoid any issues with unmounting.
-  useEffect(() => {
-    console.log('QuestCompleteScreen mounting');
-    // Return cleanup function that will run when component unmounts
-    return () => {
-      console.log(
-        'QuestCompleteScreen unmounting, clearing recentCompletedQuest'
-      );
-      clearRecentCompletedQuest();
-    };
-  }, [clearRecentCompletedQuest]);
-
   // If there's no quest to display, show a loading state until redirect happens
   if (!recentCompletedQuest) {
     return <ActivityIndicator />;
@@ -79,9 +66,28 @@ export default function QuestCompleteScreen() {
 
   const handleClaimReward = async () => {
     try {
-      console.log('navigating to profile');
-      // Navigate to profile screen
-      router.replace('/profile');
+      // Add debug logging
+      console.log('Claim reward button pressed');
+      console.log(
+        'Before clearing: recentCompletedQuest=',
+        recentCompletedQuest ? recentCompletedQuest.id : null
+      );
+
+      // Clear quest state BEFORE navigation
+      clearRecentCompletedQuest();
+
+      console.log(
+        'After clearing: recentCompletedQuest=',
+        useQuestStore.getState().recentCompletedQuest
+          ? useQuestStore.getState().recentCompletedQuest?.id
+          : null
+      );
+
+      // Use setTimeout to ensure state update completes before navigation
+      setTimeout(() => {
+        console.log('Navigating to profile');
+        router.replace('/profile');
+      }, 50);
     } catch (error) {
       console.error('Navigation error:', error);
     }

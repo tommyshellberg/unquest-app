@@ -26,7 +26,11 @@ function TabBarIcon({ name, color, size = 24, focused = false }) {
 function CenterButton({ focused, color }) {
   return (
     <View className="-mt-5 items-center justify-center">
-      <View className="size-14 items-center justify-center rounded-full bg-secondary-300">
+      <View
+        className={`size-14 items-center justify-center rounded-full ${
+          focused ? 'bg-secondary-400' : 'bg-secondary-300'
+        }`}
+      >
         <Feather name="compass" size={28} color={white} />
       </View>
     </View>
@@ -36,7 +40,6 @@ function CenterButton({ focused, color }) {
 export default function TabLayout() {
   const [isFirstTime] = useIsFirstTime();
   const navigationState = useRootNavigationState();
-  const hasRedirectedToCompletedRef = useRef(false);
   const pathname = usePathname();
   const appState = useRef(AppState.currentState);
 
@@ -51,39 +54,27 @@ export default function TabLayout() {
   // Activate lock detection for the whole main app.
   useLockStateDetection();
 
-  // Handle completed quest redirect
   useEffect(() => {
-    if (!navigationState?.key) return;
-
-    if (recentCompletedQuest && !hasRedirectedToCompletedRef.current) {
-      console.log('Redirecting to quest-complete');
-      hasRedirectedToCompletedRef.current = true;
-      router.replace('/(app)/quest-complete');
-    }
-  }, [recentCompletedQuest, navigationState?.key]);
-
-  // Reset completed quest flag
-  useEffect(() => {
-    if (!navigationState?.key) return;
-    console.log('recentCompletedQuest changed:', recentCompletedQuest);
-    if (!recentCompletedQuest) {
-      console.log('Resetting completed quest redirect flag to false');
-      hasRedirectedToCompletedRef.current = false;
-    }
-  }, [recentCompletedQuest]);
-
-  useEffect(() => {
-    if (!navigationState?.key) return;
-    if (pathname.includes('failed-quest')) {
-      console.log('skipping redirect for failed-quest');
+    if (!navigationState?.key || navigationState.stale) return;
+    if (pathname.includes('failed-quest') || pathname.includes('active-quest'))
       return;
-    }
+
     if (failedQuest) {
       console.log('Redirecting to failed-quest');
-      router.replace('/failed-quest');
-      return;
+      requestAnimationFrame(() => {
+        try {
+          router.replace('/failed-quest');
+        } catch (error) {
+          console.error('Failed quest navigation failed, will retry', error);
+          setTimeout(() => {
+            if (navigationState?.key && !navigationState.stale) {
+              router.replace('/failed-quest');
+            }
+          }, 500);
+        }
+      });
     }
-  }, [failedQuest, pathname]);
+  }, [failedQuest, navigationState?.key, navigationState.stale, pathname]);
 
   // AppState listener to handle live activity cleanup
   useEffect(() => {
@@ -132,6 +123,17 @@ export default function TabLayout() {
     }
     checkAuth();
   }, [isFirstTime, failedQuest, navigationState?.key, pathname]);
+
+  // Global guard: If a quest was recently completed, ensure the Quest Complete screen is shown.
+  useEffect(() => {
+    if (!navigationState?.key) return;
+    if (recentCompletedQuest && !pathname.includes('quest-complete')) {
+      console.log(
+        'Recent completed quest exists, redirecting to Quest Complete screen'
+      );
+      router.navigate('/(app)/quest-complete');
+    }
+  }, [recentCompletedQuest, pathname, navigationState?.key]);
 
   // Check if navigation is ready
   if (!navigationState?.key) {

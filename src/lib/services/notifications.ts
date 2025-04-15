@@ -1,5 +1,6 @@
 import { Env } from '@env';
 import * as ExpoNotifications from 'expo-notifications';
+import { router } from 'expo-router';
 import { Platform } from 'react-native';
 import { OneSignal } from 'react-native-onesignal';
 
@@ -101,7 +102,8 @@ export function setupNotifications() {
     // Setup notification handling
     OneSignal.Notifications.addEventListener('click', (event) => {
       console.log('OneSignal notification clicked:', event);
-      // Handle notification clicks here
+      // Handle notification clicks here - go to home screen, will get redirected to quest-complete
+      router.navigate('/(app)/quest-complete');
     });
   }
 
@@ -126,7 +128,7 @@ export const requestNotificationPermissions = async (): Promise<boolean> => {
     const granted = await OneSignal.Notifications.requestPermission(true);
 
     // Store the setting in our local storage
-    await setItem(NOTIFICATIONS_ENABLED_KEY, granted ? 'true' : 'false');
+    setItem(NOTIFICATIONS_ENABLED_KEY, granted ? 'true' : 'false');
 
     return granted;
   } catch (error) {

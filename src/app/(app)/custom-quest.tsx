@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -42,6 +42,8 @@ export default function CustomQuestScreen() {
     mode: 'onChange',
   });
 
+  const pathname = usePathname();
+
   // Watch values for real-time updates
   const questDuration = watch('questDuration');
   const questCategory = watch('questCategory');
@@ -73,7 +75,9 @@ export default function CustomQuestScreen() {
 
       // Navigate back to active quest screen
       console.log('Navigating to active quest from custom quest');
-      router.replace('/(app)/active-quest');
+      if (pathname !== '/(app)/active-quest') {
+        router.navigate('/(app)/active-quest');
+      }
     } catch (error) {
       console.error('Error preparing quest:', error);
     }
