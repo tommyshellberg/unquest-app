@@ -1,35 +1,42 @@
-appId: ${APP_ID}
-env:
-  Name: 'User'
-  EMAIL: 'user@test.com'
-  PASSWORD: 'password'
+appId: com.vaedros.unquest
 ---
+# Reset app state before starting test
+- clearState # Clears local storage and preferences
+
+# Now proceed with the test
 - launchApp
-- runFlow:
-    when:
-      visible: 'Obytes Starter'
-    file: ../utils/onboarding.yaml
-- assertVisible: 'Sign In'
+
+# Verify login screen elements are visible
+- assertVisible: "Level up by logging off"
+- tapOn: "Begin your journey"
+- assertVisible: "EMAIL"
+
+# Verify the Send Link button is initially disabled 
 - assertVisible:
     id: 'login-button'
-- tapOn:
+    enabled: false
+
+# Enter invalid email and verify button remains disabled
+- tapOn: "Enter your email"
+- inputText: "thomas"
+- assertVisible:
     id: 'login-button'
-- assertVisible: 'Email is required'
-- assertVisible: 'Password is required'
-- tapOn:
-    id: 'name'
-- inputText: ${Name}
-- runFlow: ../utils/hide-keyboard.yaml
-- tapOn:
-    id: 'email-input'
-- inputText: 'email'
-- assertVisible: 'Invalid email format'
-- inputText: ${EMAIL}
-- runFlow: ../utils/hide-keyboard.yaml
-- tapOn:
-    id: 'password-input'
-- inputText: ${PASSWORD}
-- runFlow: ../utils/hide-keyboard.yaml
-- tapOn:
+    enabled: false
+
+# Enter valid email
+- tapOn: "Enter your email"
+- eraseText
+- inputText: "thomas@shellberg.com"
+
+# Now the button should be enabled
+- assertVisible:
     id: 'login-button'
-- assertVisible: 'Feed'
+    enabled: true
+
+# Tap the button and verify success message
+- tapOn: "Send Link"
+- assertVisible: "Email sent!"
+- assertVisible: "It may take a few minutes to arrive"
+
+# Take a screenshot of the success state
+- takeScreenshot: email-sent-success
