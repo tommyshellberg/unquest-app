@@ -75,6 +75,7 @@ export default function ProfileScreen() {
   // Check if character exists and handle redirect
   useEffect(() => {
     if (!character && !isRedirecting) {
+      console.log('redirecting to onboarding');
       // Set redirecting state to prevent double redirects
       setIsRedirecting(true);
       // Use setTimeout to ensure this happens after the current render cycle
@@ -103,7 +104,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <View className="bg-background flex-1">
+    <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       <ScrollView

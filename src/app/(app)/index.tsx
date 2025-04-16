@@ -1,5 +1,5 @@
 import { FlashList } from '@shopify/flash-list';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image } from 'react-native';
 import Animated, {
@@ -34,7 +34,9 @@ const MODES = [
 
 export default function Home() {
   const router = useRouter();
+  const pathname = usePathname();
   const activeQuest = useQuestStore((state) => state.activeQuest);
+  const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const refreshAvailableQuests = useQuestStore(
     (state) => state.refreshAvailableQuests
   );
@@ -73,8 +75,10 @@ export default function Home() {
 
   // Get next quest options based on the last completed story quest
   useEffect(() => {
-    if (activeQuest) return; // Don't update if there's an active quest
-
+    console.log('pendingQuest', pendingQuest);
+    console.log('activeQuest', activeQuest);
+    if (activeQuest || pendingQuest) return; // Don't update if there's an active quest
+    console.log('we are not returning early');
     // Get the last completed story quest
     const storyQuests = completedQuests.filter(
       (quest) => quest.mode === 'story'
@@ -94,6 +98,8 @@ export default function Home() {
     } else {
       // Get the last completed story quest
       const lastCompletedQuest = storyQuests[storyQuests.length - 1];
+
+      console.log('lastCompletedQuest', lastCompletedQuest);
 
       // Find this quest in the AVAILABLE_QUESTS array to get its options
       const questData = AVAILABLE_QUESTS.find(
@@ -134,7 +140,7 @@ export default function Home() {
         setStoryOptions([]);
       }
     }
-  }, [completedQuests, activeQuest]);
+  }, [completedQuests, activeQuest, pendingQuest]);
 
   // Refresh available quests when there's no active quest
   useEffect(() => {
@@ -183,7 +189,9 @@ export default function Home() {
       await QuestTimer.prepareQuest(selectedQuest);
       console.log('Navigating to active quest from index');
       // Navigate to active quest
-      router.replace('/active-quest');
+      if (pathname !== '/(app)/active-quest') {
+        router.navigate('/(app)/active-quest');
+      }
     }
   };
 

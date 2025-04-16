@@ -227,9 +227,15 @@ export default class QuestTimer {
   // Called from the lock state listener when phone is locked
   static async onPhoneLocked() {
     console.log('Phone locked');
-    this.isPhoneLocked = true;
 
-    await this.loadQuestData(); // Load data in case app was closed
+    // Early return if we're already in the locked state
+    if (this.isPhoneLocked) {
+      console.log('Phone already marked as locked, ignoring duplicate call');
+      return;
+    }
+
+    this.isPhoneLocked = true;
+    await this.loadQuestData();
 
     if (this.questTemplate && !this.questStartTime) {
       this.questStartTime = Date.now();
@@ -266,11 +272,21 @@ export default class QuestTimer {
 
       await this.saveQuestData();
 
-      const questStoreState = useQuestStore.getState();
-      questStoreState.startQuest({
-        ...this.questTemplate,
-        startTime: this.questStartTime,
-      });
+      // IMPORTANT CHANGE: Use setTimeout to delay store update when in background
+      setTimeout(() => {
+        // Only update store if phone is still locked
+        if (this.isPhoneLocked) {
+          const questStore = useQuestStore.getState();
+          // Check if there's already an active quest to prevent double-starting
+          if (!questStore.activeQuest) {
+            questStore.startQuest({
+              ...this.questTemplate,
+              startTime: this.questStartTime,
+            });
+          }
+        }
+      }, 500);
+
       console.log('Updating Android notification...');
       await BackgroundService.updateNotification({
         taskTitle: `Quest in progress: ${this.questTemplate.title}`,
@@ -350,14 +366,13 @@ export default class QuestTimer {
   private static backgroundTask = async (taskData?: {
     questDuration: number;
     questTitle: string;
-    // Include quest ID for Live Activity updates
     questId: string;
     questDescription: string;
   }) => {
     console.log('Background task started', taskData);
     if (!taskData) return;
 
-    // Load quest data initially
+    // Load quest data initially - only once
     await this.loadQuestData();
 
     // Use questId from taskData for Live Activity ID consistency
@@ -365,21 +380,12 @@ export default class QuestTimer {
     const { questDuration } = taskData;
 
     while (BackgroundService.isRunning()) {
-      // Reload quest data periodically
-      // @TODO: why are we calling this in the backgroundTask method? It should only be called once, right?
-      // await this.loadQuestData();
-
       if (this.isPhoneLocked && this.questStartTime && this.questTemplate) {
-        console.log('Background task is running');
-
         const elapsedTime = Date.now() - this.questStartTime;
         const progress = Math.min(
           Math.round((elapsedTime / questDuration) * 100),
           100
         );
-        console.log('progress', progress);
-        console.log('elapsedTime', elapsedTime);
-        console.log('questDuration', questDuration);
 
         // Update Android notification
         await BackgroundService.updateNotification({

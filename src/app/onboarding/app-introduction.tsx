@@ -130,8 +130,8 @@ export default function AppIntroductionScreen() {
               Discover quests and embrace your journey.
             </Text>
             <Text className="mb-4">
-              In unQuest, you'll embark on a mindful adventure by stepping away
-              from the digital world and reconnecting with the beauty of the
+              In unQuest, you'll embark on a mindful adventure by periodically
+              stepping away from the digital world and reconnecting with the
               real world.
             </Text>
             <Text className="mb-4">

@@ -44,7 +44,7 @@ export default function Onboarding() {
         </View>
 
         {/* Middle description section */}
-        <View className="flex-1 justify-center">
+        <View className="my-20 flex-1">
           <Text className="text-center text-xl">
             The only game that rewards you{'\n'}for not playing it.
           </Text>
