@@ -38,7 +38,7 @@ export default function VerifyMagicLinkScreen() {
         });
 
         // Navigate to the main app screen or appropriate next screen
-        router.replace('/');
+        // router.replace('/');
       } catch (error) {
         console.error('Error verifying magic link:', error);
         setError(

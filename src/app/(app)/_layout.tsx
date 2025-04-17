@@ -26,7 +26,11 @@ function TabBarIcon({ name, color, size = 24, focused = false }) {
 function CenterButton({ focused, color }) {
   return (
     <View className="-mt-5 items-center justify-center">
-      <View className="size-14 items-center justify-center rounded-full bg-secondary-300">
+      <View
+        className={`size-14 items-center justify-center rounded-full ${
+          focused ? 'bg-secondary-400' : 'bg-secondary-300'
+        }`}
+      >
         <Feather name="compass" size={28} color={white} />
       </View>
     </View>
@@ -35,12 +39,12 @@ function CenterButton({ focused, color }) {
 
 export default function TabLayout() {
   const navigationState = useRootNavigationState();
-  const hasRedirectedToCompletedRef = useRef(false);
   const pathname = usePathname();
   const appState = useRef(AppState.currentState);
   const { currentStep } = useOnboardingStore((s) => ({
     currentStep: s.currentStep,
   }));
+  const hasRedirectedToCompletedRef = useRef(false);
 
   // Quest state from store
   const failedQuest = useQuestStore((state) => state.failedQuest);
@@ -53,7 +57,6 @@ export default function TabLayout() {
   // Activate lock detection for the whole main app.
   useLockStateDetection();
 
-  // Handle completed quest redirect
   useEffect(() => {
     if (!navigationState?.key) return;
 
@@ -73,19 +76,6 @@ export default function TabLayout() {
       hasRedirectedToCompletedRef.current = false;
     }
   }, [navigationState?.key, recentCompletedQuest]);
-
-  useEffect(() => {
-    if (!navigationState?.key) return;
-    if (pathname.includes('failed-quest')) {
-      console.log('skipping redirect for failed-quest');
-      return;
-    }
-    if (failedQuest) {
-      console.log('Redirecting to failed-quest');
-      router.replace('/failed-quest');
-      return;
-    }
-  }, [failedQuest, navigationState?.key, pathname]);
 
   // AppState listener to handle live activity cleanup
   useEffect(() => {
@@ -127,6 +117,16 @@ export default function TabLayout() {
         router.replace('/login');
         return;
       }
+
+      // *** NEW: Skip onboarding redirect if there's a pending quest ***
+      // This gives priority to quest flow over onboarding flow
+      if (pendingQuest) {
+        console.log(
+          'Skipping onboarding redirect - pending quest takes priority'
+        );
+        return;
+      }
+
       // Use the onboarding store to check completion status
       const isOnboardingComplete = useOnboardingStore
         .getState()
@@ -139,7 +139,7 @@ export default function TabLayout() {
       }
     }
     checkAuth();
-  }, [failedQuest, navigationState?.key, pathname]);
+  }, [currentStep, failedQuest, navigationState?.key, pathname, pendingQuest]);
 
   // Check if navigation is ready
   if (!navigationState?.key) {
@@ -160,7 +160,7 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
           // Hide the tab bar for specific screens
-          display: ['quest-complete', 'active-quest', 'failed-quest'].includes(
+          display: ['quest-complete', 'pending-quest', 'failed-quest'].includes(
             route.name
           )
             ? 'none'
@@ -230,7 +230,7 @@ export default function TabLayout() {
 
       {/* Hide special screens from tabs */}
       <Tabs.Screen
-        name="active-quest"
+        name="pending-quest"
         options={{
           href: null,
         }}

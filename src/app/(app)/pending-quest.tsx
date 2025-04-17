@@ -14,17 +14,13 @@ import { Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { useQuestStore } from '@/store/quest-store';
 
-export default function ActiveQuestScreen() {
-  const activeQuest = useQuestStore((state) => state.activeQuest);
+export default function PendingQuestScreen() {
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const insets = useSafeAreaInsets();
   const cancelQuest = useQuestStore((state) => state.cancelQuest);
 
-  // Determine if we're in pending state
-  const isPending = !!pendingQuest;
-
   // Get the quest to display (either pending or active)
-  const displayQuest = pendingQuest || activeQuest;
+  const displayQuest = pendingQuest;
 
   // Header animation using react-native-reanimated
   const headerOpacity = useSharedValue(0);
@@ -48,7 +44,14 @@ export default function ActiveQuestScreen() {
     cardScale.value = withDelay(500, withTiming(1, { duration: 500 }));
     buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
     buttonScale.value = withDelay(1000, withTiming(1, { duration: 500 }));
-  }, []);
+  }, [
+    buttonOpacity,
+    buttonScale,
+    cardOpacity,
+    cardScale,
+    headerOpacity,
+    headerScale,
+  ]);
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
@@ -68,6 +71,10 @@ export default function ActiveQuestScreen() {
   const handleCancelQuest = () => {
     cancelQuest();
   };
+
+  useEffect(() => {
+    console.log('Active quest screen mounted');
+  }, [displayQuest]);
 
   return (
     <View className="flex-1">

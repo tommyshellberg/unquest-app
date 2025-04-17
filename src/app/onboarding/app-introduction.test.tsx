@@ -21,6 +21,12 @@ jest.mock('@/lib/services/notifications', () => ({
   requestNotificationPermissions: jest.fn().mockResolvedValue(true),
 }));
 
+// Mock Expo Notifications to resolve immediately during tests
+jest.mock('expo-notifications', () => ({
+  getPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  requestPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+}));
+
 // Mock expo-router
 jest.mock('expo-router');
 
@@ -60,15 +66,26 @@ describe('AppIntroductionScreen', () => {
     useOnboardingStore.getState().setCurrentStep = jest.fn();
   });
 
-  it('starts at welcome step', () => {
+  it('starts at welcome step', async () => {
     const { getByText } = render(<AppIntroductionScreen />);
-    expect(getByText('Welcome to unQuest')).toBeTruthy();
-    expect(getByText('Discover quests and embrace your journey.')).toBeTruthy();
-    expect(getByText('Got it')).toBeTruthy();
+
+    // Use waitFor to handle the async permission check
+    await waitFor(() => {
+      expect(getByText('Welcome to unQuest')).toBeTruthy();
+      expect(
+        getByText('Discover quests and embrace your journey.')
+      ).toBeTruthy();
+      expect(getByText('Got it')).toBeTruthy();
+    });
   });
 
   it("moves to notifications step after pressing 'Got it'", async () => {
     const { getByText } = render(<AppIntroductionScreen />);
+
+    // Wait for initial render to complete
+    await waitFor(() => {
+      expect(getByText('Got it')).toBeTruthy();
+    });
 
     // Press "Got it" button
     fireEvent.press(getByText('Got it'));
@@ -81,13 +98,20 @@ describe('AppIntroductionScreen', () => {
   });
 
   it("requests notification permissions when 'Enable notifications' is pressed", async () => {
-    const { getByText, findByText } = render(<AppIntroductionScreen />);
+    const { getByText } = render(<AppIntroductionScreen />);
+
+    // Wait for initial render to complete
+    await waitFor(() => {
+      expect(getByText('Got it')).toBeTruthy();
+    });
 
     // Navigate to notifications step
     fireEvent.press(getByText('Got it'));
 
     // Wait for the next step to appear
-    await findByText('Enable notifications');
+    await waitFor(() => {
+      expect(getByText('Enable notifications')).toBeTruthy();
+    });
 
     // Press "Enable notifications" button
     fireEvent.press(getByText('Enable notifications'));
@@ -100,11 +124,19 @@ describe('AppIntroductionScreen', () => {
   });
 
   it('moves to next steps after requesting permissions', async () => {
-    const { getByText, findByText } = render(<AppIntroductionScreen />);
+    const { getByText } = render(<AppIntroductionScreen />);
+
+    // Wait for initial render to complete
+    await waitFor(() => {
+      expect(getByText('Got it')).toBeTruthy();
+    });
 
     // Navigate to notifications step
     fireEvent.press(getByText('Got it'));
-    await findByText('Enable notifications');
+
+    await waitFor(() => {
+      expect(getByText('Enable notifications')).toBeTruthy();
+    });
 
     // Press "Enable notifications" button
     fireEvent.press(getByText('Enable notifications'));
@@ -117,14 +149,25 @@ describe('AppIntroductionScreen', () => {
   });
 
   it("navigates to choose-character when 'Create character' is pressed", async () => {
-    const { getByText, findByText } = render(<AppIntroductionScreen />);
+    const { getByText } = render(<AppIntroductionScreen />);
+
+    // Wait for initial render to complete
+    await waitFor(() => {
+      expect(getByText('Got it')).toBeTruthy();
+    });
 
     // Navigate through the steps
     fireEvent.press(getByText('Got it'));
-    await findByText('Enable notifications');
+
+    await waitFor(() => {
+      expect(getByText('Enable notifications')).toBeTruthy();
+    });
 
     fireEvent.press(getByText('Enable notifications'));
-    await findByText('Create character');
+
+    await waitFor(() => {
+      expect(getByText('Create character')).toBeTruthy();
+    });
 
     // Press "Create character" button
     fireEvent.press(getByText('Create character'));
@@ -141,11 +184,19 @@ describe('AppIntroductionScreen', () => {
       new Error('Permission request failed')
     );
 
-    const { getByText, findByText } = render(<AppIntroductionScreen />);
+    const { getByText } = render(<AppIntroductionScreen />);
+
+    // Wait for initial render to complete
+    await waitFor(() => {
+      expect(getByText('Got it')).toBeTruthy();
+    });
 
     // Navigate to notifications step
     fireEvent.press(getByText('Got it'));
-    await findByText('Enable notifications');
+
+    await waitFor(() => {
+      expect(getByText('Enable notifications')).toBeTruthy();
+    });
 
     // Press "Enable notifications" button
     fireEvent.press(getByText('Enable notifications'));
@@ -157,17 +208,20 @@ describe('AppIntroductionScreen', () => {
     });
   });
 
-  it('detects existing character data', () => {
+  it('detects existing character data', async () => {
     // Mock existing character data
     (useCharacterStore as jest.Mock).mockImplementation((selector) =>
       selector({ character: { name: 'TestChar', type: 'wizard' } })
     );
 
     const { getByText } = render(<AppIntroductionScreen />);
-    expect(getByText('Welcome to unQuest')).toBeTruthy();
+
+    await waitFor(() => {
+      expect(getByText('Welcome to unQuest')).toBeTruthy();
+    });
   });
 
-  it('detects existing user data', () => {
+  it('detects existing user data', async () => {
     // Mock existing user data
     (useUserStore as jest.Mock).mockImplementation((selector) =>
       selector({
@@ -180,6 +234,9 @@ describe('AppIntroductionScreen', () => {
     );
 
     const { getByText } = render(<AppIntroductionScreen />);
-    expect(getByText('Welcome to unQuest')).toBeTruthy();
+
+    await waitFor(() => {
+      expect(getByText('Welcome to unQuest')).toBeTruthy();
+    });
   });
 });

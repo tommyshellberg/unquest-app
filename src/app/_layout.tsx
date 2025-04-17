@@ -5,7 +5,7 @@ import { Env } from '@env';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { router, Stack } from 'expo-router';
+import { router, Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
 import FlashMessage from 'react-native-flash-message';
@@ -18,6 +18,7 @@ import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import { useThemeConfig } from '@/lib/use-theme-config';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
+import { useQuestStore } from '@/store/quest-store';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -48,6 +49,11 @@ function RootLayout() {
   const { currentStep } = useOnboardingStore((s) => ({
     currentStep: s.currentStep,
   }));
+  const pathname = usePathname();
+
+  // Add both quest states
+  const pendingQuest = useQuestStore((state) => state.pendingQuest);
+  const failedQuest = useQuestStore((state) => state.failedQuest);
 
   useEffect(() => {
     async function prepare() {
@@ -76,6 +82,56 @@ function RootLayout() {
       OneSignal.LiveActivities.setupDefault();
     }
   }, []);
+
+  // Add this effect to handle redirects to the pending-quest screen
+  // This needs to be at the root level to work across route groups
+  useEffect(() => {
+    // Skip until hydration is complete
+    if (!hydrationFinished || authStatus === 'hydrating') return;
+
+    if (pendingQuest) {
+      // Check if we're already on the pending-quest screen
+      if (pathname.includes('pending-quest')) {
+        console.log('Already on pending-quest screen, skipping redirect');
+        return;
+      }
+
+      console.log(
+        'Detected pendingQuest at root layout, redirecting to pending-quest screen'
+      );
+      router.replace('/(app)/pending-quest');
+    }
+  }, [pendingQuest, hydrationFinished, authStatus, pathname]);
+
+  // Add this effect to handle redirects to the failed-quest screen
+  useEffect(() => {
+    // Skip until hydration is complete
+    if (!hydrationFinished || authStatus === 'hydrating') return;
+
+    // Skip if we're already on the failed-quest screen
+    if (pathname.includes('failed-quest')) {
+      console.log('Already on failed-quest screen, skipping redirect');
+      return;
+    }
+
+    if (failedQuest) {
+      console.log(
+        'Detected failedQuest at root layout, redirecting to failed-quest screen'
+      );
+      requestAnimationFrame(() => {
+        try {
+          router.replace('/failed-quest');
+        } catch (error) {
+          console.error('Failed quest navigation failed, will retry', error);
+          setTimeout(() => {
+            if (hydrationFinished && authStatus !== 'idle') {
+              router.replace('/failed-quest');
+            }
+          }, 500);
+        }
+      });
+    }
+  }, [failedQuest, hydrationFinished, authStatus, pathname]);
 
   const onLayoutRootView = useCallback(async () => {
     if (currentStep === OnboardingStep.NOT_STARTED) {

@@ -111,11 +111,8 @@ export default function ScreenTimeGoalScreen() {
         },
       });
 
-      // 2. Save screen time goals in onboarding store
-      useOnboardingStore.getState().setScreenTimes(currentTime, targetTime);
-
       // 3. Mark onboarding as COMPLETED (since we're skipping the first-quest screen)
-      useOnboardingStore.getState().setCurrentStep(OnboardingStep.COMPLETED);
+      useOnboardingStore.getState().setCurrentStep(OnboardingStep.GOALS_SET);
 
       // 4. Update on the server
       await apiClient.patch('/users/me', {
@@ -126,11 +123,8 @@ export default function ScreenTimeGoalScreen() {
       });
 
       console.log('User screen time goals updated on the server');
-
-      // No manual navigation needed - the _layout.tsx will handle redirection
-      // to the main app when it sees OnboardingStep.COMPLETED
     } catch (error) {
-      console.error('Error updating user screen time goals:', error);
+      console.error('Error updating user scdreen time goals:', error);
       setIsSubmitting(false);
     }
   };

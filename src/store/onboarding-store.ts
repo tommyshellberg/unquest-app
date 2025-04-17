@@ -15,14 +15,10 @@ export enum OnboardingStep {
 type OnboardingState = {
   // Step tracking
   currentStep: OnboardingStep;
-  // Screen time goals (still needed)
-  currentScreenTime: number | null;
-  goalScreenTime: number | null;
 
   // Actions
   setCurrentStep: (step: OnboardingStep) => void;
   isOnboardingComplete: () => boolean;
-  setScreenTimes: (current: number, goal: number) => void;
   resetOnboarding: () => void;
 };
 
@@ -33,11 +29,11 @@ const getItemForStorage = (name: string) => {
 };
 
 const setItemForStorage = async (name: string, value: string) => {
-  await setItem(name, value);
+  setItem(name, value);
 };
 
 const removeItemForStorage = async (name: string) => {
-  await removeItem(name);
+  removeItem(name);
 };
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -46,28 +42,14 @@ export const useOnboardingStore = create<OnboardingState>()(
       // Initial step state
       currentStep: OnboardingStep.NOT_STARTED,
 
-      // Screen time goals
-      currentScreenTime: null,
-      goalScreenTime: null,
-
       // Step management
       setCurrentStep: (step) => set({ currentStep: step }),
       isOnboardingComplete: () =>
         get().currentStep === OnboardingStep.COMPLETED,
 
-      // Screen time goals
-      setScreenTimes: (current, goal) =>
-        set({
-          currentScreenTime: current,
-          goalScreenTime: goal,
-          currentStep: OnboardingStep.GOALS_SET,
-        }),
-
       resetOnboarding: () =>
         set({
           currentStep: OnboardingStep.NOT_STARTED,
-          currentScreenTime: null,
-          goalScreenTime: null,
         }),
     }),
     {
