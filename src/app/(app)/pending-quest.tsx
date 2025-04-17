@@ -12,12 +12,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 export default function PendingQuestScreen() {
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const insets = useSafeAreaInsets();
   const cancelQuest = useQuestStore((state) => state.cancelQuest);
+  const currentStep = useOnboardingStore((state) => state.currentStep);
 
   // Get the quest to display (either pending or active)
   const displayQuest = pendingQuest;
@@ -31,10 +33,19 @@ export default function PendingQuestScreen() {
   const buttonScale = useSharedValue(0.9);
 
   useEffect(() => {
-    if (!displayQuest) {
+    // Only redirect automatically if we don't have a quest
+    // AND we're not in the onboarding flow
+    if (!displayQuest && currentStep === OnboardingStep.COMPLETED) {
+      console.log('No quest and onboarding complete - navigating to home');
       router.replace('/');
+    } else if (!displayQuest && currentStep === OnboardingStep.GOALS_SET) {
+      // If we're in onboarding and cancelled a quest, go back to first-quest screen
+      console.log(
+        'Quest cancelled during onboarding - returning to first-quest'
+      );
+      router.replace('/onboarding/first-quest');
     }
-  }, [displayQuest]);
+  }, [displayQuest, currentStep]);
 
   useEffect(() => {
     // Simple animation sequence
@@ -69,12 +80,14 @@ export default function PendingQuestScreen() {
   }));
 
   const handleCancelQuest = () => {
+    console.log('Cancelling quest from pending screen');
     cancelQuest();
+    // No direct navigation here - let the useEffect handle it based on state
   };
 
   useEffect(() => {
-    console.log('Active quest screen mounted');
-  }, [displayQuest]);
+    console.log('Pending quest screen mounted, step:', currentStep);
+  }, [currentStep]);
 
   return (
     <View className="flex-1">

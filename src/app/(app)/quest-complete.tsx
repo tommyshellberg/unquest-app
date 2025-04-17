@@ -1,5 +1,5 @@
-import { Redirect, router } from 'expo-router';
-import React, { useEffect } from 'react';
+import { router } from 'expo-router';
+import React from 'react';
 import { ActivityIndicator } from 'react-native';
 
 import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
@@ -13,14 +13,6 @@ export default function QuestCompleteScreen() {
   const clearRecentCompletedQuest = useQuestStore(
     (state) => state.clearRecentCompletedQuest
   );
-
-  // Use useEffect for navigation if there's no quest
-  useEffect(() => {
-    if (!recentCompletedQuest) {
-      console.log('no quest to display, redirecting to home');
-      router.replace('/index');
-    }
-  }, [recentCompletedQuest]);
 
   // If there's no quest to display, show a loading state until redirect happens
   if (!recentCompletedQuest) {
@@ -82,15 +74,18 @@ export default function QuestCompleteScreen() {
           ? useQuestStore.getState().recentCompletedQuest?.id
           : null
       );
+
+      // Use absolute path instead of relative path for more reliable navigation
+      console.log('Navigating to profile screen');
+
+      // Delay navigation slightly to allow state update to complete
+      setTimeout(() => {
+        router.replace('/(app)/profile');
+      }, 50);
     } catch (error) {
       console.error('Navigation error:', error);
     }
   };
-
-  if (!recentCompletedQuest) {
-    console.log('reset recentCompletedQuest, redirecting to home');
-    return <Redirect href="/" />;
-  }
 
   return (
     <QuestCompleteComponent

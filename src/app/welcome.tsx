@@ -1,6 +1,6 @@
 // src/app/index.tsx
 import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import {
   Button,
@@ -16,13 +16,14 @@ export default function WelcomeScreen() {
   const { setCurrentStep } = useOnboardingStore();
 
   const handleGetStarted = () => {
+    // Set step first
     setCurrentStep(OnboardingStep.INTRO_COMPLETED);
+    // Then navigate to login - the original correct behavior
+    console.log(
+      'Welcome screen: Setting INTRO_COMPLETED and navigating to login'
+    );
     router.replace('/login');
   };
-
-  useEffect(() => {
-    console.log('welcome page mounting');
-  }, []);
 
   return (
     <View className="flex h-full">

@@ -3,6 +3,8 @@ appId: com.vaedros.unquest.development
 - clearState
 - launchApp
 
+- assertVisible: "Level Up By Logging Off"
+- tapOn: "begin your journey"
 # Now you land immediately in your app, past Expo's own onboarding…
 - assertVisible: "Welcome to unQuest"
 - tapOn: "Got it"
@@ -80,6 +82,16 @@ appId: com.vaedros.unquest.development
 - assertVisible: "Set My Goal"
 - tapOn: "Set My Goal"
 
-- assertVisible: "Choose your adventure"
+- assertVisible: "Your Journey Begins"
+- tapOn: "Wake up"
+
+- assertVisible: "Lock your phone to begin your quest"
+- assertVisible: "Cancel Quest"
+- tapOn: "Cancel Quest"
+
+- assertVisible: "Your Journey Begins"
+- tapOn: "Wake up"
+- assertVisible: "Lock your phone to begin your quest"
+- assertVisible: "Cancel Quest"
 
 #now at the home screen, done with onboarding.

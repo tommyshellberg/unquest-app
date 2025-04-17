@@ -106,7 +106,6 @@ export default function TabLayout() {
 
   // Handle auth check and redirects.
   useEffect(() => {
-    console.log('checking auth');
     if (!navigationState?.key) return;
 
     async function checkAuth() {

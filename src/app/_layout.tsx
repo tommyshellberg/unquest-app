@@ -46,9 +46,7 @@ function RootLayout() {
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
-  const { currentStep } = useOnboardingStore((s) => ({
-    currentStep: s.currentStep,
-  }));
+  const currentStep = useOnboardingStore((s) => s.currentStep);
   const pathname = usePathname();
 
   // Add both quest states
@@ -83,8 +81,17 @@ function RootLayout() {
     }
   }, []);
 
-  // Add this effect to handle redirects to the pending-quest screen
-  // This needs to be at the root level to work across route groups
+  useEffect(() => {
+    if (!hydrationFinished || authStatus === 'hydrating') return;
+    if (
+      currentStep === OnboardingStep.NOT_STARTED &&
+      !pathname.includes('welcome')
+    ) {
+      console.log('redirecting to welcome');
+      router.replace('./welcome');
+    }
+  }, [currentStep, pathname, hydrationFinished, authStatus]);
+
   useEffect(() => {
     // Skip until hydration is complete
     if (!hydrationFinished || authStatus === 'hydrating') return;
@@ -134,15 +141,12 @@ function RootLayout() {
   }, [failedQuest, hydrationFinished, authStatus, pathname]);
 
   const onLayoutRootView = useCallback(async () => {
-    if (currentStep === OnboardingStep.NOT_STARTED) {
-      router.replace('./welcome');
-    }
     // Check both flags: hydration promise resolved AND auth status is final
     if (hydrationFinished && authStatus !== 'hydrating') {
       await SplashScreen.hideAsync();
       console.log('Splash screen hidden (Layout Ready & Auth Status Final)');
     }
-  }, [hydrationFinished, authStatus, currentStep]);
+  }, [hydrationFinished, authStatus]);
 
   // Return null until hydration promise is done AND auth status is final
   if (!hydrationFinished || authStatus === 'hydrating') {
@@ -150,6 +154,7 @@ function RootLayout() {
   }
 
   console.log('RootLayout rendering, Final Auth Status:', authStatus);
+  console.log('RootLayout rendering, Current Step:', currentStep);
 
   return (
     <Providers onLayout={onLayoutRootView}>

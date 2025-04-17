@@ -1,0 +1,31 @@
+import { Redirect } from 'expo-router';
+import React from 'react';
+
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
+
+export default function OnboardingIndex() {
+  const currentStep = useOnboardingStore((s) => s.currentStep);
+
+  // Map each step to the matching route
+  const stepToRoute: Record<OnboardingStep, string> = {
+    [OnboardingStep.NOT_STARTED]: '/welcome',
+    [OnboardingStep.INTRO_COMPLETED]: '/onboarding/app-introduction',
+    [OnboardingStep.NOTIFICATIONS_COMPLETED]: '/onboarding/choose-character',
+    [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/screen-time-goal',
+    [OnboardingStep.GOALS_SET]: '/onboarding/first-quest',
+    [OnboardingStep.COMPLETED]: '/(app)',
+  };
+
+  // Determine the correct path based on the current step
+  const targetPath = stepToRoute[currentStep];
+
+  console.log(
+    'Onboarding index redirecting to',
+    targetPath,
+    'based on step',
+    currentStep
+  );
+
+  // Redirect to the appropriate step - cast as any to handle type issues with Expo Router types
+  return <Redirect href={targetPath as any} />;
+}

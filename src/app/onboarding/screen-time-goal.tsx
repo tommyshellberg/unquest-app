@@ -111,7 +111,6 @@ export default function ScreenTimeGoalScreen() {
         },
       });
 
-      // 3. Mark onboarding as COMPLETED (since we're skipping the first-quest screen)
       useOnboardingStore.getState().setCurrentStep(OnboardingStep.GOALS_SET);
 
       // 4. Update on the server

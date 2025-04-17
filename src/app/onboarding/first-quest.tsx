@@ -1,4 +1,4 @@
-import { usePathname, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Image } from 'react-native';
 import Animated, {
@@ -12,12 +12,14 @@ import Animated, {
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { Button, Card, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 export default function FirstQuestScreen() {
   const router = useRouter();
-  const pathname = usePathname();
   const prepareQuest = useQuestStore((state) => state.prepareQuest);
+  const pendingQuest = useQuestStore((state) => state.pendingQuest);
+  const currentStep = useOnboardingStore((state) => state.currentStep);
 
   // Animation values for a smooth sequential fade-in effect
   const headerOpacity = useSharedValue(0);
@@ -31,6 +33,16 @@ export default function FirstQuestScreen() {
 
   const buttonOpacity = useSharedValue(0);
   const buttonTranslateY = useSharedValue(-5);
+
+  // Check if we already have a pending quest - if so, navigate to pending-quest screen
+  useEffect(() => {
+    if (pendingQuest) {
+      console.log(
+        'First quest screen: Already have pending quest, navigating to pending-quest screen'
+      );
+      router.replace('/(app)/pending-quest');
+    }
+  }, [pendingQuest, router]);
 
   // Start animations sequentially when component mounts
   useEffect(() => {
@@ -60,6 +72,17 @@ export default function FirstQuestScreen() {
     hintTranslateY,
   ]);
 
+  // Check that we're in the right step
+  useEffect(() => {
+    console.log('First quest screen mounted, current step:', currentStep);
+    if (currentStep !== OnboardingStep.GOALS_SET) {
+      console.log(
+        'First quest screen: Wrong step, should be GOALS_SET but is',
+        currentStep
+      );
+    }
+  }, [currentStep]);
+
   // Animated styles
   const headerStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
@@ -84,12 +107,14 @@ export default function FirstQuestScreen() {
   // Handle starting the first quest
   const handleStartQuest = async () => {
     try {
+      console.log('Starting first quest');
       // Find the first story quest
       const firstStoryQuest = AVAILABLE_QUESTS.find(
         (quest) => quest.mode === 'story'
       );
 
       if (firstStoryQuest) {
+        console.log('Found first story quest:', firstStoryQuest.id);
         // Prepare the quest in the store
         prepareQuest(firstStoryQuest);
 
@@ -100,6 +125,10 @@ export default function FirstQuestScreen() {
           console.error('Error preparing quest timer:', error);
           // Continue with navigation even if timer setup fails
         }
+
+        // Router will automatically navigate to pending-quest via the useEffect above
+      } else {
+        console.error('No story quest found in AVAILABLE_QUESTS');
       }
     } catch (error) {
       console.error('Error starting quest:', error);

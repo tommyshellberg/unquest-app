@@ -1,4 +1,4 @@
-appId: com.vaedros.unquest
+appId: com.vaedros.unquest.development
 ---
 # Reset app state before starting test
 - clearState # Clears local storage and preferences

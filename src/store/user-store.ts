@@ -26,7 +26,6 @@ interface UserState {
 // Create type-safe functions for Zustand's storage
 const getItemForStorage = (name: string) => {
   const value = getItem<string>(name);
-  console.log('getItemForStorage', name, value);
   return value ?? null;
 };
 

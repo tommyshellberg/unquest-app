@@ -36,7 +36,7 @@ export default function AppIntroductionScreen() {
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const character = useCharacterStore((state) => state.character);
   const user = useUserStore((state) => state.user);
-
+  const currentStep = useOnboardingStore((state) => state.currentStep);
   const hasExistingData = !!character || !!user;
 
   // Animation values for a smooth fade/scale-in effect.
@@ -45,11 +45,12 @@ export default function AppIntroductionScreen() {
   const buttonOpacity = useSharedValue(0);
 
   useEffect(() => {
-    console.log('character', character);
+    console.log('app introduction screen mounting');
+    console.log('APP INTRODUCTION MOUNTING WITH STEP:', currentStep);
     return () => {
       console.log('app introduction screen unmounted');
     };
-  }, [character]);
+  }, [currentStep]);
 
   // Reset and play animations when step changes
   useEffect(() => {
