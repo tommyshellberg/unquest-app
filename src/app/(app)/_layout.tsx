@@ -5,9 +5,9 @@ import { AppState, Platform, View } from 'react-native';
 
 import { getAccessToken } from '@/api/token';
 import { white } from '@/components/ui/colors';
-import { useIsFirstTime } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import QuestTimer from '@/lib/services/quest-timer';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 // Tab icon component
@@ -34,11 +34,13 @@ function CenterButton({ focused, color }) {
 }
 
 export default function TabLayout() {
-  const [isFirstTime] = useIsFirstTime();
   const navigationState = useRootNavigationState();
   const hasRedirectedToCompletedRef = useRef(false);
   const pathname = usePathname();
   const appState = useRef(AppState.currentState);
+  const { currentStep } = useOnboardingStore((s) => ({
+    currentStep: s.currentStep,
+  }));
 
   // Quest state from store
   const failedQuest = useQuestStore((state) => state.failedQuest);
@@ -70,7 +72,7 @@ export default function TabLayout() {
       console.log('Resetting completed quest redirect flag to false');
       hasRedirectedToCompletedRef.current = false;
     }
-  }, [recentCompletedQuest]);
+  }, [navigationState?.key, recentCompletedQuest]);
 
   useEffect(() => {
     if (!navigationState?.key) return;
@@ -83,7 +85,7 @@ export default function TabLayout() {
       router.replace('/failed-quest');
       return;
     }
-  }, [failedQuest, pathname]);
+  }, [failedQuest, navigationState?.key, pathname]);
 
   // AppState listener to handle live activity cleanup
   useEffect(() => {
@@ -114,14 +116,10 @@ export default function TabLayout() {
 
   // Handle auth check and redirects.
   useEffect(() => {
+    console.log('checking auth');
     if (!navigationState?.key) return;
 
     async function checkAuth() {
-      if (isFirstTime) {
-        router.replace('/onboarding');
-        return;
-      }
-
       // Check for the presence of an access token
       const accessToken = await getAccessToken();
       if (!accessToken) {
@@ -129,9 +127,19 @@ export default function TabLayout() {
         router.replace('/login');
         return;
       }
+      // Use the onboarding store to check completion status
+      const isOnboardingComplete = useOnboardingStore
+        .getState()
+        .isOnboardingComplete();
+
+      if (currentStep !== OnboardingStep.NOT_STARTED && !isOnboardingComplete) {
+        console.log('routing to onboarding - onboarding not complete');
+        router.replace('/onboarding');
+        return;
+      }
     }
     checkAuth();
-  }, [isFirstTime, failedQuest, navigationState?.key, pathname]);
+  }, [failedQuest, navigationState?.key, pathname]);
 
   // Check if navigation is ready
   if (!navigationState?.key) {

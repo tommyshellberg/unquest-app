@@ -1,5 +1,4 @@
 import * as Notifications from 'expo-notifications';
-import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Image } from 'react-native';
 import Animated, {
@@ -17,19 +16,23 @@ import {
   setupNotifications,
 } from '@/lib/services/notifications';
 import { useCharacterStore } from '@/store/character-store';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useUserStore } from '@/store/user-store';
 
-enum OnboardingStep {
-  WELCOME,
-  NOTIFICATIONS,
-  CHOOSE_CHARACTER,
+// Local steps just for this screen's flow
+enum IntroStep {
+  WELCOME = 'welcome',
+  NOTIFICATIONS = 'notifications',
+  READY_FOR_CHARACTER = 'ready_for_character',
 }
 
 export default function AppIntroductionScreen() {
-  const router = useRouter();
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>(
-    OnboardingStep.WELCOME
-  );
+  // Use local state for UI steps within this screen
+  const [introStep, setIntroStep] = useState<IntroStep>(IntroStep.WELCOME);
+
+  // Use global state for tracking overall onboarding progress
+  const setCurrentStep = useOnboardingStore((state) => state.setCurrentStep);
+
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const character = useCharacterStore((state) => state.character);
   const user = useUserStore((state) => state.user);
@@ -62,7 +65,7 @@ export default function AppIntroductionScreen() {
       withSequence(withSpring(1.05), withSpring(1))
     );
     buttonOpacity.value = withDelay(1200, withTiming(1, { duration: 500 }));
-  }, [currentStep]);
+  }, [introStep]);
 
   // Check if permissions are already granted
   useEffect(() => {
@@ -90,21 +93,21 @@ export default function AppIntroductionScreen() {
     }
 
     // Move to the next step
-    setCurrentStep(OnboardingStep.CHOOSE_CHARACTER);
+    setIntroStep(IntroStep.READY_FOR_CHARACTER);
   };
 
   // Handle button press based on current step
   const handleButtonPress = () => {
-    switch (currentStep) {
-      case OnboardingStep.WELCOME:
-        setCurrentStep(OnboardingStep.NOTIFICATIONS);
+    switch (introStep) {
+      case IntroStep.WELCOME:
+        setIntroStep(IntroStep.NOTIFICATIONS);
         break;
-      case OnboardingStep.NOTIFICATIONS:
+      case IntroStep.NOTIFICATIONS:
         requestPermissions();
         break;
-      case OnboardingStep.CHOOSE_CHARACTER:
-        // Navigate to character creation
-        router.push('/onboarding/choose-character');
+      case IntroStep.READY_FOR_CHARACTER:
+        // Update global onboarding state when we're done with intro
+        setCurrentStep(OnboardingStep.NOTIFICATIONS_COMPLETED);
         break;
     }
   };
@@ -121,8 +124,8 @@ export default function AppIntroductionScreen() {
 
   // Render content based on current step
   const renderContent = () => {
-    switch (currentStep) {
-      case OnboardingStep.WELCOME:
+    switch (introStep) {
+      case IntroStep.WELCOME:
         return (
           <>
             <Text className="text-xl font-bold">Welcome to unQuest</Text>
@@ -141,7 +144,7 @@ export default function AppIntroductionScreen() {
           </>
         );
 
-      case OnboardingStep.NOTIFICATIONS:
+      case IntroStep.NOTIFICATIONS:
         return (
           <>
             <Text className="text-xl font-bold">Notifications</Text>
@@ -165,7 +168,7 @@ export default function AppIntroductionScreen() {
           </>
         );
 
-      case OnboardingStep.CHOOSE_CHARACTER:
+      case IntroStep.READY_FOR_CHARACTER:
         return (
           <>
             <Text className="mb-6 text-xl font-bold">
@@ -184,12 +187,12 @@ export default function AppIntroductionScreen() {
 
   // Get button text based on current step
   const getButtonText = () => {
-    switch (currentStep) {
-      case OnboardingStep.WELCOME:
+    switch (introStep) {
+      case IntroStep.WELCOME:
         return 'Got it';
-      case OnboardingStep.NOTIFICATIONS:
+      case IntroStep.NOTIFICATIONS:
         return 'Enable notifications';
-      case OnboardingStep.CHOOSE_CHARACTER:
+      case IntroStep.READY_FOR_CHARACTER:
         return 'Create character';
     }
   };

@@ -69,17 +69,18 @@
         "EXPO_NO_DOTENV": "1"
       }
     },
-    "simulator": {
+    "simulator-apk": {
       "pnpm": "9.12.3",
       "ios": {
         "simulator": true,
         "image": "latest"
       },
       "android": {
-        "image": "latest"
+        "image": "latest",
+        "buildType": "apk"
       },
       "env": {
-        "APP_ENV": "development",
+        "APP_ENV": "production",
         "EXPO_NO_DOTENV": "1"
       }
     }

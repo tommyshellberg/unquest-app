@@ -15,6 +15,7 @@ import {
 import { getUserDetails } from '@/lib/services/user';
 import { setItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 import { useUserStore } from '@/store/user-store';
 
@@ -31,7 +32,7 @@ export default function Settings() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const user = useUserStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(true);
-
+  const resetOnboarding = useOnboardingStore((state) => state.resetOnboarding);
   // Load notification settings on mount
   useEffect(() => {
     const checkNotifications = async () => {
@@ -112,6 +113,7 @@ export default function Settings() {
       // Reset all stores
       resetQuestStore();
       resetCharacter();
+      resetOnboarding();
       Alert.alert('App Data Reset', 'The app data has been reset.');
     } catch (error) {
       console.error('Failed to reset app data:', error);

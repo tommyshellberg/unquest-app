@@ -35,8 +35,4 @@ appId: com.vaedros.unquest
 
 # Tap the button and verify success message
 - tapOn: "Send Link"
-- assertVisible: "Email sent!"
-- assertVisible: "It may take a few minutes to arrive"
-
-# Take a screenshot of the success state
-- takeScreenshot: email-sent-success
+- assertVisible: "Email sent! It may take a few minutes to arrive. Please check your SPAM folder."

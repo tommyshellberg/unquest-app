@@ -3,12 +3,25 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getItem, removeItem, setItem } from '@/lib/storage';
 
+export enum OnboardingStep {
+  NOT_STARTED = 'not_started',
+  INTRO_COMPLETED = 'intro_completed',
+  NOTIFICATIONS_COMPLETED = 'notifications_completed',
+  CHARACTER_SELECTED = 'character_selected',
+  GOALS_SET = 'goals_set',
+  COMPLETED = 'completed',
+}
+
 type OnboardingState = {
-  selectedCharacterId: string | null;
+  // Step tracking
+  currentStep: OnboardingStep;
+  // Screen time goals (still needed)
   currentScreenTime: number | null;
   goalScreenTime: number | null;
+
   // Actions
-  setSelectedCharacter: (id: string) => void;
+  setCurrentStep: (step: OnboardingStep) => void;
+  isOnboardingComplete: () => boolean;
   setScreenTimes: (current: number, goal: number) => void;
   resetOnboarding: () => void;
 };
@@ -29,22 +42,30 @@ const removeItemForStorage = async (name: string) => {
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
-    (set) => ({
-      selectedCharacterId: null,
+    (set, get) => ({
+      // Initial step state
+      currentStep: OnboardingStep.NOT_STARTED,
+
+      // Screen time goals
       currentScreenTime: null,
       goalScreenTime: null,
 
-      setSelectedCharacter: (id) => set({ selectedCharacterId: id }),
+      // Step management
+      setCurrentStep: (step) => set({ currentStep: step }),
+      isOnboardingComplete: () =>
+        get().currentStep === OnboardingStep.COMPLETED,
 
+      // Screen time goals
       setScreenTimes: (current, goal) =>
         set({
           currentScreenTime: current,
           goalScreenTime: goal,
+          currentStep: OnboardingStep.GOALS_SET,
         }),
 
       resetOnboarding: () =>
         set({
-          selectedCharacterId: null,
+          currentStep: OnboardingStep.NOT_STARTED,
           currentScreenTime: null,
           goalScreenTime: null,
         }),

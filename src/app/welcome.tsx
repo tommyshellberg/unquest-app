@@ -1,5 +1,6 @@
+// src/app/index.tsx
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import {
   Button,
@@ -8,32 +9,35 @@ import {
   Text,
   View,
 } from '@/components/ui';
-import { useIsFirstTime } from '@/lib/hooks';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 
-export default function Onboarding() {
-  const [_, setIsFirstTime] = useIsFirstTime();
+export default function WelcomeScreen() {
   const router = useRouter();
+  const { setCurrentStep } = useOnboardingStore();
 
   const handleGetStarted = () => {
-    // Mark that it's no longer first time, then navigate to login
-    setIsFirstTime(false);
+    setCurrentStep(OnboardingStep.INTRO_COMPLETED);
     router.replace('/login');
   };
+
+  useEffect(() => {
+    console.log('welcome page mounting');
+  }, []);
 
   return (
     <View className="flex h-full">
       <FocusAwareStatusBar />
 
-      {/* Background image using Cover component */}
-      <View className="absolute inset-0 w-full flex-1">
+      {/* Full‑screen background */}
+      <View className="absolute inset-0">
         <Image
           source={require('@/../assets/images/background/onboarding.jpg')}
           style={{ width: '100%', height: '100%' }}
         />
       </View>
 
+      {/* Content */}
       <View className="flex-1 px-6 py-4">
-        {/* Top logo and title section */}
         <View className="mt-8 items-center">
           <Image
             source={require('@/../assets/images/unquestlogo-downscaled.png')}
@@ -43,14 +47,12 @@ export default function Onboarding() {
           <Text className="text-lg font-semibold">Level Up By Logging Off</Text>
         </View>
 
-        {/* Middle description section */}
         <View className="flex-1 justify-center">
           <Text className="text-center text-xl">
             The only game that rewards you{'\n'}for not playing it.
           </Text>
         </View>
 
-        {/* Bottom button section */}
         <View className="mb-10">
           <Button
             testID="get-started-button"

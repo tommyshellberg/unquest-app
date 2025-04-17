@@ -98,6 +98,7 @@ apiClient.interceptors.response.use(
 
       try {
         const newTokens = await refreshAccessToken();
+        console.log('newTokens', newTokens);
 
         if (newTokens?.access?.token) {
           console.log('Token refresh successful.');

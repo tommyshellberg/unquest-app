@@ -1,25 +1,27 @@
 // Import  global CSS file
 import '../../global.css';
 
+import { Env } from '@env';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { LogLevel, OneSignal } from 'react-native-onesignal';
 
 import { APIProvider } from '@/api';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import { useThemeConfig } from '@/lib/use-theme-config';
-import { Env } from '@env';
-import { OneSignal, LogLevel } from 'react-native-onesignal';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 
 export { ErrorBoundary } from 'expo-router';
 
+// @todo: I don't think we use this at all.
 export const unstable_settings = {
   initialRouteName: '(app)',
 };
@@ -43,6 +45,9 @@ function RootLayout() {
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
+  const { currentStep } = useOnboardingStore((s) => ({
+    currentStep: s.currentStep,
+  }));
 
   useEffect(() => {
     async function prepare() {
@@ -73,12 +78,15 @@ function RootLayout() {
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
+    if (currentStep === OnboardingStep.NOT_STARTED) {
+      router.replace('./welcome');
+    }
     // Check both flags: hydration promise resolved AND auth status is final
     if (hydrationFinished && authStatus !== 'hydrating') {
       await SplashScreen.hideAsync();
       console.log('Splash screen hidden (Layout Ready & Auth Status Final)');
     }
-  }, [hydrationFinished, authStatus]);
+  }, [hydrationFinished, authStatus, currentStep]);
 
   // Return null until hydration promise is done AND auth status is final
   if (!hydrationFinished || authStatus === 'hydrating') {
@@ -93,6 +101,7 @@ function RootLayout() {
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
       </Stack>
     </Providers>
   );

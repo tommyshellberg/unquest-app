@@ -26,14 +26,14 @@ export const storeTokens = async (tokens: AuthTokens): Promise<void> => {
   console.log('Storing tokens:', tokens);
   try {
     // Convert the structure to match what our utils expect
-    await setToken({
+    setToken({
       access: tokens.access.token,
       refresh: tokens.refresh.token,
     });
 
     // Store token expiry in the same format (using the same MMKV storage)
-    await setItem('access_token_expiry', tokens.access.expires);
-    await setItem('refresh_token_expiry', tokens.refresh.expires);
+    setItem('access_token_expiry', tokens.access.expires);
+    setItem('refresh_token_expiry', tokens.refresh.expires);
   } catch (error) {
     console.error('Error storing tokens:', error);
     throw error;
@@ -59,6 +59,7 @@ export const getAccessToken = async (): Promise<string | null> => {
 export const getRefreshToken = async (): Promise<string | null> => {
   try {
     const tokens = getToken();
+    console.log('tokens', tokens);
     return tokens?.refresh ?? null;
   } catch (error) {
     console.error('Error getting refresh token:', error);

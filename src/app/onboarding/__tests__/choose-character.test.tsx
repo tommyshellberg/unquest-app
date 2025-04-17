@@ -3,19 +3,14 @@ import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
 import ChooseCharacterScreen from "../choose-character";
 import { updateUserCharacter } from '@/lib/services/user';
 import { Dimensions } from 'react-native';
+import { useOnboardingStore, OnboardingStep } from '@/store/onboarding-store';
 
 // Mock updateUserCharacter so we can simulate both success and failure.
 jest.mock('@/lib/services/user', () => ({
   updateUserCharacter: jest.fn(),
 }));
 
-// Create a mock for useRouter so we can verify navigation.
-const mockPush = jest.fn();
-jest.mock('expo-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
+// We no longer mock expo‑router—screens don't call router.push() any more.
 
 // Provide a mock for useNavigation to avoid missing navigation object errors.
 jest.mock('@react-navigation/native', () => ({
@@ -98,8 +93,8 @@ const snapInterval = cardWidth;
 describe('ChooseCharacterScreen', () => {
   beforeEach(() => {
     jest.useFakeTimers();
-    mockPush.mockClear();
-    mockCreateCharacter.mockClear();
+    // Stub the store setter:
+    useOnboardingStore.getState().setCurrentStep = jest.fn();
     (updateUserCharacter as jest.Mock).mockClear();
   });
 
@@ -164,7 +159,9 @@ describe('ChooseCharacterScreen', () => {
     });
 
     expect(mockCreateCharacter).toHaveBeenCalledWith('knight', 'Arthur');
-    expect(mockPush).toHaveBeenCalledWith('/onboarding/screen-time-goal');
+    expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
+      OnboardingStep.CHARACTER_SELECTED
+    );
   });
 
   it('should gracefully handle a failed API request and still navigate', async () => {
@@ -206,6 +203,8 @@ describe('ChooseCharacterScreen', () => {
     });
 
     expect(mockCreateCharacter).toHaveBeenCalledWith('alchemist', 'Merlin');
-    expect(mockPush).toHaveBeenCalledWith('/onboarding/screen-time-goal');
+    expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
+      OnboardingStep.CHARACTER_SELECTED
+    );
   });
 });
