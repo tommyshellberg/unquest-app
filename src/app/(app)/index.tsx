@@ -1,5 +1,5 @@
 import { FlashList } from '@shopify/flash-list';
-import { usePathname, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image } from 'react-native';
 import Animated, {
@@ -34,7 +34,6 @@ const MODES = [
 
 export default function Home() {
   const router = useRouter();
-  const pathname = usePathname();
   const activeQuest = useQuestStore((state) => state.activeQuest);
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const refreshAvailableQuests = useQuestStore(
@@ -187,11 +186,6 @@ export default function Home() {
     if (selectedQuest) {
       prepareQuest(selectedQuest);
       await QuestTimer.prepareQuest(selectedQuest);
-      console.log('Navigating to active quest from index');
-      // Navigate to active quest
-      if (pathname !== '/(app)/active-quest') {
-        router.navigate('/(app)/active-quest');
-      }
     }
   };
 

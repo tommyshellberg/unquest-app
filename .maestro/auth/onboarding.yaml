@@ -1,8 +1,97 @@
-appId: ${APP_ID}
+appId: com.vaedros.unquest.development
 ---
 - clearState
 - launchApp
-- assertVisible: "Obytes Starter"
-- assertVisible: "Let's Get Started "
-- tapOn: "Let's Get Started "
-- assertVisible: "Sign In"
+
+- assertVisible: "Level Up By Logging Off"
+- tapOn: "begin your journey"
+# Now you land immediately in your app, past Expo's own onboarding…
+- assertVisible: "Welcome to unQuest"
+- tapOn: "Got it"
+
+# App Introduction - Notifications step
+- assertVisible: "Notifications"
+- assertVisible: "Enable notifications"
+- tapOn: "Enable notifications"
+
+# With notifications disabled, tap on the system alert for allow
+# @todo: check why allow alert is not showing up.
+# - tapOn: "Allow"
+
+# App Introduction - Choose Character step
+- assertVisible: "Create Your Character"
+- tapOn: "Create character"
+
+# Choose Character Screen
+- assertVisible: "Choose Your Character"
+- assertVisible: "Name Your Character"
+
+# The continue button should be disabled until we type a name and select a character.
+- assertVisible:
+    text: "Continue"
+
+- tapOn: "Enter character name"
+- inputText: "TestHero"
+
+- assertVisible:
+    text: "Continue"
+    enabled: true
+
+- assertVisible: "Alchemist"
+- assertNotVisible: "Scholar"
+
+# Swipe through character options - swiping on the card area
+- swipe:
+    from:
+      text: "alchemist"
+    direction: LEFT
+
+- swipe:
+    from:
+      text: "Druid"
+    direction: LEFT
+
+- assertVisible: "Scholar"
+- assertNotVisible: "Alchemist"
+
+- swipe:
+    from:
+      text: "Scholar"
+    direction: RIGHT
+
+- swipe:
+    from:
+      text: "Druid"
+    direction: RIGHT
+
+- assertVisible: "Alchemist"
+- assertNotVisible: "Scholar"
+
+- tapOn: "Continue"
+
+# Screen Time Goal Screen
+- assertVisible: "Set Your Goals"
+- assertVisible: "What's your current daily screen time?"
+- tapOn: 
+    id: "current-screen-time-picker"
+- tapOn: "4h"
+- assertVisible: "What's your daily screen time goal?"
+- tapOn: 
+    id: "target-screen-time-picker"
+- tapOn: "3h"
+- assertVisible: "Set My Goal"
+- tapOn: "Set My Goal"
+
+- assertVisible: "Your Journey Begins"
+- tapOn: "Wake up"
+
+- assertVisible: "Lock your phone to begin your quest"
+- assertVisible: "Cancel Quest"
+- tapOn: "Cancel Quest"
+
+- assertVisible: "Your Journey Begins"
+- tapOn: "Wake up"
+- assertVisible: "Lock your phone to begin your quest"
+- assertVisible: "Cancel Quest"
+
+#now at the home screen, done with onboarding.

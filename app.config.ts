@@ -1,4 +1,6 @@
 /* eslint-disable max-lines-per-function */
+import 'dotenv/config';
+
 import type { ConfigContext, ExpoConfig } from '@expo/config';
 import type { AppIconBadgeConfig } from 'app-icon-badge/types';
 
@@ -107,5 +109,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     eas: {
       projectId: Env.EAS_PROJECT_ID,
     },
+    maestroAccessToken: process.env.MAESTRO_ACCESS_TOKEN,
+    maestroRefreshToken: process.env.MAESTRO_REFRESH_TOKEN,
   },
 });

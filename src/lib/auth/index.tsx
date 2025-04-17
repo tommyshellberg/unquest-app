@@ -1,5 +1,7 @@
+import Constants from 'expo-constants';
 import { create } from 'zustand';
 
+import { storeTokens } from '@/api/token';
 import { getUserDetails } from '@/lib/services/user';
 import { useUserStore } from '@/store/user-store';
 
@@ -21,6 +23,7 @@ const _useAuth = create<AuthState>((set, get) => ({
   signIn: async (response) => {
     const { token, user } = response;
     console.log('setting tokens:', token);
+    // @todo: why are we calling setToken instead of storeTokens?
     setToken(token);
 
     // Always fetch fresh user details after sign in
@@ -48,6 +51,20 @@ const _useAuth = create<AuthState>((set, get) => ({
   },
   hydrate: async () => {
     set({ status: 'hydrating' });
+    // 1) test‑only override
+    if (__DEV__ && Constants.expoConfig?.extra?.maestroAccessToken) {
+      console.log('Setting maestro tokens...');
+      storeTokens({
+        access: {
+          token: Constants.expoConfig.extra.maestroAccessToken,
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+        },
+        refresh: {
+          token: Constants.expoConfig.extra.maestroRefreshToken,
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+        },
+      });
+    }
     try {
       console.log('Hydrating auth state...');
       const userToken = getToken();

@@ -1,22 +1,20 @@
-import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  Animated,
   Dimensions,
   FlatList,
   Image,
   ImageBackground,
   TextInput,
 } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
+import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { Chip } from '@/components/ui/chip';
 import { updateUserCharacter } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { type Character, type CharacterType } from '@/store/types';
 
 import CHARACTERS from '../data/characters';
@@ -48,7 +46,7 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
         >
           {/* Add semi-transparent overlay */}
           <View
-            className="bg-muted-500 absolute inset-0"
+            className="absolute inset-0 bg-muted-500"
             style={{ opacity: 0.6 }}
           />
 
@@ -71,7 +69,6 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
 };
 
 export default function ChooseCharacterScreen() {
-  const router = useRouter();
   const createCharacter = useCharacterStore((state) => state.createCharacter);
 
   // Initialize with the first character selected
@@ -116,25 +113,30 @@ export default function ChooseCharacterScreen() {
     const selected = CHARACTERS.find((c) => c.id === selectedCharacter);
     if (!selected) return;
 
-    // Create the new character object.
-    const newCharacter = {
-      level: 1,
-      currentXP: 0,
-      xpToNextLevel: 100,
-      type: selected.id,
-      name: debouncedName.trim(),
-    };
-
-    // Update local state
-    createCharacter(selected.id as CharacterType, debouncedName.trim());
-
-    // Update the user's character on the server.
     try {
+      // Create the new character object
+      const newCharacter = {
+        level: 1,
+        currentXP: 0,
+        xpToNextLevel: 100,
+        type: selected.id,
+        name: debouncedName.trim(),
+      };
+
+      // 1. First update local character store
+      createCharacter(selected.id as CharacterType, debouncedName.trim());
+      console.log('updating character on server');
+      // 2. Update the user's character on the server
       await updateUserCharacter(newCharacter as Character);
+
+      console.log('character updated on server');
     } catch (error) {
       console.log('Error updating user character on the server', error);
     } finally {
-      router.push('/onboarding/screen-time-goal');
+      console.log('setting character selected step');
+      useOnboardingStore
+        .getState()
+        .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
     }
   };
 
@@ -158,13 +160,14 @@ export default function ChooseCharacterScreen() {
       <View className="mb-10 px-6">
         <Text className="mb-2">Name Your Character</Text>
         <TextInput
-          className="placeholder:text-muted-200 dark:placeholder:text-muted-200 h-10 rounded border px-2 text-primary-400 dark:text-primary-400"
+          className="h-10 rounded border px-2 text-primary-400 placeholder:text-muted-200 dark:text-primary-400 dark:placeholder:text-muted-200"
           value={inputName}
           onChangeText={(text) => {
             const filtered = text.replace(/[^a-zA-Z0-9\s]/g, '');
             setInputName(filtered);
           }}
           placeholder="Enter character name"
+          testID="character-name-input"
         />
       </View>
 
@@ -172,10 +175,11 @@ export default function ChooseCharacterScreen() {
         <Text>Next, choose a character type.</Text>
       </View>
 
-      <Animated.View style={animatedScrollStyle} className="mb-4 flex-1">
+      <Animated.View className="mb-4 flex-1" style={animatedScrollStyle}>
         <FlatList
           data={CHARACTERS}
           horizontal
+          testID="character-carousel"
           snapToInterval={snapInterval}
           decelerationRate="fast"
           showsHorizontalScrollIndicator={false}

@@ -93,8 +93,8 @@ android {
         applicationId 'com.vaedros.unquest.development'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "0.0.4"
+        versionCode 5
+        versionName "0.0.5"
     }
     signingConfigs {
         debug {
@@ -102,6 +102,12 @@ android {
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
+        }
+        release {
+            storeFile file("../keystores/production-keystore.jks")
+            storePassword project.hasProperty("MY_RELEASE_STORE_PASSWORD") ? project.property("MY_RELEASE_STORE_PASSWORD") : "your_store_password"
+            keyAlias project.hasProperty("MY_RELEASE_KEY_ALIAS") ? project.property("MY_RELEASE_KEY_ALIAS") : "your_key_alias"
+            keyPassword project.hasProperty("MY_RELEASE_KEY_PASSWORD") ? project.property("MY_RELEASE_KEY_PASSWORD") : "your_key_password"
         }
     }
     buildTypes {
@@ -111,7 +117,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"

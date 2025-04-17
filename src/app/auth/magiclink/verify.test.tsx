@@ -140,7 +140,7 @@ describe('MagicLinkVerifyScreen', () => {
     });
   });
 
-  it('should redirect to app-introduction when user has no data', async () => {
+  it('should redirect to onboarding when user has no data', async () => {
     // Mock params with a valid token
     (useLocalSearchParams as jest.Mock).mockReturnValue({
       token: 'valid-token',
@@ -162,7 +162,7 @@ describe('MagicLinkVerifyScreen', () => {
 
     // Check that it redirects to app-introduction
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/onboarding/app-introduction');
+      expect(mockReplace).toHaveBeenCalledWith('/onboarding');
       // Verify that setUser was called
       expect(mockSetUser).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -218,7 +218,7 @@ describe('MagicLinkVerifyScreen', () => {
     });
   });
 
-  it('should redirect to app-introduction when user has incomplete character data', async () => {
+  it('should redirect to onboarding when user has incomplete character data', async () => {
     // Mock params with a valid token
     (useLocalSearchParams as jest.Mock).mockReturnValue({
       token: 'valid-token',
@@ -242,9 +242,9 @@ describe('MagicLinkVerifyScreen', () => {
 
     render(<MagicLinkVerifyScreen />);
 
-    // Check that it redirects to app-introduction
+    // Check that it redirects to onboarding
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/onboarding/app-introduction');
+      expect(mockReplace).toHaveBeenCalledWith('/onboarding');
       // Verify that setUser was called
       expect(mockSetUser).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -292,7 +292,7 @@ describe('MagicLinkVerifyScreen', () => {
     });
   });
 
-  it('should redirect to app-introduction when API call fails', async () => {
+  it('should redirect to onboarding when API call fails', async () => {
     // Mock params with a valid token
     (useLocalSearchParams as jest.Mock).mockReturnValue({
       token: 'valid-token',
@@ -312,7 +312,7 @@ describe('MagicLinkVerifyScreen', () => {
 
     // Check that it redirects to app-introduction
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/onboarding/app-introduction');
+      expect(mockReplace).toHaveBeenCalledWith('/onboarding');
     });
   });
 });

@@ -3,13 +3,22 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getItem, removeItem, setItem } from '@/lib/storage';
 
+export enum OnboardingStep {
+  NOT_STARTED = 'not_started',
+  INTRO_COMPLETED = 'intro_completed',
+  NOTIFICATIONS_COMPLETED = 'notifications_completed',
+  CHARACTER_SELECTED = 'character_selected',
+  GOALS_SET = 'goals_set',
+  COMPLETED = 'completed',
+}
+
 type OnboardingState = {
-  selectedCharacterId: string | null;
-  currentScreenTime: number | null;
-  goalScreenTime: number | null;
+  // Step tracking
+  currentStep: OnboardingStep;
+
   // Actions
-  setSelectedCharacter: (id: string) => void;
-  setScreenTimes: (current: number, goal: number) => void;
+  setCurrentStep: (step: OnboardingStep) => void;
+  isOnboardingComplete: () => boolean;
   resetOnboarding: () => void;
 };
 
@@ -20,33 +29,27 @@ const getItemForStorage = (name: string) => {
 };
 
 const setItemForStorage = async (name: string, value: string) => {
-  await setItem(name, value);
+  setItem(name, value);
 };
 
 const removeItemForStorage = async (name: string) => {
-  await removeItem(name);
+  removeItem(name);
 };
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
-    (set) => ({
-      selectedCharacterId: null,
-      currentScreenTime: null,
-      goalScreenTime: null,
+    (set, get) => ({
+      // Initial step state
+      currentStep: OnboardingStep.NOT_STARTED,
 
-      setSelectedCharacter: (id) => set({ selectedCharacterId: id }),
-
-      setScreenTimes: (current, goal) =>
-        set({
-          currentScreenTime: current,
-          goalScreenTime: goal,
-        }),
+      // Step management
+      setCurrentStep: (step) => set({ currentStep: step }),
+      isOnboardingComplete: () =>
+        get().currentStep === OnboardingStep.COMPLETED,
 
       resetOnboarding: () =>
         set({
-          selectedCharacterId: null,
-          currentScreenTime: null,
-          goalScreenTime: null,
+          currentStep: OnboardingStep.NOT_STARTED,
         }),
     }),
     {

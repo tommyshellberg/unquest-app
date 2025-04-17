@@ -7,6 +7,7 @@ import { getItem, removeItem, setItem } from '@/lib/storage';
 import { usePOIStore } from '@/store/poi-store';
 
 import { useCharacterStore } from './character-store';
+import { OnboardingStep, useOnboardingStore } from './onboarding-store';
 import {
   type CustomQuestTemplate,
   type Quest,
@@ -104,6 +105,12 @@ export const useQuestStore = create<QuestState>()(
 
             characterStore.addXP(completedQuest.reward.xp);
             console.log('Quest completed successfully:', completedQuest.id);
+            // If we're not already done with onboarding, set the current step to COMPLETED.
+            if (!useOnboardingStore.getState().isOnboardingComplete()) {
+              useOnboardingStore
+                .getState()
+                .setCurrentStep(OnboardingStep.COMPLETED);
+            }
             return completedQuest;
           } else {
             // Duration not met
