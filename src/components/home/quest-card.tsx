@@ -18,8 +18,8 @@ interface QuestCardProps {
 }
 
 const imageMap = {
-  story: require('@/../assets/images/characters/knight-profile.png'),
-  custom: require('@/../assets/images/characters/druid-profile.png'),
+  story: require('@/../assets/images/characters/knight-full.jpg'),
+  custom: require('@/../assets/images/characters/druid-full.jpg'),
 };
 
 export default function QuestCard({

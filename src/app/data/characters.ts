@@ -16,8 +16,8 @@ const CHARACTERS: Character[] = [
     title: 'Master of Transformation',
     description:
       'Transforms idle time into powerful elixirs and mystical concoctions.',
-    image: require('@/../assets/images/characters/alchemist.png'),
-    profileImage: require('@/../assets/images/characters/alchemist-profile.png'),
+    image: require('@/../assets/images/characters/alchemist-full.jpg'),
+    profileImage: require('@/../assets/images/characters/alchemist-profile.jpg'),
   },
   {
     id: 'druid',
@@ -25,17 +25,17 @@ const CHARACTERS: Character[] = [
     title: 'Guardian of Nature',
     description:
       'Grows stronger through harmony with the natural world and peaceful moments.',
-    image: require('@/../assets/images/characters/druid.png'),
-    profileImage: require('@/../assets/images/characters/druid-profile.png'),
+    image: require('@/../assets/images/characters/druid-full.jpg'),
+    profileImage: require('@/../assets/images/characters/druid-profile.jpg'),
   },
   {
-    id: 'scholar',
-    type: 'Scholar',
-    title: 'Seeker of Knowledge',
+    id: 'scout',
+    type: 'Scout',
+    title: 'Master of Stealth',
     description:
       'Gains wisdom and unlocks ancient secrets through contemplation.',
-    image: require('@/../assets/images/characters/scholar.png'),
-    profileImage: require('@/../assets/images/characters/scholar-profile.png'),
+    image: require('@/../assets/images/characters/scout-full.jpg'),
+    profileImage: require('@/../assets/images/characters/scout-profile.jpg'),
   },
   {
     id: 'wizard',
@@ -43,24 +43,24 @@ const CHARACTERS: Character[] = [
     title: 'Wielder of Magic',
     description:
       'Channels the power of focus into devastating magical abilities.',
-    image: require('@/../assets/images/characters/wizard.png'),
-    profileImage: require('@/../assets/images/characters/wizard-profile.png'),
+    image: require('@/../assets/images/characters/wizard-full.jpg'),
+    profileImage: require('@/../assets/images/characters/wizard-profile.jpg'),
   },
   {
     id: 'knight',
     type: 'Knight',
     title: 'Paragon of Discipline',
     description: 'Builds strength and honor through dedication and restraint.',
-    image: require('@/../assets/images/characters/knight.png'),
-    profileImage: require('@/../assets/images/characters/knight-profile.png'),
+    image: require('@/../assets/images/characters/knight-full.jpg'),
+    profileImage: require('@/../assets/images/characters/knight-profile.jpg'),
   },
   {
     id: 'bard',
     type: 'Bard',
     title: 'Voice of Inspiration',
     description: 'Creates harmony from silence and inspiration from solitude.',
-    image: require('@/../assets/images/characters/bard.png'),
-    profileImage: require('@/../assets/images/characters/bard-profile.png'),
+    image: require('@/../assets/images/characters/bard-full.jpg'),
+    profileImage: require('@/../assets/images/characters/bard-profile.jpg'),
   },
 ];
 
