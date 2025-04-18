@@ -98,7 +98,7 @@ export default function Home() {
       // Get the last completed story quest
       const lastCompletedQuest = storyQuests[storyQuests.length - 1];
 
-      console.log('lastCompletedQuest', lastCompletedQuest);
+      console.log('lastCompletedQuest', lastCompletedQuest.id);
 
       // Find this quest in the AVAILABLE_QUESTS array to get its options
       const questData = AVAILABLE_QUESTS.find(
@@ -115,9 +115,11 @@ export default function Home() {
         const nextQuestIds = questData.options.map(
           (option) => option.nextQuestId
         );
+        console.log('➡️ nextQuestIds', nextQuestIds);
 
         // Filter out null nextQuestIds (end of storyline)
         const validNextQuestIds = nextQuestIds.filter((id) => id !== null);
+        console.log('➡️ validNextQuestIds', validNextQuestIds);
 
         if (validNextQuestIds.length > 0) {
           // Find the next available quests
@@ -127,6 +129,7 @@ export default function Home() {
 
           // Set the options for the next quest
           if (nextQuests.length > 0) {
+            console.log('➡️ nextQuests', nextQuests);
             // Use the options from the last completed quest
             setStoryOptions(questData.options);
           } else {
@@ -143,10 +146,11 @@ export default function Home() {
 
   // Refresh available quests when there's no active quest
   useEffect(() => {
-    if (!activeQuest) {
+    if (!activeQuest && !pendingQuest) {
+      console.log('➡️ refreshing available quests');
       refreshAvailableQuests();
     }
-  }, [activeQuest, refreshAvailableQuests]);
+  }, [activeQuest, pendingQuest, refreshAvailableQuests]);
 
   useEffect(() => {
     const fetchUserData = async () => {

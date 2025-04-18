@@ -46,16 +46,17 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
           resizeMode="cover"
         >
           <View className="flex h-full flex-col justify-between">
-            {/* Top section with title - now using BlurView */}
             <BlurView
               intensity={90}
               tint="light"
               className="overflow-hidden p-4"
             >
-              {/* Character Type - Now larger and more prominent */}
               <Text
                 className="mb-1 text-2xl font-bold"
-                style={{ color: primary[500] }}
+                style={{
+                  color: primary[500],
+                  letterSpacing: 1,
+                }}
               >
                 {item.type.toUpperCase()}
               </Text>
@@ -90,15 +91,8 @@ export default function ChooseCharacterScreen() {
   const [inputName, setInputName] = useState<string>('');
   const [debouncedName, setDebouncedName] = useState<string>('');
 
-  // Debounce the input name: update debouncedName 500ms after user stops typing.
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedName(inputName);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [inputName]);
-
   // Shared values for animation: for scroll container and button
+  // These must be declared before any conditional returns
   const scrollContainerOpacity = useSharedValue(1); // Start visible
   const buttonOpacity = useSharedValue(1); // Start visible
 
@@ -111,7 +105,7 @@ export default function ChooseCharacterScreen() {
     opacity: buttonOpacity.value,
   }));
 
-  // Memoized renderItem callback for FlatList
+  // Memoized renderItem callback for FlatList - must be declared before conditional returns
   const renderItem = useCallback(
     ({ item }: { item: (typeof CHARACTERS)[0] }) => {
       const isSelected = selectedCharacter === item.id;
@@ -119,6 +113,14 @@ export default function ChooseCharacterScreen() {
     },
     [selectedCharacter]
   );
+
+  // Debounce the input name: update debouncedName 500ms after user stops typing.
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedName(inputName);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [inputName]);
 
   const handleContinue = async () => {
     if (!debouncedName.trim()) return;
