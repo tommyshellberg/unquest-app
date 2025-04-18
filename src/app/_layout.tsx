@@ -29,9 +29,16 @@ export const unstable_settings = {
 
 Sentry.init({
   dsn: 'https://6d85dbe3783d343a049b93fa8afaf144@o4508966745997312.ingest.us.sentry.io/4508966747570176',
-
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // spotlight: __DEV__,
+  replaysSessionSampleRate: 1.0,
+  replaysOnErrorSampleRate: 1.0,
+  integrations: [
+    Sentry.mobileReplayIntegration({
+      enableExperimentalViewRenderer: true,
+      maskAllText: false,
+      maskAllImages: false,
+      maskAllVectors: false,
+    }),
+  ],
 });
 
 // Keep the splash screen visible until we explicitly hide it
