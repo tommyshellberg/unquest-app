@@ -1,6 +1,11 @@
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect } from 'react';
 import { RefreshControl, ScrollView } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
 import { ExperienceCard } from '@/components/profile/experience-card';
@@ -8,10 +13,9 @@ import { FriendsList } from '@/components/profile/friends-list';
 import { InviteFriendModal } from '@/components/profile/invite-friend-modal';
 import { ProfileCard } from '@/components/profile/profile-card';
 // Import components
-import { ProfileHeader } from '@/components/profile/profile-header';
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
 import { StatsCard } from '@/components/profile/stats-card';
-import { FocusAwareStatusBar, useModal, View } from '@/components/ui';
+import { FocusAwareStatusBar, Text, useModal, View } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 // Import hooks
 import { useProfileData } from '@/lib/hooks/use-profile-data';
@@ -24,6 +28,19 @@ export default function ProfileScreen() {
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
   // Add a state to track if we need to redirect
   const [isRedirecting, setIsRedirecting] = React.useState(false);
+
+  // Animation value for header
+  const headerOpacity = useSharedValue(0);
+
+  // Initialize animation
+  useEffect(() => {
+    headerOpacity.value = withTiming(1, { duration: 1000 });
+  }, [headerOpacity]);
+
+  // Animated style
+  const headerStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+  }));
 
   // Get profile data from custom hook
   const { userEmail, fetchUserDetails } = useProfileData();
@@ -104,8 +121,14 @@ export default function ProfileScreen() {
   );
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="pt-safe flex-1 bg-background">
       <FocusAwareStatusBar />
+
+      {/* Header */}
+      <Animated.View style={headerStyle} className="mb-4 px-4">
+        <Text className="mb-3 mt-2 text-xl font-bold">Profile</Text>
+        <Text>Track your journey, stats, and connect with friends.</Text>
+      </Animated.View>
 
       <ScrollView
         className="flex-1"
@@ -119,9 +142,6 @@ export default function ProfileScreen() {
           />
         }
       >
-        {/* Header */}
-        <ProfileHeader onSettingsPress={() => router.push('/settings')} />
-
         {/* Profile Card */}
         <ProfileCard character={character} />
 

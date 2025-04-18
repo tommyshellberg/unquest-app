@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import * as Linking from 'expo-linking';
+import { Link } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
@@ -167,6 +168,18 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                   />
                 </View>
 
+                {/* Terms and privacy */}
+                <Text className="mb-4 px-6 text-center text-sm">
+                  By signing in to this app you agree with our{' '}
+                  <Link
+                    href="https://unquestapp.com/terms"
+                    className="text-charcoal-600 underline"
+                  >
+                    Terms of Use and Privacy Policy
+                  </Link>
+                  .
+                </Text>
+
                 {error ? (
                   <Text className="mb-4 text-center text-red-400">{error}</Text>
                 ) : null}
@@ -183,14 +196,6 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
               </View>
             )}
           </View>
-
-          {/* Terms and privacy */}
-          <Text className="text-charcoal-900 mt-4 px-6 text-center text-sm">
-            By signing in to this app you agree with our{' '}
-            <Text className="text-charcoal-600 underline">Terms of Use</Text>{' '}
-            and{' '}
-            <Text className="text-charcoal-600 underline">Privacy Policy</Text>.
-          </Text>
 
           {/* Help link - only shown after second attempt */}
           {sendAttempts >= 2 && (
