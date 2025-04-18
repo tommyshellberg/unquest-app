@@ -13,6 +13,8 @@ const categoryOptions = [
   { id: 'meditation', label: 'Meditation', icon: 'eye-off' },
   { id: 'social', label: 'Social', icon: 'coffee' },
   { id: 'learning', label: 'Learning', icon: 'edit-2' },
+  { id: 'commuting', label: 'Commuting', icon: 'navigation' },
+  { id: 'other', label: 'Other', icon: 'clock' },
 ];
 
 type CategorySelectorProps = {

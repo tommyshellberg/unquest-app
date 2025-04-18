@@ -43,7 +43,7 @@ export default function QuestCard({
   }, [progress]);
 
   return (
-    <Card className="elevation-0 mr-4 aspect-[0.75] h-[400px]">
+    <Card className="elevation-0 aspect-[0.75] h-[400px]">
       <ImageBackground
         source={imageMap[mode]}
         className="size-full"

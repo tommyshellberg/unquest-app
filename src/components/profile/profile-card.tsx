@@ -11,7 +11,6 @@ type ProfileCardProps = {
 
 export function ProfileCard({ character }: ProfileCardProps) {
   const characterDetails = CHARACTERS.find((c) => c.id === character.type);
-  console.log('character type', character.type);
 
   return (
     <Card className="mx-4 mt-4 overflow-hidden">

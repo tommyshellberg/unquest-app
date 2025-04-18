@@ -4,7 +4,6 @@ import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Switch } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FocusAwareStatusBar, ScrollView, Text, View } from '@/components/ui';
 import { useAuth } from '@/lib';
@@ -24,7 +23,6 @@ const APP_VERSION = Env.VERSION || '1.0.0';
 const NOTIFICATIONS_ENABLED_KEY = 'notificationsEnabled';
 
 export default function Settings() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signOut } = useAuth();
   const resetQuestStore = useQuestStore((state) => state.reset);
@@ -155,7 +153,7 @@ export default function Settings() {
   }
 
   return (
-    <View className="pt-safe flex-1 flex-col">
+    <View className="pt-safe flex-1 flex-col bg-background">
       <FocusAwareStatusBar />
 
       <ScrollView className="flex-1">

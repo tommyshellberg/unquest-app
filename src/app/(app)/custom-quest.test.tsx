@@ -16,14 +16,6 @@ import { useQuestStore } from '@/store/quest-store';
 
 import CustomQuestScreen from './custom-quest';
 
-// Define button props type outside of mock to avoid Jest reference error
-type ButtonProps = {
-  disabled?: boolean;
-  label?: string;
-  onPress?: () => void;
-  testID?: string;
-};
-
 // Mock dependencies
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
