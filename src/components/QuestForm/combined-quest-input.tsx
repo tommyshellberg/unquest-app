@@ -1,107 +1,137 @@
 import Slider from '@react-native-community/slider';
 import { format } from 'date-fns';
-import React from 'react';
-import { type Control, Controller } from 'react-hook-form';
+import React, { useEffect, useState } from 'react';
+import { TextInput } from 'react-native';
 
 // Import UI components
-import { Input, Text, View } from '@/components/ui';
+import { Text, View } from '@/components/ui';
 
+// Simplified props without react-hook-form dependency
 type CombinedQuestInputProps = {
-  control: Control<any>;
-  questDuration: number;
-  errors: any;
+  initialQuestName?: string;
+  initialDuration?: number;
+  onQuestNameChange?: (value: string) => void;
+  onDurationChange?: (value: number) => void;
 };
 
 export const CombinedQuestInput = ({
-  control,
-  questDuration,
-  errors,
+  initialQuestName = '',
+  initialDuration = 30,
+  onQuestNameChange,
+  onDurationChange,
 }: CombinedQuestInputProps) => {
-  // Calculate start and end times
+  // Local state
+  const [questName, setQuestName] = useState(initialQuestName);
+
+  // Two separate states for the slider:
+  // - sliderValue: updates continuously during sliding (visual only)
+  // - duration: only updates when sliding is complete (committed value)
+  const [sliderValue, setSliderValue] = useState(initialDuration);
+  const [duration, setDuration] = useState(initialDuration);
+
+  // Update local states when parent values change
+  useEffect(() => {
+    setQuestName(initialQuestName);
+    setSliderValue(initialDuration);
+    setDuration(initialDuration);
+  }, [initialQuestName, initialDuration]);
+
+  // Calculate start and end times based on visual slider value for real-time feedback
   const now = new Date();
-  const endTime = new Date(now.getTime() + questDuration * 60000);
+  const endTime = new Date(now.getTime() + sliderValue * 60000);
+
+  // Handle quest name change - update both local state and parent
+  const handleQuestNameChange = (text: string) => {
+    setQuestName(text);
+    if (onQuestNameChange) {
+      onQuestNameChange(text);
+    }
+  };
+
+  // Handle continuous slider movement - only update local state for visual feedback
+  const handleSliderValueChange = (value: number) => {
+    setSliderValue(Math.round(value));
+  };
+
+  // Handle slider completion - update committed duration and notify parent
+  const handleSlidingComplete = (value: number) => {
+    const roundedValue = Math.round(value);
+    setDuration(roundedValue);
+    if (onDurationChange) {
+      onDurationChange(roundedValue);
+    }
+  };
 
   return (
     <View className="my-5 rounded-xl bg-[#F5F5F0] p-5 shadow-sm">
       <View className="mb-2.5">
         <View className="flex-row items-center">
           <Text className="text-2xl font-medium text-[#333]">I want to</Text>
-          <Controller
-            control={control}
-            rules={{
-              required: "Please enter what you'll be doing",
+          <TextInput
+            value={questName}
+            onChangeText={handleQuestNameChange}
+            placeholder="go for a run"
+            placeholderTextColor="#999"
+            autoCapitalize="none"
+            autoComplete="off"
+            autoFocus={true}
+            style={{
+              flex: 1,
+              marginLeft: 8,
+              height: 40,
+              borderBottomWidth: 1,
+              borderBottomColor: '#3B7A57',
+              backgroundColor: 'transparent',
+              paddingHorizontal: 8,
+              paddingVertical: 0,
+              fontSize: 24,
+              includeFontPadding: false,
+              textAlignVertical: 'center',
             }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                placeholder="go for a run"
-                className="ml-2 h-10 flex-1 border-b border-[#3B7A57] bg-transparent px-2 text-2xl"
-                placeholderTextColor="#999"
-                error=""
-                autoCapitalize="none"
-                autoComplete="off"
-                autoFocus={true}
-                inputMode="text"
-                multiline={false}
-                style={{ includeFontPadding: false }}
-              />
-            )}
-            name="questName"
           />
-        </View>
-        {/* Fixed-height error container to prevent layout shift */}
-        <View className="h-5 pl-20">
-          {errors.questName?.message && (
-            <Text className="text-sm text-red-500">
-              {errors.questName?.message}
-            </Text>
-          )}
         </View>
       </View>
 
       <View className="mb-2.5 flex-row items-center">
         <Text className="text-2xl font-medium text-[#333]">
-          for {questDuration} minutes
+          for {sliderValue} minutes
         </Text>
       </View>
 
-      {/* Slider for duration */}
-      <Controller
-        control={control}
-        render={({ field: { onChange, value } }) => (
-          <View className="mt-5">
-            <Slider
-              style={{ width: '100%', height: 40 }}
-              minimumValue={1}
-              maximumValue={120}
-              step={1}
-              value={value}
-              onValueChange={onChange}
-              minimumTrackTintColor="#3B7A57" // Forest green
-              maximumTrackTintColor="#EAEAE5"
-              thumbTintColor="#3B7A57"
-            />
+      {/* Slider with separate handlers for value change and sliding complete */}
+      <View className="mt-5">
+        <Slider
+          testID="duration-slider"
+          style={{ width: '100%', height: 40 }}
+          minimumValue={5}
+          maximumValue={240}
+          step={5}
+          value={duration}
+          onValueChange={handleSliderValueChange}
+          onSlidingComplete={handleSlidingComplete}
+          minimumTrackTintColor="#3B7A57" // Forest green
+          maximumTrackTintColor="#EAEAE5"
+          thumbTintColor="#3B7A57"
+        />
 
-            <View className="mt-4 flex-row justify-between">
-              <View className="w-[48%] items-center rounded-lg bg-[#EAEAE5] p-3">
-                <Text className="mb-1 text-sm text-[#777]">FROM</Text>
-                <Text className="text-2xl font-semibold text-[#333]">
-                  {format(now, 'h:mm a')}
-                </Text>
-              </View>
-              <View className="w-[48%] items-center rounded-lg bg-[#EAEAE5] p-3">
-                <Text className="mb-1 text-sm text-[#777]">TO</Text>
-                <Text className="text-2xl font-semibold text-[#333]">
-                  {format(endTime, 'h:mm a')}
-                </Text>
-              </View>
-            </View>
+        <View className="mt-4 flex-row justify-between">
+          <View className="w-[48%] items-center rounded-lg bg-[#EAEAE5] p-3">
+            <Text className="mb-1 text-sm text-[#777]">FROM</Text>
+            <Text className="text-2xl font-semibold text-[#333]">
+              {format(now, 'h:mm a')}
+            </Text>
           </View>
-        )}
-        name="questDuration"
-      />
+          <View className="w-[48%] items-center rounded-lg bg-[#EAEAE5] p-3">
+            <Text className="mb-1 text-sm text-[#777]">TO</Text>
+            <Text
+              testID="end-time"
+              className="text-2xl font-semibold text-[#333]"
+            >
+              {format(endTime, 'h:mm a')}
+            </Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 };

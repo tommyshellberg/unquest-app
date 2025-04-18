@@ -155,17 +155,12 @@ export default function Settings() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="pt-safe flex-1 flex-col">
       <FocusAwareStatusBar />
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: insets.bottom }}
-      >
+      <ScrollView className="flex-1">
         <View className="px-4 pt-10">
-          <Text className="mb-6 text-2xl font-bold text-primary-400">
-            Settings
-          </Text>
+          <Text className="mb-3 mt-2 text-xl font-bold">Settings</Text>
 
           {/* Account Section */}
           <View className="mb-8">
