@@ -23,8 +23,7 @@ const CHARACTERS: Character[] = [
     id: 'druid',
     type: 'Druid',
     title: 'Guardian of Nature',
-    description:
-      'Grows stronger through harmony with the natural world and peaceful moments.',
+    description: 'Grows stronger through harmony with the natural world.',
     image: require('@/../assets/images/characters/druid-full.jpg'),
     profileImage: require('@/../assets/images/characters/druid-profile.jpg'),
   },

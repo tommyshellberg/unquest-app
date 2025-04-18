@@ -47,12 +47,12 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
         >
           <View className="flex h-full flex-col justify-between">
             <BlurView
-              intensity={90}
+              intensity={10}
               tint="light"
               className="overflow-hidden p-4"
             >
               <Text
-                className="mb-1 text-2xl font-bold"
+                className="text-xl font-bold"
                 style={{
                   color: primary[500],
                   letterSpacing: 1,
@@ -60,14 +60,11 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
               >
                 {item.type.toUpperCase()}
               </Text>
-
-              {/* Character Title - Now smaller and supportive */}
-              <Text>{item.title}</Text>
             </BlurView>
 
             {/* Bottom section with description - now using BlurView */}
             <BlurView
-              intensity={90}
+              intensity={50}
               tint="light"
               className="mt-auto overflow-hidden p-4"
             >
