@@ -18,8 +18,8 @@ interface QuestCardProps {
 }
 
 const imageMap = {
-  story: require('@/../assets/images/characters/knight-profile.png'),
-  custom: require('@/../assets/images/characters/druid-profile.png'),
+  story: require('@/../assets/images/characters/knight-full.jpg'),
+  custom: require('@/../assets/images/characters/druid-full.jpg'),
 };
 
 export default function QuestCard({
@@ -35,9 +35,6 @@ export default function QuestCard({
   // Create a reference to control the progress bar
   const progressBarRef = useRef<ProgressBarRef>(null);
 
-  console.log('progress', progress);
-  console.log('xp', xp);
-
   // Update the progress bar when the progress prop changes
   useEffect(() => {
     if (progressBarRef.current) {
@@ -46,7 +43,7 @@ export default function QuestCard({
   }, [progress]);
 
   return (
-    <Card className="elevation-0 mr-4 aspect-[0.75] h-[400px]">
+    <Card className="elevation-0 aspect-[0.75] h-[400px]">
       <ImageBackground
         source={imageMap[mode]}
         className="size-full"

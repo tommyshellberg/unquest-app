@@ -22,18 +22,18 @@ export interface AuthTokens {
 /**
  * Store authentication tokens securely
  */
-export const storeTokens = async (tokens: AuthTokens): Promise<void> => {
+export const storeTokens = (tokens: AuthTokens) => {
   console.log('Storing tokens:', tokens);
   try {
     // Convert the structure to match what our utils expect
-    await setToken({
+    setToken({
       access: tokens.access.token,
       refresh: tokens.refresh.token,
     });
 
     // Store token expiry in the same format (using the same MMKV storage)
-    await setItem('access_token_expiry', tokens.access.expires);
-    await setItem('refresh_token_expiry', tokens.refresh.expires);
+    setItem('access_token_expiry', tokens.access.expires);
+    setItem('refresh_token_expiry', tokens.refresh.expires);
   } catch (error) {
     console.error('Error storing tokens:', error);
     throw error;
@@ -43,7 +43,7 @@ export const storeTokens = async (tokens: AuthTokens): Promise<void> => {
 /**
  * Get the stored access token
  */
-export const getAccessToken = async (): Promise<string | null> => {
+export const getAccessToken = () => {
   try {
     const tokens = getToken();
     return tokens?.access ?? null;
@@ -56,7 +56,7 @@ export const getAccessToken = async (): Promise<string | null> => {
 /**
  * Get the stored refresh token
  */
-export const getRefreshToken = async (): Promise<string | null> => {
+export const getRefreshToken = () => {
   try {
     const tokens = getToken();
     return tokens?.refresh ?? null;
@@ -69,7 +69,7 @@ export const getRefreshToken = async (): Promise<string | null> => {
 /**
  * Check if the access token is expired
  */
-export const isTokenExpired = async (): Promise<boolean> => {
+export const isTokenExpired = () => {
   try {
     const expiryString = getItem<string>('access_token_expiry');
     if (!expiryString) return true;
@@ -87,11 +87,11 @@ export const isTokenExpired = async (): Promise<boolean> => {
 /**
  * Remove all tokens from secure storage
  */
-export const removeTokens = async (): Promise<boolean> => {
+export const removeTokens = () => {
   try {
-    await removeToken();
-    await removeItem('access_token_expiry');
-    await removeItem('refresh_token_expiry');
+    removeToken();
+    removeItem('access_token_expiry');
+    removeItem('refresh_token_expiry');
     return true;
   } catch (error) {
     console.error('Error removing tokens:', error);

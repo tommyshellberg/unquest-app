@@ -1,5 +1,5 @@
 import { FlashList } from '@shopify/flash-list';
-import { usePathname, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image } from 'react-native';
 import Animated, {
@@ -24,7 +24,8 @@ import { type QuestOption } from '@/store/types';
 // Define screen dimensions for the carousel
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
-const snapInterval = cardWidth;
+const cardSpacing = 24; // spacing between cards
+const snapInterval = cardWidth + cardSpacing; // adjust snap interval to include spacing
 
 // Define our modes
 const MODES = [
@@ -34,7 +35,6 @@ const MODES = [
 
 export default function Home() {
   const router = useRouter();
-  const pathname = usePathname();
   const activeQuest = useQuestStore((state) => state.activeQuest);
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const refreshAvailableQuests = useQuestStore(
@@ -99,7 +99,7 @@ export default function Home() {
       // Get the last completed story quest
       const lastCompletedQuest = storyQuests[storyQuests.length - 1];
 
-      console.log('lastCompletedQuest', lastCompletedQuest);
+      console.log('lastCompletedQuest', lastCompletedQuest.id);
 
       // Find this quest in the AVAILABLE_QUESTS array to get its options
       const questData = AVAILABLE_QUESTS.find(
@@ -116,9 +116,11 @@ export default function Home() {
         const nextQuestIds = questData.options.map(
           (option) => option.nextQuestId
         );
+        console.log('➡️ nextQuestIds', nextQuestIds);
 
         // Filter out null nextQuestIds (end of storyline)
         const validNextQuestIds = nextQuestIds.filter((id) => id !== null);
+        console.log('➡️ validNextQuestIds', validNextQuestIds);
 
         if (validNextQuestIds.length > 0) {
           // Find the next available quests
@@ -128,6 +130,7 @@ export default function Home() {
 
           // Set the options for the next quest
           if (nextQuests.length > 0) {
+            console.log('➡️ nextQuests', nextQuests);
             // Use the options from the last completed quest
             setStoryOptions(questData.options);
           } else {
@@ -144,10 +147,11 @@ export default function Home() {
 
   // Refresh available quests when there's no active quest
   useEffect(() => {
-    if (!activeQuest) {
+    if (!activeQuest && !pendingQuest) {
+      console.log('➡️ refreshing available quests');
       refreshAvailableQuests();
     }
-  }, [activeQuest, refreshAvailableQuests]);
+  }, [activeQuest, pendingQuest, refreshAvailableQuests]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -176,7 +180,7 @@ export default function Home() {
   }, [contentOpacity, contentTranslateY, headerOpacity]);
 
   // Function to handle quest option selection
-  const handleQuestOptionSelect = async (nextQuestId: string) => {
+  const handleQuestOptionSelect = async (nextQuestId: string | null) => {
     if (!nextQuestId) return; // Don't proceed if there's no next quest
 
     // Find the quest by ID
@@ -187,11 +191,6 @@ export default function Home() {
     if (selectedQuest) {
       prepareQuest(selectedQuest);
       await QuestTimer.prepareQuest(selectedQuest);
-      console.log('Navigating to active quest from index');
-      // Navigate to active quest
-      if (pathname !== '/(app)/active-quest') {
-        router.navigate('/(app)/active-quest');
-      }
     }
   };
 
@@ -229,8 +228,10 @@ export default function Home() {
       mode: 'custom',
       title: 'Start Custom Quest',
       subtitle: 'Free Play Mode',
-      duration: 30,
-      xp: 60,
+      recap:
+        'Start a custom quest and embark on an adventure of your own design.',
+      duration: 5,
+      xp: 15,
     },
   ];
 
@@ -367,6 +368,9 @@ export default function Home() {
                 paddingHorizontal: (screenWidth - cardWidth) / 2,
                 paddingBottom: 24, // Add some bottom padding
               }}
+              ItemSeparatorComponent={() => (
+                <View style={{ width: cardSpacing }} />
+              )}
               onMomentumScrollEnd={(event) => {
                 const offsetX = event.nativeEvent.contentOffset.x;
                 const newIndex = Math.round(offsetX / snapInterval);

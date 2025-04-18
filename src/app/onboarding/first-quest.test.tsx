@@ -58,12 +58,8 @@ describe('First Quest Wake Up Button Functionality', () => {
     mockPrepareQuest(firstStoryQuest);
     await QuestTimer.prepareQuest(firstStoryQuest);
 
-    // Simulate navigation
-    mockNavigate('/(app)/active-quest');
-
     // Assertions
     expect(mockPrepareQuest).toHaveBeenCalledWith(firstStoryQuest);
     expect(QuestTimer.prepareQuest).toHaveBeenCalledWith(firstStoryQuest);
-    expect(mockNavigate).toHaveBeenCalledWith('/(app)/active-quest');
   });
 });

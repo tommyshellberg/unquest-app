@@ -13,6 +13,8 @@ const categoryOptions = [
   { id: 'meditation', label: 'Meditation', icon: 'eye-off' },
   { id: 'social', label: 'Social', icon: 'coffee' },
   { id: 'learning', label: 'Learning', icon: 'edit-2' },
+  { id: 'commuting', label: 'Commuting', icon: 'navigation' },
+  { id: 'other', label: 'Other', icon: 'clock' },
 ];
 
 type CategorySelectorProps = {
@@ -40,13 +42,14 @@ export const CategorySelector = ({
   };
 
   return (
-    <View className="my-2.5 rounded-xl bg-[#F5F5F0] p-4 shadow-sm">
+    <View className="bg-cardBackground my-2.5 rounded-xl p-4 shadow-sm">
       <Text className="mb-2 text-base text-[#666]">What type of activity?</Text>
       <Controller
         control={control}
         render={({ field: { value, onChange } }) => (
           <View>
             <Pressable
+              testID="category-selector"
               className="flex-row items-center justify-between py-2.5"
               onPress={openModal}
             >
@@ -72,6 +75,7 @@ export const CategorySelector = ({
                 {categoryOptions.map((category) => (
                   <Pressable
                     key={category.id}
+                    testID={`category-option-${category.id}`}
                     className={`flex-row items-center border-b border-[#F0F0F0] py-3 ${
                       value === category.id ? 'bg-[#F8F8F8]' : ''
                     }`}

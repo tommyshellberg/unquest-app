@@ -1,64 +1,31 @@
-import { useRouter } from 'expo-router';
+import { Redirect } from 'expo-router';
 import React from 'react';
 
-import {
-  Button,
-  FocusAwareStatusBar,
-  Image,
-  Text,
-  View,
-} from '@/components/ui';
-import { useIsFirstTime } from '@/lib/hooks';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 
-export default function Onboarding() {
-  const [_, setIsFirstTime] = useIsFirstTime();
-  const router = useRouter();
+export default function OnboardingIndex() {
+  const currentStep = useOnboardingStore((s) => s.currentStep);
 
-  const handleGetStarted = () => {
-    // Mark that it's no longer first time, then navigate to login
-    setIsFirstTime(false);
-    router.replace('/login');
+  // Map each step to the matching route
+  const stepToRoute: Record<OnboardingStep, string> = {
+    [OnboardingStep.NOT_STARTED]: '/welcome',
+    [OnboardingStep.INTRO_COMPLETED]: '/onboarding/app-introduction',
+    [OnboardingStep.NOTIFICATIONS_COMPLETED]: '/onboarding/choose-character',
+    [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/screen-time-goal',
+    [OnboardingStep.GOALS_SET]: '/onboarding/first-quest',
+    [OnboardingStep.COMPLETED]: '/(app)',
   };
 
-  return (
-    <View className="flex h-full">
-      <FocusAwareStatusBar />
+  // Determine the correct path based on the current step
+  const targetPath = stepToRoute[currentStep];
 
-      {/* Background image using Cover component */}
-      <View className="absolute inset-0 w-full flex-1">
-        <Image
-          source={require('@/../assets/images/background/onboarding.jpg')}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </View>
-
-      <View className="flex-1 px-6 py-4">
-        {/* Top logo and title section */}
-        <View className="mt-8 items-center">
-          <Image
-            source={require('@/../assets/images/unquestlogo-downscaled.png')}
-            style={{ width: 120, height: 120 }}
-          />
-          <Text className="mt-2 text-3xl font-bold">unQuest</Text>
-          <Text className="text-lg font-semibold">Level Up By Logging Off</Text>
-        </View>
-
-        {/* Middle description section */}
-        <View className="my-20 flex-1">
-          <Text className="text-center text-xl">
-            The only game that rewards you{'\n'}for not playing it.
-          </Text>
-        </View>
-
-        {/* Bottom button section */}
-        <View className="mb-10">
-          <Button
-            testID="get-started-button"
-            label="Begin Your Journey"
-            onPress={handleGetStarted}
-          />
-        </View>
-      </View>
-    </View>
+  console.log(
+    'Onboarding index redirecting to',
+    targetPath,
+    'based on step',
+    currentStep
   );
+
+  // Redirect to the appropriate step - cast as any to handle type issues with Expo Router types
+  return <Redirect href={targetPath as any} />;
 }

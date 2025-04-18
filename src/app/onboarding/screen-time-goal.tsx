@@ -1,18 +1,18 @@
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Image, Platform } from 'react-native';
-import Animated, {
+import { Animated, Image, Platform } from 'react-native';
+import {
   useAnimatedStyle,
-  useSharedValue,
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
+import { useSharedValue } from 'react-native-reanimated';
 
 import { apiClient } from '@/api/common/client';
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
-import { muted, primary } from '@/components/ui/colors';
+import { background, muted, primary } from '@/components/ui/colors';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useUserStore } from '@/store/user-store';
 
 // Generate time options in 30-minute increments (30m to 12h)
@@ -27,7 +27,6 @@ const TIME_OPTIONS = Array.from({ length: 24 }, (_, i) => {
 });
 
 export default function ScreenTimeGoalScreen() {
-  const router = useRouter();
   const navigation = useNavigation();
 
   // Replace accountStore with userStore
@@ -50,6 +49,10 @@ export default function ScreenTimeGoalScreen() {
     headerAnim.value = withTiming(1, { duration: 500 });
     firstDropdownAnim.value = withDelay(600, withTiming(1, { duration: 500 }));
   }, [firstDropdownAnim, headerAnim]);
+
+  useEffect(() => {
+    console.log('screen time goal screen mounted');
+  }, []);
 
   // Animate second drop-down when first drop-down has a valid value:
   useEffect(() => {
@@ -108,7 +111,9 @@ export default function ScreenTimeGoalScreen() {
         },
       });
 
-      // 2. Update on the server
+      useOnboardingStore.getState().setCurrentStep(OnboardingStep.GOALS_SET);
+
+      // 4. Update on the server
       await apiClient.patch('/users/me', {
         screenTimeGoals: {
           currentTime,
@@ -117,9 +122,6 @@ export default function ScreenTimeGoalScreen() {
       });
 
       console.log('User screen time goals updated on the server');
-
-      // Navigate with replace instead of push to avoid transition animations
-      router.navigate('/onboarding/first-quest');
     } catch (error) {
       console.error('Error updating user scdreen time goals:', error);
       setIsSubmitting(false);
@@ -156,19 +158,26 @@ export default function ScreenTimeGoalScreen() {
         {/* Animate first drop-down (current daily screen time) */}
         <Animated.View
           style={firstDropdownAnimatedStyle}
-          className="mt-[5%] gap-4"
+          className="mt-10 gap-4"
         >
           <Text className="font-semibold">
             What's your current daily screen time?
           </Text>
           <View
-            className={`overflow-hidden rounded-lg bg-white ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
+            className={`overflow-hidden rounded-xl border border-neutral-200 shadow-lg ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
+            style={{ backgroundColor: background }}
           >
             <Picker
               selectedValue={currentTime}
               onValueChange={(itemValue) => setCurrentTime(itemValue)}
               className="w-full"
-              itemStyle={{ fontSize: 18, height: 150, color: primary[400] }}
+              itemStyle={{
+                fontSize: 18,
+                height: 150,
+                color: primary[500],
+                fontWeight: '600',
+              }}
+              testID="current-screen-time-picker"
             >
               <Picker.Item
                 label="Select current screen time"
@@ -180,7 +189,7 @@ export default function ScreenTimeGoalScreen() {
                   key={option.value}
                   label={option.label}
                   value={option.value}
-                  color={primary[400]}
+                  color={primary[500]}
                 />
               ))}
             </Picker>
@@ -188,40 +197,45 @@ export default function ScreenTimeGoalScreen() {
         </Animated.View>
 
         {/* Conditionally animate and render the second drop-down (target screen time) only when the first is valid */}
-        {currentTime >= 30 && (
-          <Animated.View
-            style={secondDropdownAnimatedStyle}
-            className="mt-[5%] gap-4"
+        <Animated.View
+          style={secondDropdownAnimatedStyle}
+          className="mt-10 gap-4"
+        >
+          <Text className="font-semibold">
+            What's your daily screen time goal?
+          </Text>
+          <View
+            className={`overflow-hidden rounded-xl border border-neutral-200 shadow-lg ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
+            style={{ backgroundColor: background }}
           >
-            <Text className="font-semibold">
-              What's your daily screen time goal?
-            </Text>
-            <View
-              className={`overflow-hidden rounded-lg bg-white ${Platform.OS === 'ios' ? 'h-[150px]' : 'h-[50px]'}`}
+            <Picker
+              selectedValue={targetTime}
+              onValueChange={(itemValue) => setTargetTime(itemValue)}
+              className="w-full"
+              itemStyle={{
+                fontSize: 18,
+                height: 150,
+                color: primary[500],
+                fontWeight: '600',
+              }}
+              testID="target-screen-time-picker"
             >
-              <Picker
-                selectedValue={targetTime}
-                onValueChange={(itemValue) => setTargetTime(itemValue)}
-                className="w-full"
-                itemStyle={{ fontSize: 18, height: 150, color: primary[400] }}
-              >
+              <Picker.Item
+                label="Select target screen time"
+                value={-1}
+                color={muted[500]}
+              />
+              {TIME_OPTIONS.map((option) => (
                 <Picker.Item
-                  label="Select target screen time"
-                  value={-1}
-                  color={muted[500]}
+                  key={option.value}
+                  label={option.label}
+                  value={option.value}
+                  color={primary[500]}
                 />
-                {TIME_OPTIONS.map((option) => (
-                  <Picker.Item
-                    key={option.value}
-                    label={option.label}
-                    value={option.value}
-                    color={primary[400]}
-                  />
-                ))}
-              </Picker>
-            </View>
-          </Animated.View>
-        )}
+              ))}
+            </Picker>
+          </View>
+        </Animated.View>
 
         {/* Animate Continue button (disabled if either value is invalid) */}
         <Animated.View style={buttonAnimatedStyle} className="mt-auto py-6">

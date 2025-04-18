@@ -92,7 +92,7 @@ export default function MagicLinkVerifyScreen() {
               console.log(
                 'No complete character data, navigating to app-introduction'
               );
-              router.replace('/onboarding/app-introduction');
+              router.replace('/onboarding');
             }
           } catch (fetchError) {
             console.error('Error fetching user data:', fetchError);
@@ -100,7 +100,7 @@ export default function MagicLinkVerifyScreen() {
             console.log(
               'Error fetching user data, navigating to app-introduction'
             );
-            router.replace('/onboarding/app-introduction');
+            router.replace('/onboarding');
           }
         } else {
           // User already has local data, navigate to home

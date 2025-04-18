@@ -38,22 +38,20 @@ export default function VerifyMagicLinkScreen() {
         });
 
         // Navigate to the main app screen or appropriate next screen
-        router.replace('/');
+        // router.replace('/');
       } catch (error) {
         console.error('Error verifying magic link:', error);
         setError(
           'Magic link verification failed. The link may have expired. Please try again.'
         );
 
-        // After showing error briefly, redirect to login
-        setTimeout(() => {
-          router.replace(
-            '/login?error=' +
-              encodeURIComponent(
-                'Magic link verification failed. The link may have expired. Please try again.'
-              )
-          );
-        }, 2000);
+        // @todo: check this behavior in a test somehow.
+        router.replace(
+          '/login?error=' +
+            encodeURIComponent(
+              'Magic link verification failed. The link may have expired. Please try again.'
+            )
+        );
       } finally {
         setLoading(false);
       }

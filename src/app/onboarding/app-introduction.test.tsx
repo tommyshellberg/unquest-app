@@ -7,6 +7,7 @@ import {
   setupNotifications,
 } from '@/lib/services/notifications';
 import { useCharacterStore } from '@/store/character-store';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useUserStore } from '@/store/user-store';
 
 import AppIntroductionScreen from './app-introduction';
@@ -61,6 +62,8 @@ describe('AppIntroductionScreen', () => {
     (useUserStore as jest.Mock).mockImplementation((selector) =>
       selector({ user: null })
     );
+    // Stub the store setter:
+    useOnboardingStore.getState().setCurrentStep = jest.fn();
   });
 
   it('starts at welcome step', async () => {
@@ -170,8 +173,8 @@ describe('AppIntroductionScreen', () => {
     fireEvent.press(getByText('Create character'));
 
     // Check that it navigates to choose-character
-    expect(mockRouter.push).toHaveBeenCalledWith(
-      '/onboarding/choose-character'
+    expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
+      OnboardingStep.NOTIFICATIONS_COMPLETED
     );
   });
 

@@ -1,5 +1,5 @@
-import { router, usePathname } from 'expo-router';
-import React from 'react';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { CategorySelector } from '@/components/QuestForm/category-selector';
@@ -21,45 +21,55 @@ import { type CustomQuestTemplate } from '@/store/types';
 
 // Define the form data type
 type FormData = {
-  questName: string;
-  questDuration: number;
   questCategory: string;
 };
 
 export default function CustomQuestScreen() {
-  // Initialize react-hook-form
+  // Local state for the quest data
+  const [questName, setQuestName] = useState('');
+  const [questDuration, setQuestDuration] = useState(30);
+
+  // Initialize react-hook-form just for the category
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: {},
     watch,
   } = useForm<FormData>({
     defaultValues: {
-      questName: '',
-      questDuration: 30,
       questCategory: 'fitness',
     },
     mode: 'onChange',
   });
 
-  const pathname = usePathname();
-
   // Watch values for real-time updates
-  const questDuration = watch('questDuration');
   const questCategory = watch('questCategory');
 
+  // Determine if we can proceed
+  const canContinue = questName.trim().length > 0;
+
+  const handleQuestNameChange = (name: string) => {
+    setQuestName(name);
+  };
+
+  const handleDurationChange = (duration: number) => {
+    // This is only called when sliding is complete
+    console.log('Final duration selected:', duration);
+    setQuestDuration(duration);
+  };
+
   const onSubmit = async (data: FormData) => {
-    console.log('handleCreateQuest', data);
+    console.log('handleCreateQuest', { ...data, questName, questDuration });
 
     // Create a custom quest object
     const customQuest: CustomQuestTemplate = {
       id: `custom-${Date.now()}`,
       mode: 'custom',
-      title: data.questName.trim(),
-      durationMinutes: data.questDuration,
+      title: questName.trim(),
+      durationMinutes: questDuration,
       category: data.questCategory,
       reward: {
-        xp: Math.round(data.questDuration * 1.5), // Scale XP with duration
+        xp: Math.round(questDuration * 1.5), // Scale XP with duration
       },
     };
 
@@ -72,12 +82,6 @@ export default function CustomQuestScreen() {
 
       // Then prepare the quest in the background task
       await QuestTimer.prepareQuest(customQuest);
-
-      // Navigate back to active quest screen
-      console.log('Navigating to active quest from custom quest');
-      if (pathname !== '/(app)/active-quest') {
-        router.navigate('/(app)/active-quest');
-      }
     } catch (error) {
       console.error('Error preparing quest:', error);
     }
@@ -99,11 +103,12 @@ export default function CustomQuestScreen() {
           {/* Paper planes illustration */}
           <PaperPlanes />
 
-          {/* Combined Quest Name and Duration Field */}
+          {/* Quest Input with improved slider handling */}
           <CombinedQuestInput
-            control={control}
-            questDuration={questDuration}
-            errors={errors}
+            initialQuestName={questName}
+            initialDuration={questDuration}
+            onQuestNameChange={handleQuestNameChange}
+            onDurationChange={handleDurationChange}
           />
 
           <View className="my-1.5 h-px bg-[#EEEEEE]" />
@@ -113,13 +118,13 @@ export default function CustomQuestScreen() {
 
           {/* Continue Button (Large, Full-Width) */}
           <Button
-            label="Continue"
+            label="Start Quest"
             variant="default"
             size="lg"
-            disabled={!isValid}
+            disabled={!canContinue}
             onPress={handleSubmit(onSubmit)}
             className={`mt-5 rounded-md bg-primary-400 py-2.5 ${
-              isValid ? 'opacity-100' : 'opacity-50'
+              canContinue ? 'opacity-100' : 'opacity-50'
             }`}
             textClassName="text-lg font-semibold text-white"
           />

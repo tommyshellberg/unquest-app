@@ -4,7 +4,11 @@ import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Switch } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { FocusAwareStatusBar, ScrollView, Text, View } from '@/components/ui';
 import { useAuth } from '@/lib';
@@ -15,6 +19,7 @@ import {
 import { getUserDetails } from '@/lib/services/user';
 import { setItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 import { useUserStore } from '@/store/user-store';
 
@@ -23,7 +28,6 @@ const APP_VERSION = Env.VERSION || '1.0.0';
 const NOTIFICATIONS_ENABLED_KEY = 'notificationsEnabled';
 
 export default function Settings() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signOut } = useAuth();
   const resetQuestStore = useQuestStore((state) => state.reset);
@@ -31,6 +35,20 @@ export default function Settings() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const user = useUserStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(true);
+  const resetOnboarding = useOnboardingStore((state) => state.resetOnboarding);
+
+  // Animation value for header
+  const headerOpacity = useSharedValue(0);
+
+  // Initialize animation
+  useEffect(() => {
+    headerOpacity.value = withTiming(1, { duration: 1000 });
+  }, [headerOpacity]);
+
+  // Animated style
+  const headerStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+  }));
 
   // Load notification settings on mount
   useEffect(() => {
@@ -112,6 +130,7 @@ export default function Settings() {
       // Reset all stores
       resetQuestStore();
       resetCharacter();
+      resetOnboarding();
       Alert.alert('App Data Reset', 'The app data has been reset.');
     } catch (error) {
       console.error('Failed to reset app data:', error);
@@ -139,8 +158,6 @@ export default function Settings() {
   const iconColor = '#3B7A57';
   const contactEmail = 'hello@unquestapp.com';
 
-  console.log('user', user);
-
   // In your render method, handle loading state
   if (isLoading) {
     return (
@@ -153,18 +170,17 @@ export default function Settings() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="pt-safe flex-1 flex-col bg-background">
       <FocusAwareStatusBar />
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: insets.bottom }}
-      >
-        <View className="px-4 pt-10">
-          <Text className="mb-6 text-2xl font-bold text-primary-400">
-            Settings
-          </Text>
+      {/* Header */}
+      <Animated.View style={headerStyle} className="mb-4 px-4">
+        <Text className="mb-3 mt-2 text-xl font-bold">Settings</Text>
+        <Text>Manage your account, preferences, and app settings.</Text>
+      </Animated.View>
 
+      <ScrollView className="flex-1">
+        <View className="px-4">
           {/* Account Section */}
           <View className="mb-8">
             <View className="flex-row items-center">

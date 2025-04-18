@@ -440,8 +440,8 @@ export default class QuestTimer {
         // Phone was unlocked while quest was running - failQuest handled by onPhoneUnlocked
         // We might need to stop the background task here if onPhoneUnlocked doesn't trigger stopQuest reliably
         console.log('Background task detected unlock, stopping.');
-        // await this.stopQuest(); // Consider adding this if needed
-        // break; // Exit loop
+        await this.stopQuest(); // Consider adding this if needed
+        break; // Exit loop
       }
 
       // Adjust update interval based on duration to save battery
