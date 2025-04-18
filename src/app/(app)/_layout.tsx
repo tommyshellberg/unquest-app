@@ -55,7 +55,7 @@ export default function TabLayout() {
   useLockStateDetection();
 
   useEffect(() => {
-    if (!navigationState?.key || navigationState.stale) return;
+    if (!navigationState?.key || navigationState?.stale) return;
     if (pathname.includes('failed-quest') || pathname.includes('active-quest'))
       return;
 
@@ -67,14 +67,14 @@ export default function TabLayout() {
         } catch (error) {
           console.error('Failed quest navigation failed, will retry', error);
           setTimeout(() => {
-            if (navigationState?.key && !navigationState.stale) {
+            if (navigationState?.key && !navigationState?.stale) {
               router.replace('/failed-quest');
             }
           }, 500);
         }
       });
     }
-  }, [failedQuest, navigationState?.key, navigationState.stale, pathname]);
+  }, [failedQuest, navigationState?.key, navigationState?.stale, pathname]);
 
   // AppState listener to handle live activity cleanup
   useEffect(() => {

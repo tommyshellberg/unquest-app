@@ -1,6 +1,7 @@
 // Import  global CSS file
 import '../../global.css';
 
+import { Env } from '@env';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
@@ -10,13 +11,12 @@ import React, { useCallback, useEffect } from 'react';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { LogLevel, OneSignal } from 'react-native-onesignal';
 
 import { APIProvider } from '@/api';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import { useThemeConfig } from '@/lib/use-theme-config';
-import { Env } from '@env';
-import { OneSignal, LogLevel } from 'react-native-onesignal';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -26,9 +26,16 @@ export const unstable_settings = {
 
 Sentry.init({
   dsn: 'https://6d85dbe3783d343a049b93fa8afaf144@o4508966745997312.ingest.us.sentry.io/4508966747570176',
-
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // spotlight: __DEV__,
+  replaysSessionSampleRate: 1.0,
+  replaysOnErrorSampleRate: 1.0,
+  integrations: [
+    Sentry.mobileReplayIntegration({
+      enableExperimentalViewRenderer: true,
+      maskAllText: false,
+      maskAllImages: false,
+      maskAllVectors: false,
+    }),
+  ],
 });
 
 // Keep the splash screen visible until we explicitly hide it
