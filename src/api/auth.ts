@@ -94,7 +94,8 @@ export const logout = async (): Promise<void> => {
 export const refreshAccessToken =
   async (): Promise<tokenService.AuthTokens | null> => {
     try {
-      const refreshToken = await tokenService.getRefreshToken();
+      const refreshToken = tokenService.getRefreshToken();
+      console.log('Refreshing access token with refresh token:', refreshToken);
       if (!refreshToken) {
         console.log('No refresh token available');
         return null;
@@ -104,15 +105,17 @@ export const refreshAccessToken =
         refreshToken,
       });
 
+      console.log('New tokens from refresh:', response.data);
+
       // The server now returns nested tokens consistently:
       // { access: { token, expires }, refresh: { token, expires } }
       const newTokens: tokenService.AuthTokens = response.data;
-      await tokenService.storeTokens(newTokens);
+      tokenService.storeTokens(newTokens);
       return newTokens;
     } catch (error) {
       console.error('Error refreshing token:', error);
       // If refresh fails, clear tokens
-      await tokenService.removeTokens();
+      tokenService.removeTokens();
       return null;
     }
   };

@@ -11,7 +11,7 @@ export function Card({ children, className = '' }: CardProps) {
   return (
     <View
       className={twMerge(
-        'rounded-lg overflow-hidden bg-white shadow-sm elevation-1',
+        'rounded-lg overflow-hidden bg-cardBackground shadow-sm elevation-1',
         className
       )}
     >

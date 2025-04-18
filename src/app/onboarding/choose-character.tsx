@@ -1,3 +1,4 @@
+import { BlurView } from 'expo-blur';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Animated,
@@ -11,7 +12,7 @@ import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
-import { Chip } from '@/components/ui/chip';
+import { primary } from '@/components/ui/colors';
 import { updateUserCharacter } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
@@ -37,30 +38,39 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
       style={{ width: cardWidth }}
     >
       <Card
-        className={`elevation-2 aspect-[0.75] w-full ${isSelected ? 'scale-100' : 'scale-90 opacity-60'}`}
+        className={`elevation-2 aspect-[0.75] w-full overflow-hidden ${isSelected ? 'scale-100' : 'scale-90 opacity-60'}`}
       >
         <ImageBackground
           source={item.image}
           className="size-full"
           resizeMode="cover"
         >
-          {/* Add semi-transparent overlay */}
-          <View
-            className="absolute inset-0 bg-muted-500"
-            style={{ opacity: 0.6 }}
-          />
+          <View className="flex h-full flex-col justify-between">
+            <BlurView
+              intensity={10}
+              tint="light"
+              className="overflow-hidden p-4"
+            >
+              <Text
+                className="text-xl font-bold"
+                style={{
+                  color: primary[500],
+                  letterSpacing: 1,
+                }}
+              >
+                {item.type.toUpperCase()}
+              </Text>
+            </BlurView>
 
-          <View className="justify-start p-4">
-            {/* Character Type Pill */}
-            <Chip className="mb-4">{item.type}</Chip>
-
-            {/* Character Title */}
-            <Text className="mb-2 text-xl font-bold text-white">
-              {item.title}
-            </Text>
-
-            {/* Character Description */}
-            <Text className="text-base text-white">{item.description}</Text>
+            {/* Bottom section with description - now using BlurView */}
+            <BlurView
+              intensity={50}
+              tint="light"
+              className="mt-auto overflow-hidden p-4"
+            >
+              {/* Character Description */}
+              <Text>{item.description}</Text>
+            </BlurView>
           </View>
         </ImageBackground>
       </Card>
@@ -78,15 +88,8 @@ export default function ChooseCharacterScreen() {
   const [inputName, setInputName] = useState<string>('');
   const [debouncedName, setDebouncedName] = useState<string>('');
 
-  // Debounce the input name: update debouncedName 500ms after user stops typing.
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedName(inputName);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [inputName]);
-
   // Shared values for animation: for scroll container and button
+  // These must be declared before any conditional returns
   const scrollContainerOpacity = useSharedValue(1); // Start visible
   const buttonOpacity = useSharedValue(1); // Start visible
 
@@ -99,7 +102,7 @@ export default function ChooseCharacterScreen() {
     opacity: buttonOpacity.value,
   }));
 
-  // Memoized renderItem callback for FlatList
+  // Memoized renderItem callback for FlatList - must be declared before conditional returns
   const renderItem = useCallback(
     ({ item }: { item: (typeof CHARACTERS)[0] }) => {
       const isSelected = selectedCharacter === item.id;
@@ -107,6 +110,14 @@ export default function ChooseCharacterScreen() {
     },
     [selectedCharacter]
   );
+
+  // Debounce the input name: update debouncedName 500ms after user stops typing.
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedName(inputName);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [inputName]);
 
   const handleContinue = async () => {
     if (!debouncedName.trim()) return;
