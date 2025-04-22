@@ -10,6 +10,10 @@ import {
   clearAllNotifications,
   scheduleQuestCompletionNotification,
 } from '@/lib/services/notifications';
+import {
+  createQuestRun,
+  updateQuestRunStatus,
+} from '@/lib/services/quest-run-service';
 import { getItem, removeItem, setItem } from '@/lib/storage';
 import { useQuestStore } from '@/store/quest-store';
 import {
@@ -52,29 +56,32 @@ export default class QuestTimer {
     | null = null;
   // Store the OneSignal activity ID (this replaces the old liveActivityId)
   private static oneSignalActivityId: string | null = null;
+  // Add quest run ID to track the server-side quest run
+  private static questRunId: string | null = null;
 
   // Helper methods to persist quest data
   private static async saveQuestData() {
     if (this.questTemplate) {
       try {
-        await setItem(
-          'QUEST_TIMER_TEMPLATE',
-          JSON.stringify(this.questTemplate)
-        );
+        setItem('QUEST_TIMER_TEMPLATE', JSON.stringify(this.questTemplate));
 
         if (this.questStartTime) {
-          await setItem(
-            'QUEST_TIMER_START_TIME',
-            this.questStartTime.toString()
-          );
+          setItem('QUEST_TIMER_START_TIME', this.questStartTime.toString());
         }
 
         // Save the OneSignal Activity ID if it exists
         if (this.oneSignalActivityId) {
-          await setItem('ONESIGNAL_ACTIVITY_ID', this.oneSignalActivityId);
+          setItem('ONESIGNAL_ACTIVITY_ID', this.oneSignalActivityId);
         } else {
           // Ensure old ID is removed if activity ends
-          await removeItem('ONESIGNAL_ACTIVITY_ID');
+          removeItem('ONESIGNAL_ACTIVITY_ID');
+        }
+
+        // Save quest run ID
+        if (this.questRunId) {
+          setItem('QUEST_RUN_ID', this.questRunId);
+        } else {
+          removeItem('QUEST_RUN_ID');
         }
       } catch (error) {
         console.error('Error saving quest data:', error);
@@ -83,10 +90,10 @@ export default class QuestTimer {
   }
 
   // @TODO: why are we calling this in the backgroundTask method? It should only be called once, right?
-  private static async loadQuestData() {
+  private static loadQuestData() {
     try {
       // Use the safe parsing helper
-      const templateJson = await getItem<string>('QUEST_TIMER_TEMPLATE');
+      const templateJson = getItem<string>('QUEST_TIMER_TEMPLATE');
       if (templateJson) {
         this.questTemplate = parseJson<
           CustomQuestTemplate | StoryQuestTemplate
@@ -94,11 +101,14 @@ export default class QuestTimer {
       }
 
       // Use the safe parsing helper
-      const startTimeStr = await getItem<string>('QUEST_TIMER_START_TIME');
+      const startTimeStr = getItem<string>('QUEST_TIMER_START_TIME');
       this.questStartTime = parseIntSafe(startTimeStr);
 
       // Load the OneSignal Activity ID
-      this.oneSignalActivityId = await getItem<string>('ONESIGNAL_ACTIVITY_ID');
+      this.oneSignalActivityId = getItem<string>('ONESIGNAL_ACTIVITY_ID');
+
+      // Load quest run ID
+      this.questRunId = getItem<string>('QUEST_RUN_ID');
 
       // Update the store with the live activity ID if it exists
       if (this.oneSignalActivityId) {
@@ -118,9 +128,10 @@ export default class QuestTimer {
 
   private static async clearQuestData() {
     try {
-      await removeItem('QUEST_TIMER_TEMPLATE');
-      await removeItem('QUEST_TIMER_START_TIME');
-      await removeItem('ONESIGNAL_ACTIVITY_ID'); // Clear OneSignal ID
+      removeItem('QUEST_TIMER_TEMPLATE');
+      removeItem('QUEST_TIMER_START_TIME');
+      removeItem('ONESIGNAL_ACTIVITY_ID'); // Clear OneSignal ID
+      removeItem('QUEST_RUN_ID'); // Clear quest run ID
       console.log('Quest data cleared from storage');
     } catch (error) {
       console.error('Error clearing quest data:', error);
@@ -141,31 +152,38 @@ export default class QuestTimer {
     this.questTemplate = questTemplate;
     this.questStartTime = null;
 
+    // Create a quest run on the server
+    try {
+      const questRun = await createQuestRun(questTemplate);
+      this.questRunId = questRun.id;
+      console.log('Created quest run with ID:', this.questRunId);
+    } catch (error) {
+      console.error('Failed to create quest run:', error);
+      // Continue anyway as the quest can still work locally
+    }
+
     const pendingQuestTitle = 'Quest Ready';
     const pendingTaskDesc = 'Lock your phone to begin your quest';
-    // For pending live activity, clear any previous activity ID
-    // (We now always want to create a pending live activity when a quest is prepared.)
 
     if (Platform.OS === 'ios') {
       try {
         if (!this.oneSignalActivityId) {
           this.oneSignalActivityId = uuidv4();
         }
-        // Construct attributes and content for pending live activity.
-        // Use Date.now() as startTime so that pending progress remains 0%.
+        // Construct attributes and content with status='pending'
         const attributes = {
           title: pendingQuestTitle,
           description: pendingTaskDesc,
         };
         const pendingContent = {
           durationMinutes: questTemplate.durationMinutes,
-          pending: true,
+          status: 'pending', // Using status instead of pending boolean
         };
         console.log(
           'Starting pending Live Activity with attributes:',
           JSON.stringify(attributes)
         );
-        console.log('Pending content:', JSON.stringify(pendingContent));
+        console.log('Content:', JSON.stringify(pendingContent));
         OneSignal.LiveActivities.startDefault(
           this.oneSignalActivityId,
           attributes,
@@ -235,7 +253,7 @@ export default class QuestTimer {
     }
 
     this.isPhoneLocked = true;
-    await this.loadQuestData();
+    this.loadQuestData();
 
     if (this.questTemplate && !this.questStartTime) {
       this.questStartTime = Date.now();
@@ -244,7 +262,7 @@ export default class QuestTimer {
       if (Platform.OS === 'ios') {
         // Use the existing live activity ID if present.
         const activityId = this.oneSignalActivityId || uuidv4();
-        // Construct updated attributes and content using the new start time.
+        // Construct updated attributes and content with status='active'
         const attributes = {
           title: this.questTemplate.title,
           description:
@@ -254,7 +272,7 @@ export default class QuestTimer {
         };
         const updatedContent = {
           durationMinutes: this.questTemplate.durationMinutes,
-          pending: false,
+          status: 'active', // Using status='active' instead of pending=false
         };
         console.log(
           'Updating Live Activity for quest start with attributes:',
@@ -270,6 +288,21 @@ export default class QuestTimer {
         console.log('Live Activity updated with id:', activityId);
       }
 
+      // Update quest run status to active
+      if (this.questRunId) {
+        try {
+          await updateQuestRunStatus(
+            this.questRunId,
+            'active',
+            this.oneSignalActivityId
+          );
+          console.log('Updated quest run status to active');
+        } catch (error) {
+          console.error('Failed to update quest run status to active:', error);
+          // Continue anyway as the quest can still work locally
+        }
+      }
+
       await this.saveQuestData();
 
       // IMPORTANT CHANGE: Use setTimeout to delay store update when in background
@@ -278,10 +311,11 @@ export default class QuestTimer {
         if (this.isPhoneLocked) {
           const questStore = useQuestStore.getState();
           // Check if there's already an active quest to prevent double-starting
-          if (!questStore.activeQuest) {
+          if (!questStore.activeQuest && this.questTemplate) {
+            const startTime = this.questStartTime || Date.now(); // Ensure startTime is never null
             questStore.startQuest({
               ...this.questTemplate,
-              startTime: this.questStartTime,
+              startTime,
             });
           }
         }
@@ -318,18 +352,25 @@ export default class QuestTimer {
           'Immediately failing quest due to phone unlock during progress.'
         );
 
-        // --- End OneSignal Live Activity (Failure) ---
+        // Use status='failed' when ending OneSignal Live Activity
         if (Platform.OS === 'ios' && this.oneSignalActivityId) {
           try {
             console.log(
-              `Ending OneSignal Live Activity ${this.oneSignalActivityId} (Failure)`
+              `Updating OneSignal Live Activity ${this.oneSignalActivityId} with failed status`
             );
-            OneSignal.LiveActivities.exit(this.oneSignalActivityId);
-            this.oneSignalActivityId = null;
-            const store = useQuestStore.getState();
-            if (typeof store.setLiveActivityId === 'function') {
-              store.setLiveActivityId(null);
-            }
+            const failedAttributes = {
+              title: 'Quest Failed',
+              description: 'Try again next time',
+            };
+            const failedContent = {
+              durationMinutes: this.questTemplate.durationMinutes,
+              status: 'failed', // Set status to failed instead of ending activity
+            };
+            OneSignal.LiveActivities.startDefault(
+              this.oneSignalActivityId,
+              failedAttributes,
+              failedContent
+            );
           } catch (error) {
             console.error(
               'Error ending OneSignal Live Activity (Failure):',
@@ -337,24 +378,34 @@ export default class QuestTimer {
             );
           }
         }
-        // --- End OneSignal Live Activity (Failure) ---
+
+        // Update quest run status to failed
+        if (this.questRunId) {
+          try {
+            await updateQuestRunStatus(this.questRunId, 'failed');
+            console.log('Updated quest run status to failed');
+          } catch (error) {
+            console.error(
+              'Failed to update quest run status to failed:',
+              error
+            );
+          }
+        }
 
         const questStoreState = useQuestStore.getState();
         questStoreState.failQuest();
         await this.stopQuest(); // stopQuest also calls clearQuestData
       } else {
         // Quest completed successfully before unlock or exactly at unlock
+        // Note: Server will automatically mark the quest as successful, so no need to call updateQuestRunStatus here
         console.log(
           'Phone unlocked, but quest duration met or exceeded. Quest considered complete.'
         );
-        // Note: Live activity completion is handled by the background task now
 
         // Ensure completion state is set if somehow missed by background task
         const questStoreState = useQuestStore.getState();
         if (questStoreState.activeQuest) {
           questStoreState.completeQuest(true); // Force completion if needed
-          // Live Activity should have been ended by background task, but end here just in case
-          // @todo: update the live activity with a success message.
         }
       }
     } else {
@@ -403,7 +454,7 @@ export default class QuestTimer {
             this.questTemplate.id
           );
 
-          // --- Update OneSignal Live Activity (Quest Complete) ---
+          // Update OneSignal Live Activity with status='completed'
           if (Platform.OS === 'ios' && currentActivityId) {
             const completionAttributes = {
               title: 'Quest Complete',
@@ -411,11 +462,10 @@ export default class QuestTimer {
             };
             const completionContent = {
               durationMinutes: this.questTemplate.durationMinutes,
-              pending: false,
-              completed: true,
+              status: 'completed', // Use status instead of boolean flags
             };
             console.log(
-              `Updating Live Activity ${currentActivityId} with Quest Complete message.`
+              `Updating Live Activity ${currentActivityId} with completed status`
             );
             OneSignal.LiveActivities.startDefault(
               currentActivityId,
@@ -453,32 +503,6 @@ export default class QuestTimer {
     }
     console.log('Background task finished for quest:', taskData.questId);
   };
-
-  // Helper function to end Live Activity cleanly
-  static async endLiveActivity(activityId?: string) {
-    const idToEnd = activityId || this.oneSignalActivityId;
-    if (Platform.OS === 'ios' && idToEnd) {
-      // Removed template/startTime check as exit only needs ID
-      try {
-        console.log(`Ending OneSignal Live Activity ${idToEnd}`);
-        OneSignal.LiveActivities.exit(idToEnd);
-
-        if (idToEnd === this.oneSignalActivityId) {
-          this.oneSignalActivityId = null;
-          const store = useQuestStore.getState();
-          if (typeof store.setLiveActivityId === 'function') {
-            store.setLiveActivityId(null);
-          }
-        }
-        await this.saveQuestData();
-      } catch (error) {
-        console.error(
-          `Error ending OneSignal Live Activity (${idToEnd}):`,
-          error
-        );
-      }
-    }
-  }
 
   static async stopQuest() {
     console.log('Stopping quest timer and background service.');

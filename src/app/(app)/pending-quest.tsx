@@ -1,7 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Image, Pressable } from 'react-native';
+import { Image } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Text, View } from '@/components/ui';
+import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
@@ -82,7 +82,6 @@ export default function PendingQuestScreen() {
   const handleCancelQuest = () => {
     console.log('Cancelling quest from pending screen');
     cancelQuest();
-    // No direct navigation here - let the useEffect handle it based on state
   };
 
   useEffect(() => {
@@ -148,14 +147,13 @@ export default function PendingQuestScreen() {
           style={buttonAnimatedStyle}
           className="mb-10" // Add bottom margin to keep away from navigation
         >
-          <Pressable
+          <Button
             onPress={handleCancelQuest}
-            className="items-center rounded-full bg-primary-400 px-6 py-3"
+            variant="destructive"
+            className="items-center rounded-full"
           >
-            <Text className="text-base font-semibold text-white">
-              Cancel Quest
-            </Text>
-          </Pressable>
+            <Text className="text-base font-semibold">Cancel Quest</Text>
+          </Button>
         </Animated.View>
       </View>
     </View>

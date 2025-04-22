@@ -8,7 +8,58 @@ import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
 
 type Props = {
   questId: string;
-  audioFile?: any; // Accept the audio file directly
+  audioFile?: string; // Accept the audio file as string path
+};
+
+// Create a mapping of paths to actual assets
+const AUDIO_ASSETS = {
+  '@/../assets/audio/quest-1.mp3': require('@/../assets/audio/quest-1.mp3'),
+  '@/../assets/audio/quest-1a.mp3': require('@/../assets/audio/quest-1a.mp3'),
+  '@/../assets/audio/quest-1b.mp3': require('@/../assets/audio/quest-1b.mp3'),
+  '@/../assets/audio/quest-2.mp3': require('@/../assets/audio/quest-2.mp3'),
+  '@/../assets/audio/quest-2a.mp3': require('@/../assets/audio/quest-2a.mp3'),
+  '@/../assets/audio/quest-2b.mp3': require('@/../assets/audio/quest-2b.mp3'),
+  '@/../assets/audio/quest-3.mp3': require('@/../assets/audio/quest-3.mp3'),
+  '@/../assets/audio/quest-3a.mp3': require('@/../assets/audio/quest-3a.mp3'),
+  '@/../assets/audio/quest-3b.mp3': require('@/../assets/audio/quest-3b.mp3'),
+  '@/../assets/audio/quest-4.mp3': require('@/../assets/audio/quest-4.mp3'),
+  '@/../assets/audio/quest-4a.mp3': require('@/../assets/audio/quest-4a.mp3'),
+  '@/../assets/audio/quest-4b.mp3': require('@/../assets/audio/quest-4b.mp3'),
+  '@/../assets/audio/quest-5.mp3': require('@/../assets/audio/quest-5.mp3'),
+  '@/../assets/audio/quest-5a.mp3': require('@/../assets/audio/quest-5a.mp3'),
+  '@/../assets/audio/quest-5b.mp3': require('@/../assets/audio/quest-5b.mp3'),
+  '@/../assets/audio/quest-6.mp3': require('@/../assets/audio/quest-6.mp3'),
+  '@/../assets/audio/quest-6a.mp3': require('@/../assets/audio/quest-6a.mp3'),
+  '@/../assets/audio/quest-6b.mp3': require('@/../assets/audio/quest-6b.mp3'),
+  '@/../assets/audio/quest-7.mp3': require('@/../assets/audio/quest-7.mp3'),
+  '@/../assets/audio/quest-7a.mp3': require('@/../assets/audio/quest-7a.mp3'),
+  '@/../assets/audio/quest-7b.mp3': require('@/../assets/audio/quest-7b.mp3'),
+  '@/../assets/audio/quest-8.mp3': require('@/../assets/audio/quest-8.mp3'),
+  '@/../assets/audio/quest-8a.mp3': require('@/../assets/audio/quest-8a.mp3'),
+  '@/../assets/audio/quest-8b.mp3': require('@/../assets/audio/quest-8b.mp3'),
+  '@/../assets/audio/quest-9.mp3': require('@/../assets/audio/quest-9.mp3'),
+  '@/../assets/audio/quest-9a.mp3': require('@/../assets/audio/quest-9a.mp3'),
+  '@/../assets/audio/quest-9b.mp3': require('@/../assets/audio/quest-9b.mp3'),
+  '@/../assets/audio/quest-10.mp3': require('@/../assets/audio/quest-10.mp3'),
+  '@/../assets/audio/quest-10a.mp3': require('@/../assets/audio/quest-10a.mp3'),
+  '@/../assets/audio/quest-10b.mp3': require('@/../assets/audio/quest-10b.mp3'),
+};
+
+// Function to look up the audio asset by path
+const getAudioAsset = (audioPath: string) => {
+  if (!audioPath) return null;
+
+  console.log('Looking up audio path:', audioPath);
+
+  // Look up the asset in our mapping
+  const asset = AUDIO_ASSETS[audioPath];
+
+  if (!asset) {
+    console.error(`No audio asset found for path: ${audioPath}`);
+    return null;
+  }
+
+  return asset;
 };
 
 export function StoryNarration({ questId, audioFile }: Props) {
@@ -44,7 +95,7 @@ export function StoryNarration({ questId, audioFile }: Props) {
 
     const loadAudio = async () => {
       try {
-        console.log(`Loading audio for quest: ${questId}`);
+        console.log(`Loading audio for quest: ${questId}, path: ${audioFile}`);
 
         // Configure audio session for playback
         await Audio.setAudioModeAsync({
@@ -53,9 +104,17 @@ export function StoryNarration({ questId, audioFile }: Props) {
           shouldDuckAndroid: true,
         });
 
-        // Create the sound object directly without asset downloading
+        // Get the actual asset from the path string
+        const audioAsset =
+          typeof audioFile === 'string' ? getAudioAsset(audioFile) : audioFile;
+
+        if (!audioAsset) {
+          throw new Error(`Could not load audio asset from path: ${audioFile}`);
+        }
+
+        // Create the sound object with the resolved asset
         const { sound } = await Audio.Sound.createAsync(
-          audioFile,
+          audioAsset,
           { shouldPlay: false },
           (status) => {
             if (!componentMountedRef.current) return;

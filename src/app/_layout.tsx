@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/react-native';
 import { router, Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
+import { Platform } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -27,18 +28,23 @@ export const unstable_settings = {
   initialRouteName: '(app)',
 };
 
+const integrations =
+  Env.APP_ENV === 'production'
+    ? [
+        Sentry.mobileReplayIntegration({
+          enableExperimentalViewRenderer: true,
+          maskAllText: false,
+          maskAllImages: false,
+          maskAllVectors: false,
+        }),
+      ]
+    : [];
+
 Sentry.init({
   dsn: 'https://6d85dbe3783d343a049b93fa8afaf144@o4508966745997312.ingest.us.sentry.io/4508966747570176',
   replaysSessionSampleRate: 1.0,
   replaysOnErrorSampleRate: 1.0,
-  integrations: [
-    Sentry.mobileReplayIntegration({
-      enableExperimentalViewRenderer: true,
-      maskAllText: false,
-      maskAllImages: false,
-      maskAllVectors: false,
-    }),
-  ],
+  integrations: integrations,
 });
 
 // Keep the splash screen visible until we explicitly hide it
@@ -84,7 +90,10 @@ function RootLayout() {
 
       // Initialize OneSignal
       OneSignal.initialize(Env.ONESIGNAL_APP_ID);
-      OneSignal.LiveActivities.setupDefault();
+      if (Platform.OS === 'ios') {
+        console.log('Setting up OneSignal Live Activities');
+        OneSignal.LiveActivities.setupDefault();
+      }
     }
   }, []);
 

@@ -92,13 +92,6 @@ export const scheduleQuestCompletionNotification = async () => {
 export function setupNotifications() {
   // Initialize OneSignal first
   if (Env.ONESIGNAL_APP_ID) {
-    // --- Add OneSignal Live Activities Setup ---
-    if (Platform.OS === 'ios') {
-      OneSignal.LiveActivities.setupDefault();
-      console.log('OneSignal Live Activities setupDefault called.');
-    }
-    // --- End Live Activities Setup ---
-
     // Setup notification handling
     OneSignal.Notifications.addEventListener('click', (event) => {
       console.log('OneSignal notification clicked:', event);

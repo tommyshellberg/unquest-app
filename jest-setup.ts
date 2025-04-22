@@ -4,6 +4,16 @@ global.window = {};
 // @ts-ignore
 global.window = global;
 
+// Mock OneSignal for LiveActivities
+global.OneSignal = {
+  LiveActivities: {
+    startDefault: jest.fn(),
+    exit: jest.fn(),
+    setupDefault: jest.fn(),
+    updateDefault: jest.fn(),
+  },
+};
+
 // Mock React Native components
 jest.mock('react-native', () => {
   const RN = jest.requireActual('react-native');
@@ -61,10 +71,11 @@ jest.mock('expo-notifications', () => ({
   },
 }));
 
-// Mock FocusAwareStatusBar component
-jest.mock('@/components/ui/focus-aware-status-bar', () => ({
-  __esModule: true,
-  default: () => null,
+jest.mock('@/components/ui', () => ({
+  ...jest.requireActual('@/components/ui'),
+  FocusAwareStatusBar: function MockStatusBar() {
+    return null;
+  },
 }));
 
 // Mock API URL for testing
@@ -85,6 +96,7 @@ jest.mock('react-native-onesignal', () => ({
       startDefault: jest.fn(),
       updateDefault: jest.fn(),
       endDefault: jest.fn(),
+      exit: jest.fn(),
     },
   },
   LogLevel: {

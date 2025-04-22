@@ -25,15 +25,6 @@ jest.mock('@/lib/services/quest-timer', () => ({
   prepareQuest: jest.fn().mockResolvedValue(undefined),
 }));
 
-// Mock components/ui - simplified to avoid reference errors
-// Add any other components that need to be mocked
-jest.mock('@/components/ui', () => ({
-  ...jest.requireActual('@/components/ui'),
-  FocusAwareStatusBar: function MockStatusBar() {
-    return null;
-  },
-}));
-
 // Mock vector icons
 jest.mock('@expo/vector-icons', () => ({
   Feather: () => null,

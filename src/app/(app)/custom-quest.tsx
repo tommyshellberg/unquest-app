@@ -69,7 +69,7 @@ export default function CustomQuestScreen() {
       durationMinutes: questDuration,
       category: data.questCategory,
       reward: {
-        xp: Math.round(questDuration * 1.5), // Scale XP with duration
+        xp: Math.round(questDuration * 3),
       },
     };
 
