@@ -1,25 +1,11 @@
-import { Env } from '@env';
-
-import { calculateRewardFromDuration } from '@/app/utils/quest-utils';
-import {
-  type CustomQuestTemplate,
-  type StoryQuestTemplate,
-} from '@/store/types';
-
-// Set quest duration to 2 minutes in development mode
-const isDev = Env.APP_ENV === 'development';
-function questDuration(prod: number): number {
-  return isDev ? 2 : prod;
-}
-
-export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
+export const AVAILABLE_QUESTS = [
   {
     id: 'quest-1',
     mode: 'story',
     title: 'A Confused Awakening',
     recap:
       'The Kingdom of Vaedros is in peril. The balance is broken. The light is trapped. The darkness is growing.',
-    durationMinutes: questDuration(3),
+    durationMinutes: 3,
     reward: { xp: 100 },
     poiSlug: 'darkwood-awakening',
     audioFile: '@/../assets/audio/quest-1.mp3',
@@ -46,8 +32,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     mode: 'story',
     title: 'Awaken in a Dark Forest',
     recap: 'I woke alone in a dark forest, my memory gone—my past a void.',
-    durationMinutes: questDuration(3),
-    reward: { xp: calculateRewardFromDuration(3) },
+    durationMinutes: 3,
+    reward: { xp: 9 },
     poiSlug: 'darkwood-awakening',
     audioFile: '@/../assets/audio/quest-1a.mp3', // @todo: add audio file
     story: `
@@ -69,8 +55,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     mode: 'story',
     title: 'Searching the Forest for Signs of Life',
     recap: 'I woke alone in a dark forest, my memory gone—my past a void.',
-    durationMinutes: questDuration(3),
-    reward: { xp: calculateRewardFromDuration(3) },
+    durationMinutes: 3,
+    reward: { xp: 9 },
     poiSlug: 'darkwood-awakening',
     audioFile: '@/../assets/audio/quest-1b.mp3', // @todo: add audio file
     story: `
@@ -94,8 +80,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Shelter of Whispers',
     recap:
       'After waking in the forest with no memory, I pressed onward through the mist in the only direction that seems to be promising.',
-    durationMinutes: questDuration(6),
-    reward: { xp: calculateRewardFromDuration(6) },
+    durationMinutes: 6,
+    reward: { xp: 18 },
     poiSlug: 'hut-of-whispers',
     audioFile: '@/../assets/audio/quest-2.mp3',
     story: `
@@ -123,8 +109,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Digging Through the Past',
     recap:
       'I took shelter inside the abandoned hut, finding a strange map and hints of supplies nearby.',
-    durationMinutes: questDuration(6),
-    reward: { xp: calculateRewardFromDuration(6) },
+    durationMinutes: 6,
+    reward: { xp: 18 },
     poiSlug: 'modest-hut',
     audioFile: '@/../assets/audio/quest-2a.mp3',
     story: `
@@ -147,8 +133,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Faint Traces',
     recap:
       'I took shelter inside the abandoned hut, finding a strange map and hints of supplies nearby.',
-    durationMinutes: questDuration(6),
-    reward: { xp: calculateRewardFromDuration(6) },
+    durationMinutes: 6,
+    reward: { xp: 18 },
     poiSlug: 'modest-hut',
     audioFile: '@/../assets/audio/quest-2b.mp3',
     story: `
@@ -171,8 +157,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'The Weary Crossing',
     recap:
       'After resting in the abandoned hut, I awoke to find my path blocked by a raging river.',
-    durationMinutes: questDuration(9),
-    reward: { xp: calculateRewardFromDuration(9) },
+    durationMinutes: 9,
+    reward: { xp: 27 },
     poiSlug: 'weary-crossing',
     audioFile: '@/../assets/audio/quest-3.mp3',
     story: `
@@ -201,8 +187,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'The Raft – A Careful Crossing',
     recap:
       'Trapped by the river, I considered my options for crossing—either building a raft or risking a hollowed-out log.',
-    durationMinutes: questDuration(9),
-    reward: { xp: calculateRewardFromDuration(9) },
+    durationMinutes: 9,
+    reward: { xp: 27 },
     poiSlug: 'riverbank-crossing',
     audioFile: '@/../assets/audio/quest-3a.mp3',
     story: `
@@ -226,8 +212,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Hollowed Out – A Risky Crossing',
     recap:
       'Trapped by the river, I considered my options for crossing—either building a raft or risking a hollowed-out log.',
-    durationMinutes: questDuration(9),
-    reward: { xp: calculateRewardFromDuration(9) },
+    durationMinutes: 9,
+    reward: { xp: 27 },
     poiSlug: 'riverbank-crossing',
     audioFile: '@/../assets/audio/quest-3b.mp3',
     story: `
@@ -249,8 +235,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Discovering the Ancient Arch with Inscriptions',
     recap:
       'The river nearly claimed me, but I reached the far side alive, emerging into a land of ancient ruins.',
-    durationMinutes: questDuration(12),
-    reward: { xp: calculateRewardFromDuration(12) },
+    durationMinutes: 12,
+    reward: { xp: 36 },
     poiSlug: 'ruined-archway',
     audioFile: '@/../assets/audio/quest-4.mp3',
     story: `
@@ -281,8 +267,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Unraveling the Inscription',
     recap:
       'Among the ruins, I discovered an ancient arch carved with strange symbols—symbols that included my own name.',
-    durationMinutes: questDuration(12),
-    reward: { xp: calculateRewardFromDuration(12) },
+    durationMinutes: 12,
+    reward: { xp: 36 },
     poiSlug: 'ruined-archway',
     audioFile: '@/../assets/audio/quest-4a.mp3',
     story: `
@@ -309,8 +295,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Moving Forward Before Nightfall',
     recap:
       'Among the ruins, I discovered an ancient arch carved with strange symbols—symbols that included my own name.',
-    durationMinutes: questDuration(12),
-    reward: { xp: calculateRewardFromDuration(12) },
+    durationMinutes: 12,
+    reward: { xp: 36 },
     poiSlug: 'ruined-archway',
     audioFile: '@/../assets/audio/quest-4b.mp3',
     story: `
@@ -332,8 +318,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Rugged Outcropping',
     recap:
       'Leaving the ruins and their troubling inscriptions behind, I move onward in the direction of a lake.',
-    durationMinutes: questDuration(15),
-    reward: { xp: calculateRewardFromDuration(15) },
+    durationMinutes: 15,
+    reward: { xp: 45 },
     poiSlug: 'lake-overlook',
     audioFile: '@/../assets/audio/quest-5.mp3',
     story: `
@@ -362,8 +348,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: "The Map's Return",
     recap:
       'Blocked by the vast lake, I stood frustrated at the shore, unsure how to proceed.',
-    durationMinutes: questDuration(15),
-    reward: { xp: calculateRewardFromDuration(15) },
+    durationMinutes: 15,
+    reward: { xp: 45 },
     poiSlug: 'rugged-outcropping',
     audioFile: '@/../assets/audio/quest-5a.mp3',
     story: `
@@ -388,8 +374,8 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'The Fallen Idol',
     recap:
       'Blocked by the vast lake, I stood frustrated at the shore, unsure how to proceed.',
-    durationMinutes: questDuration(15),
-    reward: { xp: calculateRewardFromDuration(15) },
+    durationMinutes: 15,
+    reward: { xp: 45 },
     poiSlug: 'rugged-outcropping',
     audioFile: '@/../assets/audio/quest-5b.mp3',
     story: `
@@ -413,9 +399,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Ancient, Empty Village',
     recap:
       'The lake blocked my path, forcing me back along the shoreline. I need to find shelter before nightfall.',
-    durationMinutes: questDuration(18),
-    reward: { xp: calculateRewardFromDuration(18) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 18,
+    reward: { xp: 54 },
+    poiSlug: 'ancient-village', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-6.mp3',
     story: `
       At the edge of dusk, the village rose before me, skeletal houses crouching beside the water's edge. Doors hung open, windows empty, the whole place forgotten by time. As I stepped carefully between buildings, the silence seemed to watch me back, unblinking.
@@ -440,9 +426,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Echoes in the Empty House',
     recap:
       'In the abandoned village, darkness fell swiftly, and I had only a little time to search for clues or shelter.',
-    durationMinutes: questDuration(18),
-    reward: { xp: calculateRewardFromDuration(18) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 18,
+    reward: { xp: 54 },
+    poiSlug: 'ancient-village', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-6a.mp3',
     story: `
       I stepped into the nearest house, floorboards creaking beneath my weight. Dust blanketed every surface, and a table stood overturned. Beside it, a sheet of parchment caught my eye, ink faded but readable:
@@ -465,9 +451,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Beneath the Stables',
     recap:
       'In the abandoned village, darkness fell swiftly, and I had only a little time to search for clues or shelter.',
-    durationMinutes: questDuration(18),
-    reward: { xp: calculateRewardFromDuration(18) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 18,
+    reward: { xp: 54 },
+    poiSlug: 'ancient-village', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-6b.mp3',
     story: `
       I pushed open the creaking stable doors, the smell of rotted wood and mold heavy in the air. Straw littered the floor, undisturbed for years. As I stepped further in, my boot caught on something—a trapdoor, hidden beneath loose hay.
@@ -489,9 +475,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Forced to Walk North by the Stranger',
     recap:
       'My sleep in the village ended abruptly when I woke to a stranger holding a blade to my throat. Silently, he led me away.',
-    durationMinutes: questDuration(21),
-    reward: { xp: calculateRewardFromDuration(21) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 21,
+    reward: { xp: 63 },
+    poiSlug: 'ancient-temple', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-7.mp3',
     story: `
       The stranger walked behind me, close enough that I could hear his breath, the scrape of boots against stone. The sword stayed at my back—not digging, not threatening, just there. A warning.
@@ -522,9 +508,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'An Attempted Escape',
     recap:
       'The stranger brought me to an ancient temple, giving no answers as we approached its shadowy entrance.',
-    durationMinutes: questDuration(21),
-    reward: { xp: calculateRewardFromDuration(21) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 21,
+    reward: { xp: 63 },
+    poiSlug: 'ancient-temple', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-7a.mp3',
     story: `
       My muscles tense, adrenaline surging—I saw my chance. Without another thought, I lunged toward the narrow gap between pillars, gravel kicking up behind me. I almost reached the shadows before Rowan grabbed my arm, twisting me sharply but without causing real harm.
@@ -548,9 +534,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'A Moment of Trust',
     recap:
       'The stranger brought me to an ancient temple, giving no answers as we approached its shadowy entrance.',
-    durationMinutes: questDuration(21),
-    reward: { xp: calculateRewardFromDuration(21) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 21,
+    reward: { xp: 63 },
+    poiSlug: 'ancient-temple', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-7b.mp3',
     story: `
       Rowan nudged me forward with quiet urgency, sword lowered but still close enough to discourage resistance. We stepped through the temple's weathered entrance, the air thick with dust and echoes of time. 
@@ -573,9 +559,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Rowan Shares Context',
     recap:
       'Inside the temple, the stranger revealed his name—Rowan—and began explaining the fall of Vaedros.',
-    durationMinutes: questDuration(24),
-    reward: { xp: calculateRewardFromDuration(24) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 24,
+    reward: { xp: 72 },
+    poiSlug: 'shrine-camp', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-8.mp3',
     story: `
   I woke to a dusty sunbeam passing over my eyes. A shadow moved in the doorway. Rowan. He jerks his chin toward the outside, a silent command.
@@ -603,9 +589,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Collecting Firewood',
     recap:
       'Rowan paused his story about Vaedros, suggesting we needed fire and water before continuing.',
-    durationMinutes: questDuration(24),
-    reward: { xp: calculateRewardFromDuration(24) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 24,
+    reward: { xp: 72 },
+    poiSlug: 'shrine-camp', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-8a.mp3',
     story: `
   I gathered fallen branches from beneath hollow trees, wondering again if I should run. But Rowan's words held me—something about them rings true. I'm not ready to leave yet.
@@ -628,9 +614,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Fetching Water',
     recap:
       'Rowan paused his story about Vaedros, suggesting we needed fire and water before continuing.',
-    durationMinutes: questDuration(24),
-    reward: { xp: calculateRewardFromDuration(24) },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 24,
+    reward: { xp: 72 },
+    poiSlug: 'shrine-camp', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-8b.mp3',
     story: `
   I filled a dented pot from a nearby stream, water trickling gently over moss-covered stones. It occurred to me briefly—I could run, disappear now—but something held me here. Rowan seemed to know more than he was saying.
@@ -654,9 +640,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Soldiers Raid the Campsite',
     recap:
       'Rowan spoke of Vaedros’s fall and hinted we might have met before. Under the stars, sleep eventually came, although my mind was teeming with questions.',
-    durationMinutes: questDuration(27),
-    reward: { xp: 100 },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 27,
+    reward: { xp: 81 },
+    poiSlug: 'glass-building', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-9.mp3',
     story: `
   I woke to a hand clamped over my mouth.
@@ -687,9 +673,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'An Iron Grip',
     recap:
       'Cornered by soldiers with no way out, Rowan and I prepared for a desperate fight.',
-    durationMinutes: questDuration(27),
-    reward: { xp: 50 },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 27,
+    reward: { xp: 81 },
+    poiSlug: 'glass-building', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-9a.mp3',
     story: `
   I gripped the candleholder, its iron base thick with years of melted wax, its weight unfamiliar in my hands.
@@ -711,9 +697,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Wood and Splinters',
     recap:
       'Cornered by soldiers with no way out, Rowan and I prepared for a desperate fight.',
-    durationMinutes: questDuration(27),
-    reward: { xp: 50 },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 27,
+    reward: { xp: 81 },
+    poiSlug: 'glass-building', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-9b.mp3',
     story: `
   I gripped the table leg, splintered wood rough against my palm, its heft oddly comforting despite our odds.
@@ -735,9 +721,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'The Fight for Survival',
     recap:
       "Discovered by soldiers, Rowan and I brace ourselves for a fight we can't avoid. Our only advantage is surprise—and desperation.",
-    durationMinutes: questDuration(30),
-    reward: { xp: 100 },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 30,
+    reward: { xp: 90 },
+    poiSlug: 'escape-forest', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-10.mp3',
     story: `
       I gripped my makeshift weapon tighter, knuckles white. The soldiers entered cautiously, eyes scanning the shadows.  
@@ -765,9 +751,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'A Timely Warning',
     recap:
       "The fight erupted quickly, and Rowan faced certain death—I reacted instinctively, discovering power I didn't know I had.",
-    durationMinutes: questDuration(30),
-    reward: { xp: 100 },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 30,
+    reward: { xp: 90 },
+    poiSlug: 'escape-forest', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-10a.mp3',
     story: `
       The soldier raised his blade behind Rowan, poised for a killing blow.  
@@ -795,9 +781,9 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     title: 'Taking the Blow',
     recap:
       "The fight erupted quickly, and Rowan faced certain death—I reacted instinctively, discovering power I didn't know I had.",
-    durationMinutes: questDuration(30),
-    reward: { xp: 100 },
-    poiSlug: '', // @todo: add slug when map has 10 POIs
+    durationMinutes: 30,
+    reward: { xp: 90 },
+    poiSlug: 'escape-forest', // @todo: add slug when map has 10 POIs
     audioFile: '@/../assets/audio/quest-10b.mp3',
     story: `
       Without thinking, I shoved Rowan aside, feeling the sting of a blade grazing my shoulder. Warmth spread down my sleeve—blood, sharp and real—but I'm alive.
@@ -816,218 +802,5 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
         nextQuestId: 'quest-11',
       },
     ],
-  },
-];
-
-export const AVAILABLE_CUSTOM_QUEST_STORIES = [
-  {
-    id: 'X7Fh2pKqL8vB',
-    title: "The Summit's Watchful Eye",
-    story:
-      "The climb was brutal, each step carving fire into your legs, but at last, you reached the summit. Below, the kingdom sprawled beneath a sky streaked with gold, the distant towers of Vaedros barely piercing the mist. As you caught your breath, a falcon landed beside you, a message tied to its leg—someone had been watching your ascent. Strength wasn't just about endurance; it was about proving, even to unseen eyes, that you could endure.",
-    category: 'Fitness',
-  },
-  {
-    id: 'P3XvL9KqJ2mN',
-    title: 'The Forgotten Tome',
-    story:
-      'Deep in the ruins of an old monastery, you pried open a dust-choked chest, its wood crumbling under your touch. Inside lay a single book, bound in cracked leather, its pages whispering as they turned. The words were ancient, yet they unraveled a mystery you had never considered—a secret history of Vaedros, lost to time. You left the ruins wiser, the weight of knowledge sitting heavier on your shoulders than any sword.',
-    category: 'Reading',
-  },
-  {
-    id: 'Z5GhT8MlQ2nV',
-    title: "The River's Reflection",
-    story:
-      "You knelt at the river's edge, the water so still it mirrored the sky like glass. Breathing deep, you let the hush of the forest quiet your thoughts, the chaos of your journey settling into stillness. When you opened your eyes, the reflection had shifted—a faint figure watching from the reeds, gone in the next blink. Whether spirit or trick of the light, you rose feeling lighter, as if something unseen had granted you peace.",
-    category: 'Meditation',
-  },
-  {
-    id: 'L9VnQ3XpK7YB',
-    title: "The Stranger's Wager",
-    story:
-      'At the edge of the market, a hooded traveler challenged you to a game of wit and chance. Coins flashed, dice rolled, and laughter filled the air as the two of you traded victories back and forth. In the end, you left with no gold but something better—an ally who would remember your name when the time came. Sometimes, a shared moment meant more than the weight of a purse.',
-    category: 'Social',
-  },
-  {
-    id: 'K2XvT8LQ3MnP',
-    title: "The Master's Challenge",
-    story:
-      "The old swordsman watched as you struggled through the intricate movements of the blade, your form raw but determined. He said nothing, only nodding once when your footwork finally landed true. 'Not bad,' he muttered, tossing you a battered silver coin, the mark of his approval. The lesson was over, but the real learning had just begun.",
-    category: 'Learning',
-  },
-  {
-    id: 'M8KXvT9QLJ3P',
-    title: "The Hunter's Path",
-    story:
-      "A dense thicket barred your path, but beyond it lay the perfect vantage point over the valley below. Every step tested your endurance, each fallen branch and uneven rock another obstacle. Finally, at the ridge's peak, you spotted a stag, standing tall against the dawn. Not all victories end with a hunt—some end with quiet admiration.",
-    category: 'Fitness',
-  },
-  {
-    id: 'J2LXPQ9VMK7T',
-    title: 'The Candlelit Study',
-    story:
-      "By flickering candlelight, you poured over ancient scripts, your eyes straining to decipher the faded ink. Hours passed, but then—a revelation. A single sentence, overlooked by generations, hinted at a forgotten passage beneath Vaedros's great halls. Knowledge, you realized, is sometimes more powerful than any sword.",
-    category: 'Reading',
-  },
-  {
-    id: 'T7NQX9VPK3LM',
-    title: 'The Secret Passage',
-    story:
-      "Beneath the ruined chapel, you discovered a hidden tunnel, its walls lined with ancient inscriptions. Each carving spoke of a different path, a different choice. You traced a hand over the words, sensing the weight of the past pressing against your fingertips. Some knowledge wasn't found—it was remembered.",
-    category: 'Reading',
-  },
-  {
-    id: 'LQ9XP7VKM3NT',
-    title: 'The Still Pool',
-    story:
-      'At the heart of the glade, a pool so still it reflected the stars at midday. You knelt at its edge, listening to the wind carry voices too faint to understand. As you breathed in the cool air, the world seemed to hold itself in perfect balance. In that moment, you understood why silence mattered.',
-    category: 'Meditation',
-  },
-  {
-    id: 'M7XPQ9VNLK3T',
-    title: 'The Forgotten Laughter',
-    story:
-      'The night began with wary glances and hushed words, but somewhere between shared stories and stolen drinks, the tension melted away. Laughter filled the air, binding strangers together under flickering lantern light. You had come for information, but left with something better—a moment that reminded you what it meant to be human. Not all quests were meant to be won; some were meant to be lived.',
-    category: 'Social',
-  },
-  {
-    id: 'Q9XPV7NMLK3T',
-    title: 'The Unfinished Manuscript',
-    story:
-      "In the deepest vault of the scholar's tower, you found a manuscript missing its final page. The last words trailed off mid-sentence, a mystery unsolved. The librarian sighed, shaking his head. 'Perhaps,' he mused, 'some things are meant to be finished by those who come after.'",
-    category: 'Learning',
-  },
-  {
-    id: 'K3XL9T7VPQMN',
-    title: "The Healer's Meditation",
-    story:
-      "The old woman handed you a steaming cup of herbal tea and told you to breathe. 'Too much weight on your shoulders, traveler,' she murmured, watching the fire crackle. You closed your eyes, inhaling the earthy scent, and for the first time in days, your thoughts slowed. When you finally spoke, your voice felt clearer, lighter.",
-    category: 'Meditation',
-  },
-  {
-    id: 'LXP9Q7NMTV3K',
-    title: 'The Stormrunner',
-    story:
-      "Thunder rumbled overhead as you sprinted through the open plains, rain pelting your skin like needles. Every step drove you forward, muscles screaming but refusing to falter. The storm didn't break you—it forged you, pushing you beyond your limits. When you finally reached shelter, you weren't the same person who had started the run.",
-    category: 'Fitness',
-  },
-  {
-    id: 'Q7VPX9NMLK3T',
-    title: "The Astronomer's Gift",
-    story:
-      "An old stargazer invited you to sit beside him atop the temple steps, pointing to the constellations above. 'These stories are older than kingdoms,' he mused, tracing one with his finger. You followed his lead, connecting the stars into shapes that felt both familiar and brand new. Some lessons weren't written in books—they were written across the sky.",
-    category: 'Learning',
-  },
-  {
-    id: 'K7XPQ9NMLVT3',
-    title: 'The Hidden Library',
-    story:
-      'Beneath the floorboards of an abandoned study, you discovered a trapdoor. Below, dust-covered books sat untouched by time, their spines glinting under torchlight. You reached for one at random, its title unreadable from age. Whatever knowledge lay within, it had waited centuries for someone like you.',
-    category: 'Reading',
-  },
-  {
-    id: 'A8NX7LKQ3VPZ',
-    title: 'The Endless Stair',
-    story:
-      "You found an ancient stairway carved into the cliffs, each step weathered by centuries of wind. With aching legs, you climbed higher and higher, the world shrinking below. At the summit, a lone stone marked the spot where countless others had stood before you. You pressed a hand to its surface, knowing you'd joined a long lineage of those who refused to turn back.",
-    category: 'Fitness',
-  },
-  {
-    id: 'Z5KX9NQLV7MP',
-    title: "The Scholar's Gamble",
-    story:
-      "A nervous apprentice dared you to answer a riddle his master had left unsolved. The question twisted your thoughts, each word leading deeper into the puzzle's depths. Then, with a sudden clarity, the answer emerged, simple as sunlight breaking through fog. The apprentice gasped, and from the shadows, the master finally smiled.",
-    category: 'Learning',
-  },
-  {
-    id: 'X9P7VQLK3MNT',
-    title: 'The Mirror of Stillness',
-    story:
-      'A placid lake stretched before you, the surface unmoving, mirroring the sky. You sat at the edge, watching your own reflection stare back, patient and expectant. In the silence, your breath slowed, your thoughts softened, and the tension in your chest unwound. When you finally rose, the lake was still—but something in you had shifted.',
-    category: 'Meditation',
-  },
-  {
-    id: 'L7XKQ9NVP3MT',
-    title: "The Stranger's Cup",
-    story:
-      'A weary traveler shared his last bottle of wine with you, despite having nothing else to his name. The two of you talked long into the night, trading tales of lost battles and foolish dreams. When dawn arrived, he left without a word, but a single silver coin sat beside the empty bottle. No message, no name—just proof that kindness asked for nothing in return.',
-    category: 'Social',
-  },
-  {
-    id: 'Q8NXP7VKL3MT',
-    title: "The Librarian's Test",
-    story:
-      "Deep within the archive, a scholar pointed you to a wall of unmarked tomes. 'Find the truth,' he said, and left you alone among the towering shelves. Hours passed before your fingers traced a spine that hummed with quiet importance. As you opened the book, you realized—some knowledge chooses its seeker.",
-    category: 'Reading',
-  },
-  {
-    id: 'P9X7QVK3NMLT',
-    title: 'The Shadow Sprint',
-    story:
-      "A challenge was whispered through the alleys—a race through the darkened streets before the town's bells rang. You ran, dodging barrels and leaping over broken carts, laughter and adrenaline carrying you forward. At the final stretch, you pushed harder, collapsing at the finish just as the bells tolled. Victory was sweet, but the thrill of the run was sweeter.",
-    category: 'Fitness',
-  },
-  {
-    id: 'K3X9NVQL7MPT',
-    title: "The Elder's Silence",
-    story:
-      "An old monk sat beneath the temple's ruined archway, eyes closed, hands resting lightly on his knees. You sat beside him, waiting for wisdom, for a parable, for anything—but he only breathed. Minutes passed, then hours, until something within you shifted. When you finally stood to leave, the monk spoke only two words: 'You understand.'",
-    category: 'Meditation',
-  },
-  {
-    id: 'L9X7VPQK3NMT',
-    title: 'The Market Gambit',
-    story:
-      "A fast-talking merchant challenged you to a game of dice, promising a reward greater than gold. You played cautiously, watching his every move, reading the flicker in his eyes. On the final roll, luck favored you, and he grinned, pushing a small, wrapped bundle across the table. Inside, a simple wooden token bore the mark of someone important—you just didn't know who.",
-    category: 'Social',
-  },
-  {
-    id: 'N7XVP9QK3LMT',
-    title: 'The Forgotten Cipher',
-    story:
-      'A crumbling note led you to the ruins of a watchtower, its stones whispering of long-dead sentries. Carved into the wall was a cipher no one had cracked for a hundred years. With careful thought and a patient mind, the symbols unraveled beneath your fingertips. As the last piece fell into place, you understood—the message had been waiting for you.',
-    category: 'Learning',
-  },
-  {
-    id: 'M8X7VPQK9NLT',
-    title: 'The Midnight Trail',
-    story:
-      'A hidden path through the forest revealed itself under the silver glow of the moon. You followed it, stepping carefully, guided only by instinct and the hush of the wind. At its end, an ancient oak bore carvings older than Vaedros itself, marking the journey of those who walked before. You added your own mark—proof that you, too, had made the climb.',
-    category: 'Fitness',
-  },
-  {
-    id: 'Q9X7VPMLK3NT',
-    title: 'The Book of Whispers',
-    story:
-      "Buried beneath forgotten scrolls, you found a book with no title. The pages rustled as if they had been waiting, words shifting under your gaze. You traced a line with your finger, and the ink darkened, the letters rearranging to reveal a story you somehow already knew. Some books don't just tell history—they remember it.",
-    category: 'Reading',
-  },
-  {
-    id: 'K7X9VPQLM3NT',
-    title: 'The Firelit Gathering',
-    story:
-      'A flickering bonfire welcomed wanderers and outcasts alike, their faces painted in the warm glow. You hesitated at the edge of the circle, but a stranger clapped your back, handing you a drink. The night stretched long, filled with songs and stories, and for once, you felt like you belonged. When the embers faded, so did the strangers—but their laughter stayed with you.',
-    category: 'Social',
-  },
-  {
-    id: 'L3X7VPQ9KMNT',
-    title: 'The Tower of Echoes',
-    story:
-      'At the top of a long-abandoned bell tower, you called out into the abyss. The wind carried your voice, stretching it into something both familiar and strange. A second later, your words returned, but they were not your own. Some places, it seemed, did not forget the voices of those who came before.',
-    category: 'Meditation',
-  },
-  {
-    id: 'M9X7VPQLK3NT',
-    title: "The Master's Puzzle",
-    story:
-      "A dying craftsman handed you a wooden box, its surface covered in intricate carvings. 'Solve it,' he rasped, closing his eyes for the last time. Days passed as you worked the puzzle, twisting, shifting, listening for its hidden logic. When it finally clicked open, a single note lay inside: 'You were always worthy.'",
-    category: 'Learning',
-  },
-  {
-    id: 'X7K9VPQLM3NT',
-    title: "The Duelist's Bet",
-    story:
-      "A masked duelist stood in the town square, offering a prize to any who could best him. You accepted, blades clashing under the watchful eyes of a growing crowd. Though his skill far outmatched yours, he pulled back at the last moment, nodding in approval. 'One day,' he said, sheathing his sword. 'You'll win.'",
-    category: 'Fitness',
   },
 ];

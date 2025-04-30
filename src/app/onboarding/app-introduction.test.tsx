@@ -36,15 +36,6 @@ jest.mock('@/store/character-store');
 // Mock user store
 jest.mock('@/store/user-store');
 
-// Mock the components/ui to handle FocusAwareStatusBar
-jest.mock('@/components/ui', () => {
-  const originalModule = jest.requireActual('@/components/ui');
-  return {
-    ...originalModule,
-    FocusAwareStatusBar: () => null,
-  };
-});
-
 describe('AppIntroductionScreen', () => {
   const mockRouter = {
     replace: jest.fn(),

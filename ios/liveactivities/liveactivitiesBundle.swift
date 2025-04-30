@@ -2,7 +2,7 @@
 //  liveactivitiesBundle.swift
 //  liveactivities
 //
-//  Created by thomas shellberg on 11.04.25.
+//  Created by thomas shellberg on 23.04.25.
 //
 
 import WidgetKit

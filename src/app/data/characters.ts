@@ -30,9 +30,9 @@ const CHARACTERS: Character[] = [
   {
     id: 'scout',
     type: 'Scout',
-    title: 'Master of Stealth',
+    title: 'The Lone Explorer',
     description:
-      'Gains wisdom and unlocks ancient secrets through contemplation.',
+      'Resourceful and self-reliant, you thrive in the spaces between civilization and wilderness.',
     image: require('@/../assets/images/characters/scout-full.jpg'),
     profileImage: require('@/../assets/images/characters/scout-profile.jpg'),
   },

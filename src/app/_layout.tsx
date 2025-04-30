@@ -27,18 +27,23 @@ export const unstable_settings = {
   initialRouteName: '(app)',
 };
 
+const integrations =
+  Env.APP_ENV === 'production'
+    ? [
+        Sentry.mobileReplayIntegration({
+          enableExperimentalViewRenderer: true,
+          maskAllText: false,
+          maskAllImages: false,
+          maskAllVectors: false,
+        }),
+      ]
+    : [];
+
 Sentry.init({
   dsn: 'https://6d85dbe3783d343a049b93fa8afaf144@o4508966745997312.ingest.us.sentry.io/4508966747570176',
   replaysSessionSampleRate: 1.0,
   replaysOnErrorSampleRate: 1.0,
-  integrations: [
-    Sentry.mobileReplayIntegration({
-      enableExperimentalViewRenderer: true,
-      maskAllText: false,
-      maskAllImages: false,
-      maskAllVectors: false,
-    }),
-  ],
+  integrations: integrations,
 });
 
 // Keep the splash screen visible until we explicitly hide it
@@ -78,13 +83,10 @@ function RootLayout() {
   useEffect(() => {
     if (Env.ONESIGNAL_APP_ID) {
       // Enable verbose logging for debugging (can be removed for production)
-      if (__DEV__) {
-        OneSignal.Debug.setLogLevel(LogLevel.Verbose);
-      }
+      OneSignal.Debug.setLogLevel(LogLevel.Verbose);
 
       // Initialize OneSignal
       OneSignal.initialize(Env.ONESIGNAL_APP_ID);
-      OneSignal.LiveActivities.setupDefault();
     }
   }, []);
 

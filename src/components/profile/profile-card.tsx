@@ -6,6 +6,7 @@ import CHARACTERS from '@/app/data/characters';
 import { Card, Text, View } from '@/components/ui';
 
 type ProfileCardProps = {
+  /** The character data to render */
   character: any;
 };
 
@@ -15,9 +16,14 @@ export function ProfileCard({ character }: ProfileCardProps) {
   return (
     <Card className="mx-4 mt-4 overflow-hidden">
       <ImageBackground
-        source={characterDetails?.profileImage || characterDetails?.image}
-        className="aspect-[1.5] w-full"
+        source={characterDetails?.profileImage}
+        className="aspect-[1.2] w-full"
         resizeMode="cover"
+        imageStyle={{
+          position: 'absolute',
+          top: -60,
+          width: '100%',
+        }}
       >
         <View className="flex h-full flex-col justify-between">
           {/* Top area - empty but keeps the layout vertical */}

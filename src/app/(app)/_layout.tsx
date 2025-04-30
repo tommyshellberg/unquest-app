@@ -1,12 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import { router, Tabs, usePathname, useRootNavigationState } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { AppState, Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { getAccessToken } from '@/api/token';
 import { white } from '@/components/ui/colors';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
-import QuestTimer from '@/lib/services/quest-timer';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -40,7 +39,6 @@ function CenterButton({ focused, color }) {
 export default function TabLayout() {
   const navigationState = useRootNavigationState();
   const pathname = usePathname();
-  const appState = useRef(AppState.currentState);
   const { currentStep } = useOnboardingStore((s) => ({
     currentStep: s.currentStep,
   }));
@@ -52,7 +50,6 @@ export default function TabLayout() {
     (state) => state.recentCompletedQuest
   );
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
-  const activeQuest = useQuestStore((state) => state.activeQuest);
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
@@ -76,33 +73,6 @@ export default function TabLayout() {
       hasRedirectedToCompletedRef.current = false;
     }
   }, [navigationState?.key, recentCompletedQuest]);
-
-  // AppState listener to handle live activity cleanup
-  useEffect(() => {
-    // Skip for non-iOS devices
-    if (Platform.OS !== 'ios') return;
-
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
-      // Check if app is coming from background to active (foreground)
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        // Only clean up live activities if there's no pending or active quest
-        // This prevents showing outdated live activities when returning to the app
-        // but doesn't interfere with pending quest setup
-        if (!pendingQuest && !activeQuest) {
-          console.log(
-            'App became active: cleaning up live activities (no pending or active quest)'
-          );
-          QuestTimer.endLiveActivity();
-        }
-      }
-      appState.current = nextAppState;
-    });
-
-    return () => subscription.remove();
-  }, [pendingQuest, activeQuest]);
 
   // Handle auth check and redirects.
   useEffect(() => {

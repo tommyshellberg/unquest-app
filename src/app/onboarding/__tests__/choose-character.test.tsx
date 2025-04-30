@@ -67,14 +67,6 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
-// Add any other components that need to be mocked
-jest.mock('@/components/ui', () => ({
-  ...jest.requireActual('@/components/ui'),
-  FocusAwareStatusBar: function MockStatusBar() {
-    return null;
-  },
-}));
-
 // Create a fake implementation for the character store.
 // We now call the selector on our fake state so that useCharacterStore(selector)
 // returns the value the component expects.

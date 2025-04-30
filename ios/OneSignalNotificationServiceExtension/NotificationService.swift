@@ -1,3 +1,10 @@
+//
+//  NotificationService.swift
+//  OneSignalNotificationServiceExtension
+//
+//  Created by thomas shellberg on 23.04.25.
+//
+
 import UserNotifications
 import OneSignalExtension
 

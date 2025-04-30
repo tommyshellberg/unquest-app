@@ -73,6 +73,15 @@ export default function Home() {
     opacity: scrollContainerOpacity.value,
   }));
 
+  useEffect(() => {
+    completedQuests.forEach((quest) => {
+      console.log('quest completed: ', quest.id);
+    });
+    if (availableQuests.length > 0) {
+      console.log('availableQuests', availableQuests[0]?.id);
+    }
+  }, [completedQuests, availableQuests]);
+
   // Get next quest options based on the last completed story quest
   useEffect(() => {
     console.log('pendingQuest', pendingQuest);
@@ -93,7 +102,8 @@ export default function Home() {
       if (firstQuest && firstQuest.mode === 'story' && firstQuest.options) {
         setStoryOptions(firstQuest.options);
       } else {
-        setStoryOptions([]);
+        // this should throw an error, not silently fail, otherwise, the user can't continue.
+        throw new Error('No story quests found');
       }
     } else {
       // Get the last completed story quest
@@ -155,6 +165,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchUserData = async () => {
+      // @TODO: this seems unnecessary, this should be done automatically by auth functionality in the main _layout.tsx file.
       try {
         const refreshToken = await getRefreshToken();
         if (!refreshToken) {
