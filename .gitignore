@@ -8,6 +8,7 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.pem
 
 # Node
 node_modules/
@@ -23,7 +24,6 @@ expo-env.d.ts
 build/
 *.apk
 *.aab
-*.xcodeproj
 *.xcodeworkspace
 *.xcworkspace
 *.xcuserdata

@@ -8,7 +8,6 @@ import * as Sentry from '@sentry/react-native';
 import { router, Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
-import { Platform } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -84,16 +83,10 @@ function RootLayout() {
   useEffect(() => {
     if (Env.ONESIGNAL_APP_ID) {
       // Enable verbose logging for debugging (can be removed for production)
-      if (__DEV__) {
-        OneSignal.Debug.setLogLevel(LogLevel.Verbose);
-      }
+      OneSignal.Debug.setLogLevel(LogLevel.Verbose);
 
       // Initialize OneSignal
       OneSignal.initialize(Env.ONESIGNAL_APP_ID);
-      if (Platform.OS === 'ios') {
-        console.log('Setting up OneSignal Live Activities');
-        OneSignal.LiveActivities.setupDefault();
-      }
     }
   }, []);
 

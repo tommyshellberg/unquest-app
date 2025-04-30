@@ -60,7 +60,6 @@ struct liveactivitiesLiveActivity: Widget {
                     .font(.system(size: 50))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(Color(red: 119/255, green: 197/255, blue: 191/255))
-                    .symbolEffect(.pulse)
                     .padding(.horizontal, 12)
                     Spacer()
                 }
@@ -180,7 +179,6 @@ struct liveactivitiesLiveActivity: Widget {
                     }
                 }
                 .foregroundStyle(Color(red: 119/255, green: 197/255, blue: 191/255))
-                .symbolEffect(.pulse)
             } compactTrailing: {
                 if status == "active" {
                     Text(timerInterval: computedStartDate...computedEndDate, countsDown: false, showsHours: false)
@@ -208,7 +206,6 @@ struct liveactivitiesLiveActivity: Widget {
                     }
                 }
                 .foregroundStyle(Color(red: 119/255, green: 197/255, blue: 191/255))
-                .symbolEffect(.pulse)
             }
         }
     }

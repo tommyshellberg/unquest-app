@@ -1,7 +1,7 @@
 import { Env } from '@env';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Switch } from 'react-native';
 import Animated, {
@@ -305,7 +305,7 @@ export default function Settings() {
             </Text>
           </View>
 
-          {/* Privacy Policy */}
+          {/* Terms/Privacy Policy */}
           <View className="mb-8 flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View
@@ -314,8 +314,12 @@ export default function Settings() {
                 <Feather name="shield" size={24} color={iconColor} />
               </View>
               <View>
-                <Text className="text-xl font-medium">Privacy Policy</Text>
-                <Text className="text-neutral-600">Coming Soon</Text>
+                <Link
+                  href="https://unquestapp.com/terms"
+                  className="text-xl font-medium"
+                >
+                  Terms of Use & Privacy Policy
+                </Link>
               </View>
             </View>
             <Feather name="chevron-right" size={20} color="#888" />
