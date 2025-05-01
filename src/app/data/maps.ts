@@ -1,6 +1,6 @@
 // Define the mapping between quests and maps
 import { INITIAL_POIS } from '@/app/data/pois';
-import { type POI } from '@/store/poi-store';
+import { type POI } from '@/store/types';
 
 import { AVAILABLE_QUESTS } from './quests';
 
@@ -11,7 +11,7 @@ export type MapName = string;
 
 // Map images with proper typing
 export const MAP_IMAGES: MapImages = {
-  'map-1': require('../../../assets/images/map-1.jpg'),
+  'map-1': require('../../../assets/images/vaedros-map.png'),
 };
 
 export const MAP_NAMES: Record<MapId, MapName> = {
