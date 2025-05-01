@@ -26,3 +26,19 @@ export const QUEST_MAP_MAPPING: Record<MapId, any[]> = {
 export const MAP_POIS: Record<MapId, POI[]> = {
   'map-1': INITIAL_POIS.slice(0, 5),
 };
+
+// Fog mask images for map reveal progression
+export type FogMaskImages = Record<string, number>;
+
+export const FOG_MASKS: FogMaskImages = {
+  '01': require('../../../assets/images/fog-01.png'),
+  '02': require('../../../assets/images/fog-02.png'),
+  '03': require('../../../assets/images/fog-03.png'),
+  '04': require('../../../assets/images/fog-04.png'),
+  '05': require('../../../assets/images/fog-05.png'),
+  '06': require('../../../assets/images/fog-06.png'),
+  '07': require('../../../assets/images/fog-07.png'),
+  '08': require('../../../assets/images/fog-08.png'),
+  '09': require('../../../assets/images/fog-09.png'),
+  '10': require('../../../assets/images/fog-10.png'),
+};

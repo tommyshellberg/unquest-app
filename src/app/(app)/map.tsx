@@ -13,22 +13,14 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { MAP_IMAGES, type MapId } from '@/app/data/maps';
-import { getMapForQuest, getMapNameForQuest } from '@/app/utils/map-utils';
+import {
+  getFogMaskForQuest,
+  getMapForQuest,
+  getMapNameForQuest,
+} from '@/app/utils/map-utils';
 import { Image, Text, View } from '@/components/ui';
 import { FocusAwareStatusBar } from '@/components/ui';
 import { useQuestStore } from '@/store/quest-store';
-
-// Fog masks based on quest completion
-const fog01 = require('@/../assets/images/fog-01.png');
-const fog02 = require('@/../assets/images/fog-02.png');
-const fog03 = require('@/../assets/images/fog-03.png');
-const fog04 = require('@/../assets/images/fog-04.png');
-const fog05 = require('@/../assets/images/fog-05.png');
-const fog06 = require('@/../assets/images/fog-06.png');
-const fog07 = require('@/../assets/images/fog-07.png');
-const fog08 = require('@/../assets/images/fog-08.png');
-const fog09 = require('@/../assets/images/fog-09.png');
-const fog10 = require('@/../assets/images/fog-10.png');
 
 // Original map dimensions
 const IMAGE_WIDTH = 1434;
@@ -50,7 +42,6 @@ export default function MapScreen() {
   // Get the last completed quest
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
   const lastCompletedQuest = completedQuests[completedQuests.length - 1];
-  console.log('lastCompletedQuest', lastCompletedQuest);
 
   // Determine the map to display
   const mapId = useMemo<MapId>(
@@ -59,26 +50,8 @@ export default function MapScreen() {
   );
   const mapImage = MAP_IMAGES[mapId];
 
-  // Update this section to extract just the main quest number
-  const questNumberMatch = lastCompletedQuest?.id.match(/quest-(\d+)[a-z]?/);
-  const questNum = questNumberMatch ? questNumberMatch[1] : '1';
-  const questKey = questNum.padStart(2, '0');
-  const maskMap: Record<string, any> = {
-    '01': fog01,
-    '02': fog02,
-    '03': fog10,
-    '04': fog04,
-    '05': fog05,
-    '06': fog06,
-    '07': fog07,
-    '08': fog08,
-    '09': fog09,
-    '10': fog10,
-  };
-  console.log('questKey', questKey);
-  console.log('maskMap', maskMap);
-  console.log('maskMap[questKey]', maskMap[questKey]);
-  const currentMask = maskMap[questKey] || fog01;
+  // Get the appropriate fog mask based on quest progression
+  const currentMask = getFogMaskForQuest(lastCompletedQuest?.id);
 
   // Pan gesture handler
   const panGestureHandler = useAnimatedGestureHandler<
