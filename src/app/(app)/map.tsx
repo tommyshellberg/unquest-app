@@ -50,6 +50,8 @@ export default function MapScreen() {
   );
   const mapImage = MAP_IMAGES[mapId];
 
+  console.log('lastCompletedQuest', lastCompletedQuest);
+
   // Get the appropriate fog mask based on quest progression
   const currentMask = getFogMaskForQuest(lastCompletedQuest?.id);
 
