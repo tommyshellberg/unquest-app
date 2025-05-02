@@ -143,13 +143,13 @@ export default function TabLayout() {
       })}
     >
       <Tabs.Screen
-        name="index"
+        name="journal"
         options={{
-          title: 'Home',
+          title: 'Journal',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="home" color={color} focused={focused} />
+            <TabBarIcon name="book" color={color} focused={focused} />
           ),
-          tabBarButtonTestID: 'home-tab',
+          tabBarButtonTestID: 'journal-tab',
         }}
       />
 
@@ -165,13 +165,13 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="custom-quest"
+        name="index"
         options={{
-          title: 'Fast Quest',
+          title: 'New Quest',
           tabBarIcon: ({ focused, color }) => (
             <CenterButton focused={focused} color={color} />
           ),
-          tabBarButtonTestID: 'quick-quest-tab',
+          tabBarButtonTestID: 'new-quest-tab',
         }}
       />
 
@@ -200,6 +200,13 @@ export default function TabLayout() {
       {/* Hide special screens from tabs */}
       <Tabs.Screen
         name="pending-quest"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="custom-quest"
         options={{
           href: null,
         }}
