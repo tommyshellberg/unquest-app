@@ -108,13 +108,14 @@ jest.mock('@/lib/storage', () => ({
 
 describe('QuestStore - refreshAvailableQuests', () => {
   // Helper function to create a completed quest
-  const createCompletedQuest = (id: string, completedAt: number): Quest => ({
+  const createCompletedQuest = (id: string, stopTime: number): Quest => ({
     id,
     mode: 'story',
     title: `Test Quest ${id}`,
     durationMinutes: 2,
-    startTime: completedAt - 200000, // Some time before completion
-    completedAt,
+    startTime: stopTime - 200000,
+    stopTime,
+    status: 'completed',
     reward: { xp: 100 },
     poiSlug: 'test-poi',
   });

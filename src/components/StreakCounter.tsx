@@ -52,9 +52,9 @@ export function StreakCounter({ animate = false, size = 'large' }: Props) {
     <Animated.View className="items-center justify-center" style={streakStyle}>
       <View
         className={`
-          bg-muted-200 
           items-center 
-          justify-center
+          justify-center 
+          bg-secondary-100
           shadow-lg
           ${size === 'large' ? 'size-[90px] rounded-[45px]' : 'size-[40px] rounded-[20px]'}
           ${!isStreakActive ? 'bg-muted-400' : ''}

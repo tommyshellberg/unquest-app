@@ -119,29 +119,41 @@ function RootLayout() {
     }
   }, [pendingQuest, hydrationFinished, authStatus, pathname]);
 
-  // Add this effect to handle redirects to the failed-quest screen
+  // Add this effect to handle redirects to the individual quest screen for failed quests
   useEffect(() => {
     // Skip until hydration is complete
     if (!hydrationFinished || authStatus === 'hydrating') return;
 
-    // Skip if we're already on the failed-quest screen
-    if (pathname.includes('failed-quest')) {
-      console.log('Already on failed-quest screen, skipping redirect');
-      return;
-    }
-
     if (failedQuest) {
+      // Don't redirect if we're already on a quest screen
+      if (pathname.includes('/quest/')) {
+        console.log('Already viewing a quest, skipping redirect');
+        return;
+      }
+
       console.log(
-        'Detected failedQuest at root layout, redirecting to failed-quest screen'
+        'Detected failedQuest at root layout, redirecting to quest details screen'
       );
+
       requestAnimationFrame(() => {
         try {
-          router.replace('/failed-quest');
+          // Route to the quest details page with the ID of the failed quest
+          console.log(
+            'Navigating to failed quest screen with id:',
+            failedQuest.id
+          );
+          router.replace({
+            pathname: '/(app)/quest/[id]',
+            params: { id: failedQuest.id },
+          });
         } catch (error) {
           console.error('Failed quest navigation failed, will retry', error);
           setTimeout(() => {
             if (hydrationFinished && authStatus !== 'idle') {
-              router.replace('/failed-quest');
+              router.replace({
+                pathname: '/(app)/quest/[id]',
+                params: { id: failedQuest.id },
+              });
             }
           }, 500);
         }

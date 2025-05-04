@@ -58,25 +58,8 @@ export default function QuestCompleteScreen() {
 
   const handleClaimReward = async () => {
     try {
-      // Add debug logging
-      console.log('Claim reward button pressed');
-      console.log(
-        'Before clearing: recentCompletedQuest=',
-        recentCompletedQuest ? recentCompletedQuest.id : null
-      );
-
       // Clear quest state BEFORE navigation
       clearRecentCompletedQuest();
-
-      console.log(
-        'After clearing: recentCompletedQuest=',
-        useQuestStore.getState().recentCompletedQuest
-          ? useQuestStore.getState().recentCompletedQuest?.id
-          : null
-      );
-
-      // Use absolute path instead of relative path for more reliable navigation
-      console.log('Navigating to profile screen');
 
       // Delay navigation slightly to allow state update to complete
       setTimeout(() => {

@@ -49,7 +49,8 @@ const mockFirstQuest = {
 const mockCompletedQuest = {
   ...mockFirstQuest,
   startTime: Date.now() - 300000, // 5 minutes ago
-  completedAt: Date.now(),
+  stopTime: Date.now(),
+  status: 'completed',
 };
 
 const mockQuestWithSingleOption = {
@@ -74,7 +75,8 @@ const mockQuestWithSingleOption = {
 const mockCompletedQuestSingleOption = {
   ...mockQuestWithSingleOption,
   startTime: Date.now() - 300000,
-  completedAt: Date.now(),
+  stopTime: Date.now(),
+  status: 'completed',
 };
 
 // Mock the quest store
@@ -282,5 +284,71 @@ describe('Home Component', () => {
     await waitFor(() => {
       expect(mockRefreshAvailableQuests).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('should show story options based on last story quest when custom quests exist', () => {
+    // First completed story quest
+    const storyQuest = {
+      ...mockFirstQuest,
+      startTime: Date.now() - 3600000,
+      stopTime: Date.now() - 3540000,
+      status: 'completed',
+    };
+
+    // More recently completed custom quest
+    const customQuest = {
+      id: 'custom-quest',
+      title: 'Custom Quest',
+      mode: 'custom',
+      durationMinutes: 5,
+      reward: { xp: 15 },
+      startTime: Date.now() - 600000,
+      stopTime: Date.now() - 300000,
+      status: 'completed',
+    };
+
+    // Create next quest that would be found by fixed refreshAvailableQuests
+    const nextQuest = {
+      id: 'quest-2a',
+      title: 'Second Quest A',
+      mode: 'story',
+      durationMinutes: 5,
+      reward: { xp: 15 },
+      recap: 'Next quest recap',
+    };
+
+    // Mock the refresh function to return next quests based on story progression
+    const mockRefreshAvailableQuests = jest.fn();
+
+    // Setup the mock with completed quests and non-empty availableQuests
+    // This simulates what would happen with our fixed implementation
+    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) =>
+      selector({
+        activeQuest: null,
+        pendingQuest: null,
+        // The fixed implementation would return this next quest
+        availableQuests: [nextQuest],
+        completedQuests: [storyQuest, customQuest],
+        getCompletedQuests: () => [storyQuest, customQuest],
+        prepareQuest: mockPrepareQuest,
+        refreshAvailableQuests: mockRefreshAvailableQuests,
+      })
+    );
+
+    render(<Home />);
+
+    // Test that we don't see "No quests available"
+    const noQuestsAvailable = screen.queryByText('No quests available');
+    expect(noQuestsAvailable).toBeNull();
+
+    // We should see the next quest title instead
+    const nextQuestTitle = screen.queryByText(nextQuest.title);
+    expect(nextQuestTitle).not.toBeNull();
+
+    // Test for story options based on the completed story quest
+    const leftOption = screen.queryByText('Go left');
+    const rightOption = screen.queryByText('Go right');
+    expect(leftOption).not.toBeNull();
+    expect(rightOption).not.toBeNull();
   });
 });

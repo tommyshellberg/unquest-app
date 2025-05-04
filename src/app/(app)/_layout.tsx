@@ -167,7 +167,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'New Quest',
+          title: 'Play',
           tabBarIcon: ({ focused, color }) => (
             <CenterButton focused={focused} color={color} />
           ),
@@ -213,14 +213,14 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="quest-complete"
+        name="quest/[id]"
         options={{
           href: null,
         }}
       />
 
       <Tabs.Screen
-        name="failed-quest"
+        name="quest-complete"
         options={{
           href: null,
         }}

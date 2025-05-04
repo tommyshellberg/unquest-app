@@ -36,9 +36,12 @@ export interface CustomQuestTemplate extends BaseQuestTemplate {
   category: string;
 }
 
+export type QuestStatus = 'active' | 'completed' | 'failed' | 'cancelled';
+
 export type Quest = (StoryQuestTemplate | CustomQuestTemplate) & {
   startTime: number;
-  completedAt?: number;
+  stopTime?: number; // When the quest ended, for any reason
+  status: QuestStatus;
 };
 
 export interface Character {

@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import React, { useEffect } from 'react';
 import Animated, {
   useAnimatedStyle,
@@ -7,19 +6,20 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import {
-  Button,
-  FocusAwareStatusBar,
-  Image,
-  Text,
-  View,
-} from '@/components/ui';
-import { useQuestStore } from '@/store/quest-store';
+import { Button, Image, Text, View } from '@/components/ui';
+import type {
+  CustomQuestTemplate,
+  Quest,
+  StoryQuestTemplate,
+} from '@/store/types';
 
-export default function QuestFailed() {
-  // Get the clear failed quest function from the store
-  const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
+type FailedQuestProps = {
+  quest: Quest | StoryQuestTemplate | CustomQuestTemplate;
+  onBack: () => void;
+  onRetry: () => void;
+};
 
+export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
   // Create animated values for header, message, and button animations
   const headerAnim = useSharedValue(0);
   const messageAnim = useSharedValue(0);
@@ -47,24 +47,8 @@ export default function QuestFailed() {
     transform: [{ translateY: 20 * (1 - buttonAnim.value) }],
   }));
 
-  // Reset the failed quest when unmounting to avoid showing it multiple times if they don't click the button.
-  useEffect(() => {
-    return () => {
-      resetFailedQuest();
-    };
-  }, [resetFailedQuest]);
-
-  const onAcknowledge = () => {
-    resetFailedQuest();
-    setTimeout(() => {
-      router.replace('/');
-    }, 100);
-  };
-
   return (
     <View className="flex-1">
-      <FocusAwareStatusBar />
-
       {/* Background image */}
       <View className="absolute inset-0">
         <Image
@@ -81,6 +65,9 @@ export default function QuestFailed() {
           className="mt-12 items-center"
         >
           <Text className="text-3xl font-bold">Quest Failed</Text>
+          <Text className="mt-2 text-center text-lg font-medium">
+            {quest.title}
+          </Text>
         </Animated.View>
 
         {/* Message Section */}
@@ -102,12 +89,12 @@ export default function QuestFailed() {
         {/* Button Section */}
         <Animated.View
           style={buttonAnimatedStyle}
-          className="mb-8 items-center"
+          className="mb-2 items-center"
         >
           <Button
-            label="Keep Going!"
-            onPressOut={onAcknowledge}
-            className="rounded-full bg-primary-400"
+            label="Try Again"
+            onPressOut={onRetry}
+            className="mb-4 rounded-full bg-primary-400"
             textClassName="text-white font-semibold"
           />
         </Animated.View>
