@@ -215,6 +215,10 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    console.log('availableQuests', availableQuests);
+  }, [availableQuests]);
+
   // Prepare carousel data
   const carouselData = [
     {
@@ -224,10 +228,25 @@ export default function Home() {
         availableQuests.length > 0
           ? availableQuests[0].title
           : 'No quests available',
-      recap:
-        availableQuests.length > 0 && availableQuests[0].mode === 'story'
-          ? availableQuests[0].recap
-          : 'Continue your journey',
+      recap: (() => {
+        // Get the last completed story quest for the recap
+        const storyQuests = completedQuests.filter(
+          (quest) => quest.mode === 'story' && quest.status === 'completed'
+        );
+
+        if (storyQuests.length > 0) {
+          // Use the recap from the most recently completed story quest
+          const lastCompletedStoryQuest = [...storyQuests].sort(
+            (a, b) => (b.stopTime || 0) - (a.stopTime || 0)
+          )[0];
+          return lastCompletedStoryQuest?.recap || 'Continue your journey';
+        }
+
+        // Fallback if no story quests completed
+        return availableQuests.length > 0 && availableQuests[0].mode === 'story'
+          ? 'Begin your journey'
+          : 'Continue your journey';
+      })(),
       subtitle: currentMapName,
       duration:
         availableQuests.length > 0 ? availableQuests[0].durationMinutes : 0,

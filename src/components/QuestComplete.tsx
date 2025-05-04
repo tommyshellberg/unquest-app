@@ -19,13 +19,19 @@ import { type Quest } from '@/store/types';
 import { StoryNarration } from './StoryNarration';
 import { StreakCounter } from './StreakCounter';
 
-type Props = {
+type QuestCompleteProps = {
   quest: Quest;
   story: string;
   onClaim: () => void;
+  buttonText?: string;
 };
 
-export function QuestComplete({ quest, story, onClaim }: Props) {
+export function QuestComplete({
+  quest,
+  story,
+  onClaim,
+  buttonText = 'Claim Reward',
+}: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
   const lottieRef = useRef<LottieView>(null);
@@ -130,7 +136,7 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
           style={storyStyle}
         >
           <Card className="flex-1 rounded-xl bg-neutral-100">
-            <ScrollView className="flex-1 p-4">
+            <ScrollView className="flex-1 px-4">
               <Text className="text-base leading-6 text-neutral-800">
                 {story || 'Congratulations on completing your quest!'}
               </Text>
@@ -154,7 +160,7 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
 
           <Animated.View style={buttonStyle}>
             <Button
-              label="Continue Journey"
+              label={buttonText}
               onPress={onClaim}
               className="min-w-[200px] rounded-xl bg-primary-400"
               textClassName="text-white font-semibold"

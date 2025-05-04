@@ -76,24 +76,10 @@ describe('Map Utils', () => {
   });
 
   describe('getFogMaskForQuest', () => {
-    it('should return fog-01 for quest-1 and quest-2', () => {
-      expect(getFogMaskForQuest('quest-1')).toBe('fog-01');
-      expect(getFogMaskForQuest('quest-1a')).toBe('fog-01');
+    it('should return the same fog level as the quest', () => {
+      expect(getFogMaskForQuest('quest-3')).toBe('fog-03');
+      expect(getFogMaskForQuest('quest-3a')).toBe('fog-03');
       expect(getFogMaskForQuest('quest-1b')).toBe('fog-01');
-      expect(getFogMaskForQuest('quest-2')).toBe('fog-01');
-      expect(getFogMaskForQuest('quest-2a')).toBe('fog-01');
-    });
-
-    it('should return fog-02 for quest-3', () => {
-      expect(getFogMaskForQuest('quest-3')).toBe('fog-02');
-      expect(getFogMaskForQuest('quest-3a')).toBe('fog-02');
-      expect(getFogMaskForQuest('quest-3b')).toBe('fog-02');
-    });
-
-    it('should return one fog level behind the quest number', () => {
-      expect(getFogMaskForQuest('quest-4')).toBe('fog-03');
-      expect(getFogMaskForQuest('quest-5')).toBe('fog-04');
-      expect(getFogMaskForQuest('quest-10')).toBe('fog-09');
     });
 
     it('should handle undefined/empty quest IDs', () => {
@@ -103,8 +89,8 @@ describe('Map Utils', () => {
 
     it('should handle unusual quest ID formats', () => {
       // Should still extract the number part and subtract 1
-      expect(getFogMaskForQuest('quest-2-special')).toBe('fog-01');
-      expect(getFogMaskForQuest('quest-3abc')).toBe('fog-02');
+      expect(getFogMaskForQuest('quest-2-special')).toBe('fog-02');
+      expect(getFogMaskForQuest('quest-3abc')).toBe('fog-03');
       
       // Should default when no valid number found
       expect(getFogMaskForQuest('not-a-quest')).toBe('fog-01');

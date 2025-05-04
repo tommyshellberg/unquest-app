@@ -18,11 +18,12 @@ interface QuestState {
   activeQuest: Quest | null;
   pendingQuest: (CustomQuestTemplate | StoryQuestTemplate) | null;
   availableQuests: (CustomQuestTemplate | StoryQuestTemplate)[];
-  failedQuest: Quest | (CustomQuestTemplate | StoryQuestTemplate) | null;
+  failedQuest: Quest | null;
   completedQuests: Quest[];
   recentCompletedQuest: Quest | null;
   lastCompletedQuestTimestamp: number | null;
   currentLiveActivityId: string | null;
+  failedQuests: Quest[];
   cancelQuest: () => void;
   startQuest: (quest: Quest) => void;
   completeQuest: (ignoreDuration?: boolean) => Quest | null;
@@ -61,6 +62,7 @@ export const useQuestStore = create<QuestState>()(
       recentCompletedQuest: null,
       lastCompletedQuestTimestamp: null,
       currentLiveActivityId: null,
+      failedQuests: [],
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
         set({ pendingQuest: quest, availableQuests: [] });
       },
@@ -82,9 +84,10 @@ export const useQuestStore = create<QuestState>()(
 
           if (ignoreDuration || duration >= activeQuest.durationMinutes * 60) {
             // Quest completed successfully
-            const completedQuest = {
+            const completedQuest: Quest = {
               ...activeQuest,
-              completedAt: completionTime,
+              stopTime: completionTime,
+              status: 'completed' as const,
             };
 
             const characterStore = useCharacterStore.getState();
@@ -148,10 +151,25 @@ export const useQuestStore = create<QuestState>()(
         const failedQuestDetails = activeQuest || pendingQuest;
         if (failedQuestDetails) {
           console.log('Failing quest:', failedQuestDetails.id);
-          // End any active live activity when quest fails
           QuestTimer.stopQuest();
+
+          // Ensure all required fields for Quest are present
+          const now = Date.now();
+          const failedQuestWithTime: Quest = {
+            ...failedQuestDetails,
+            startTime: activeQuest?.startTime || now,
+            stopTime: now,
+            status: 'failed' as const,
+            reward: failedQuestDetails.reward ?? { xp: 0 },
+            durationMinutes: failedQuestDetails.durationMinutes ?? 0,
+            title: failedQuestDetails.title ?? 'Unknown Quest',
+            id: failedQuestDetails.id,
+            // Add any other required fields here
+          };
+
           set({
-            failedQuest: failedQuestDetails,
+            failedQuest: failedQuestWithTime,
+            failedQuests: [...get().failedQuests, failedQuestWithTime],
             activeQuest: null,
             pendingQuest: null,
             currentLiveActivityId: null,
@@ -161,33 +179,48 @@ export const useQuestStore = create<QuestState>()(
 
       refreshAvailableQuests: () => {
         const { activeQuest, completedQuests } = get();
+        console.log('refreshAvailableQuests called');
+
         if (activeQuest) {
           // If there is an active quest, don't refresh available quests
           return;
         }
-        // If no quests completed, start with quest-1
+
+        // If no quests completed, start with quest-1 (this is the only valid case for showing quest-1)
         if (completedQuests.length === 0) {
           const firstQuest = AVAILABLE_QUESTS.find((q) => q.id === 'quest-1');
           if (firstQuest) {
             set({ availableQuests: [firstQuest] });
             return;
           }
-        }
-
-        // Find the last completed quest
-        const sortedCompletedQuests = [...completedQuests].sort(
-          (a, b) => (b.completedAt || 0) - (a.completedAt || 0)
-        );
-
-        const lastCompleted = sortedCompletedQuests[0];
-        if (!lastCompleted) {
           set({ availableQuests: [] });
           return;
         }
 
-        // Find the quest template that matches the lastCompleted.id
+        // Filter for only story quests
+        const storyQuests = completedQuests.filter(
+          (q) => q.mode === 'story' && q.status === 'completed'
+        );
+
+        // If no story quests at all, show no quests
+        // (don't fallback to first quest - that would hide a potential issue)
+        if (storyQuests.length === 0) {
+          set({ availableQuests: [] });
+          return;
+        }
+
+        // Sort story quests by completion time (newest first)
+        const sortedStoryQuests = [...storyQuests].sort(
+          (a, b) => (b.stopTime || 0) - (a.stopTime || 0)
+        );
+
+        // Use the most recent STORY quest to determine what comes next
+        const lastCompletedStory = sortedStoryQuests[0];
+        console.log('lastCompletedStory', lastCompletedStory.id);
+
+        // Find the quest template for the last completed story quest
         const lastCompletedTemplate = AVAILABLE_QUESTS.find(
-          (q) => q.id === lastCompleted.id
+          (q) => q.id === lastCompletedStory.id
         );
 
         if (lastCompletedTemplate && 'options' in lastCompletedTemplate) {
@@ -195,44 +228,50 @@ export const useQuestStore = create<QuestState>()(
           const nextQuestIds = lastCompletedTemplate.options.map(
             (opt) => opt.nextQuestId
           );
+          console.log('➡️ nextQuestIds', nextQuestIds);
+
+          // Filter out null nextQuestIds (end of storyline)
+          const validNextQuestIds = nextQuestIds.filter((id) => id !== null);
+          console.log('➡️ validNextQuestIds', validNextQuestIds);
 
           // Find those quests from available quests
           const nextQuests = AVAILABLE_QUESTS.filter(
             (q) =>
-              nextQuestIds.includes(q.id) &&
+              validNextQuestIds.includes(q.id) &&
               !completedQuests.some((completed) => completed.id === q.id)
           );
 
           if (nextQuests.length > 0) {
+            console.log('➡️ nextQuests', nextQuests);
             set({ availableQuests: nextQuests });
             return;
           }
-        } else {
-          // For quests without options or if we can't find the template,
-          // try to infer the next level based on quest ID patterns
+        }
 
-          // Extract quest level number (e.g., "1" from "quest-1" or "quest-1a")
-          const idMatch = lastCompleted.id.match(/quest-(\d+)/);
-          if (idMatch) {
-            const currentLevel = parseInt(idMatch[1]);
-            const nextLevel = currentLevel + 1;
+        // For quests without options or if we can't find the template,
+        // try to infer the next level based on quest ID patterns
+        const idMatch = lastCompletedStory.id.match(/quest-(\d+)/);
+        if (idMatch) {
+          const currentLevel = parseInt(idMatch[1]);
+          const nextLevel = currentLevel + 1;
 
-            // Look for quests at the next level
-            const nextLevelQuests = AVAILABLE_QUESTS.filter(
-              (q) =>
-                q.id.startsWith(`quest-${nextLevel}`) &&
-                !q.id.includes('a') &&
-                !q.id.includes('b') &&
-                !completedQuests.some((completed) => completed.id === q.id)
-            );
+          // Look for quests at the next level
+          const nextLevelQuests = AVAILABLE_QUESTS.filter(
+            (q) =>
+              q.id.startsWith(`quest-${nextLevel}`) &&
+              !q.id.includes('a') &&
+              !q.id.includes('b') &&
+              !completedQuests.some((completed) => completed.id === q.id)
+          );
 
-            if (nextLevelQuests.length > 0) {
-              set({ availableQuests: [nextLevelQuests[0]] });
-              return;
-            }
+          if (nextLevelQuests.length > 0) {
+            set({ availableQuests: [nextLevelQuests[0]] });
+            return;
           }
         }
 
+        // If we can't find next quests, return an empty array
+        // This is expected if all quests are completed or there's no clear next step
         set({ availableQuests: [] });
       },
 
@@ -264,6 +303,7 @@ export const useQuestStore = create<QuestState>()(
           recentCompletedQuest: null,
           lastCompletedQuestTimestamp: null,
           currentLiveActivityId: null, // Reset activity ID
+          failedQuests: [],
         });
         useCharacterStore.getState().resetStreak();
         // Need a way to signal QuestTimer to stop without direct import
