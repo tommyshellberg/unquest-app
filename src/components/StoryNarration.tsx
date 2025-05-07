@@ -59,6 +59,8 @@ const getAudioAsset = (audioPath: string) => {
     return null;
   }
 
+  // Add debugging to see what the asset looks like
+  console.log('Audio asset type:', typeof asset);
   return asset;
 };
 
@@ -93,7 +95,12 @@ export function StoryNarration({ questId, audioFile }: Props) {
       return;
     }
 
-    const loadAudio = async () => {
+    // Add a delay before trying to load audio to ensure app is fully active
+    const loadTimer = setTimeout(() => {
+      loadAudio();
+    }, 1500); // Delay audio loading by 1.5 seconds
+
+    async function loadAudio() {
       try {
         console.log(`Loading audio for quest: ${questId}, path: ${audioFile}`);
 
@@ -112,47 +119,54 @@ export function StoryNarration({ questId, audioFile }: Props) {
           throw new Error(`Could not load audio asset from path: ${audioFile}`);
         }
 
-        // Create the sound object with the resolved asset
-        const { sound } = await Audio.Sound.createAsync(
-          audioAsset,
-          { shouldPlay: false },
-          (status) => {
-            if (!componentMountedRef.current) return;
+        // Remove the type check completely as it's causing issues
+        // We'll directly attempt to use the asset and handle any errors
+        try {
+          // Create the sound object with the resolved asset
+          const { sound } = await Audio.Sound.createAsync(
+            audioAsset,
+            { shouldPlay: false },
+            (status) => {
+              if (!componentMountedRef.current) return;
 
-            if (status.isLoaded) {
-              setIsPlaying(status.isPlaying);
+              if (status.isLoaded) {
+                setIsPlaying(status.isPlaying);
 
-              if (status.durationMillis && duration === 0) {
-                setDuration(status.durationMillis);
-              }
+                if (status.durationMillis && duration === 0) {
+                  setDuration(status.durationMillis);
+                }
 
-              if (status.didJustFinish) {
-                setIsPlaying(false);
-                setProgress(0);
-                progressBarRef.current?.setProgress(0);
-                stopProgressTracking();
+                if (status.didJustFinish) {
+                  setIsPlaying(false);
+                  setProgress(0);
+                  progressBarRef.current?.setProgress(0);
+                  stopProgressTracking();
+                }
               }
             }
-          }
-        );
+          );
 
-        if (!componentMountedRef.current) {
-          // Component unmounted during loading, clean up
-          await sound.unloadAsync();
-          return;
+          if (!componentMountedRef.current) {
+            // Component unmounted during loading, clean up
+            await sound.unloadAsync();
+            return;
+          }
+
+          soundRef.current = sound;
+          setIsLoading(false);
+
+          // Wait a moment before trying to play
+          const playTimer = setTimeout(() => {
+            if (componentMountedRef.current) {
+              playSound();
+            }
+          }, 1000);
+
+          return () => clearTimeout(playTimer);
+        } catch (soundError) {
+          console.error('Error creating sound:', soundError);
+          throw new Error(`Failed to create sound: ${soundError.message}`);
         }
-
-        soundRef.current = sound;
-        setIsLoading(false);
-
-        // Wait a moment before trying to play
-        setTimeout(() => {
-          if (componentMountedRef.current) {
-            playSound();
-          }
-        }, 1000);
-
-        console.log(`Audio for quest ${questId} loaded successfully`);
       } catch (error) {
         console.error(`Error loading audio for quest ${questId}:`, error);
         if (componentMountedRef.current) {
@@ -160,11 +174,10 @@ export function StoryNarration({ questId, audioFile }: Props) {
           setIsLoading(false);
         }
       }
-    };
-
-    loadAudio();
+    }
 
     return () => {
+      clearTimeout(loadTimer);
       // Clean up on unmount
       if (soundRef.current) {
         soundRef.current
@@ -172,7 +185,7 @@ export function StoryNarration({ questId, audioFile }: Props) {
           .catch((e) => console.log('Unload error:', e));
       }
     };
-  }, [questId, audioFile]);
+  }, [questId, audioFile, duration]);
 
   // Function to play the audio narration
   async function playSound() {
@@ -328,13 +341,26 @@ export function StoryNarration({ questId, audioFile }: Props) {
                 soundRef.current = null;
               }
 
-              // Wait a moment before trying to reload
+              // Wait a longer time before trying to reload
               setTimeout(() => {
                 if (componentMountedRef.current) {
-                  // Create the sound object directly
+                  const audioAsset =
+                    typeof audioFile === 'string'
+                      ? getAudioAsset(audioFile)
+                      : audioFile;
+
+                  if (!audioAsset) {
+                    setLoadError(
+                      `Could not resolve audio asset from path: ${audioFile}`
+                    );
+                    setIsLoading(false);
+                    return;
+                  }
+
+                  // Remove type checking, directly try to use the asset
                   Audio.Sound.createAsync(
-                    audioFile,
-                    { shouldPlay: true },
+                    audioAsset,
+                    { shouldPlay: false }, // Don't auto-play on reload
                     (status) => {
                       if (!componentMountedRef.current) return;
 
@@ -357,7 +383,8 @@ export function StoryNarration({ questId, audioFile }: Props) {
                     .then(({ sound }) => {
                       soundRef.current = sound;
                       setIsLoading(false);
-                      startProgressTracking();
+                      // Manual play after successful load
+                      setTimeout(() => playSound(), 500);
                     })
                     .catch((error) => {
                       console.error('Error reloading audio:', error);
@@ -365,7 +392,7 @@ export function StoryNarration({ questId, audioFile }: Props) {
                       setIsLoading(false);
                     });
                 }
-              }, 500);
+              }, 1500);
             }}
           >
             <Text className="text-cream text-sm">Tap to retry</Text>

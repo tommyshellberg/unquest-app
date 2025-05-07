@@ -1,8 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useMemo } from 'react';
-import { ActivityIndicator, Animated, TouchableOpacity } from 'react-native';
-import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import React, { useEffect, useMemo } from 'react';
+import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
 import { FailedQuest } from '@/components/failed-quest/index';
@@ -21,12 +25,37 @@ export default function QuestDetailsScreen() {
   // Get all quests from store
   const completedQuests = useQuestStore((state) => state.completedQuests);
   const failedQuest = useQuestStore((state) => state.failedQuest);
+  const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
 
   const headerOpacity = useSharedValue(0);
+
+  // Initialize animation
+  useEffect(() => {
+    headerOpacity.value = withTiming(1, { duration: 800 });
+  }, [headerOpacity]);
 
   const headerStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
   }));
+
+  // Handle navigation back to journal
+  const handleBackToJournal = () => {
+    // Clear failed quest state when navigating away
+    if (failedQuest) {
+      resetFailedQuest();
+    }
+    router.back();
+  };
+
+  // Set up cleanup effect for unmount
+  useEffect(() => {
+    return () => {
+      // Clear failed quest when component unmounts
+      if (failedQuest) {
+        resetFailedQuest();
+      }
+    };
+  }, [failedQuest, resetFailedQuest]);
 
   // Find the specific quest by ID and timestamp (if available)
   const quest = useMemo(() => {
@@ -52,6 +81,7 @@ export default function QuestDetailsScreen() {
     if (
       failedQuest &&
       failedQuest.id === id &&
+      'status' in failedQuest &&
       failedQuest.status === 'failed'
     ) {
       return failedQuest;
@@ -66,11 +96,6 @@ export default function QuestDetailsScreen() {
 
     return null;
   }, [id, timestamp, completedQuests, failedQuest]);
-
-  // Handle navigation back to journal
-  const handleBackToJournal = () => {
-    router.back();
-  };
 
   // If the quest is not found, show an error
   if (!quest) {
@@ -115,18 +140,13 @@ export default function QuestDetailsScreen() {
         const index = questIdHash % matchingStories.length;
         const selectedStory = matchingStories[index];
 
-        // Return the story with a brief intro
-        return `${selectedStory.story}\n\nYou earned ${quest.reward.xp} XP for completing this quest.`;
+        // Return just the story without the XP message (since it's shown separately)
+        return selectedStory.story;
       }
     }
 
     // Fallback if no matching story is found
-    return (
-      `Congratulations on completing your quest!\n\n` +
-      `Quest: ${quest.title}\n` +
-      `Duration: ${quest.durationMinutes} minutes\n` +
-      `You earned ${quest.reward.xp} XP for staying focused and completing this quest.`
-    );
+    return 'Congratulations on completing your quest!';
   };
 
   // If quest is completed and has a stopTime
@@ -135,18 +155,25 @@ export default function QuestDetailsScreen() {
       <View className="pt-safe flex-1 bg-background">
         <FocusAwareStatusBar />
 
-        {/* Header - styled to match profile.tsx */}
+        {/* Header with back arrow */}
         <Animated.View style={headerStyle} className="mb-4 px-4">
-          <Text className="mb-3 mt-2 text-xl font-bold">Quest Details</Text>
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={handleBackToJournal}
+              className="mr-3 p-1"
+              hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            >
+              <Feather
+                name="arrow-left"
+                size={24}
+                color={colors.neutral[500]}
+              />
+            </TouchableOpacity>
+            <Text className="text-xl font-bold">Quest Details</Text>
+          </View>
         </Animated.View>
 
-        {/* Use the QuestComplete component */}
-        <QuestComplete
-          quest={quest}
-          story={getQuestCompletionText()}
-          onClaim={handleBackToJournal}
-          buttonText="Back to Journal"
-        />
+        <QuestComplete quest={quest} story={getQuestCompletionText()} />
       </View>
     );
   }
@@ -157,11 +184,28 @@ export default function QuestDetailsScreen() {
       <View className="pt-safe flex-1 bg-background">
         <FocusAwareStatusBar />
 
+        {/* Header with back arrow */}
+        <Animated.View style={headerStyle} className="mb-4 px-4">
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={handleBackToJournal}
+              className="mr-3 p-1"
+              hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            >
+              <Feather
+                name="arrow-left"
+                size={24}
+                color={colors.neutral[500]}
+              />
+            </TouchableOpacity>
+            <Text className="text-xl font-bold">Quest Details</Text>
+          </View>
+        </Animated.View>
+
         <FailedQuest
           quest={quest}
-          onBack={handleBackToJournal}
           onRetry={() => {
-            useQuestStore.getState().resetFailedQuest();
+            resetFailedQuest();
             router.replace('/');
           }}
         />

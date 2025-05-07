@@ -15,7 +15,6 @@ import type {
 
 type FailedQuestProps = {
   quest: Quest | StoryQuestTemplate | CustomQuestTemplate;
-  onBack: () => void;
   onRetry: () => void;
 };
 

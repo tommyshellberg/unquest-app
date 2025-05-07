@@ -58,16 +58,23 @@ export default function TabLayout() {
     if (!navigationState?.key) return;
 
     if (recentCompletedQuest && !hasRedirectedToCompletedRef.current) {
-      console.log('Redirecting to quest-complete');
+      console.log('Redirecting to quest detail screen');
       hasRedirectedToCompletedRef.current = true;
-      router.replace('/(app)/quest-complete');
+
+      // Redirect to quest/[id] instead of quest-complete
+      router.replace({
+        pathname: '/(app)/quest/[id]',
+        params: {
+          id: recentCompletedQuest.id,
+          timestamp: recentCompletedQuest.stopTime?.toString(),
+        },
+      });
     }
   }, [recentCompletedQuest, navigationState?.key]);
 
-  // Reset completed quest flag
+  // Don't forget to reset the redirect flag when recentCompletedQuest is cleared
   useEffect(() => {
     if (!navigationState?.key) return;
-    console.log('recentCompletedQuest changed:', recentCompletedQuest);
     if (!recentCompletedQuest) {
       console.log('Resetting completed quest redirect flag to false');
       hasRedirectedToCompletedRef.current = false;
@@ -110,6 +117,22 @@ export default function TabLayout() {
     checkAuth();
   }, [currentStep, failedQuest, navigationState?.key, pathname, pendingQuest]);
 
+  useEffect(() => {
+    if (!navigationState?.key) return;
+
+    // Clear failed quest when switching tabs
+    if (failedQuest) {
+      const currentPath = pathname || '';
+      const isQuestDetailScreen = currentPath.includes('/quest/');
+
+      // Only clear failedQuest if we're not on the quest detail screen
+      if (!isQuestDetailScreen) {
+        console.log('Clearing failed quest - tab navigation');
+        useQuestStore.getState().resetFailedQuest();
+      }
+    }
+  }, [navigationState?.key, pathname, failedQuest]);
+
   // Check if navigation is ready
   if (!navigationState?.key) {
     return null;
@@ -128,12 +151,8 @@ export default function TabLayout() {
           backgroundColor: white,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
-          // Hide the tab bar for specific screens
-          display: ['quest-complete', 'pending-quest', 'failed-quest'].includes(
-            route.name
-          )
-            ? 'none'
-            : 'flex',
+          // Only hide tab bar for pending-quest and failed-quest
+          display: ['pending-quest'].includes(route.name) ? 'none' : 'flex',
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -214,13 +233,6 @@ export default function TabLayout() {
 
       <Tabs.Screen
         name="quest/[id]"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
-        name="quest-complete"
         options={{
           href: null,
         }}

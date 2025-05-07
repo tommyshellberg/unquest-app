@@ -1,6 +1,6 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
-import { ScrollView, Text } from 'react-native';
+import { ScrollView } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -11,9 +11,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Button, Image, View } from '@/components/ui';
+import { Image, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
+import { useQuestStore } from '@/store/quest-store';
 import { type Quest } from '@/store/types';
 
 import { StoryNarration } from './StoryNarration';
@@ -22,26 +23,20 @@ import { StreakCounter } from './StreakCounter';
 type QuestCompleteProps = {
   quest: Quest;
   story: string;
-  onClaim: () => void;
-  buttonText?: string;
 };
 
-export function QuestComplete({
-  quest,
-  story,
-  onClaim,
-  buttonText = 'Claim Reward',
-}: QuestCompleteProps) {
+export function QuestComplete({ quest, story }: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
   const lottieRef = useRef<LottieView>(null);
+  const clearRecentCompletedQuest = useQuestStore(
+    (state) => state.clearRecentCompletedQuest
+  );
 
   const scale = useSharedValue(0);
   const headerOpacity = useSharedValue(0);
   const storyOpacity = useSharedValue(0);
   const rewardOpacity = useSharedValue(0);
-  const buttonOpacity = useSharedValue(0);
-  const buttonTranslateY = useSharedValue(50);
 
   const headerStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
@@ -49,11 +44,6 @@ export function QuestComplete({
 
   const storyStyle = useAnimatedStyle(() => ({
     opacity: storyOpacity.value,
-  }));
-
-  const buttonStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-    transform: [{ translateY: buttonTranslateY.value }],
   }));
 
   const rewardStyle = useAnimatedStyle(() => ({
@@ -65,30 +55,46 @@ export function QuestComplete({
 
     // Initial celebration animations
     scale.value = withSequence(withSpring(1.2), withSpring(1));
-
     headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
     storyOpacity.value = withDelay(1000, withTiming(1, { duration: 1000 }));
     rewardOpacity.value = withDelay(3000, withTiming(1, { duration: 1000 }));
-    buttonOpacity.value = withDelay(3500, withTiming(1, { duration: 625 }));
-    buttonTranslateY.value = withDelay(3500, withSpring(0));
 
     // Play the Lottie animation once
     if (lottieRef.current) {
       lottieRef.current.play();
     }
 
+    // Set up a timer to clear the recent completed quest flag after a reasonable
+    // amount of time (15 seconds) to ensure user has had time to see it
+    const clearTimer = setTimeout(() => {
+      if (isMounted) {
+        clearRecentCompletedQuest();
+      }
+    }, 15000);
+
     return () => {
       isMounted = false;
+      clearTimeout(clearTimer);
+
+      // Important: Clear the flag when component unmounts
+      clearRecentCompletedQuest();
 
       // Cancel animations
       cancelAnimation(scale);
       cancelAnimation(headerOpacity);
       cancelAnimation(storyOpacity);
       cancelAnimation(rewardOpacity);
-      cancelAnimation(buttonOpacity);
-      cancelAnimation(buttonTranslateY);
     };
-  }, []);
+  }, [
+    clearRecentCompletedQuest,
+    scale,
+    headerOpacity,
+    storyOpacity,
+    rewardOpacity,
+  ]);
+
+  // Determine if this is a story quest or custom quest - they need different card styling
+  const isStoryQuest = quest.mode === 'story';
 
   return (
     <View className="relative flex-1">
@@ -132,11 +138,22 @@ export function QuestComplete({
         </View>
 
         <Animated.View
-          className="my-4 min-h-[200px] w-full flex-1"
-          style={storyStyle}
+          className="my-4 w-full"
+          // Add flex-1 only for story quests, which usually have longer content
+          style={[storyStyle, isStoryQuest ? { flex: 1 } : {}]}
         >
-          <Card className="flex-1 rounded-xl bg-neutral-100">
-            <ScrollView className="flex-1 px-4">
+          <Card
+            // Use dynamic styling based on quest type
+            className={`rounded-xl bg-neutral-100 ${
+              isStoryQuest ? 'flex-1' : 'auto-h'
+            }`}
+          >
+            <ScrollView
+              className={`px-4 ${isStoryQuest ? 'flex-1' : 'py-4'}`}
+              contentContainerStyle={
+                !isStoryQuest ? { paddingVertical: 12 } : undefined
+              }
+            >
               <Text className="text-base leading-6 text-neutral-800">
                 {story || 'Congratulations on completing your quest!'}
               </Text>
@@ -144,7 +161,7 @@ export function QuestComplete({
           </Card>
 
           {/* Audio Controls - Only show if the quest has audio */}
-          {quest.mode === 'story' && quest.audioFile && (
+          {isStoryQuest && quest.audioFile && (
             <View className="mt-4 w-full">
               <StoryNarration questId={quest.id} audioFile={quest.audioFile} />
             </View>
@@ -156,15 +173,6 @@ export function QuestComplete({
             <Text className="text-cream text-center text-lg font-bold drop-shadow-md">
               Reward: {quest.reward.xp} XP
             </Text>
-          </Animated.View>
-
-          <Animated.View style={buttonStyle}>
-            <Button
-              label={buttonText}
-              onPress={onClaim}
-              className="min-w-[200px] rounded-xl bg-primary-400"
-              textClassName="text-white font-semibold"
-            />
           </Animated.View>
         </View>
       </View>
