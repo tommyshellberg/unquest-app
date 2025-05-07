@@ -25,6 +25,7 @@ export default function QuestDetailsScreen() {
   // Get all quests from store
   const completedQuests = useQuestStore((state) => state.completedQuests);
   const failedQuest = useQuestStore((state) => state.failedQuest);
+  const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
 
   const headerOpacity = useSharedValue(0);
 
@@ -39,8 +40,22 @@ export default function QuestDetailsScreen() {
 
   // Handle navigation back to journal
   const handleBackToJournal = () => {
+    // Clear failed quest state when navigating away
+    if (failedQuest) {
+      resetFailedQuest();
+    }
     router.back();
   };
+
+  // Set up cleanup effect for unmount
+  useEffect(() => {
+    return () => {
+      // Clear failed quest when component unmounts
+      if (failedQuest) {
+        resetFailedQuest();
+      }
+    };
+  }, [failedQuest, resetFailedQuest]);
 
   // Find the specific quest by ID and timestamp (if available)
   const quest = useMemo(() => {
@@ -190,7 +205,7 @@ export default function QuestDetailsScreen() {
         <FailedQuest
           quest={quest}
           onRetry={() => {
-            useQuestStore.getState().resetFailedQuest();
+            resetFailedQuest();
             router.replace('/');
           }}
         />

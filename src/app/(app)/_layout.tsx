@@ -117,6 +117,22 @@ export default function TabLayout() {
     checkAuth();
   }, [currentStep, failedQuest, navigationState?.key, pathname, pendingQuest]);
 
+  useEffect(() => {
+    if (!navigationState?.key) return;
+
+    // Clear failed quest when switching tabs
+    if (failedQuest) {
+      const currentPath = pathname || '';
+      const isQuestDetailScreen = currentPath.includes('/quest/');
+
+      // Only clear failedQuest if we're not on the quest detail screen
+      if (!isQuestDetailScreen) {
+        console.log('Clearing failed quest - tab navigation');
+        useQuestStore.getState().resetFailedQuest();
+      }
+    }
+  }, [navigationState?.key, pathname, failedQuest]);
+
   // Check if navigation is ready
   if (!navigationState?.key) {
     return null;
@@ -136,9 +152,7 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
           // Only hide tab bar for pending-quest and failed-quest
-          display: ['pending-quest', 'failed-quest'].includes(route.name)
-            ? 'none'
-            : 'flex',
+          display: ['pending-quest'].includes(route.name) ? 'none' : 'flex',
         },
         tabBarLabelStyle: {
           fontSize: 12,
