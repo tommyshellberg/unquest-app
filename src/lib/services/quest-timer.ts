@@ -427,7 +427,7 @@ export default class QuestTimer {
     await this.loadQuestData();
 
     // Use questId from taskData for Live Activity ID consistency
-    const currentActivityId = this.oneSignalActivityId || taskData.questId;
+    const currentActivityId = this.oneSignalActivityId;
     const { questDuration } = taskData;
 
     while (BackgroundService.isRunning()) {
