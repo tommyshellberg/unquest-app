@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/react-native';
 import { router, Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
+import { Platform } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -87,6 +88,9 @@ function RootLayout() {
 
       // Initialize OneSignal
       OneSignal.initialize(Env.ONESIGNAL_APP_ID);
+      if (Platform.OS === 'ios') {
+        OneSignal.LiveActivities.setupDefault();
+      }
     }
   }, []);
 
