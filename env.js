@@ -81,6 +81,7 @@ const client = z.object({
   // ADD YOUR CLIENT ENV VARS HERE
   API_URL: z.string(),
   ONESIGNAL_APP_ID: z.string(),
+  POSTHOG_API_KEY: z.string(),
 });
 
 const buildTime = z.object({
@@ -103,6 +104,7 @@ const _clientEnv = {
   // ADD YOUR ENV VARS HERE TOO
   ONESIGNAL_APP_ID: process.env.ONESIGNAL_APP_ID,
   API_URL: process.env.API_URL,
+  POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
 };
 
 /**
