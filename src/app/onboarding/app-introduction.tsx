@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import React, { useEffect, useState } from 'react';
+import { Dimensions, Platform } from 'react-native';
 import { Image } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -15,9 +16,7 @@ import {
   requestNotificationPermissions,
   setupNotifications,
 } from '@/lib/services/notifications';
-import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
-import { useUserStore } from '@/store/user-store';
 
 // Local steps just for this screen's flow
 enum IntroStep {
@@ -34,15 +33,16 @@ export default function AppIntroductionScreen() {
   const setCurrentStep = useOnboardingStore((state) => state.setCurrentStep);
 
   const [permissionsGranted, setPermissionsGranted] = useState(false);
-  const character = useCharacterStore((state) => state.character);
-  const user = useUserStore((state) => state.user);
   const currentStep = useOnboardingStore((state) => state.currentStep);
-  const hasExistingData = !!character || !!user;
 
-  // Animation values for a smooth fade/scale-in effect.
+  // Animation values for a smooth fade/scale-in effect
   const contentOpacity = useSharedValue(0);
   const contentScale = useSharedValue(0.9);
   const buttonOpacity = useSharedValue(0);
+
+  // Additional animation values for the notification step
+  const platformInfoOpacity = useSharedValue(0);
+  const notificationImageOpacity = useSharedValue(0);
 
   useEffect(() => {
     console.log('app introduction screen mounting');
@@ -58,15 +58,39 @@ export default function AppIntroductionScreen() {
     contentOpacity.value = 0;
     contentScale.value = 0.9;
     buttonOpacity.value = 0;
+    platformInfoOpacity.value = 0;
+    notificationImageOpacity.value = 0;
 
-    // Start new animations
-    contentOpacity.value = withDelay(300, withTiming(1, { duration: 800 }));
+    // Set up sequenced animations
+    contentOpacity.value = withDelay(300, withTiming(1, { duration: 700 }));
     contentScale.value = withDelay(
       300,
       withSequence(withSpring(1.05), withSpring(1))
     );
-    buttonOpacity.value = withDelay(1200, withTiming(1, { duration: 500 }));
-  }, [introStep]);
+
+    if (introStep === IntroStep.NOTIFICATIONS) {
+      // Add additional staggered animations for notification step
+      platformInfoOpacity.value = withDelay(
+        1000,
+        withTiming(1, { duration: 500 })
+      );
+      notificationImageOpacity.value = withDelay(
+        1500,
+        withTiming(1, { duration: 500 })
+      );
+      buttonOpacity.value = withDelay(1800, withTiming(1, { duration: 500 }));
+    } else {
+      // Standard button animation for other steps
+      buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
+    }
+  }, [
+    buttonOpacity,
+    contentOpacity,
+    contentScale,
+    introStep,
+    platformInfoOpacity,
+    notificationImageOpacity,
+  ]);
 
   // Check if permissions are already granted
   useEffect(() => {
@@ -113,6 +137,12 @@ export default function AppIntroductionScreen() {
     }
   };
 
+  // Skip notifications and continue
+  const handleSkipNotifications = () => {
+    // Skip the system permission prompt and move to the next step
+    setIntroStep(IntroStep.READY_FOR_CHARACTER);
+  };
+
   // Create animated styles based on shared values
   const contentStyle = useAnimatedStyle(() => ({
     opacity: contentOpacity.value,
@@ -122,6 +152,17 @@ export default function AppIntroductionScreen() {
   const buttonStyle = useAnimatedStyle(() => ({
     opacity: buttonOpacity.value,
   }));
+
+  const platformInfoStyle = useAnimatedStyle(() => ({
+    opacity: platformInfoOpacity.value,
+  }));
+
+  const notificationImageStyle = useAnimatedStyle(() => ({
+    opacity: notificationImageOpacity.value,
+  }));
+
+  // Get screen width to set full-width image
+  const screenWidth = Dimensions.get('window').width;
 
   // Render content based on current step
   const renderContent = () => {
@@ -146,26 +187,58 @@ export default function AppIntroductionScreen() {
         );
 
       case IntroStep.NOTIFICATIONS:
+        const isIOS = Platform.OS === 'ios';
+        const notificationImage = isIOS
+          ? require('@/../assets/images/ios-notification.jpg')
+          : require('@/../assets/images/android-notification.jpg');
+
         return (
           <>
-            <Text className="text-xl font-bold">Notifications</Text>
-            <Text className="mb-6 text-lg font-semibold text-white">
-              Stay updated on your quests
-            </Text>
-            <Text className="mb-4">
-              unQuest works best with lock screen notifications enabled. This
-              allows you to:
-            </Text>
-            <Text className="mb-2 ml-4">
-              • See your quest progress while your phone is locked
-            </Text>
-            <Text className="mb-4 ml-4">
-              • Receive notifications when your quest is complete
-            </Text>
-            <Text className="mb-4 font-semibold">
-              For the best experience, please set your lock screen notification
-              settings to "Show conversations and notifications"
-            </Text>
+            <Animated.View style={contentStyle}>
+              <Text className="text-xl font-bold">Notifications</Text>
+              <Text className="mb-6 text-lg font-semibold text-white">
+                The key to successful quests
+              </Text>
+              <Text className="mb-4">
+                unQuest's unique feature is the ability to track your progress
+                without unlocking your phone:
+              </Text>
+              <Text className="mb-2 ml-4">
+                • See real-time quest progress on your lock screen
+              </Text>
+              <Text className="mb-2 ml-4">
+                • Never risk failing quests by checking your phone
+              </Text>
+              <Text className="mb-4 ml-4">
+                • Get notified immediately when quests complete
+              </Text>
+            </Animated.View>
+
+            <Animated.View style={platformInfoStyle}>
+              {isIOS ? (
+                <Text className="mb-4 font-medium text-white">
+                  iOS uses Live Activities to update your quest progress in
+                  real-time on your lock screen.
+                </Text>
+              ) : (
+                <Text className="mb-4 font-medium text-white">
+                  For the best experience, set your lock screen notification
+                  settings to "Show conversations and notifications"
+                </Text>
+              )}
+            </Animated.View>
+
+            <Animated.View
+              style={notificationImageStyle}
+              className="items-center"
+            >
+              <Text className="mb-2 font-medium">Here's what you'll see:</Text>
+              <Image
+                source={notificationImage}
+                style={{ width: screenWidth, height: 150 }}
+                className="rounded-lg"
+              />
+            </Animated.View>
           </>
         );
 
@@ -211,17 +284,31 @@ export default function AppIntroductionScreen() {
         <View className="absolute inset-0 bg-white/10" />
       </View>
 
-      <View className="flex-1 justify-between p-4">
-        <Animated.View style={contentStyle} className="mt-6">
-          {renderContent()}
-        </Animated.View>
+      <View className="flex-1 justify-between p-6">
+        <View className="mt-6">{renderContent()}</View>
 
         <Animated.View style={buttonStyle} className="mb-6">
-          <Button
-            label={getButtonText()}
-            onPress={handleButtonPress}
-            accessibilityLabel={getButtonText()}
-          />
+          {introStep === IntroStep.NOTIFICATIONS ? (
+            <View className="space-y-2">
+              <Button
+                label={getButtonText()}
+                onPress={handleButtonPress}
+                accessibilityLabel={getButtonText()}
+              />
+              <Button
+                label="Not now"
+                variant="ghost"
+                onPress={handleSkipNotifications}
+                accessibilityLabel="Skip enabling notifications"
+              />
+            </View>
+          ) : (
+            <Button
+              label={getButtonText()}
+              onPress={handleButtonPress}
+              accessibilityLabel={getButtonText()}
+            />
+          )}
         </Animated.View>
       </View>
     </View>
