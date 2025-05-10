@@ -19,13 +19,6 @@ export default function OnboardingIndex() {
   // Determine the correct path based on the current step
   const targetPath = stepToRoute[currentStep];
 
-  console.log(
-    'Onboarding index redirecting to',
-    targetPath,
-    'based on step',
-    currentStep
-  );
-
   // Redirect to the appropriate step - cast as any to handle type issues with Expo Router types
   return <Redirect href={targetPath as any} />;
 }

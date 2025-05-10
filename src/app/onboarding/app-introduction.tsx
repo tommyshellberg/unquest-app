@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import { Image } from 'react-native';
 import Animated, {
@@ -38,19 +39,15 @@ export default function AppIntroductionScreen() {
   const user = useUserStore((state) => state.user);
   const currentStep = useOnboardingStore((state) => state.currentStep);
   const hasExistingData = !!character || !!user;
-
+  const posthog = usePostHog();
   // Animation values for a smooth fade/scale-in effect.
   const contentOpacity = useSharedValue(0);
   const contentScale = useSharedValue(0.9);
   const buttonOpacity = useSharedValue(0);
 
   useEffect(() => {
-    console.log('app introduction screen mounting');
-    console.log('APP INTRODUCTION MOUNTING WITH STEP:', currentStep);
-    return () => {
-      console.log('app introduction screen unmounted');
-    };
-  }, [currentStep]);
+    posthog.capture('onboarding_open_app_introduction_screen');
+  }, [posthog]);
 
   // Reset and play animations when step changes
   useEffect(() => {
@@ -83,11 +80,18 @@ export default function AppIntroductionScreen() {
     try {
       // Initialize notifications
       setupNotifications();
+      posthog.capture('onboarding_request_notification_permissions');
 
       // Use our unified permission request that handles both OneSignal and Expo notifications
       const granted = await requestNotificationPermissions();
       setPermissionsGranted(granted);
+      if (granted) {
+        posthog.capture('onboarding_request_notification_permissions_success');
+      } else {
+        posthog.capture('onboarding_request_notification_permissions_denied');
+      }
     } catch (error) {
+      posthog.capture('onboarding_request_notification_permissions_error');
       console.error('Error requesting permissions:', error);
       // Even if there's an error, we'll continue the flow
       setPermissionsGranted(false);
@@ -95,6 +99,7 @@ export default function AppIntroductionScreen() {
 
     // Move to the next step
     setIntroStep(IntroStep.READY_FOR_CHARACTER);
+    posthog.capture('onboarding_request_notification_permissions_completed');
   };
 
   // Handle button press based on current step
