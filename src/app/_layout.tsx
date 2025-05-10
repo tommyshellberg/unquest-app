@@ -7,6 +7,7 @@ import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { router, Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { PostHogProvider } from 'posthog-react-native';
 import React, { useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
@@ -209,12 +210,19 @@ function Providers({
       >
         <KeyboardProvider>
           <ThemeProvider value={theme}>
-            <APIProvider>
-              <BottomSheetModalProvider>
-                {children}
-                <FlashMessage position="top" />
-              </BottomSheetModalProvider>
-            </APIProvider>
+            <PostHogProvider
+              apiKey={Env.POSTHOG_API_KEY}
+              options={{
+                host: 'https://us.i.posthog.com',
+              }}
+            >
+              <APIProvider>
+                <BottomSheetModalProvider>
+                  {children}
+                  <FlashMessage position="top" />
+                </BottomSheetModalProvider>
+              </APIProvider>
+            </PostHogProvider>
           </ThemeProvider>
         </KeyboardProvider>
       </GestureHandlerRootView>

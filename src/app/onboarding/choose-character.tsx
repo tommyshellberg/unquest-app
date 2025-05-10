@@ -1,4 +1,5 @@
 import { BlurView } from 'expo-blur';
+import { usePostHog } from 'posthog-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Animated,
@@ -80,7 +81,7 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
 
 export default function ChooseCharacterScreen() {
   const createCharacter = useCharacterStore((state) => state.createCharacter);
-
+  const posthog = usePostHog();
   // Initialize with the first character selected
   const [selectedCharacter, setSelectedCharacter] = useState<string>(
     CHARACTERS[0].id
@@ -111,6 +112,10 @@ export default function ChooseCharacterScreen() {
     [selectedCharacter]
   );
 
+  useEffect(() => {
+    posthog.capture('onboarding_open_choose_character_screen');
+  }, [posthog]);
+
   // Debounce the input name: update debouncedName 500ms after user stops typing.
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -120,6 +125,7 @@ export default function ChooseCharacterScreen() {
   }, [inputName]);
 
   const handleContinue = async () => {
+    posthog.capture('onboarding_trigger_continue_choose_character');
     if (!debouncedName.trim()) return;
     const selected = CHARACTERS.find((c) => c.id === selectedCharacter);
     if (!selected) return;
@@ -136,15 +142,14 @@ export default function ChooseCharacterScreen() {
 
       // 1. First update local character store
       createCharacter(selected.id as CharacterType, debouncedName.trim());
-      console.log('updating character on server');
+      posthog.capture('onboarding_update_character_local_store');
       // 2. Update the user's character on the server
       await updateUserCharacter(newCharacter as Character);
-
-      console.log('character updated on server');
+      posthog.capture('onboarding_update_character_server');
     } catch (error) {
+      posthog.capture('onboarding_update_character_server_error');
       console.log('Error updating user character on the server', error);
     } finally {
-      console.log('setting character selected step');
       useOnboardingStore
         .getState()
         .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
