@@ -3,12 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { Dimensions, Platform } from 'react-native';
 import { Image } from 'react-native';
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withSequence,
-  withSpring,
-  withTiming,
+  FadeIn,
+  FadeInDown,
+  FadeInLeft,
 } from 'react-native-reanimated';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
@@ -33,64 +30,6 @@ export default function AppIntroductionScreen() {
   const setCurrentStep = useOnboardingStore((state) => state.setCurrentStep);
 
   const [permissionsGranted, setPermissionsGranted] = useState(false);
-  const currentStep = useOnboardingStore((state) => state.currentStep);
-
-  // Animation values for a smooth fade/scale-in effect
-  const contentOpacity = useSharedValue(0);
-  const contentScale = useSharedValue(0.9);
-  const buttonOpacity = useSharedValue(0);
-
-  // Additional animation values for the notification step
-  const platformInfoOpacity = useSharedValue(0);
-  const notificationImageOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    console.log('app introduction screen mounting');
-    console.log('APP INTRODUCTION MOUNTING WITH STEP:', currentStep);
-    return () => {
-      console.log('app introduction screen unmounted');
-    };
-  }, [currentStep]);
-
-  // Reset and play animations when step changes
-  useEffect(() => {
-    // Reset animations
-    contentOpacity.value = 0;
-    contentScale.value = 0.9;
-    buttonOpacity.value = 0;
-    platformInfoOpacity.value = 0;
-    notificationImageOpacity.value = 0;
-
-    // Set up sequenced animations
-    contentOpacity.value = withDelay(300, withTiming(1, { duration: 700 }));
-    contentScale.value = withDelay(
-      300,
-      withSequence(withSpring(1.05), withSpring(1))
-    );
-
-    if (introStep === IntroStep.NOTIFICATIONS) {
-      // Add additional staggered animations for notification step
-      platformInfoOpacity.value = withDelay(
-        1000,
-        withTiming(1, { duration: 500 })
-      );
-      notificationImageOpacity.value = withDelay(
-        1500,
-        withTiming(1, { duration: 500 })
-      );
-      buttonOpacity.value = withDelay(1800, withTiming(1, { duration: 500 }));
-    } else {
-      // Standard button animation for other steps
-      buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
-    }
-  }, [
-    buttonOpacity,
-    contentOpacity,
-    contentScale,
-    introStep,
-    platformInfoOpacity,
-    notificationImageOpacity,
-  ]);
 
   // Check if permissions are already granted
   useEffect(() => {
@@ -105,19 +44,14 @@ export default function AppIntroductionScreen() {
   // Request notification permissions
   const requestPermissions = async () => {
     try {
-      // Initialize notifications
       setupNotifications();
-
-      // Use our unified permission request that handles both OneSignal and Expo notifications
       const granted = await requestNotificationPermissions();
       setPermissionsGranted(granted);
     } catch (error) {
       console.error('Error requesting permissions:', error);
-      // Even if there's an error, we'll continue the flow
       setPermissionsGranted(false);
     }
 
-    // Move to the next step
     setIntroStep(IntroStep.READY_FOR_CHARACTER);
   };
 
@@ -131,7 +65,6 @@ export default function AppIntroductionScreen() {
         requestPermissions();
         break;
       case IntroStep.READY_FOR_CHARACTER:
-        // Update global onboarding state when we're done with intro
         setCurrentStep(OnboardingStep.NOTIFICATIONS_COMPLETED);
         break;
     }
@@ -139,27 +72,8 @@ export default function AppIntroductionScreen() {
 
   // Skip notifications and continue
   const handleSkipNotifications = () => {
-    // Skip the system permission prompt and move to the next step
     setIntroStep(IntroStep.READY_FOR_CHARACTER);
   };
-
-  // Create animated styles based on shared values
-  const contentStyle = useAnimatedStyle(() => ({
-    opacity: contentOpacity.value,
-    transform: [{ scale: contentScale.value }],
-  }));
-
-  const buttonStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-  }));
-
-  const platformInfoStyle = useAnimatedStyle(() => ({
-    opacity: platformInfoOpacity.value,
-  }));
-
-  const notificationImageStyle = useAnimatedStyle(() => ({
-    opacity: notificationImageOpacity.value,
-  }));
 
   // Get screen width to set full-width image
   const screenWidth = Dimensions.get('window').width;
@@ -169,21 +83,29 @@ export default function AppIntroductionScreen() {
     switch (introStep) {
       case IntroStep.WELCOME:
         return (
-          <>
-            <Text className="text-xl font-bold">Welcome to unQuest</Text>
-            <Text className="mb-6 text-lg font-semibold text-white">
-              Discover quests and embrace your journey.
-            </Text>
-            <Text className="mb-4">
-              In unQuest, you'll embark on a mindful adventure by periodically
-              stepping away from the digital world and reconnecting with the
-              real world.
-            </Text>
-            <Text className="mb-4">
-              Each quest is a unique challenge that rewards you for taking a
-              break from screen time.
-            </Text>
-          </>
+          <View key="welcome">
+            <Animated.View entering={FadeInLeft.delay(100)}>
+              <Text className="text-xl font-bold">Welcome to unQuest</Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(600)}>
+              <Text className="mb-6 text-lg font-semibold text-white">
+                Discover quests and embrace your journey.
+              </Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(1100)}>
+              <Text className="mb-4">
+                In unQuest, you'll embark on a mindful adventure by periodically
+                stepping away from the digital world and reconnecting with the
+                real world.
+              </Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(1600)}>
+              <Text className="mb-4">
+                Each quest is a unique challenge that rewards you for taking a
+                break from screen time.
+              </Text>
+            </Animated.View>
+          </View>
         );
 
       case IntroStep.NOTIFICATIONS:
@@ -193,16 +115,22 @@ export default function AppIntroductionScreen() {
           : require('@/../assets/images/android-notification.jpg');
 
         return (
-          <>
-            <Animated.View style={contentStyle}>
+          <View key="notifications">
+            <Animated.View entering={FadeInLeft.delay(100)}>
               <Text className="text-xl font-bold">Notifications</Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(600)}>
               <Text className="mb-6 text-lg font-semibold text-white">
                 The key to successful quests
               </Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(1100)}>
               <Text className="mb-4">
                 unQuest's unique feature is the ability to track your progress
                 without unlocking your phone:
               </Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(1600)}>
               <Text className="mb-2 ml-4">
                 • See real-time quest progress on your lock screen
               </Text>
@@ -214,7 +142,7 @@ export default function AppIntroductionScreen() {
               </Text>
             </Animated.View>
 
-            <Animated.View style={platformInfoStyle}>
+            <Animated.View entering={FadeInDown.delay(2100)}>
               {isIOS ? (
                 <Text className="mb-4 font-medium text-white">
                   iOS uses Live Activities to update your quest progress in
@@ -229,7 +157,7 @@ export default function AppIntroductionScreen() {
             </Animated.View>
 
             <Animated.View
-              style={notificationImageStyle}
+              entering={FadeInDown.delay(2600)}
               className="items-center"
             >
               <Text className="mb-2 font-medium">Here's what you'll see:</Text>
@@ -239,19 +167,34 @@ export default function AppIntroductionScreen() {
                 className="rounded-lg"
               />
             </Animated.View>
-          </>
+          </View>
         );
 
       case IntroStep.READY_FOR_CHARACTER:
         return (
-          <>
-            <Text className="mb-6 text-xl font-bold">
-              Create Your Character
-            </Text>
-            <Text className="mb-6">
-              Now it's time to create your character and begin your journey.
-            </Text>
-          </>
+          <View key="character">
+            <Animated.View entering={FadeInDown.delay(100)}>
+              <Text className="mb-4 text-xl font-bold">Your Character</Text>
+              <Text className="mb-6 text-lg font-semibold text-white">
+                Your companion on this journey
+              </Text>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(600)}>
+              <Text className="mb-4">
+                Choose a character that reflects your personality. Each
+                character offers a different approach to mindfulness and
+                balance.
+              </Text>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(1100)}>
+              <Text className="mb-4">
+                In future updates, characters will gain unique abilities to help
+                complete quests and earn rewards.
+              </Text>
+            </Animated.View>
+          </View>
         );
 
       default:
@@ -287,7 +230,13 @@ export default function AppIntroductionScreen() {
       <View className="flex-1 justify-between p-6">
         <View className="mt-6">{renderContent()}</View>
 
-        <Animated.View style={buttonStyle} className="mb-6">
+        <Animated.View
+          entering={FadeIn.delay(
+            introStep === IntroStep.READY_FOR_CHARACTER ? 1600 : 2800
+          )}
+          className="mb-6"
+          key={`button-${introStep}`}
+        >
           {introStep === IntroStep.NOTIFICATIONS ? (
             <View className="space-y-2">
               <Button

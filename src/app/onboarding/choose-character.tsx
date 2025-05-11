@@ -1,14 +1,18 @@
 import { BlurView } from 'expo-blur';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  Animated,
   Dimensions,
   FlatList,
   Image,
   ImageBackground,
+  Platform,
   TextInput,
 } from 'react-native';
-import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeInLeft,
+} from 'react-native-reanimated';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
@@ -64,8 +68,8 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
 
             {/* Bottom section with description - now using BlurView */}
             <BlurView
-              intensity={50}
-              tint="light"
+              intensity={Platform.OS === 'ios' ? 50 : 100}
+              tint="extraLight"
               className="mt-auto overflow-hidden p-4"
             >
               {/* Character Description */}
@@ -87,20 +91,6 @@ export default function ChooseCharacterScreen() {
   );
   const [inputName, setInputName] = useState<string>('');
   const [debouncedName, setDebouncedName] = useState<string>('');
-
-  // Shared values for animation: for scroll container and button
-  // These must be declared before any conditional returns
-  const scrollContainerOpacity = useSharedValue(1); // Start visible
-  const buttonOpacity = useSharedValue(1); // Start visible
-
-  // Animated styles for container and continue button.
-  const animatedScrollStyle = useAnimatedStyle(() => ({
-    opacity: scrollContainerOpacity.value,
-  }));
-
-  const animatedButtonStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-  }));
 
   // Memoized renderItem callback for FlatList - must be declared before conditional returns
   const renderItem = useCallback(
@@ -164,11 +154,14 @@ export default function ChooseCharacterScreen() {
         <View className="absolute inset-0 bg-white/10" />
       </View>
 
-      <View className="mb-4 mt-12 gap-4 p-6">
+      <Animated.View
+        className="mb-4 mt-12 gap-4 p-6"
+        entering={FadeInLeft.delay(100)}
+      >
         <Text className="text-xl font-bold">Choose Your Character</Text>
-      </View>
+      </Animated.View>
 
-      <View className="mb-10 px-6">
+      <Animated.View className="mb-10 px-6" entering={FadeInDown.delay(600)}>
         <Text className="mb-2">Name Your Character</Text>
         <TextInput
           className="h-10 rounded border px-2 text-primary-400 placeholder:text-muted-200 dark:text-primary-400 dark:placeholder:text-muted-200"
@@ -180,13 +173,13 @@ export default function ChooseCharacterScreen() {
           placeholder="Enter character name"
           testID="character-name-input"
         />
-      </View>
+      </Animated.View>
 
-      <View className="mx-6 mb-2">
+      <Animated.View className="mx-6 mb-2" entering={FadeInDown.delay(1100)}>
         <Text>Next, choose a character type.</Text>
-      </View>
+      </Animated.View>
 
-      <Animated.View className="mb-4 flex-1" style={animatedScrollStyle}>
+      <Animated.View className="mb-4 flex-1" entering={FadeIn.delay(1600)}>
         <FlatList
           data={CHARACTERS}
           horizontal
@@ -215,16 +208,14 @@ export default function ChooseCharacterScreen() {
       </Animated.View>
 
       {/* Continue Button */}
-      <Animated.View style={animatedButtonStyle}>
-        <View className="p-6">
-          <Button
-            label="Continue"
-            onPress={handleContinue}
-            disabled={!debouncedName.trim()}
-            className={`rounded-xl bg-primary-500 ${!debouncedName.trim() ? 'opacity-50' : ''}`}
-            textClassName="text-white font-bold"
-          />
-        </View>
+      <Animated.View className="p-6" entering={FadeIn.delay(2100)}>
+        <Button
+          label="Continue"
+          onPress={handleContinue}
+          disabled={!debouncedName.trim()}
+          className={`rounded-xl bg-primary-500 ${!debouncedName.trim() ? 'opacity-50' : ''}`}
+          textClassName="text-white font-bold"
+        />
       </Animated.View>
     </View>
   );
