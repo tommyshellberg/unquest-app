@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { usePostHog } from 'posthog-react-native';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { CategorySelector } from '@/components/QuestForm/category-selector';
@@ -28,6 +29,7 @@ export default function CustomQuestScreen() {
   // Local state for the quest data
   const [questName, setQuestName] = useState('');
   const [questDuration, setQuestDuration] = useState(30);
+  const posthog = usePostHog();
 
   // Initialize react-hook-form just for the category
   const {
@@ -58,8 +60,12 @@ export default function CustomQuestScreen() {
     setQuestDuration(duration);
   };
 
+  useEffect(() => {
+    posthog.capture('open_custom_quest_screen');
+  }, [posthog]);
+
   const onSubmit = async (data: FormData) => {
-    console.log('handleCreateQuest', { ...data, questName, questDuration });
+    posthog.capture('trigger_start_custom_quest');
 
     // Create a custom quest object
     const customQuest: CustomQuestTemplate = {
@@ -82,6 +88,7 @@ export default function CustomQuestScreen() {
 
       // Then prepare the quest in the background task
       await QuestTimer.prepareQuest(customQuest);
+      posthog.capture('sucess_start_custom_quest');
     } catch (error) {
       console.error('Error preparing quest:', error);
     }

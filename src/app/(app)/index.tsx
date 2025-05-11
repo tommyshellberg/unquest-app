@@ -1,5 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image } from 'react-native';
 import Animated, {
@@ -43,7 +44,7 @@ export default function Home() {
   const availableQuests = useQuestStore((state) => state.availableQuests);
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
   const prepareQuest = useQuestStore((state) => state.prepareQuest);
-
+  const posthog = usePostHog();
   // State for story choices
   const [storyOptions, setStoryOptions] = useState<QuestOption[]>([]);
 
@@ -192,6 +193,7 @@ export default function Home() {
 
   // Function to handle quest option selection
   const handleQuestOptionSelect = async (nextQuestId: string | null) => {
+    posthog.capture('try_trigger_start_quest');
     if (!nextQuestId) return; // Don't proceed if there's no next quest
 
     // Find the quest by ID
@@ -200,24 +202,21 @@ export default function Home() {
     );
 
     if (selectedQuest) {
+      posthog.capture('trigger_start_quest');
       prepareQuest(selectedQuest);
       await QuestTimer.prepareQuest(selectedQuest);
+      posthog.capture('success_start_quest');
     }
   };
 
   // Handle custom quest button
   const handleStartCustomQuest = () => {
-    console.log('Starting custom quest');
     try {
       router.push('/custom-quest');
     } catch (error) {
       console.error('Error navigating to custom quest:', error);
     }
   };
-
-  useEffect(() => {
-    console.log('availableQuests', availableQuests);
-  }, [availableQuests]);
 
   // Prepare carousel data
   const carouselData = [

@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Platform } from 'react-native';
 import { Image } from 'react-native';
@@ -30,6 +31,11 @@ export default function AppIntroductionScreen() {
   const setCurrentStep = useOnboardingStore((state) => state.setCurrentStep);
 
   const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    posthog.capture('onboarding_open_app_introduction_screen');
+  }, [posthog]);
 
   // Check if permissions are already granted
   useEffect(() => {
@@ -47,12 +53,19 @@ export default function AppIntroductionScreen() {
       setupNotifications();
       const granted = await requestNotificationPermissions();
       setPermissionsGranted(granted);
+      if (granted) {
+        posthog.capture('onboarding_request_notification_permissions_success');
+      } else {
+        posthog.capture('onboarding_request_notification_permissions_denied');
+      }
     } catch (error) {
+      posthog.capture('onboarding_request_notification_permissions_error');
       console.error('Error requesting permissions:', error);
       setPermissionsGranted(false);
     }
 
     setIntroStep(IntroStep.READY_FOR_CHARACTER);
+    posthog.capture('onboarding_request_notification_permissions_completed');
   };
 
   // Handle button press based on current step
