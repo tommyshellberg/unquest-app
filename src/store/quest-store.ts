@@ -44,11 +44,11 @@ const getItemForStorage = (name: string) => {
 };
 
 const setItemForStorage = async (name: string, value: string) => {
-  await setItem(name, value);
+  setItem(name, value);
 };
 
 const removeItemForStorage = async (name: string) => {
-  await removeItem(name);
+  removeItem(name);
 };
 
 export const useQuestStore = create<QuestState>()(

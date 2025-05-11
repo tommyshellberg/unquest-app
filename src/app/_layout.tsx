@@ -16,6 +16,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
 
 import { APIProvider } from '@/api';
+import { ReminderPromptController } from '@/components/ReminderPromptController';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import { useThemeConfig } from '@/lib/use-theme-config';
@@ -216,6 +217,7 @@ function Providers({
                 host: 'https://us.i.posthog.com',
               }}
             >
+              <ReminderPromptController />
               <APIProvider>
                 <BottomSheetModalProvider>
                   {children}

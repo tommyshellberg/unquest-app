@@ -1,5 +1,6 @@
 import { Env } from '@env';
 import { Feather } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Linking from 'expo-linking';
 import { Link, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -14,13 +15,16 @@ import { FocusAwareStatusBar, ScrollView, Text, View } from '@/components/ui';
 import { useAuth } from '@/lib';
 import {
   areNotificationsEnabled,
+  cancelDailyReminderNotification,
   requestNotificationPermissions,
+  scheduleDailyReminderNotification,
 } from '@/lib/services/notifications';
 import { getUserDetails } from '@/lib/services/user';
 import { setItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
+import { useSettingsStore } from '@/store/settings-store';
 import { useUserStore } from '@/store/user-store';
 
 // Constants
@@ -36,6 +40,8 @@ export default function Settings() {
   const user = useUserStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(true);
   const resetOnboarding = useOnboardingStore((state) => state.resetOnboarding);
+  const { dailyReminder, setDailyReminder } = useSettingsStore();
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   // Animation value for header
   const headerOpacity = useSharedValue(0);
@@ -158,6 +164,49 @@ export default function Settings() {
   const iconColor = '#3B7A57';
   const contactEmail = 'hello@unquestapp.com';
 
+  const handleToggleReminder = async (value: boolean) => {
+    if (value) {
+      // If enabling and no time is set, set a default time (5:00 PM)
+      const hour = dailyReminder.time?.hour || 17;
+      const minute = dailyReminder.time?.minute || 0;
+
+      // Schedule the notification
+      const success = await scheduleDailyReminderNotification(hour, minute);
+
+      // Update state
+      setDailyReminder({
+        enabled: success,
+        time: { hour, minute },
+      });
+    } else {
+      // Cancel the notification if disabling
+      await cancelDailyReminderNotification();
+
+      // Update state but preserve the time
+      setDailyReminder({
+        ...dailyReminder,
+        enabled: false,
+      });
+    }
+  };
+
+  const handleTimeChange = async (event: any, selectedDate?: Date) => {
+    setShowTimePicker(false);
+    if (selectedDate) {
+      const hour = selectedDate.getHours();
+      const minute = selectedDate.getMinutes();
+
+      // Schedule with new time
+      const success = await scheduleDailyReminderNotification(hour, minute);
+
+      // Update state
+      setDailyReminder({
+        enabled: success,
+        time: { hour, minute },
+      });
+    }
+  };
+
   // In your render method, handle loading state
   if (isLoading) {
     return (
@@ -239,8 +288,8 @@ export default function Settings() {
             />
           </View>
 
-          {/* Reminders */}
-          <View className="mb-8 flex-row items-center justify-between">
+          {/* Reminders - Updated to match other sections */}
+          <View className="mb-4 flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View
                 className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
@@ -248,12 +297,42 @@ export default function Settings() {
                 <Feather name="clock" size={24} color={iconColor} />
               </View>
               <View>
-                <Text className="text-xl font-medium">Reminders</Text>
-                <Text className="text-neutral-600">Coming Soon</Text>
+                <Text className="text-xl font-medium">Daily Reminder</Text>
+                <Text className="text-neutral-600">
+                  {dailyReminder.enabled ? 'Enabled' : 'Disabled'}
+                </Text>
               </View>
             </View>
-            <Feather name="chevron-right" size={20} color="#888" />
+            <Switch
+              value={dailyReminder.enabled}
+              onValueChange={handleToggleReminder}
+              trackColor={{ false: '#D1D1D6', true: '#5E8977' }}
+            />
           </View>
+
+          {/* Show time picker always when enabled */}
+          {dailyReminder.enabled && dailyReminder.time && (
+            <View className="mb-6 ml-16">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-neutral-600">Reminder Time</Text>
+                <DateTimePicker
+                  value={
+                    new Date(
+                      new Date().setHours(
+                        dailyReminder.time.hour,
+                        dailyReminder.time.minute
+                      )
+                    )
+                  }
+                  mode="time"
+                  display="compact"
+                  onChange={handleTimeChange}
+                  themeVariant="light"
+                  style={{ marginTop: -8, marginBottom: -8 }}
+                />
+              </View>
+            </View>
+          )}
 
           {/* Support Section */}
           <View className="mb-4">
