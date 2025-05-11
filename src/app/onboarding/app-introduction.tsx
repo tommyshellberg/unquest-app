@@ -1,14 +1,12 @@
 import * as Notifications from 'expo-notifications';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
+import { Dimensions, Platform } from 'react-native';
 import { Image } from 'react-native';
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withSequence,
-  withSpring,
-  withTiming,
+  FadeIn,
+  FadeInDown,
+  FadeInLeft,
 } from 'react-native-reanimated';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
@@ -16,9 +14,7 @@ import {
   requestNotificationPermissions,
   setupNotifications,
 } from '@/lib/services/notifications';
-import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
-import { useUserStore } from '@/store/user-store';
 
 // Local steps just for this screen's flow
 enum IntroStep {
@@ -35,35 +31,11 @@ export default function AppIntroductionScreen() {
   const setCurrentStep = useOnboardingStore((state) => state.setCurrentStep);
 
   const [permissionsGranted, setPermissionsGranted] = useState(false);
-  const character = useCharacterStore((state) => state.character);
-  const user = useUserStore((state) => state.user);
-  const currentStep = useOnboardingStore((state) => state.currentStep);
-  const hasExistingData = !!character || !!user;
   const posthog = usePostHog();
-  // Animation values for a smooth fade/scale-in effect.
-  const contentOpacity = useSharedValue(0);
-  const contentScale = useSharedValue(0.9);
-  const buttonOpacity = useSharedValue(0);
 
   useEffect(() => {
     posthog.capture('onboarding_open_app_introduction_screen');
   }, [posthog]);
-
-  // Reset and play animations when step changes
-  useEffect(() => {
-    // Reset animations
-    contentOpacity.value = 0;
-    contentScale.value = 0.9;
-    buttonOpacity.value = 0;
-
-    // Start new animations
-    contentOpacity.value = withDelay(300, withTiming(1, { duration: 800 }));
-    contentScale.value = withDelay(
-      300,
-      withSequence(withSpring(1.05), withSpring(1))
-    );
-    buttonOpacity.value = withDelay(1200, withTiming(1, { duration: 500 }));
-  }, [introStep]);
 
   // Check if permissions are already granted
   useEffect(() => {
@@ -78,11 +50,7 @@ export default function AppIntroductionScreen() {
   // Request notification permissions
   const requestPermissions = async () => {
     try {
-      // Initialize notifications
       setupNotifications();
-      posthog.capture('onboarding_request_notification_permissions');
-
-      // Use our unified permission request that handles both OneSignal and Expo notifications
       const granted = await requestNotificationPermissions();
       setPermissionsGranted(granted);
       if (granted) {
@@ -93,11 +61,9 @@ export default function AppIntroductionScreen() {
     } catch (error) {
       posthog.capture('onboarding_request_notification_permissions_error');
       console.error('Error requesting permissions:', error);
-      // Even if there's an error, we'll continue the flow
       setPermissionsGranted(false);
     }
 
-    // Move to the next step
     setIntroStep(IntroStep.READY_FOR_CHARACTER);
     posthog.capture('onboarding_request_notification_permissions_completed');
   };
@@ -112,78 +78,136 @@ export default function AppIntroductionScreen() {
         requestPermissions();
         break;
       case IntroStep.READY_FOR_CHARACTER:
-        // Update global onboarding state when we're done with intro
         setCurrentStep(OnboardingStep.NOTIFICATIONS_COMPLETED);
         break;
     }
   };
 
-  // Create animated styles based on shared values
-  const contentStyle = useAnimatedStyle(() => ({
-    opacity: contentOpacity.value,
-    transform: [{ scale: contentScale.value }],
-  }));
+  // Skip notifications and continue
+  const handleSkipNotifications = () => {
+    setIntroStep(IntroStep.READY_FOR_CHARACTER);
+  };
 
-  const buttonStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-  }));
+  // Get screen width to set full-width image
+  const screenWidth = Dimensions.get('window').width;
 
   // Render content based on current step
   const renderContent = () => {
     switch (introStep) {
       case IntroStep.WELCOME:
         return (
-          <>
-            <Text className="text-xl font-bold">Welcome to unQuest</Text>
-            <Text className="mb-6 text-lg font-semibold text-white">
-              Discover quests and embrace your journey.
-            </Text>
-            <Text className="mb-4">
-              In unQuest, you'll embark on a mindful adventure by periodically
-              stepping away from the digital world and reconnecting with the
-              real world.
-            </Text>
-            <Text className="mb-4">
-              Each quest is a unique challenge that rewards you for taking a
-              break from screen time.
-            </Text>
-          </>
+          <View key="welcome">
+            <Animated.View entering={FadeInLeft.delay(100)}>
+              <Text className="text-xl font-bold">Welcome to unQuest</Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(600)}>
+              <Text className="mb-6 text-lg font-semibold text-white">
+                Discover quests and embrace your journey.
+              </Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(1100)}>
+              <Text className="mb-4">
+                In unQuest, you'll embark on a mindful adventure by periodically
+                stepping away from the digital world and reconnecting with the
+                real world.
+              </Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(1600)}>
+              <Text className="mb-4">
+                Each quest is a unique challenge that rewards you for taking a
+                break from screen time.
+              </Text>
+            </Animated.View>
+          </View>
         );
 
       case IntroStep.NOTIFICATIONS:
+        const isIOS = Platform.OS === 'ios';
+        const notificationImage = isIOS
+          ? require('@/../assets/images/ios-notification.jpg')
+          : require('@/../assets/images/android-notification.jpg');
+
         return (
-          <>
-            <Text className="text-xl font-bold">Notifications</Text>
-            <Text className="mb-6 text-lg font-semibold text-white">
-              Stay updated on your quests
-            </Text>
-            <Text className="mb-4">
-              unQuest works best with lock screen notifications enabled. This
-              allows you to:
-            </Text>
-            <Text className="mb-2 ml-4">
-              • See your quest progress while your phone is locked
-            </Text>
-            <Text className="mb-4 ml-4">
-              • Receive notifications when your quest is complete
-            </Text>
-            <Text className="mb-4 font-semibold">
-              For the best experience, please set your lock screen notification
-              settings to "Show conversations and notifications"
-            </Text>
-          </>
+          <View key="notifications">
+            <Animated.View entering={FadeInLeft.delay(100)}>
+              <Text className="text-xl font-bold">Notifications</Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(600)}>
+              <Text className="mb-6 text-lg font-semibold text-white">
+                The key to successful quests
+              </Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(1100)}>
+              <Text className="mb-4">
+                unQuest's unique feature is the ability to track your progress
+                without unlocking your phone:
+              </Text>
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(1600)}>
+              <Text className="mb-2 ml-4">
+                • See real-time quest progress on your lock screen
+              </Text>
+              <Text className="mb-2 ml-4">
+                • Never risk failing quests by checking your phone
+              </Text>
+              <Text className="mb-4 ml-4">
+                • Get notified immediately when quests complete
+              </Text>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(2100)}>
+              {isIOS ? (
+                <Text className="mb-4 font-medium text-white">
+                  iOS uses Live Activities to update your quest progress in
+                  real-time on your lock screen.
+                </Text>
+              ) : (
+                <Text className="mb-4 font-medium text-white">
+                  For the best experience, set your lock screen notification
+                  settings to "Show conversations and notifications"
+                </Text>
+              )}
+            </Animated.View>
+
+            <Animated.View
+              entering={FadeInDown.delay(2600)}
+              className="items-center"
+            >
+              <Text className="mb-2 font-medium">Here's what you'll see:</Text>
+              <Image
+                source={notificationImage}
+                style={{ width: screenWidth, height: 150 }}
+                className="rounded-lg"
+              />
+            </Animated.View>
+          </View>
         );
 
       case IntroStep.READY_FOR_CHARACTER:
         return (
-          <>
-            <Text className="mb-6 text-xl font-bold">
-              Create Your Character
-            </Text>
-            <Text className="mb-6">
-              Now it's time to create your character and begin your journey.
-            </Text>
-          </>
+          <View key="character">
+            <Animated.View entering={FadeInDown.delay(100)}>
+              <Text className="mb-4 text-xl font-bold">Your Character</Text>
+              <Text className="mb-6 text-lg font-semibold text-white">
+                Your companion on this journey
+              </Text>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(600)}>
+              <Text className="mb-4">
+                Choose a character that reflects your personality. Each
+                character offers a different approach to mindfulness and
+                balance.
+              </Text>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(1100)}>
+              <Text className="mb-4">
+                In future updates, characters will gain unique abilities to help
+                complete quests and earn rewards.
+              </Text>
+            </Animated.View>
+          </View>
         );
 
       default:
@@ -216,17 +240,37 @@ export default function AppIntroductionScreen() {
         <View className="absolute inset-0 bg-white/10" />
       </View>
 
-      <View className="flex-1 justify-between p-4">
-        <Animated.View style={contentStyle} className="mt-6">
-          {renderContent()}
-        </Animated.View>
+      <View className="flex-1 justify-between p-6">
+        <View className="mt-6">{renderContent()}</View>
 
-        <Animated.View style={buttonStyle} className="mb-6">
-          <Button
-            label={getButtonText()}
-            onPress={handleButtonPress}
-            accessibilityLabel={getButtonText()}
-          />
+        <Animated.View
+          entering={FadeIn.delay(
+            introStep === IntroStep.READY_FOR_CHARACTER ? 1600 : 2800
+          )}
+          className="mb-6"
+          key={`button-${introStep}`}
+        >
+          {introStep === IntroStep.NOTIFICATIONS ? (
+            <View className="space-y-2">
+              <Button
+                label={getButtonText()}
+                onPress={handleButtonPress}
+                accessibilityLabel={getButtonText()}
+              />
+              <Button
+                label="Not now"
+                variant="ghost"
+                onPress={handleSkipNotifications}
+                accessibilityLabel="Skip enabling notifications"
+              />
+            </View>
+          ) : (
+            <Button
+              label={getButtonText()}
+              onPress={handleButtonPress}
+              accessibilityLabel={getButtonText()}
+            />
+          )}
         </Animated.View>
       </View>
     </View>
