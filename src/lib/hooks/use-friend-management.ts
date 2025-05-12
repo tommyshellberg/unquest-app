@@ -242,7 +242,6 @@ export function useFriendManagement(userEmail: string) {
   );
 
   const handleInviteFriends = useCallback(() => {
-    console.log('setting invite modal visible');
     setInviteModalVisible(true);
   }, []);
 

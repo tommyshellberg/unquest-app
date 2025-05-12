@@ -41,13 +41,11 @@ export async function createQuestRun(
     questTemplate.mode === 'story'
       ? generateQuestRunBodyStory(questTemplate)
       : generateQuestRunBodyCustom(questTemplate);
-  console.log('Quest run body:', body);
   try {
     const response = await apiClient.post<QuestRunResponse>(
       '/quest-runs/',
       body
     );
-    console.log('Quest run created:', response.data);
     return response.data;
   } catch (error) {
     console.error('Failed to create quest run:', error);
@@ -61,7 +59,6 @@ export async function updateQuestRunStatus(
   liveActivityId?: string | null
 ): Promise<QuestRunResponse> {
   try {
-    console.log('Updating quest run status:', runId, status, liveActivityId);
     const payload: { status: QuestRunStatus; liveActivityId?: string } = {
       status,
     };
@@ -74,7 +71,6 @@ export async function updateQuestRunStatus(
       `/quest-runs/${runId}/status`,
       payload
     );
-    console.log('Quest run status updated:', response.data);
     return response.data;
   } catch (error) {
     console.error(`Failed to update quest run ${runId} to ${status}:`, error);

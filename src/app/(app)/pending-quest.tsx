@@ -36,13 +36,9 @@ export default function PendingQuestScreen() {
     // Only redirect automatically if we don't have a quest
     // AND we're not in the onboarding flow
     if (!displayQuest && currentStep === OnboardingStep.COMPLETED) {
-      console.log('No quest and onboarding complete - navigating to home');
       router.replace('/');
     } else if (!displayQuest && currentStep === OnboardingStep.GOALS_SET) {
       // If we're in onboarding and cancelled a quest, go back to first-quest screen
-      console.log(
-        'Quest cancelled during onboarding - returning to first-quest'
-      );
       router.replace('/onboarding/first-quest');
     }
   }, [displayQuest, currentStep]);
@@ -80,13 +76,8 @@ export default function PendingQuestScreen() {
   }));
 
   const handleCancelQuest = () => {
-    console.log('Cancelling quest from pending screen');
     cancelQuest();
   };
-
-  useEffect(() => {
-    console.log('Pending quest screen mounted, step:', currentStep);
-  }, [currentStep]);
 
   return (
     <View className="flex-1">

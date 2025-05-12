@@ -44,11 +44,11 @@ const getItemForStorage = (name: string) => {
 };
 
 const setItemForStorage = async (name: string, value: string) => {
-  await setItem(name, value);
+  setItem(name, value);
 };
 
 const removeItemForStorage = async (name: string) => {
-  await removeItem(name);
+  removeItem(name);
 };
 
 export const useQuestStore = create<QuestState>()(
@@ -77,7 +77,6 @@ export const useQuestStore = create<QuestState>()(
 
       completeQuest: (ignoreDuration = false) => {
         const { activeQuest, lastCompletedQuestTimestamp } = get();
-        console.log('completeQuest called for quest:', activeQuest?.id);
         if (activeQuest && activeQuest.startTime) {
           const completionTime = Date.now();
           const duration = (completionTime - activeQuest.startTime) / 1000;
@@ -108,7 +107,6 @@ export const useQuestStore = create<QuestState>()(
             }
 
             characterStore.addXP(completedQuest.reward.xp);
-            console.log('Quest completed successfully:', completedQuest.id);
             // If we're not already done with onboarding, set the current step to COMPLETED.
             if (!useOnboardingStore.getState().isOnboardingComplete()) {
               useOnboardingStore
@@ -135,7 +133,6 @@ export const useQuestStore = create<QuestState>()(
       cancelQuest: () => {
         const { activeQuest, pendingQuest } = get();
         if (activeQuest || pendingQuest) {
-          console.log('Cancelling quest:', activeQuest?.id || pendingQuest?.id);
           // End any active live activity when quest is canceled
           QuestTimer.stopQuest();
           set({
@@ -150,7 +147,6 @@ export const useQuestStore = create<QuestState>()(
         const { activeQuest, pendingQuest } = get();
         const failedQuestDetails = activeQuest || pendingQuest;
         if (failedQuestDetails) {
-          console.log('Failing quest:', failedQuestDetails.id);
           QuestTimer.stopQuest();
 
           // Ensure all required fields for Quest are present
@@ -179,7 +175,6 @@ export const useQuestStore = create<QuestState>()(
 
       refreshAvailableQuests: () => {
         const { activeQuest, completedQuests } = get();
-        console.log('refreshAvailableQuests called');
 
         if (activeQuest) {
           // If there is an active quest, don't refresh available quests
@@ -216,7 +211,6 @@ export const useQuestStore = create<QuestState>()(
 
         // Use the most recent STORY quest to determine what comes next
         const lastCompletedStory = sortedStoryQuests[0];
-        console.log('lastCompletedStory', lastCompletedStory.id);
 
         // Find the quest template for the last completed story quest
         const lastCompletedTemplate = AVAILABLE_QUESTS.find(
@@ -228,11 +222,9 @@ export const useQuestStore = create<QuestState>()(
           const nextQuestIds = lastCompletedTemplate.options.map(
             (opt) => opt.nextQuestId
           );
-          console.log('➡️ nextQuestIds', nextQuestIds);
 
           // Filter out null nextQuestIds (end of storyline)
           const validNextQuestIds = nextQuestIds.filter((id) => id !== null);
-          console.log('➡️ validNextQuestIds', validNextQuestIds);
 
           // Find those quests from available quests
           const nextQuests = AVAILABLE_QUESTS.filter(
@@ -242,7 +234,6 @@ export const useQuestStore = create<QuestState>()(
           );
 
           if (nextQuests.length > 0) {
-            console.log('➡️ nextQuests', nextQuests);
             set({ availableQuests: nextQuests });
             return;
           }
@@ -288,12 +279,10 @@ export const useQuestStore = create<QuestState>()(
       },
 
       setLiveActivityId: (id: string | null) => {
-        console.log('Setting Live Activity ID in store:', id);
         set({ currentLiveActivityId: id });
       },
 
       reset: () => {
-        console.log('Resetting quest store');
         set({
           activeQuest: null,
           pendingQuest: null,
@@ -317,7 +306,6 @@ export const useQuestStore = create<QuestState>()(
         removeItem: removeItemForStorage,
       })),
       onRehydrateStorage: (_initialState) => {
-        console.log('Quest store hydration starts');
         return (state, error) => {
           if (error) {
             console.error(
@@ -325,7 +313,6 @@ export const useQuestStore = create<QuestState>()(
               error
             );
           } else {
-            console.log('Quest store hydration finished.');
           }
         };
       },

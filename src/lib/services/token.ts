@@ -22,7 +22,6 @@ export interface AuthTokens {
  * Store authentication tokens securely
  */
 export const storeTokens = async (tokens: AuthTokens): Promise<void> => {
-  console.log('Storing tokens:', tokens);
   try {
     // Since SecureStore only accepts strings, pass the nested properties directly.
     await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, tokens.access.token);

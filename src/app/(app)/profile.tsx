@@ -92,7 +92,6 @@ export default function ProfileScreen() {
   // Check if character exists and handle redirect
   useEffect(() => {
     if (!character && !isRedirecting) {
-      console.log('redirecting to onboarding');
       // Set redirecting state to prevent double redirects
       setIsRedirecting(true);
       // Use setTimeout to ensure this happens after the current render cycle

@@ -27,7 +27,6 @@ export default function VerifyMagicLinkScreen() {
       try {
         // Call the auth service function to verify and get tokens
         const tokens = await verifyMagicLink(token);
-        console.log('Token verification successful');
 
         // Call signIn with the received tokens
         signIn({

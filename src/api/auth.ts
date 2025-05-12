@@ -5,7 +5,6 @@ import { apiClient } from './common';
 import * as tokenService from './token';
 
 // Create a separate axios instance for auth requests to avoid circular dependencies
-console.log('API URL:', Env.API_URL);
 export const authClient = axios.create({
   baseURL: Env.API_URL,
   headers: {
@@ -51,16 +50,12 @@ export const verifyMagicLink = async (
     if (typeof token !== 'string') {
       throw new Error('Token is not a string');
     }
-    console.log(
-      'trying to request magic link from URL:',
-      authClient.defaults.baseURL + '/auth/magiclink/verify?token=${token}'
-    );
     const response = await authClient.get(
       `/auth/magiclink/verify?token=${token}`
     );
     // Expect the API to return tokens in the nested format:
     // { access: { token: string, expires: string }, refresh: { token: string, expires: string } }
-    await tokenService.storeTokens(response.data);
+    tokenService.storeTokens(response.data);
     return response.data;
   } catch (error) {
     console.error('Magic link verification error:', error);
@@ -95,17 +90,13 @@ export const refreshAccessToken =
   async (): Promise<tokenService.AuthTokens | null> => {
     try {
       const refreshToken = tokenService.getRefreshToken();
-      console.log('Refreshing access token with refresh token:', refreshToken);
       if (!refreshToken) {
-        console.log('No refresh token available');
         return null;
       }
 
       const response = await apiClient.post('/auth/refresh-tokens', {
         refreshToken,
       });
-
-      console.log('New tokens from refresh:', response.data);
 
       // The server now returns nested tokens consistently:
       // { access: { token, expires }, refresh: { token, expires } }

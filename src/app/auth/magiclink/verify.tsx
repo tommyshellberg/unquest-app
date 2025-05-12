@@ -41,18 +41,15 @@ export default function MagicLinkVerifyScreen() {
       try {
         // Call the auth service function to verify and store tokens
         const responseData = await verifyMagicLink(token);
-        console.log('Token verification successful');
 
         // Check if user has character data locally
         const hasExistingData = !!character;
 
         // If no local data, try to fetch user data from server
         if (!hasExistingData) {
-          console.log('No existing data, fetching user data');
           try {
             // Make sure this endpoint matches what your server expects
             const userResponse = await apiClient.get('/users/me');
-            console.log('User data response:', userResponse.data);
 
             // Store user data in user store
             if (
@@ -76,37 +73,23 @@ export default function MagicLinkVerifyScreen() {
               userResponse.data.character.type &&
               userResponse.data.character.name
             ) {
-              console.log(
-                'User has character data on server:',
-                userResponse.data.character
-              );
               // Create character from server data
               const serverCharacter = userResponse.data.character;
               createCharacter(serverCharacter.type, serverCharacter.name);
 
               // User has complete character data on server, navigate to home
-              console.log('Navigating to home with server character data');
               router.replace('/(app)/');
             } else {
               // No complete character data on server, navigate to app-introduction
-              console.log(
-                'No complete character data, navigating to app-introduction'
-              );
               router.replace('/onboarding');
             }
           } catch (fetchError) {
             console.error('Error fetching user data:', fetchError);
             // If we can't fetch user data, go to app-introduction
-            console.log(
-              'Error fetching user data, navigating to app-introduction'
-            );
             router.replace('/onboarding');
           }
         } else {
           // User already has local data, navigate to home
-          console.log(
-            'User already has local character data, navigating to home'
-          );
           router.replace('/(app)/');
         }
       } catch (error) {

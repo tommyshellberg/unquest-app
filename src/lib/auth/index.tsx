@@ -22,7 +22,6 @@ const _useAuth = create<AuthState>((set, get) => ({
   token: null,
   signIn: async (response) => {
     const { token, user } = response;
-    console.log('setting tokens:', token);
     // @todo: why are we calling setToken instead of storeTokens?
     setToken(token);
 
@@ -31,13 +30,11 @@ const _useAuth = create<AuthState>((set, get) => ({
       // Use existing user data if available, but then fetch fresh data
       if (user) {
         useUserStore.getState().setUser(user);
-        console.log('user set in user store from response', user);
       }
 
       // Fetch fresh user details regardless
       const freshUserDetails = await getUserDetails();
       useUserStore.getState().setUser(freshUserDetails);
-      console.log('user set in user store from fresh fetch', freshUserDetails);
     } catch (error) {
       console.error('Failed to fetch user details after login:', error);
     }
@@ -53,7 +50,6 @@ const _useAuth = create<AuthState>((set, get) => ({
     set({ status: 'hydrating' });
     // 1) test‑only override
     if (__DEV__ && Constants.expoConfig?.extra?.maestroAccessToken) {
-      console.log('Setting maestro tokens...');
       storeTokens({
         access: {
           token: Constants.expoConfig.extra.maestroAccessToken,
@@ -66,36 +62,27 @@ const _useAuth = create<AuthState>((set, get) => ({
       });
     }
     try {
-      console.log('Hydrating auth state...');
       const userToken = getToken();
       if (userToken !== null) {
-        console.log('Token found, attempting to fetch user details...');
-        console.log('userToken:', userToken);
         set({ token: userToken });
 
         try {
           const user = await getUserDetails();
-          console.log('User details fetched successfully:', user.name);
           useUserStore.getState().setUser(user);
           set({ status: 'signIn', token: userToken });
-          console.log('Hydration successful: Signed In.');
         } catch (fetchError) {
           console.error(
             'Failed to fetch user details during hydration:',
             fetchError
           );
           get().signOut();
-          console.log('Hydration failed: Signed Out due to fetch error.');
         }
       } else {
-        console.log('No token found.');
         get().signOut();
-        console.log('Hydration complete: Signed Out.');
       }
     } catch (e) {
       console.error('Error during hydration process:', e);
       get().signOut();
-      console.log('Hydration failed: Signed Out due to error.');
     }
   },
 }));

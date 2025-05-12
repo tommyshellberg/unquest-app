@@ -11,6 +11,13 @@ import { getItem, setItem } from '@/lib/storage';
 const QUEST_CHANNEL_ID = 'quest-notifications';
 const NOTIFICATIONS_ENABLED_KEY = 'notificationsEnabled';
 
+// If the SchedulableTriggerInputTypes enum isn't directly available, define it
+enum SchedulableTriggerInputTypes {
+  TIME_INTERVAL = 'timeInterval',
+  CALENDAR = 'calendar',
+  DAILY = 'daily',
+}
+
 // Create notification channels (Android only)
 export async function setupNotificationChannels() {
   if (Platform.OS === 'android') {
@@ -48,7 +55,6 @@ export const clearAllNotifications = async () => {
   try {
     // This will clear all notifications from our app
     await ExpoNotifications.dismissAllNotificationsAsync();
-    console.log('All notifications cleared');
   } catch (error) {
     console.error('Error clearing notifications:', error);
   }
@@ -58,7 +64,6 @@ export const scheduleQuestCompletionNotification = async () => {
   // Check if notifications are enabled before scheduling
   const enabled = await areNotificationsEnabled();
   if (!enabled) {
-    console.log('Notifications are disabled, skipping completion notification');
     return;
   }
 
@@ -82,7 +87,6 @@ export const scheduleQuestCompletionNotification = async () => {
             }
           : null, // Show immediately on iOS
     });
-    console.log('Quest completion notification scheduled');
   } catch (error) {
     console.error('Failed to schedule notification:', error);
   }
@@ -126,6 +130,50 @@ export const requestNotificationPermissions = async (): Promise<boolean> => {
     return granted;
   } catch (error) {
     console.error('Error requesting notification permissions:', error);
+    return false;
+  }
+};
+
+// Schedule a daily reminder notification
+export const scheduleDailyReminderNotification = async (
+  hour: number,
+  minute: number
+): Promise<boolean> => {
+  try {
+    // Cancel any existing reminders first
+    await ExpoNotifications.cancelScheduledNotificationAsync('daily-reminder');
+
+    // Schedule the new reminder
+    await ExpoNotifications.scheduleNotificationAsync({
+      identifier: 'daily-reminder',
+      content: {
+        title: 'Time for a mindful break',
+        body: 'Start a new quest in unQuest to take a break from your phone',
+        sound: true,
+      },
+      trigger: {
+        type: SchedulableTriggerInputTypes.DAILY,
+        hour,
+        minute,
+      },
+    });
+
+    console.log(`Daily reminder scheduled for ${hour}:${minute}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to schedule daily reminder:', error);
+    return false;
+  }
+};
+
+// Cancel daily reminder
+export const cancelDailyReminderNotification = async (): Promise<boolean> => {
+  try {
+    await ExpoNotifications.cancelScheduledNotificationAsync('daily-reminder');
+    console.log('Daily reminder canceled');
+    return true;
+  } catch (error) {
+    console.error('Failed to cancel daily reminder:', error);
     return false;
   }
 };
