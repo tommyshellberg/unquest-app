@@ -67,10 +67,10 @@ target 'unQuest' do
 end
 
 target 'OneSignalNotificationServiceExtension' do
-  pod 'OneSignalXCFramework', '>= 5.0.0', '< 6.0'
+  pod 'OneSignal/OneSignal', '>= 5.2.9', '< 6.0'
 end
 
 target 'liveactivitiesExtension' do
   # use_frameworks! :linkage => :static
-    pod 'OneSignalXCFramework', '>= 5.0.0', '< 6.0'
-  end
+  pod 'OneSignal/OneSignal', '>= 5.2.9', '< 6.0'
+end
