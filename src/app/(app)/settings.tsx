@@ -1,10 +1,11 @@
 import { Env } from '@env';
 import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
 import * as Linking from 'expo-linking';
 import { Link, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Switch } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Switch } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -207,6 +208,17 @@ export default function Settings() {
     }
   };
 
+  // Get formatted reminder time
+  const getReminderTimeDisplay = () => {
+    if (!dailyReminder.time) return '--:--';
+
+    const date = new Date();
+    date.setHours(dailyReminder.time.hour);
+    date.setMinutes(dailyReminder.time.minute);
+
+    return format(date, 'h:mm a');
+  };
+
   // In your render method, handle loading state
   if (isLoading) {
     return (
@@ -310,26 +322,39 @@ export default function Settings() {
             />
           </View>
 
-          {/* Show time picker always when enabled */}
-          {dailyReminder.enabled && dailyReminder.time && (
+          {/* Show time selector when reminder is enabled */}
+          {dailyReminder.enabled && (
             <View className="mb-6 ml-16">
               <View className="flex-row items-center justify-between">
                 <Text className="text-neutral-600">Reminder Time</Text>
-                <DateTimePicker
-                  value={
-                    new Date(
-                      new Date().setHours(
-                        dailyReminder.time.hour,
-                        dailyReminder.time.minute
+
+                {!showTimePicker && (
+                  <Pressable
+                    onPress={() => setShowTimePicker(true)}
+                    className="rounded-lg bg-neutral-200 px-4 py-2"
+                  >
+                    <Text className="text-center font-medium">
+                      {getReminderTimeDisplay()}
+                    </Text>
+                  </Pressable>
+                )}
+
+                {showTimePicker && (
+                  <DateTimePicker
+                    value={
+                      new Date(
+                        new Date().setHours(
+                          dailyReminder.time?.hour || 0,
+                          dailyReminder.time?.minute || 0
+                        )
                       )
-                    )
-                  }
-                  mode="time"
-                  display="compact"
-                  onChange={handleTimeChange}
-                  themeVariant="light"
-                  style={{ marginTop: -8, marginBottom: -8 }}
-                />
+                    }
+                    mode="time"
+                    display="compact"
+                    onChange={handleTimeChange}
+                    minuteInterval={15}
+                  />
+                )}
               </View>
             </View>
           )}
