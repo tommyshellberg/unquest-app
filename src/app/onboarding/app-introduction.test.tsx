@@ -83,7 +83,7 @@ describe('AppIntroductionScreen', () => {
 
     // Check that we've moved to the notifications step
     await waitFor(() => {
-      expect(getByText('Stay updated on your quests')).toBeTruthy();
+      expect(getByText('Notifications')).toBeTruthy();
       expect(getByText('Enable notifications')).toBeTruthy();
     });
   });
@@ -134,7 +134,7 @@ describe('AppIntroductionScreen', () => {
 
     // Check that we've moved to the next steps
     await waitFor(() => {
-      expect(getByText('Create Your Character')).toBeTruthy();
+      expect(getByText('Your Character')).toBeTruthy();
       expect(getByText('Create character')).toBeTruthy();
     });
   });
@@ -195,7 +195,7 @@ describe('AppIntroductionScreen', () => {
     // Even with an error, the flow should continue to next steps
     await waitFor(() => {
       expect(setupNotifications).toHaveBeenCalled();
-      expect(getByText('Create Your Character')).toBeTruthy();
+      expect(getByText('Your Character')).toBeTruthy();
     });
   });
 

@@ -108,3 +108,9 @@ jest.mock('react-native-onesignal', () => ({
 jest.mock('@dev-plugins/react-query', () => ({
   useReactQueryDevTools: jest.fn(),
 }));
+
+jest.mock('posthog-react-native', () => ({
+  usePostHog: () => ({
+    capture: jest.fn(),
+  }),
+}));

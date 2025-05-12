@@ -56,7 +56,6 @@ export default function CustomQuestScreen() {
 
   const handleDurationChange = (duration: number) => {
     // This is only called when sliding is complete
-    console.log('Final duration selected:', duration);
     setQuestDuration(duration);
   };
 
@@ -78,8 +77,6 @@ export default function CustomQuestScreen() {
         xp: Math.round(questDuration * 3),
       },
     };
-
-    console.log('customQuest', customQuest);
 
     // Start the quest
     try {

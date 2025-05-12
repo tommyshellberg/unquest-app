@@ -50,15 +50,12 @@ export const useSettingsStore = create<SettingsState>()(
         removeItem: removeItem,
       })),
       onRehydrateStorage: (_initialState) => {
-        console.log('Settings store hydration starts');
         return (state, error) => {
           if (error) {
             console.error(
               'An error occurred during settings store hydration:',
               error
             );
-          } else {
-            console.log('Settings store hydration finished.');
           }
         };
       },

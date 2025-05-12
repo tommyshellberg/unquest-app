@@ -101,16 +101,11 @@ export const useCharacterStore = create<CharacterState>()(
 
       // Updated method to update streak based on previous completion timestamp
       updateStreak: (previousCompletionTimestamp) => {
-        console.log(
-          'updateStreak with previous timestamp:',
-          previousCompletionTimestamp
-        );
         const currentStreak = get().dailyQuestStreak;
         const now = new Date();
 
         if (!previousCompletionTimestamp) {
           // First quest completion ever
-          console.log('First quest completion ever, setting streak to 1');
           set({ dailyQuestStreak: 1 });
           return;
         }
@@ -129,23 +124,12 @@ export const useCharacterStore = create<CharacterState>()(
 
         if (isNewDay && !isStreakBroken) {
           // Increment streak for a new day within the 24-hour window
-          console.log(
-            'New day within 24 hours, incrementing streak from',
-            currentStreak,
-            'to',
-            currentStreak + 1
-          );
           set({ dailyQuestStreak: currentStreak + 1 });
         } else if (isStreakBroken) {
           // Reset streak if it's broken
-          console.log('Streak broken (>24 hours), resetting to 1');
           set({ dailyQuestStreak: 1 });
         } else {
           // Same day, maintain current streak
-          console.log(
-            'Same day completion, maintaining streak at',
-            currentStreak || 1
-          );
           // If streak is 0, set it to 1 (this handles edge cases)
           if (currentStreak === 0) {
             set({ dailyQuestStreak: 1 });
@@ -155,7 +139,6 @@ export const useCharacterStore = create<CharacterState>()(
 
       // Method to reset streak
       resetStreak: () => {
-        console.log('resetStreak');
         set({ dailyQuestStreak: 0 });
       },
     }),

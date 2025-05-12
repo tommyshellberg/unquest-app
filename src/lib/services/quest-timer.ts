@@ -132,7 +132,6 @@ export default class QuestTimer {
       removeItem('QUEST_TIMER_START_TIME');
       removeItem('ONESIGNAL_ACTIVITY_ID'); // Clear OneSignal ID
       removeItem('QUEST_RUN_ID'); // Clear quest run ID
-      console.log('Quest data cleared from storage');
     } catch (error) {
       console.error('Error clearing quest data:', error);
     }
@@ -142,8 +141,6 @@ export default class QuestTimer {
   static async prepareQuest(
     questTemplate: CustomQuestTemplate | StoryQuestTemplate
   ) {
-    console.log('Preparing quest (Default Attributes):', questTemplate.title);
-
     const notificationsEnabled = await areNotificationsEnabled();
     if (notificationsEnabled) {
       await clearAllNotifications();
@@ -156,7 +153,6 @@ export default class QuestTimer {
     try {
       const questRun = await createQuestRun(questTemplate);
       this.questRunId = questRun.id;
-      console.log('Created quest run with ID:', this.questRunId);
     } catch (error) {
       console.error('Failed to create quest run:', error);
       // Continue anyway as the quest can still work locally
@@ -179,11 +175,6 @@ export default class QuestTimer {
           durationMinutes: questTemplate.durationMinutes,
           status: 'pending', // Using status instead of pending boolean
         };
-        console.log(
-          'Starting pending Live Activity with attributes:',
-          JSON.stringify(attributes)
-        );
-        console.log('Content:', JSON.stringify(pendingContent));
         OneSignal.LiveActivities.startDefault(
           this.oneSignalActivityId,
           attributes,
@@ -192,10 +183,6 @@ export default class QuestTimer {
         const store = useQuestStore.getState();
         if (typeof store.setLiveActivityId === 'function') {
           store.setLiveActivityId(this.oneSignalActivityId);
-          console.log(
-            'Live Activity ID set in store (pending):',
-            this.oneSignalActivityId
-          );
         }
       } catch (error) {
         console.error(
@@ -236,7 +223,6 @@ export default class QuestTimer {
 
     try {
       await BackgroundService.start(this.backgroundTask, options);
-      console.log('Background service started for quest:', questTemplate.id);
     } catch (error) {
       console.error('Failed to start background service:', error);
     }

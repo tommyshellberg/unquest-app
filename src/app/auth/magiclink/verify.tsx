@@ -73,16 +73,11 @@ export default function MagicLinkVerifyScreen() {
               userResponse.data.character.type &&
               userResponse.data.character.name
             ) {
-              console.log(
-                'User has character data on server:',
-                userResponse.data.character
-              );
               // Create character from server data
               const serverCharacter = userResponse.data.character;
               createCharacter(serverCharacter.type, serverCharacter.name);
 
               // User has complete character data on server, navigate to home
-              console.log('Navigating to home with server character data');
               router.replace('/(app)/');
             } else {
               // No complete character data on server, navigate to app-introduction

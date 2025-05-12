@@ -138,7 +138,6 @@ export default function ChooseCharacterScreen() {
       posthog.capture('onboarding_update_character_server');
     } catch (error) {
       posthog.capture('onboarding_update_character_server_error');
-      console.log('Error updating user character on the server', error);
     } finally {
       useOnboardingStore
         .getState()

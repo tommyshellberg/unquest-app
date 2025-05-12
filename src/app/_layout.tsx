@@ -72,7 +72,6 @@ function RootLayout() {
     async function prepare() {
       try {
         await hydrationPromise;
-        console.log('Hydration promise resolved');
       } catch (e) {
         console.warn('Error during app initialization:', e);
       } finally {
@@ -102,7 +101,6 @@ function RootLayout() {
       currentStep === OnboardingStep.NOT_STARTED &&
       !pathname.includes('welcome')
     ) {
-      console.log('redirecting to welcome');
       router.replace('./welcome');
     }
   }, [currentStep, pathname, hydrationFinished, authStatus]);
@@ -114,13 +112,9 @@ function RootLayout() {
     if (pendingQuest) {
       // Check if we're already on the pending-quest screen
       if (pathname.includes('pending-quest')) {
-        console.log('Already on pending-quest screen, skipping redirect');
         return;
       }
 
-      console.log(
-        'Detected pendingQuest at root layout, redirecting to pending-quest screen'
-      );
       router.replace('/(app)/pending-quest');
     }
   }, [pendingQuest, hydrationFinished, authStatus, pathname]);
@@ -133,21 +127,12 @@ function RootLayout() {
     if (failedQuest) {
       // Don't redirect if we're already on a quest screen
       if (pathname.includes('/quest/')) {
-        console.log('Already viewing a quest, skipping redirect');
         return;
       }
-
-      console.log(
-        'Detected failedQuest at root layout, redirecting to quest details screen'
-      );
 
       requestAnimationFrame(() => {
         try {
           // Route to the quest details page with the ID of the failed quest
-          console.log(
-            'Navigating to failed quest screen with id:',
-            failedQuest.id
-          );
           router.replace({
             pathname: '/(app)/quest/[id]',
             params: { id: failedQuest.id },
@@ -171,7 +156,6 @@ function RootLayout() {
     // Check both flags: hydration promise resolved AND auth status is final
     if (hydrationFinished && authStatus !== 'hydrating') {
       await SplashScreen.hideAsync();
-      console.log('Splash screen hidden (Layout Ready & Auth Status Final)');
     }
   }, [hydrationFinished, authStatus]);
 
@@ -179,9 +163,6 @@ function RootLayout() {
   if (!hydrationFinished || authStatus === 'hydrating') {
     return null;
   }
-
-  console.log('RootLayout rendering, Final Auth Status:', authStatus);
-  console.log('RootLayout rendering, Current Step:', currentStep);
 
   return (
     <Providers onLayout={onLayoutRootView}>

@@ -55,7 +55,6 @@ export const clearAllNotifications = async () => {
   try {
     // This will clear all notifications from our app
     await ExpoNotifications.dismissAllNotificationsAsync();
-    console.log('All notifications cleared');
   } catch (error) {
     console.error('Error clearing notifications:', error);
   }
@@ -65,7 +64,6 @@ export const scheduleQuestCompletionNotification = async () => {
   // Check if notifications are enabled before scheduling
   const enabled = await areNotificationsEnabled();
   if (!enabled) {
-    console.log('Notifications are disabled, skipping completion notification');
     return;
   }
 
@@ -89,7 +87,6 @@ export const scheduleQuestCompletionNotification = async () => {
             }
           : null, // Show immediately on iOS
     });
-    console.log('Quest completion notification scheduled');
   } catch (error) {
     console.error('Failed to schedule notification:', error);
   }

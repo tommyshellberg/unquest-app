@@ -23,7 +23,6 @@ export interface AuthTokens {
  * Store authentication tokens securely
  */
 export const storeTokens = (tokens: AuthTokens) => {
-  console.log('Storing tokens:', tokens);
   try {
     // Convert the structure to match what our utils expect
     setToken({

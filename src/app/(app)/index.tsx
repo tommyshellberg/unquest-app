@@ -74,19 +74,8 @@ export default function Home() {
     opacity: scrollContainerOpacity.value,
   }));
 
-  useEffect(() => {
-    completedQuests.forEach((quest) => {
-      console.log('quest completed: ', quest.id);
-    });
-    if (availableQuests.length > 0) {
-      console.log('availableQuests', availableQuests[0]?.id);
-    }
-  }, [completedQuests, availableQuests]);
-
   // Get next quest options based on the last completed story quest
   useEffect(() => {
-    console.log('pendingQuest', pendingQuest);
-    console.log('activeQuest', activeQuest);
     if (activeQuest || pendingQuest) return; // Don't update if there's an active quest
     console.log('we are not returning early');
     // Get the last completed story quest
@@ -166,16 +155,13 @@ export default function Home() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      // @TODO: this seems unnecessary, this should be done automatically by auth functionality in the main _layout.tsx file.
       try {
-        const refreshToken = await getRefreshToken();
+        const refreshToken = getRefreshToken();
         if (!refreshToken) {
-          console.log('No auth tokens available, skipping user data fetch');
           return;
         }
 
-        const userData = await getUserDetails();
-        console.log('Fetched user data:', userData);
+        await getUserDetails();
       } catch (error) {
         console.error('Error fetching user data:', error);
       }

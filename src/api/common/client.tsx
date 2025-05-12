@@ -47,9 +47,7 @@ apiClient.interceptors.request.use(
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
-      console.log('Attaching token to request:', config.url);
     } else {
-      console.log('No token found, sending request without auth:', config.url);
     }
     return config;
   },
@@ -71,15 +69,10 @@ apiClient.interceptors.response.use(
 
     if (error.response.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        console.log('Adding request to refresh queue:', originalRequest.url);
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
           .then((newToken) => {
-            console.log(
-              'Retrying request with new token (from queue):',
-              originalRequest.url
-            );
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return apiClient(originalRequest);
           })
@@ -91,25 +84,15 @@ apiClient.interceptors.response.use(
 
       originalRequest._retry = true;
       isRefreshing = true;
-      console.log(
-        'Received 401. Attempting token refresh for:',
-        originalRequest.url
-      );
 
       try {
         const newTokens = await refreshAccessToken();
-        console.log('New tokens:', newTokens);
 
         if (newTokens?.access?.token) {
-          console.log('Token refresh successful.');
           originalRequest.headers.Authorization = `Bearer ${newTokens.access.token}`;
 
           processQueue(null, newTokens.access.token);
 
-          console.log(
-            'Retrying original request with new token:',
-            originalRequest.url
-          );
           return apiClient(originalRequest);
         } else {
           console.error(

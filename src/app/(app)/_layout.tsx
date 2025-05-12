@@ -58,7 +58,6 @@ export default function TabLayout() {
     if (!navigationState?.key) return;
 
     if (recentCompletedQuest && !hasRedirectedToCompletedRef.current) {
-      console.log('Redirecting to quest detail screen');
       hasRedirectedToCompletedRef.current = true;
 
       // Redirect to quest/[id] instead of quest-complete
@@ -76,7 +75,6 @@ export default function TabLayout() {
   useEffect(() => {
     if (!navigationState?.key) return;
     if (!recentCompletedQuest) {
-      console.log('Resetting completed quest redirect flag to false');
       hasRedirectedToCompletedRef.current = false;
     }
   }, [navigationState?.key, recentCompletedQuest]);
@@ -89,7 +87,6 @@ export default function TabLayout() {
       // Check for the presence of an access token
       const accessToken = await getAccessToken();
       if (!accessToken) {
-        console.log('routing to login - no access token found');
         router.replace('/login');
         return;
       }
@@ -97,9 +94,6 @@ export default function TabLayout() {
       // *** NEW: Skip onboarding redirect if there's a pending quest ***
       // This gives priority to quest flow over onboarding flow
       if (pendingQuest) {
-        console.log(
-          'Skipping onboarding redirect - pending quest takes priority'
-        );
         return;
       }
 
@@ -109,7 +103,6 @@ export default function TabLayout() {
         .isOnboardingComplete();
 
       if (currentStep !== OnboardingStep.NOT_STARTED && !isOnboardingComplete) {
-        console.log('routing to onboarding - onboarding not complete');
         router.replace('/onboarding');
         return;
       }

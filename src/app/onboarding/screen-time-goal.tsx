@@ -50,10 +50,6 @@ export default function ScreenTimeGoalScreen() {
     firstDropdownAnim.value = withDelay(600, withTiming(1, { duration: 500 }));
   }, [firstDropdownAnim, headerAnim]);
 
-  useEffect(() => {
-    console.log('screen time goal screen mounted');
-  }, []);
-
   // Animate second drop-down when first drop-down has a valid value:
   useEffect(() => {
     if (currentTime >= 30) {
@@ -120,8 +116,6 @@ export default function ScreenTimeGoalScreen() {
           targetTime,
         },
       });
-
-      console.log('User screen time goals updated on the server');
     } catch (error) {
       console.error('Error updating user scdreen time goals:', error);
       setIsSubmitting(false);
