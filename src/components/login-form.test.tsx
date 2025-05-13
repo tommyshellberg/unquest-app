@@ -90,13 +90,14 @@ describe('LoginForm Form ', () => {
     });
   });
 
-  it('should show success message after sending email', async () => {
+  it('should show success message with email address after sending email', async () => {
     const { user } = setup(<LoginForm />);
 
     const button = screen.getByTestId('login-button');
     const emailInput = screen.getByTestId('email-input');
+    const testEmail = 'test@example.com';
 
-    await user.type(emailInput, 'test@example.com');
+    await user.type(emailInput, testEmail);
 
     // Wait for button to become enabled
     await waitFor(() => {
@@ -105,9 +106,55 @@ describe('LoginForm Form ', () => {
 
     await user.press(button);
 
+    // Check each element in separate waitFor calls
     await waitFor(() => {
       const successMessages = screen.queryAllByText(/Email sent|sent/i);
       expect(successMessages.length).toBeGreaterThan(0);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(testEmail)).toBeOnTheScreen();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Enter a different email address/i)
+      ).toBeOnTheScreen();
+    });
+  });
+
+  it('should return to email form when "Enter a different email address" is clicked', async () => {
+    const { user } = setup(<LoginForm />);
+
+    // First submit the form
+    const button = screen.getByTestId('login-button');
+    const emailInput = screen.getByTestId('email-input');
+    await user.type(emailInput, 'test@example.com');
+
+    await waitFor(() => {
+      expect(button.props.accessibilityState?.disabled).not.toBe(true);
+    });
+
+    await user.press(button);
+
+    // Wait for the success screen
+    await waitFor(() => {
+      expect(screen.getByText(/Email sent/i)).toBeOnTheScreen();
+    });
+
+    // Click "Enter a different email address"
+    const changeEmailLink = screen.getByText(
+      /Enter a different email address/i
+    );
+    await user.press(changeEmailLink);
+
+    // Separate waitFor calls for each element check
+    await waitFor(() => {
+      expect(screen.getByTestId('email-input')).toBeOnTheScreen();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Send Link/i)).toBeOnTheScreen();
     });
   });
 });

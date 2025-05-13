@@ -125,22 +125,27 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
           <View className="mx-6 rounded-xl bg-white shadow-sm">
             {emailSent ? (
               <View className="p-6">
-                <Text className="mb-4 text-center text-neutral-500">
-                  Email sent! It may take a few minutes to arrive. Please check
-                  your SPAM folder.
-                  {sendAttempts > 1 && (
-                    <>
+                <View className="mb-4">
+                  <Text className="text-center text-neutral-500">
+                    Email sent to <Text className="font-bold">{email}</Text>
+                  </Text>
+                  <Text className="mt-2 text-center text-neutral-500">
+                    It may take a few minutes to arrive. Please check your SPAM
+                    folder.
+                  </Text>
+                  {sendAttempts > 2 && (
+                    <Text className="mt-2 text-center text-neutral-500">
                       {' '}
-                      If you still don't receive it, please contact{' '}
+                      Having trouble? {'\n'} Write us at{' '}
                       <Text
                         className="text-primary-500 underline"
                         onPress={handleContactSupport}
                       >
                         hello@unquestapp.com
                       </Text>
-                    </>
+                    </Text>
                   )}
-                </Text>
+                </View>
                 <Button
                   testID="login-button"
                   label="Send Again"
@@ -149,6 +154,12 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                   className="mt-4 rounded-xl bg-primary-500"
                   textClassName="text-white font-bold text-lg"
                 />
+                <Text
+                  className="mt-4 text-center text-primary-500 underline"
+                  onPress={() => setEmailSent(false)}
+                >
+                  Enter a different email address
+                </Text>
               </View>
             ) : (
               <View className="p-6">
@@ -196,16 +207,6 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
               </View>
             )}
           </View>
-
-          {/* Help link - only shown after second attempt */}
-          {sendAttempts >= 2 && (
-            <Text
-              className="mt-6 text-center text-primary-500 underline"
-              onPress={handleContactSupport}
-            >
-              Having trouble?
-            </Text>
-          )}
         </View>
       </View>
     </KeyboardAvoidingView>
