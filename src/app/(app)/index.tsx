@@ -356,7 +356,7 @@ export default function Home() {
         />
       </View>
 
-      <View className="pt-safe flex-1 flex-col">
+      <View className="flex-1 flex-col">
         {/* Header */}
         <Animated.View style={headerStyle} className="mb-4 px-4">
           <Text className="mb-3 mt-2 text-xl font-bold">

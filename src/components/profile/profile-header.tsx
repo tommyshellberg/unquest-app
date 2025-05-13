@@ -10,7 +10,7 @@ type ProfileHeaderProps = {
 
 export function ProfileHeader({ onSettingsPress }: ProfileHeaderProps) {
   return (
-    <View className="pt-safe flex-row items-center justify-between px-5">
+    <View className="flex-row items-center justify-between px-5">
       <Text className="text-3xl font-semibold text-teal-800">Profile</Text>
       <Pressable
         className="rounded-full bg-neutral-300/50 p-2"

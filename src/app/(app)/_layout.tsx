@@ -120,7 +120,6 @@ export default function TabLayout() {
 
       // Only clear failedQuest if we're not on the quest detail screen
       if (!isQuestDetailScreen) {
-        console.log('Clearing failed quest - tab navigation');
         useQuestStore.getState().resetFailedQuest();
       }
     }

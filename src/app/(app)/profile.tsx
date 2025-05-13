@@ -120,7 +120,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <View className="pt-safe flex-1 bg-background">
+    <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Header */}
