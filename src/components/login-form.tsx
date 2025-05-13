@@ -136,7 +136,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                   {sendAttempts > 2 && (
                     <Text className="mt-2 text-center text-neutral-500">
                       {' '}
-                      Having trouble? Write us at{' '}
+                      Having trouble? {'\n'} Write us at{' '}
                       <Text
                         className="text-primary-500 underline"
                         onPress={handleContactSupport}
