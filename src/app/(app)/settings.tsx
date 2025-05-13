@@ -231,7 +231,7 @@ export default function Settings() {
   }
 
   return (
-    <View className="pt-safe flex-1 flex-col bg-background">
+    <View className="flex-1 flex-col bg-background">
       <FocusAwareStatusBar />
 
       {/* Header */}

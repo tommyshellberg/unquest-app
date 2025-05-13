@@ -1,14 +1,15 @@
 import { Feather } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
-import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { AudioModule, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { AppState, type AppStateStatus, Pressable, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
+import { type StoryQuestTemplate } from '@/store/types';
 
 type Props = {
-  questId: string;
-  audioFile?: string; // Accept the audio file as string path
+  quest: StoryQuestTemplate;
 };
 
 // Create a mapping of paths to actual assets
@@ -48,397 +49,176 @@ const AUDIO_ASSETS = {
 // Function to look up the audio asset by path
 const getAudioAsset = (audioPath: string) => {
   if (!audioPath) return null;
-
-  console.log('Looking up audio path:', audioPath);
-
-  // Look up the asset in our mapping
-  const asset = AUDIO_ASSETS[audioPath];
-
-  if (!asset) {
-    console.error(`No audio asset found for path: ${audioPath}`);
-    return null;
-  }
-
-  // Add debugging to see what the asset looks like
-  console.log('Audio asset type:', typeof asset);
-  return asset;
+  return AUDIO_ASSETS[audioPath] || null;
 };
 
-export function StoryNarration({ questId, audioFile }: Props) {
-  const soundRef = useRef<Audio.Sound | null>(null);
+export function StoryNarration({ quest }: Props) {
   const progressBarRef = useRef<ProgressBarRef>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const componentMountedRef = useRef(true);
+  const appStateRef = useRef(AppState.currentState);
+  const { audioFile } = quest;
 
-  // Set up the mounted ref to track component lifecycle
+  // Process the audio asset
+  const audioAsset = audioFile
+    ? typeof audioFile === 'string'
+      ? getAudioAsset(audioFile)
+      : audioFile
+    : null;
+
+  // Initialize audio player
+  const player = useAudioPlayer(audioAsset || undefined);
+
   useEffect(() => {
-    componentMountedRef.current = true;
-    console.log('StoryNarration mounted for quest:', questId);
-
-    return () => {
-      componentMountedRef.current = false;
-      console.log('StoryNarration unmounted for quest:', questId);
-    };
-  }, [questId]);
-
-  // Load audio when component mounts
-  useEffect(() => {
-    // If no audio file is provided, set an error and don't try to load
-    if (!audioFile) {
-      setLoadError('No audio file available for this quest');
-      setIsLoading(false);
-      return;
-    }
-
-    // Add a delay before trying to load audio to ensure app is fully active
-    const loadTimer = setTimeout(() => {
-      loadAudio();
-    }, 1500); // Delay audio loading by 1.5 seconds
-
-    async function loadAudio() {
-      try {
-        console.log(`Loading audio for quest: ${questId}, path: ${audioFile}`);
-
-        // Configure audio session for playback
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
-          shouldDuckAndroid: true,
-        });
-
-        // Get the actual asset from the path string
-        const audioAsset =
-          typeof audioFile === 'string' ? getAudioAsset(audioFile) : audioFile;
-
-        if (!audioAsset) {
-          throw new Error(`Could not load audio asset from path: ${audioFile}`);
-        }
-
-        // Remove the type check completely as it's causing issues
-        // We'll directly attempt to use the asset and handle any errors
-        try {
-          // Create the sound object with the resolved asset
-          const { sound } = await Audio.Sound.createAsync(
-            audioAsset,
-            { shouldPlay: false },
-            (status) => {
-              if (!componentMountedRef.current) return;
-
-              if (status.isLoaded) {
-                setIsPlaying(status.isPlaying);
-
-                if (status.durationMillis && duration === 0) {
-                  setDuration(status.durationMillis);
-                }
-
-                if (status.didJustFinish) {
-                  setIsPlaying(false);
-                  setProgress(0);
-                  progressBarRef.current?.setProgress(0);
-                  stopProgressTracking();
-                }
-              }
-            }
-          );
-
-          if (!componentMountedRef.current) {
-            // Component unmounted during loading, clean up
-            await sound.unloadAsync();
-            return;
-          }
-
-          soundRef.current = sound;
-          setIsLoading(false);
-
-          // Wait a moment before trying to play
-          const playTimer = setTimeout(() => {
-            if (componentMountedRef.current) {
-              playSound();
-            }
-          }, 1000);
-
-          return () => clearTimeout(playTimer);
-        } catch (soundError) {
-          console.error('Error creating sound:', soundError);
-          throw new Error(`Failed to create sound: ${soundError.message}`);
-        }
-      } catch (error) {
-        console.error(`Error loading audio for quest ${questId}:`, error);
-        if (componentMountedRef.current) {
-          setLoadError(`Failed to load audio: ${error.message}`);
-          setIsLoading(false);
-        }
-      }
-    }
-
-    return () => {
-      clearTimeout(loadTimer);
-      // Clean up on unmount
-      if (soundRef.current) {
-        soundRef.current
-          .unloadAsync()
-          .catch((e) => console.log('Unload error:', e));
-      }
-    };
-  }, [questId, audioFile, duration]);
-
-  // Function to play the audio narration
-  async function playSound() {
-    if (!componentMountedRef.current) return;
-
-    if (soundRef.current && isPlaying) {
-      console.log('Sound already playing');
-      return;
-    }
-
-    if (isLoading) {
-      console.log('Still loading audio, waiting...');
-      return;
-    }
-
-    if (loadError || !audioFile) {
-      console.log(
-        'Audio loading failed or not available, not attempting playback'
-      );
-      return;
-    }
-
-    try {
-      if (soundRef.current) {
-        console.log('Playing sound for quest:', questId);
-        await soundRef.current.playAsync();
-        setIsPlaying(true);
-        startProgressTracking();
-      }
-    } catch (error) {
-      console.error('Error playing sound:', error);
-      setLoadError(`Failed to play audio: ${error.message}`);
-    }
-  }
-
-  const startProgressTracking = () => {
-    if (!componentMountedRef.current) return;
-
-    // Clear any existing interval
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-
-    // Update progress every 100ms
-    progressIntervalRef.current = setInterval(async () => {
-      if (!componentMountedRef.current || !soundRef.current) {
-        stopProgressTracking();
-        return;
-      }
-
-      try {
-        const status = await soundRef.current.getStatusAsync();
-        if (status.isLoaded && status.durationMillis) {
-          const newProgress = status.positionMillis / status.durationMillis;
-          setProgress(newProgress);
-          progressBarRef.current?.setProgress(newProgress * 100);
-        }
-      } catch (error) {
-        console.error('Error getting sound status:', error);
-        stopProgressTracking();
-      }
-    }, 100);
-  };
-
-  const stopProgressTracking = () => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-  };
-
-  async function pauseSound() {
-    if (!componentMountedRef.current) return;
-
-    if (soundRef.current && isPlaying) {
-      try {
-        await soundRef.current.pauseAsync();
-        setIsPlaying(false);
-        stopProgressTracking();
-      } catch (error) {
-        console.error('Error pausing sound:', error);
-      }
-    }
-  }
-
-  async function replaySound() {
-    if (!componentMountedRef.current) return;
-
-    if (soundRef.current) {
-      try {
-        await soundRef.current.stopAsync();
-        await soundRef.current.playFromPositionAsync(0);
-        setIsPlaying(true);
-        setProgress(0);
-        progressBarRef.current?.setProgress(0);
-        startProgressTracking();
-      } catch (error) {
-        console.error('Error replaying sound:', error);
-      }
-    } else {
-      // If sound was unloaded, reload it
-      playSound();
-    }
-  }
-
-  // Ensure cleanup happens when component unmounts
-  useEffect(() => {
-    return () => {
-      console.log('Unmounting StoryNarration for quest:', questId);
-      stopProgressTracking();
-
-      if (soundRef.current) {
-        soundRef.current
-          .unloadAsync()
-          .catch((e) => console.log('Unload error:', e));
-        soundRef.current = null;
-      }
-    };
+    (async () => {
+      await AudioModule.setAudioModeAsync({
+        playsInSilentMode: true,
+      });
+    })();
   }, []);
 
-  // Format milliseconds to MM:SS
-  const formatTime = (milliseconds: number) => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  // Get reactive status updates
+  const playerStatus = useAudioPlayerStatus(player);
+
+  // Calculate progress percentage based on status
+  const progress = playerStatus.duration
+    ? playerStatus.currentTime / playerStatus.duration
+    : 0;
+
+  // Check if audio has completed playback
+  const isCompleted =
+    playerStatus.didJustFinish ||
+    (playerStatus.duration > 0 &&
+      playerStatus.currentTime >= playerStatus.duration &&
+      !playerStatus.playing);
+
+  // Pause audio when screen loses focus (navigation)
+  useFocusEffect(
+    useCallback(() => {
+      // Setup - do nothing, we only want to pause on blur
+
+      // Cleanup - pause audio when navigating away
+      return () => {
+        if (player.playing) {
+          player.pause();
+        }
+      };
+    }, [player])
+  );
+
+  // Set up app state change listener to pause audio when app goes to background
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (
+        appStateRef.current === 'active' &&
+        nextAppState.match(/inactive|background/)
+      ) {
+        // App is going to background, pause audio
+        player.pause();
+      }
+      appStateRef.current = nextAppState;
+    };
+
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange
+    );
+
+    // Ensure audio is only active in foreground
+    AudioModule.setIsAudioActiveAsync(true);
+
+    return () => {
+      subscription.remove();
+    };
+  }, [player]);
+
+  // Update progress bar when position changes
+  useEffect(() => {
+    // Ensure smooth transition to 100% when completed
+    if (isCompleted && progressBarRef.current) {
+      progressBarRef.current.setProgress(100);
+    } else {
+      progressBarRef.current?.setProgress(progress * 100);
+    }
+  }, [progress, isCompleted]);
+
+  // Format seconds to MM:SS
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
 
-  // Calculate current position in milliseconds
-  const currentPosition = Math.floor(progress * duration);
-
-  // If there's no audio file, don't render the component
-  if (!audioFile) {
+  // Early return if no audio
+  if (!audioFile || !audioAsset) {
     return null;
   }
+
+  // Handle replay
+  const handleReplay = () => {
+    player.seekTo(0);
+    try {
+      player.play();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <View className="bg-background-light mt-4 w-full rounded-lg p-4">
-      {loadError ? (
-        <View>
-          <Text className="text-error mb-2 text-center">{loadError}</Text>
-          <Pressable
-            className="mt-2 self-center rounded bg-[#3B7A57] p-2"
-            onPress={() => {
-              setLoadError(null);
-              setIsLoading(true);
-              // Try to reload the audio
-              if (soundRef.current) {
-                soundRef.current
-                  .unloadAsync()
-                  .catch((e) => console.log('Unload error:', e));
-                soundRef.current = null;
-              }
-
-              // Wait a longer time before trying to reload
-              setTimeout(() => {
-                if (componentMountedRef.current) {
-                  const audioAsset =
-                    typeof audioFile === 'string'
-                      ? getAudioAsset(audioFile)
-                      : audioFile;
-
-                  if (!audioAsset) {
-                    setLoadError(
-                      `Could not resolve audio asset from path: ${audioFile}`
-                    );
-                    setIsLoading(false);
-                    return;
-                  }
-
-                  // Remove type checking, directly try to use the asset
-                  Audio.Sound.createAsync(
-                    audioAsset,
-                    { shouldPlay: false }, // Don't auto-play on reload
-                    (status) => {
-                      if (!componentMountedRef.current) return;
-
-                      if (status.isLoaded) {
-                        setIsPlaying(status.isPlaying);
-
-                        if (status.durationMillis) {
-                          setDuration(status.durationMillis);
-                        }
-
-                        if (status.didJustFinish) {
-                          setIsPlaying(false);
-                          setProgress(0);
-                          progressBarRef.current?.setProgress(0);
-                          stopProgressTracking();
-                        }
-                      }
-                    }
-                  )
-                    .then(({ sound }) => {
-                      soundRef.current = sound;
-                      setIsLoading(false);
-                      // Manual play after successful load
-                      setTimeout(() => playSound(), 500);
-                    })
-                    .catch((error) => {
-                      console.error('Error reloading audio:', error);
-                      setLoadError(`Failed to reload audio: ${error.message}`);
-                      setIsLoading(false);
-                    });
-                }
-              }, 1500);
-            }}
-          >
-            <Text className="text-cream text-sm">Tap to retry</Text>
-          </Pressable>
+      <View className="mb-2 w-full">
+        <ProgressBar
+          ref={progressBarRef}
+          initialProgress={progress * 100}
+          className="h-1.5 rounded"
+        />
+        <View className="mt-1 flex-row justify-between">
+          <Text className="text-xs text-neutral-600">
+            {formatTime(playerStatus.currentTime)}
+          </Text>
+          <Text className="text-xs text-neutral-600">
+            {formatTime(playerStatus.duration)}
+          </Text>
         </View>
-      ) : (
-        <>
-          <View className="mb-2 w-full">
-            <ProgressBar
-              ref={progressBarRef}
-              initialProgress={progress * 100}
-              className="h-1.5 rounded"
+      </View>
+
+      <View className="mt-2 flex-row items-center justify-center">
+        <Pressable
+          className="mx-4 p-2"
+          onPress={handleReplay}
+          disabled={!playerStatus.isLoaded}
+        >
+          <Feather
+            name="rotate-ccw"
+            size={24}
+            color="#3B7A57"
+            style={!playerStatus.isLoaded ? { opacity: 0.5 } : undefined}
+          />
+        </Pressable>
+
+        {/* Only show play/pause button if not completed */}
+        {!isCompleted ? (
+          <Pressable
+            onPress={() =>
+              playerStatus.playing ? player.pause() : player.play()
+            }
+            disabled={!playerStatus.isLoaded}
+          >
+            <Feather
+              name={playerStatus.playing ? 'pause-circle' : 'play-circle'}
+              size={32}
+              color="#3B7A57"
+              style={!playerStatus.isLoaded ? { opacity: 0.5 } : undefined}
             />
-            <View className="mt-1 flex-row justify-between">
-              <Text className="text-xs text-neutral-600">
-                {formatTime(currentPosition)}
-              </Text>
-              <Text className="text-xs text-neutral-600">
-                {formatTime(duration)}
-              </Text>
-            </View>
-          </View>
-
-          <View className="mt-2 flex-row items-center justify-center">
-            <Pressable
-              className="mx-4 p-2"
-              onPress={replaySound}
-              disabled={isLoading}
-            >
-              <Feather name="rotate-ccw" size={24} color="#3B7A57" />
-            </Pressable>
-
-            <Pressable
-              onPress={isPlaying ? pauseSound : playSound}
-              disabled={isLoading}
-            >
-              <Feather
-                name={isPlaying ? 'pause-circle' : 'play-circle'}
-                size={32}
-                color="#3B7A57"
-                style={isLoading ? { opacity: 0.5 } : undefined}
-              />
-            </Pressable>
-          </View>
-        </>
-      )}
+          </Pressable>
+        ) : (
+          /* Show a disabled play button to prevent layout shift */
+          <Feather
+            name="play-circle"
+            size={32}
+            color="#3B7A57"
+            style={{ opacity: 0.3 }}
+          />
+        )}
+      </View>
     </View>
   );
 }

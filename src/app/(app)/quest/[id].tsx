@@ -152,7 +152,7 @@ export default function QuestDetailsScreen() {
   // If quest is completed and has a stopTime
   if (quest.status === 'completed' && quest.stopTime) {
     return (
-      <View className="pt-safe flex-1 bg-background">
+      <View className="flex-1 bg-background">
         <FocusAwareStatusBar />
 
         {/* Header with back arrow */}
@@ -181,7 +181,7 @@ export default function QuestDetailsScreen() {
   // If it's a failed quest (doesn't have status 'completed')
   if (quest && quest.status === 'failed') {
     return (
-      <View className="pt-safe flex-1 bg-background">
+      <View className="flex-1 bg-background">
         <FocusAwareStatusBar />
 
         {/* Header with back arrow */}

@@ -163,7 +163,7 @@ export function QuestComplete({ quest, story }: QuestCompleteProps) {
           {/* Audio Controls - Only show if the quest has audio */}
           {isStoryQuest && quest.audioFile && (
             <View className="mt-4 w-full">
-              <StoryNarration questId={quest.id} audioFile={quest.audioFile} />
+              <StoryNarration quest={quest} />
             </View>
           )}
         </Animated.View>
