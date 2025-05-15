@@ -2,6 +2,10 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
+import {
+  cancelStreakWarningNotification,
+  scheduleTomorrowStreakWarning,
+} from '@/lib/services/notifications';
 import QuestTimer from '@/lib/services/quest-timer';
 import { getItem, removeItem, setItem } from '@/lib/storage';
 import { usePOIStore } from '@/store/poi-store';
@@ -89,6 +93,20 @@ export const useQuestStore = create<QuestState>()(
               status: 'completed' as const,
             };
 
+            // Check if this is the first quest completed today
+            const isFirstQuestOfTheDay = (() => {
+              if (!lastCompletedQuestTimestamp) return true;
+
+              const lastDate = new Date(lastCompletedQuestTimestamp);
+              const now = new Date(completionTime);
+
+              return (
+                lastDate.getDate() !== now.getDate() ||
+                lastDate.getMonth() !== now.getMonth() ||
+                lastDate.getFullYear() !== now.getFullYear()
+              );
+            })();
+
             const characterStore = useCharacterStore.getState();
             characterStore.updateStreak(lastCompletedQuestTimestamp);
 
@@ -113,6 +131,17 @@ export const useQuestStore = create<QuestState>()(
                 .getState()
                 .setCurrentStep(OnboardingStep.COMPLETED);
             }
+
+            // If this is the first quest completed today, cancel today's warning
+            // and schedule tomorrow's warning
+            if (isFirstQuestOfTheDay) {
+              cancelStreakWarningNotification()
+                .then(() => scheduleTomorrowStreakWarning())
+                .catch((err) =>
+                  console.error('Error scheduling streak notifications:', err)
+                );
+            }
+
             return completedQuest;
           } else {
             // Duration not met

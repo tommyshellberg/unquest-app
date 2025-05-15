@@ -19,7 +19,9 @@ import { APIProvider } from '@/api';
 import { ReminderPromptController } from '@/components/ReminderPromptController';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
+import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { useThemeConfig } from '@/lib/use-theme-config';
+import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -151,6 +153,34 @@ function RootLayout() {
       });
     }
   }, [failedQuest, hydrationFinished, authStatus, pathname]);
+
+  useEffect(() => {
+    const checkAndScheduleStreakWarning = async () => {
+      const lastCompletedQuestTimestamp =
+        useQuestStore.getState().lastCompletedQuestTimestamp;
+      const dailyQuestStreak = useCharacterStore.getState().dailyQuestStreak;
+
+      if (dailyQuestStreak > 0) {
+        // Check if user has completed a quest today
+        const now = new Date();
+        const lastCompletionDate = lastCompletedQuestTimestamp
+          ? new Date(lastCompletedQuestTimestamp)
+          : null;
+
+        // If no quest completed today and there's an active streak, schedule warning
+        if (
+          !lastCompletionDate ||
+          lastCompletionDate.getDate() !== now.getDate() ||
+          lastCompletionDate.getMonth() !== now.getMonth() ||
+          lastCompletionDate.getFullYear() !== now.getFullYear()
+        ) {
+          await scheduleStreakWarningNotification();
+        }
+      }
+    };
+
+    checkAndScheduleStreakWarning();
+  }, []);
 
   const onLayoutRootView = useCallback(async () => {
     // Check both flags: hydration promise resolved AND auth status is final
