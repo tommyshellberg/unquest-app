@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import * as Linking from 'expo-linking';
 import { Link } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
@@ -33,7 +34,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
   const [emailSent, setEmailSent] = useState(false);
   const [sendAttempts, setSendAttempts] = useState(0);
   const [email, setEmail] = useState('');
-
+  const posthog = usePostHog();
   useEffect(() => {
     if (initialError) {
       setError(initialError);
@@ -57,8 +58,10 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
   const handleMagicLinkRequest = async () => {
     if (!email || !isValidEmail(email)) {
       setError('Please enter a valid email address');
+      posthog.capture('magic_link_request_invalid_email', { email });
       return;
     }
+    posthog.capture('magic_link_request_attempt', { email });
 
     setError('');
     setIsLoading(true);
@@ -66,18 +69,21 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
 
     try {
       await requestMagicLink(email);
+      posthog.capture('magic_link_sent_success', { email });
       setEmailSent(true);
       onSubmit?.({ email });
     } catch (err) {
       console.error('Magic link request failed:', err);
-
+      posthog.capture('magic_link_request_failed', { email });
       if (axios.isAxiosError(err)) {
         if (err.code === 'ECONNABORTED') {
           setError('Request timed out. Please try again.');
+          posthog.capture('magic_link_request_failed_timeout', { email });
         } else if (!err.response) {
           setError(
             'Network error. Please check your connection and try again.'
           );
+          posthog.capture('magic_link_request_failed_network_error', { email });
         } else {
           setError(
             `Failed to send login link: ${err.response.data?.message || err.message}`
@@ -94,6 +100,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
   };
 
   const handleContactSupport = () => {
+    posthog.capture('user_tap_contact_support');
     Linking.openURL('mailto:hello@unquestapp.com?subject=Login%20Help');
   };
 

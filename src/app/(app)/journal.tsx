@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { StreakCounter } from '@/components/StreakCounter';
 import { Text, View } from '@/components/ui';
 import { FocusAwareStatusBar } from '@/components/ui';
 import { Chip } from '@/components/ui/chip';
@@ -82,7 +83,7 @@ export default function JournalScreen() {
   return (
     <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
-
+      <StreakCounter size="small" position="topRight" />
       {/* Header - with animation */}
       <Animated.View style={headerStyle} className="mb-4 px-4">
         <Text className="mb-3 mt-2 text-xl font-bold">Journal</Text>

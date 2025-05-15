@@ -132,12 +132,12 @@ export default function ChooseCharacterScreen() {
 
       // 1. First update local character store
       createCharacter(selected.id as CharacterType, debouncedName.trim());
-      posthog.capture('onboarding_update_character_local_store');
+      posthog.capture('onboarding_update_character_local_store_success');
       // 2. Update the user's character on the server
       await updateUserCharacter(newCharacter as Character);
-      posthog.capture('onboarding_update_character_server');
+      posthog.capture('onboarding_update_character_server_success');
     } catch (error) {
-      posthog.capture('onboarding_update_character_server_error');
+      posthog.capture('onboarding_update_character_error');
     } finally {
       useOnboardingStore
         .getState()

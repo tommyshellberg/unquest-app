@@ -12,9 +12,14 @@ import { useQuestStore } from '@/store/quest-store';
 type Props = {
   animate?: boolean;
   size?: 'small' | 'large';
+  position?: 'topRight' | 'default';
 };
 
-export function StreakCounter({ animate = false, size = 'large' }: Props) {
+export function StreakCounter({
+  animate = false,
+  size = 'large',
+  position = 'default',
+}: Props) {
   const dailyQuestStreak = useCharacterStore((state) => state.dailyQuestStreak);
   const lastCompletedQuestTimestamp = useQuestStore(
     (state) => state.lastCompletedQuestTimestamp
@@ -48,37 +53,75 @@ export function StreakCounter({ animate = false, size = 'large' }: Props) {
     transform: [{ scale: scale.value }],
   }));
 
+  // If streak is 0 and small size, don't render anything
+  if (dailyQuestStreak === 0 && size === 'small') {
+    return null;
+  }
+
+  // Wrapper with position styling
+  const Wrapper = ({ children }: { children: React.ReactNode }) => {
+    if (position === 'topRight') {
+      return <View className="absolute right-4 top-2 z-10">{children}</View>;
+    }
+    return <>{children}</>;
+  };
+
+  if (size === 'small') {
+    return (
+      <Wrapper>
+        <Animated.View style={streakStyle}>
+          <View
+            className={`
+              flex-row items-center rounded-full px-2 py-[2px]
+              ${isStreakActive ? 'bg-transparent' : 'bg-neutral-400/50'}
+            `}
+          >
+            <Text className="mr-1">🔥</Text>
+            <Text className="font-semibold text-primary-500">
+              {dailyQuestStreak}
+            </Text>
+          </View>
+        </Animated.View>
+      </Wrapper>
+    );
+  }
+
   return (
-    <Animated.View className="items-center justify-center" style={streakStyle}>
-      <View
-        className={`
-          items-center 
-          justify-center 
-          bg-secondary-100
-          shadow-lg
-          ${size === 'large' ? 'size-[90px] rounded-[45px]' : 'size-[40px] rounded-[20px]'}
-          ${!isStreakActive ? 'bg-muted-400' : ''}
-        `}
+    <Wrapper>
+      <Animated.View
+        className="items-center justify-center"
+        style={streakStyle}
       >
-        <Text
+        <View
           className={`
-            text-forest 
-            font-bold
-            ${size === 'large' ? 'text-[32px]' : 'text-2xl'}
+            size-[90px] 
+            items-center 
+            justify-center
+            rounded-[45px]
+            bg-secondary-100 shadow-lg
+            ${!isStreakActive ? 'bg-muted-400' : ''}
           `}
         >
-          {dailyQuestStreak}
-        </Text>
-        <Text
-          className={`
-            text-text-light 
-            -mt-1.5
-            ${size === 'large' ? 'text-sm' : 'text-xs'}
-          `}
-        >
-          day streak
-        </Text>
-      </View>
-    </Animated.View>
+          <Text
+            className={`
+              text-forest 
+              text-[32px]
+              font-bold
+            `}
+          >
+            {dailyQuestStreak}
+          </Text>
+          <Text
+            className={`
+              text-text-light 
+              -mt-1.5
+              text-sm
+            `}
+          >
+            day streak
+          </Text>
+        </View>
+      </Animated.View>
+    </Wrapper>
   );
 }
