@@ -13,9 +13,16 @@ type DailyReminder = {
   time: ReminderTime;
 };
 
+type StreakWarning = {
+  enabled: boolean;
+  time: ReminderTime;
+};
+
 type SettingsState = {
   dailyReminder: DailyReminder;
+  streakWarning: StreakWarning;
   setDailyReminder: (reminder: DailyReminder) => void;
+  setStreakWarning: (streakWarning: StreakWarning) => void;
   hasCompletedFirstQuest: boolean;
   setHasCompletedFirstQuest: (value: boolean) => void;
   hasBeenPromptedForReminder: boolean;
@@ -34,7 +41,12 @@ export const useSettingsStore = create<SettingsState>()(
         enabled: false,
         time: null,
       },
+      streakWarning: {
+        enabled: true,
+        time: { hour: 18, minute: 0 },
+      },
       setDailyReminder: (reminder) => set({ dailyReminder: reminder }),
+      setStreakWarning: (streakWarning) => set({ streakWarning }),
       hasCompletedFirstQuest: false,
       setHasCompletedFirstQuest: (value) =>
         set({ hasCompletedFirstQuest: value }),

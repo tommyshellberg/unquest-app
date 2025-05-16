@@ -1,3 +1,4 @@
+import { Flame } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import Animated, {
   useAnimatedStyle,
@@ -8,6 +9,8 @@ import Animated, {
 import { Text, View } from '@/components/ui';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
+
+import { red } from './ui/colors';
 
 type Props = {
   animate?: boolean;
@@ -76,7 +79,7 @@ export function StreakCounter({
               ${isStreakActive ? 'bg-transparent' : 'bg-neutral-400/50'}
             `}
           >
-            <Text className="mr-1">🔥</Text>
+            <Flame size={20} color={red[300]} />
             <Text className="font-semibold text-primary-500">
               {dailyQuestStreak}
             </Text>

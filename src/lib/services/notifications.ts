@@ -7,6 +7,7 @@ import { OneSignal } from 'react-native-onesignal';
 import { primary } from '@/components/ui/colors';
 import { getItem, setItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
+import { useSettingsStore } from '@/store/settings-store';
 
 // Channel IDs
 const QUEST_CHANNEL_ID = 'quest-notifications';
@@ -188,6 +189,12 @@ export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
     return false;
   }
 
+  // Check if streak warning is enabled in settings
+  const streakWarning = useSettingsStore.getState().streakWarning;
+  if (!streakWarning.enabled) {
+    return false;
+  }
+
   try {
     // Cancel any existing streak warnings first
     await ExpoNotifications.cancelScheduledNotificationAsync(STREAK_WARNING_ID);
@@ -200,17 +207,17 @@ export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
       return false;
     }
 
-    // Get current date and set time to 6 PM
+    // Get current date and set time to the user's preferred time (default 6 PM)
     const today = new Date();
     const warningTime = new Date(
       today.getFullYear(),
       today.getMonth(),
       today.getDate(),
-      18, // 6 PM
-      0 // 0 minutes
+      streakWarning.time?.hour || 18, // Use settings or default to 6 PM
+      streakWarning.time?.minute || 0 // Use settings or default to 0 minutes
     );
 
-    // If it's already past 6 PM, don't schedule for today
+    // If it's already past the set time, don't schedule for today
     if (today > warningTime) {
       return false;
     }
@@ -234,7 +241,9 @@ export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
       },
     });
 
-    console.log(`Streak warning scheduled for today at 6:00 PM`);
+    console.log(
+      `Streak warning scheduled for today at ${warningTime.toLocaleTimeString()}`
+    );
     return true;
   } catch (error) {
     console.error('Failed to schedule streak warning:', error);
@@ -250,17 +259,28 @@ export const scheduleTomorrowStreakWarning = async (): Promise<boolean> => {
     return false;
   }
 
+  // Check if streak warning is enabled in settings
+  const streakWarning = useSettingsStore.getState().streakWarning;
+  if (!streakWarning.enabled) {
+    return false;
+  }
+
   try {
     // Cancel any existing streak warnings first
     await ExpoNotifications.cancelScheduledNotificationAsync(STREAK_WARNING_ID);
 
-    // Get current streak count from character store (add 1 since we're scheduling after completion)
+    // Get current streak count from character store
     const dailyQuestStreak = useCharacterStore.getState().dailyQuestStreak;
 
-    // Schedule for tomorrow at 6 PM
+    // Schedule for tomorrow at user's preferred time
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(18, 0, 0, 0); // 6:00:00.000 PM
+    tomorrow.setHours(
+      streakWarning.time?.hour || 18,
+      streakWarning.time?.minute || 0,
+      0,
+      0
+    );
 
     await ExpoNotifications.scheduleNotificationAsync({
       identifier: STREAK_WARNING_ID,
@@ -277,7 +297,9 @@ export const scheduleTomorrowStreakWarning = async (): Promise<boolean> => {
       },
     });
 
-    console.log(`Streak warning scheduled for tomorrow at 6:00 PM`);
+    console.log(
+      `Streak warning scheduled for tomorrow at ${tomorrow.toLocaleTimeString()}`
+    );
     return true;
   } catch (error) {
     console.error("Failed to schedule tomorrow's streak warning:", error);

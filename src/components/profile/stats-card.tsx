@@ -8,7 +8,11 @@ type StatsCardProps = {
   streakCount: number;
 };
 
-export function StatsCard({ questCount, minutesSaved, streakCount }: StatsCardProps) {
+export function StatsCard({
+  questCount,
+  minutesSaved,
+  streakCount,
+}: StatsCardProps) {
   return (
     <Card className="mx-4 mt-4 p-5">
       <View className="flex-row justify-around">
@@ -33,7 +37,6 @@ export function StatsCard({ questCount, minutesSaved, streakCount }: StatsCardPr
             <Text className="text-2xl font-bold text-teal-700">
               {streakCount}
             </Text>
-            {streakCount > 0 && <Text className="ml-1">🔥</Text>}
           </View>
           <Text className="text-gray-600">Day Streak</Text>
         </View>
