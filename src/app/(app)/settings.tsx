@@ -20,7 +20,7 @@ import {
   requestNotificationPermissions,
   scheduleDailyReminderNotification,
 } from '@/lib/services/notifications';
-import { getUserDetails } from '@/lib/services/user';
+import { deleteUserAccount, getUserDetails } from '@/lib/services/user';
 import { setItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useOnboardingStore } from '@/store/onboarding-store';
@@ -233,12 +233,58 @@ export default function Settings() {
         {
           text: 'Delete Account',
           style: 'destructive',
-          onPress: () => {
-            // Just alert for now - we'll add real deletion logic later
-            Alert.alert(
-              'Account Scheduled for Deletion',
-              'Your account has been scheduled for deletion. You will now be logged out.'
-            );
+          onPress: async () => {
+            try {
+              // Show loading indicator
+              setIsLoading(true);
+
+              // Call API to delete the account
+              await deleteUserAccount();
+
+              // On success, show confirmation and logout
+              Alert.alert(
+                'Account Scheduled for Deletion',
+                'Your account has been scheduled for deletion. You will now be logged out.',
+                [
+                  {
+                    text: 'OK',
+                    onPress: async () => {
+                      // Log the user out and redirect to login screen
+                      await signOut();
+                      router.replace('/login');
+                    },
+                  },
+                ]
+              );
+            } catch (error) {
+              // On error, show error message
+              setIsLoading(false);
+
+              let errorMessage = 'An unexpected error occurred.';
+              if (error instanceof Error) {
+                errorMessage = error.message;
+              }
+
+              Alert.alert(
+                'Account Deletion Failed',
+                `We couldn't process your deletion request automatically. Please contact hello@unquestapp.com or visit unquestapp.com/contact for assistance with manual account deletion.`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Email Support',
+                    onPress: () =>
+                      Linking.openURL(
+                        'mailto:hello@unquestapp.com?subject=Account%20Deletion%20Request'
+                      ),
+                  },
+                  {
+                    text: 'Visit Website',
+                    onPress: () =>
+                      Linking.openURL('https://unquestapp.com/contact'),
+                  },
+                ]
+              );
+            }
           },
         },
       ],
