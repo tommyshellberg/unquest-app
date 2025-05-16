@@ -268,3 +268,20 @@ export async function rescindInvitation(inviteId: string): Promise<{
     throw error;
   }
 }
+
+/**
+ * Delete the current user's account
+ * @returns Response with success message
+ */
+export async function deleteUserAccount(): Promise<{
+  message: string;
+  success: boolean;
+}> {
+  try {
+    const response = await apiClient.delete('/users/me');
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user account:', error);
+    throw error;
+  }
+}
