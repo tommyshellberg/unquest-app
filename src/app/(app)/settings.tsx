@@ -219,6 +219,33 @@ export default function Settings() {
     return format(date, 'h:mm a');
   };
 
+  // Add this handler function
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? Your account will be made inactive and your personal data will be anonymized. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'View Terms',
+          onPress: () => Linking.openURL('https://unquestapp.com/terms'),
+        },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: () => {
+            // Just alert for now - we'll add real deletion logic later
+            Alert.alert(
+              'Account Scheduled for Deletion',
+              'Your account has been scheduled for deletion. You will now be logged out.'
+            );
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   // In your render method, handle loading state
   if (isLoading) {
     return (
@@ -438,15 +465,15 @@ export default function Settings() {
 
           <View className="mb-8 px-4">
             <Text className="mb-4 text-center text-neutral-600">
-              This will delete all your progress.
+              Deleting your account will remove all your personal data.
             </Text>
             <View
-              className="mx-auto rounded-full bg-red-300 p-2"
+              className="mx-auto rounded-full bg-red-400 p-2"
               style={{ width: '50%' }}
-              onTouchEnd={resetAppData}
+              onTouchEnd={handleDeleteAccount}
             >
               <Text className="text-center font-medium text-white">
-                Reset App Data
+                Delete Account
               </Text>
             </View>
           </View>
