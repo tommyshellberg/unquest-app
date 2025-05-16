@@ -7,6 +7,7 @@ import { CategorySelector } from '@/components/QuestForm/category-selector';
 // Import our new components with appropriate paths
 import { CombinedQuestInput } from '@/components/QuestForm/combined-quest-input';
 import { PaperPlanes } from '@/components/QuestForm/paper-planes';
+import { StreakCounter } from '@/components/StreakCounter';
 // Import UI components from our project
 import {
   Button,
@@ -99,6 +100,7 @@ export default function CustomQuestScreen() {
           <Text className="text-base text-[#333]">Cancel</Text>
         </Pressable>
         <Text className="text-lg font-semibold">Custom quest</Text>
+        <StreakCounter size="small" position="topRight" />
         <View className="w-14" />
       </View>
 

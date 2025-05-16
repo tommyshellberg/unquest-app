@@ -1,6 +1,4 @@
-import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { Pressable } from 'react-native';
 
 import { Button, Card, Text, View } from '@/components/ui';
 
@@ -37,13 +35,14 @@ export function FriendsList({
   userEmail,
 }: FriendsListProps) {
   return (
-    <View className="mx-4 mb-20 mt-4">
-      <View className="flex-row items-center justify-between">
-        <Text className="font-bold">Friends</Text>
-        <Pressable className="flex-row items-center" onPress={onInvite}>
-          <Feather name="plus" size={16} color="#334738" />
-          <Text className="ml-1 text-teal-800">Invite</Text>
-        </Pressable>
+    <View className="mx-4 mb-4">
+      <View className="mb-2 flex-row items-center justify-between">
+        <Text className="text-xl font-bold">
+          Friends ({combinedData?.length || 0})
+        </Text>
+        <Button onPress={onInvite} variant="ghost" className="p-2">
+          <Text className="font-semibold text-primary-500">+ Invite</Text>
+        </Button>
       </View>
 
       <View className="mt-2">

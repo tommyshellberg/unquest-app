@@ -5,13 +5,13 @@ import { Card, Text, View } from '@/components/ui';
 type StatsCardProps = {
   questCount: number;
   minutesSaved: number;
-  friendsCount: number;
+  streakCount: number;
 };
 
 export function StatsCard({
   questCount,
   minutesSaved,
-  friendsCount,
+  streakCount,
 }: StatsCardProps) {
   return (
     <Card className="mx-4 mt-4 p-5">
@@ -33,10 +33,12 @@ export function StatsCard({
         <View className="h-4/5 w-px bg-gray-300" />
 
         <View className="items-center">
-          <Text className="text-2xl font-bold text-teal-700">
-            {friendsCount}
-          </Text>
-          <Text className="text-gray-600">Friends</Text>
+          <View className="flex-row items-center">
+            <Text className="text-2xl font-bold text-teal-700">
+              {streakCount}
+            </Text>
+          </View>
+          <Text className="text-gray-600">Day Streak</Text>
         </View>
       </View>
     </Card>

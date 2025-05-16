@@ -16,6 +16,7 @@ import { getRefreshToken } from '@/api/token';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { getMapNameForQuest } from '@/app/utils/map-utils';
 import QuestCard from '@/components/home/quest-card';
+import { StreakCounter } from '@/components/StreakCounter';
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { getUserDetails } from '@/lib/services/user';
@@ -338,6 +339,7 @@ export default function Home() {
 
       {/* Background */}
       <View className="absolute inset-0">
+        <StreakCounter size="small" position="topRight" />
         <Image
           source={require('@/../assets/images/background/active-quest.jpg')}
           className="size-full"

@@ -28,6 +28,7 @@ export default function ProfileScreen() {
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
   // Add a state to track if we need to redirect
   const [isRedirecting, setIsRedirecting] = React.useState(false);
+  const streakCount = useCharacterStore((state) => state.dailyQuestStreak);
 
   // Animation value for header
   const headerOpacity = useSharedValue(0);
@@ -148,7 +149,7 @@ export default function ProfileScreen() {
         <StatsCard
           questCount={completedQuests.length}
           minutesSaved={totalMinutesOffPhone}
-          friendsCount={friendsData?.count || 0}
+          streakCount={streakCount}
         />
 
         {/* Experience Progress */}
