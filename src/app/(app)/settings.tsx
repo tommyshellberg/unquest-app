@@ -24,7 +24,7 @@ import {
   scheduleDailyReminderNotification,
   scheduleStreakWarningNotification,
 } from '@/lib/services/notifications';
-import { getUserDetails } from '@/lib/services/user';
+import { deleteUserAccount, getUserDetails } from '@/lib/services/user';
 import { setItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useOnboardingStore } from '@/store/onboarding-store';
@@ -223,6 +223,79 @@ export default function Settings() {
     date.setMinutes(dailyReminder.time.minute);
 
     return format(date, 'h:mm a');
+  };
+
+  // Add this handler function
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? Your account will be made inactive and your personal data will be anonymized. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'View Terms',
+          onPress: () => Linking.openURL('https://unquestapp.com/terms'),
+        },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Show loading indicator
+              setIsLoading(true);
+
+              // Call API to delete the account
+              await deleteUserAccount();
+
+              // On success, show confirmation and logout
+              Alert.alert(
+                'Account Scheduled for Deletion',
+                'Your account has been scheduled for deletion. You will now be logged out.',
+                [
+                  {
+                    text: 'OK',
+                    onPress: async () => {
+                      // Log the user out and redirect to login screen
+                      await signOut();
+                      router.replace('/login');
+                    },
+                  },
+                ]
+              );
+            } catch (error) {
+              // On error, show error message
+              setIsLoading(false);
+
+              let errorMessage = 'An unexpected error occurred.';
+              if (error instanceof Error) {
+                errorMessage = error.message;
+              }
+
+              Alert.alert(
+                'Account Deletion Failed',
+                `We couldn't process your deletion request automatically. Please contact hello@unquestapp.com or visit unquestapp.com/contact for assistance with manual account deletion.`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Email Support',
+                    onPress: () =>
+                      Linking.openURL(
+                        'mailto:hello@unquestapp.com?subject=Account%20Deletion%20Request'
+                      ),
+                  },
+                  {
+                    text: 'Visit Website',
+                    onPress: () =>
+                      Linking.openURL('https://unquestapp.com/contact'),
+                  },
+                ]
+              );
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleToggleStreakWarning = async (value: boolean) => {
@@ -597,15 +670,15 @@ export default function Settings() {
 
           <View className="mb-8 px-4">
             <Text className="mb-4 text-center text-neutral-600">
-              This will delete all your progress.
+              Deleting your account will remove all your personal data.
             </Text>
             <View
-              className="mx-auto rounded-full bg-red-300 p-2"
+              className="mx-auto rounded-full bg-red-400 p-2"
               style={{ width: '50%' }}
-              onTouchEnd={resetAppData}
+              onTouchEnd={handleDeleteAccount}
             >
               <Text className="text-center font-medium text-white">
-                Reset App Data
+                Delete Account
               </Text>
             </View>
           </View>
