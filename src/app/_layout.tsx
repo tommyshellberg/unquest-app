@@ -228,9 +228,9 @@ function Providers({
                 host: 'https://us.i.posthog.com',
               }}
             >
-              <ReminderPromptController />
               <APIProvider>
                 <BottomSheetModalProvider>
+                  <ReminderPromptController />
                   {children}
                   <FlashMessage position="top" />
                 </BottomSheetModalProvider>
