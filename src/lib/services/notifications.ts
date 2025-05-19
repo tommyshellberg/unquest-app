@@ -185,6 +185,7 @@ export const cancelDailyReminderNotification = async (): Promise<boolean> => {
 export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
   // Check if notifications are enabled
   const enabled = await areNotificationsEnabled();
+  console.log('scheduleStreakWarningNotification enabled: ', enabled);
   if (!enabled) {
     return false;
   }
@@ -217,15 +218,20 @@ export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
       streakWarning.time?.minute || 0 // Use settings or default to 0 minutes
     );
 
-    // If it's already past the set time, don't schedule for today
+    console.log('warningTime: ', warningTime);
+    console.log('today: ', today);
+
+    // If it's already past the set time, schedule for tomorrow instead
     if (today > warningTime) {
-      return false;
+      console.log('scheduling tomorrow');
+      return await scheduleTomorrowStreakWarning();
     }
 
     // Calculate seconds until the warning time
     const secondsUntilWarning = Math.floor(
       (warningTime.getTime() - today.getTime()) / 1000
     );
+    console.log('secondsUntilWarning: ', secondsUntilWarning);
 
     await ExpoNotifications.scheduleNotificationAsync({
       identifier: STREAK_WARNING_ID,
@@ -236,6 +242,7 @@ export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
         sound: true,
       },
       trigger: {
+        type: SchedulableTriggerInputTypes.TIME_INTERVAL,
         seconds: secondsUntilWarning,
         channelId: Platform.OS === 'android' ? QUEST_CHANNEL_ID : undefined,
       },
@@ -251,7 +258,6 @@ export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
   }
 };
 
-// Also update the scheduleTomorrowStreakWarning function
 export const scheduleTomorrowStreakWarning = async (): Promise<boolean> => {
   // Check if notifications are enabled
   const enabled = await areNotificationsEnabled();
