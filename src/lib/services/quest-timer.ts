@@ -357,6 +357,7 @@ export default class QuestTimer {
               failedAttributes,
               failedContent
             );
+            this.oneSignalActivityId = null;
           } catch (error) {
             console.error(
               'Error ending OneSignal Live Activity (Failure):',
@@ -496,8 +497,11 @@ export default class QuestTimer {
       await BackgroundService.stop();
     }
 
+    // Explicitly nullify all class properties before clearing storage
+    this.oneSignalActivityId = null;
     this.questTemplate = null;
     this.questStartTime = null;
+    this.questRunId = null;
 
     // Clear quest data from storage
     await this.clearQuestData();

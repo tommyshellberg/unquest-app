@@ -32,11 +32,11 @@ jest.mock('@expo/vector-icons', () => ({
 
 // Mock zustand store
 jest.mock('@/store/quest-store', () => ({
-  useQuestStore: {
+  useQuestStore: jest.fn(() => ({
     getState: jest.fn().mockReturnValue({
       prepareQuest: jest.fn(),
     }),
-  },
+  })),
 }));
 
 describe('CustomQuestScreen', () => {
