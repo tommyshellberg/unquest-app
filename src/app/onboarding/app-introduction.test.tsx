@@ -219,7 +219,6 @@ describe('AppIntroductionScreen', () => {
         user: {
           id: '123',
           email: 'test@example.com',
-          screenTimeGoals: { currentTime: 120, targetTime: 60 },
         },
       })
     );

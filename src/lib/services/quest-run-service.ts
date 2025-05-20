@@ -1,4 +1,6 @@
 import { apiClient } from '@/api';
+import { provisionalApiClient } from '@/api/common/provisional-client';
+import { getItem } from '@/lib/storage';
 import { type CustomQuestTemplate } from '@/store/types';
 import { type StoryQuestTemplate } from '@/store/types';
 // Adjust import path as needed
@@ -41,11 +43,15 @@ export async function createQuestRun(
     questTemplate.mode === 'story'
       ? generateQuestRunBodyStory(questTemplate)
       : generateQuestRunBodyCustom(questTemplate);
+
   try {
-    const response = await apiClient.post<QuestRunResponse>(
-      '/quest-runs/',
-      body
-    );
+    // Check if we're using a provisional user
+    const hasProvisionalToken = !!getItem('provisionalAccessToken');
+
+    // Use the appropriate client
+    const client = hasProvisionalToken ? provisionalApiClient : apiClient;
+
+    const response = await client.post<QuestRunResponse>('/quest-runs/', body);
     return response.data;
   } catch (error) {
     console.error('Failed to create quest run:', error);
@@ -59,6 +65,7 @@ export async function updateQuestRunStatus(
   liveActivityId?: string | null
 ): Promise<QuestRunResponse> {
   try {
+    console.log('Updating quest run status:', runId, status, liveActivityId);
     const payload: { status: QuestRunStatus; liveActivityId?: string } = {
       status,
     };
@@ -67,7 +74,13 @@ export async function updateQuestRunStatus(
       payload.liveActivityId = liveActivityId;
     }
 
-    const response = await apiClient.patch<QuestRunResponse>(
+    // Check if we're using a provisional user
+    const hasProvisionalToken = !!getItem('provisionalAccessToken');
+
+    // Use the appropriate client
+    const client = hasProvisionalToken ? provisionalApiClient : apiClient;
+
+    const response = await client.patch<QuestRunResponse>(
       `/quest-runs/${runId}/status`,
       payload
     );

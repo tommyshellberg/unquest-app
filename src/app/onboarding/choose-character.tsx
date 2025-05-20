@@ -18,7 +18,7 @@ import Animated, {
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { primary } from '@/components/ui/colors';
-import { updateUserCharacter } from '@/lib/services/user';
+import { createProvisionalUser } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { type Character, type CharacterType } from '@/store/types';
@@ -123,9 +123,6 @@ export default function ChooseCharacterScreen() {
     try {
       // Create the new character object
       const newCharacter = {
-        level: 1,
-        currentXP: 0,
-        xpToNextLevel: 100,
         type: selected.id,
         name: debouncedName.trim(),
       };
@@ -133,12 +130,21 @@ export default function ChooseCharacterScreen() {
       // 1. First update local character store
       createCharacter(selected.id as CharacterType, debouncedName.trim());
       posthog.capture('onboarding_update_character_local_store_success');
-      // 2. Update the user's character on the server
-      await updateUserCharacter(newCharacter as Character);
-      posthog.capture('onboarding_update_character_server_success');
+
+      // 2. Create a provisional user on the server
+      await createProvisionalUser(newCharacter as Character);
+      posthog.capture('onboarding_create_provisional_user_success');
     } catch (error) {
-      posthog.capture('onboarding_update_character_error');
+      // Handle specific error for email taken
+      if (error.message === 'PROVISIONAL_EMAIL_TAKEN') {
+        posthog.capture('onboarding_provisional_email_taken');
+        // For now, we'll just continue with the flow
+        // In a full implementation, we might want to retry with a different email
+      } else {
+        posthog.capture('onboarding_create_provisional_user_error');
+      }
     } finally {
+      // Proceed to next step regardless of errors
       useOnboardingStore
         .getState()
         .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);

@@ -103,7 +103,7 @@ export function setupNotifications() {
     OneSignal.Notifications.addEventListener('click', (event) => {
       console.log('OneSignal notification clicked:', event);
       // Handle notification clicks here - go to home screen, will get redirected to quest-complete
-      router.navigate('/(app)/[id]');
+      router.navigate('/[id]');
     });
   }
 

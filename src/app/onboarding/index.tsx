@@ -11,8 +11,7 @@ export default function OnboardingIndex() {
     [OnboardingStep.NOT_STARTED]: '/welcome',
     [OnboardingStep.INTRO_COMPLETED]: '/onboarding/app-introduction',
     [OnboardingStep.NOTIFICATIONS_COMPLETED]: '/onboarding/choose-character',
-    [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/screen-time-goal',
-    [OnboardingStep.GOALS_SET]: '/onboarding/first-quest',
+    [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/first-quest',
     [OnboardingStep.COMPLETED]: '/(app)',
   };
 

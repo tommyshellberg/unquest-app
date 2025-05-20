@@ -69,19 +69,6 @@ appId: com.vaedros.unquest.development
 
 - tapOn: "Continue"
 
-# Screen Time Goal Screen
-- assertVisible: "Set Your Goals"
-- assertVisible: "What's your current daily screen time?"
-- tapOn: 
-    id: "current-screen-time-picker"
-- tapOn: "4h"
-- assertVisible: "What's your daily screen time goal?"
-- tapOn: 
-    id: "target-screen-time-picker"
-- tapOn: "3h"
-- assertVisible: "Set My Goal"
-- tapOn: "Set My Goal"
-
 - assertVisible: "Your Journey Begins"
 - tapOn: "Wake up"
 

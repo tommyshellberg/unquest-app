@@ -18,6 +18,7 @@ export interface AuthTokens {
   };
 }
 
+// @TODO: switch to using the storage library
 /**
  * Store authentication tokens securely
  */

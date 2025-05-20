@@ -62,8 +62,6 @@ export type CharacterType =
 
 export interface Account {
   id: string;
-  averageScreenTimeMinutes: Minutes;
-  screenTimeGoalMinutes: Minutes;
   created: Timestamp;
   lastActive: Timestamp;
 }

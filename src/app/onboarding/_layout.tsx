@@ -17,23 +17,28 @@ export default function OnboardingLayout() {
     [OnboardingStep.NOT_STARTED]: '/onboarding',
     [OnboardingStep.INTRO_COMPLETED]: '/onboarding/app-introduction',
     [OnboardingStep.NOTIFICATIONS_COMPLETED]: '/onboarding/choose-character',
-    [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/screen-time-goal',
-    [OnboardingStep.GOALS_SET]: '/onboarding/first-quest',
+    [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/first-quest',
     [OnboardingStep.COMPLETED]: '/(app)',
   };
 
+  console.log('ONBOARDING LAYOUT');
+
   // Backward compatibility: if they've completed a quest already before introducing onboarding steps, redirect to the app
   if (
-    currentStep === OnboardingStep.GOALS_SET &&
+    currentStep === OnboardingStep.CHARACTER_SELECTED &&
     completedQuests.length > 0 &&
     !path.startsWith('/(app)')
   ) {
+    console.log(
+      'REDIRECTING TO APP, ONBOARDING SKIPPED BECAUSE WE COMPLETED A QUEST '
+    );
     posthog.capture('onboarding_skipped_redirect_to_app');
     return <Redirect href="/(app)" />;
   }
 
   // 1) If they've finished onboarding, immediately redirect to the app root
   if (isComplete && !path.startsWith('/(app)')) {
+    console.log('REDIRECTING TO APP, ONBOARDING COMPLETED');
     posthog.capture('onboarding_finished_redirect_to_app');
     return <Redirect href="/(app)" />;
   }

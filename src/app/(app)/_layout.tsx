@@ -62,7 +62,7 @@ export default function TabLayout() {
 
       // Redirect to quest/[id] instead of quest-complete
       router.replace({
-        pathname: '/(app)/quest/[id]',
+        pathname: '/quest/[id]',
         params: {
           id: recentCompletedQuest.id,
           timestamp: recentCompletedQuest.stopTime?.toString(),
@@ -86,6 +86,7 @@ export default function TabLayout() {
     async function checkAuth() {
       // Check for the presence of an access token
       const accessToken = await getAccessToken();
+      console.log('CHECKING AUTH');
       if (!accessToken) {
         router.replace('/login');
         return;
@@ -208,23 +209,8 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Hide special screens from tabs */}
-      <Tabs.Screen
-        name="pending-quest"
-        options={{
-          href: null,
-        }}
-      />
-
       <Tabs.Screen
         name="custom-quest"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
-        name="quest/[id]"
         options={{
           href: null,
         }}

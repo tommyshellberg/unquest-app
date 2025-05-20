@@ -29,6 +29,10 @@ export default function QuestDetailsScreen() {
 
   const headerOpacity = useSharedValue(0);
 
+  useEffect(() => {
+    console.log('[id] screen is mounting');
+  }, []);
+
   // Initialize animation
   useEffect(() => {
     headerOpacity.value = withTiming(1, { duration: 800 });

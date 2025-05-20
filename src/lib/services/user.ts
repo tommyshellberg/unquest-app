@@ -1,5 +1,8 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import { logout } from '@/api/auth';
 import { apiClient } from '@/api/common/client';
+import { setItem } from '@/lib/storage';
 import type { Character } from '@/store/types';
 
 export interface UserDetails {
@@ -282,6 +285,51 @@ export async function deleteUserAccount(): Promise<{
     return response.data;
   } catch (error) {
     console.error('Error deleting user account:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a provisional user account with the selected character
+ * @param character Character details to associate with the provisional user
+ * @returns The created provisional user data
+ */
+export async function createProvisionalUser(
+  character: Character
+): Promise<any> {
+  try {
+    // Generate a provisional email using UUID
+    const provisionalEmail = `${uuidv4()}@unquestapp.com`;
+
+    // Store the email in local storage
+    setItem('provisionalEmail', provisionalEmail);
+
+    const response = await apiClient.post('/users/provisional', {
+      character,
+      email: provisionalEmail,
+    });
+
+    console.log('response data', response.data);
+
+    // Store the user ID and tokens
+    console.log('setting provisional user id', response.data.user.id);
+    setItem('provisionalUserId', response.data.user.id);
+
+    // Store the access token separately from regular auth tokens
+    if (response.data.tokens?.access?.token) {
+      console.log(
+        'setting provisional access token',
+        response.data.tokens.access.token
+      );
+      setItem('provisionalAccessToken', response.data.tokens.access.token);
+    }
+
+    return response.data.user;
+  } catch (error) {
+    // If email is taken, we can indicate it for special handling
+    if (error.response?.data?.message === 'Email already taken') {
+      throw new Error('PROVISIONAL_EMAIL_TAKEN');
+    }
     throw error;
   }
 }

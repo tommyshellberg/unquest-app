@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
+import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -32,12 +33,17 @@ export default function PendingQuestScreen() {
   const buttonOpacity = useSharedValue(0);
   const buttonScale = useSharedValue(0.9);
 
+  useLockStateDetection();
+
   useEffect(() => {
     // Only redirect automatically if we don't have a quest
     // AND we're not in the onboarding flow
     if (!displayQuest && currentStep === OnboardingStep.COMPLETED) {
       router.replace('/');
-    } else if (!displayQuest && currentStep === OnboardingStep.GOALS_SET) {
+    } else if (
+      !displayQuest &&
+      currentStep === OnboardingStep.CHARACTER_SELECTED
+    ) {
       // If we're in onboarding and cancelled a quest, go back to first-quest screen
       router.replace('/onboarding/first-quest');
     }

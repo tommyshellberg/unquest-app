@@ -1,6 +1,8 @@
 import { Env } from '@env';
 import axios from 'axios';
 
+import { removeItem } from '@/lib/storage';
+
 import { apiClient } from './common';
 import * as tokenService from './token';
 
@@ -56,6 +58,13 @@ export const verifyMagicLink = async (
     // Expect the API to return tokens in the nested format:
     // { access: { token: string, expires: string }, refresh: { token: string, expires: string } }
     tokenService.storeTokens(response.data);
+
+    // Clear provisional user data after successful authentication
+    removeItem('provisionalAccessToken');
+    removeItem('provisionalUserId');
+    removeItem('provisionalEmail');
+    console.log('Cleared provisional user data after successful login');
+
     return response.data;
   } catch (error) {
     console.error('Magic link verification error:', error);

@@ -8,7 +8,6 @@ export enum OnboardingStep {
   INTRO_COMPLETED = 'intro_completed',
   NOTIFICATIONS_COMPLETED = 'notifications_completed',
   CHARACTER_SELECTED = 'character_selected',
-  GOALS_SET = 'goals_set',
   COMPLETED = 'completed',
 }
 

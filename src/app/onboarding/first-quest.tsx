@@ -45,7 +45,7 @@ export default function FirstQuestScreen() {
       console.log(
         'First quest screen: Already have pending quest, navigating to pending-quest screen'
       );
-      router.replace('/(app)/pending-quest');
+      router.replace('/pending-quest');
     }
   }, [pendingQuest, router]);
 

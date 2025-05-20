@@ -75,6 +75,10 @@ export default function Home() {
     opacity: scrollContainerOpacity.value,
   }));
 
+  useEffect(() => {
+    console.log('Home screen is mounting');
+  }, []);
+
   // Get next quest options based on the last completed story quest
   useEffect(() => {
     if (activeQuest || pendingQuest) return; // Don't update if there's an active quest
