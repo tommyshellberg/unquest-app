@@ -1,6 +1,6 @@
 {
   "name": "unquest/unquest",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -75,6 +75,7 @@
     "expo-splash-screen": "~0.29.24",
     "expo-status-bar": "~2.0.1",
     "expo-system-ui": "~4.0.9",
+    "expo-updates": "~0.27.4",
     "i18next": "^23.14.0",
     "lodash.memoize": "^4.1.2",
     "lottie-react-native": "7.1.0",

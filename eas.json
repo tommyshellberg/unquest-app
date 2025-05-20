@@ -36,7 +36,8 @@
         "APP_ENV": "preview",
         "EXPO_NO_DOTENV": "1",
         "FLIPPER_DISABLE": "1"
-      }
+      },
+      "channel": "preview"
     },
     "staging": {
       "channel": "staging",
@@ -68,7 +69,8 @@
       "env": {
         "APP_ENV": "development",
         "EXPO_NO_DOTENV": "1"
-      }
+      },
+      "channel": "development"
     },
     "simulator-apk": {
       "pnpm": "9.12.3",
@@ -83,7 +85,8 @@
       "env": {
         "APP_ENV": "production",
         "EXPO_NO_DOTENV": "1"
-      }
+      },
+      "channel": "simulator-apk"
     }
   },
   "submit": {
