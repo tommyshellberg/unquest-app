@@ -106,7 +106,7 @@ export default function Settings() {
         setNotificationsEnabled(granted);
       } else {
         // Disabling notifications
-        await setItem(NOTIFICATIONS_ENABLED_KEY, 'false');
+        setItem(NOTIFICATIONS_ENABLED_KEY, 'false');
         setNotificationsEnabled(false);
       }
     } catch (error) {

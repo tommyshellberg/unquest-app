@@ -34,8 +34,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: './assets/images/icon.png',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
+  runtimeVersion: Env.VERSION.toString(),
   updates: {
     fallbackToCacheTimeout: 0,
+    url: 'https://u.expo.dev/30766cfb-793b-416b-ac27-d37f2e0dff9a',
+    checkAutomatically: 'ON_LOAD',
   },
   assetBundlePatterns: ['**/*'],
   ios: {
