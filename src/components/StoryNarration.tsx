@@ -1,8 +1,14 @@
 import { Feather } from '@expo/vector-icons';
-import { AudioModule, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { Audio } from 'expo-av';
 import { useFocusEffect } from 'expo-router';
-import React, { useCallback, useEffect, useRef } from 'react';
-import { AppState, type AppStateStatus, Pressable, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  AppState,
+  type AppStateStatus,
+  Platform,
+  Pressable,
+  View,
+} from 'react-native';
 
 import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
@@ -12,107 +18,256 @@ type Props = {
   quest: StoryQuestTemplate;
 };
 
-// Create a mapping of paths to actual assets
+// Audio mapping to handle cases where we receive a number instead of a proper asset
 const AUDIO_ASSETS = {
-  '@/../assets/audio/quest-1.mp3': require('@/../assets/audio/quest-1.mp3'),
-  '@/../assets/audio/quest-1a.mp3': require('@/../assets/audio/quest-1a.mp3'),
-  '@/../assets/audio/quest-1b.mp3': require('@/../assets/audio/quest-1b.mp3'),
-  '@/../assets/audio/quest-2.mp3': require('@/../assets/audio/quest-2.mp3'),
-  '@/../assets/audio/quest-2a.mp3': require('@/../assets/audio/quest-2a.mp3'),
-  '@/../assets/audio/quest-2b.mp3': require('@/../assets/audio/quest-2b.mp3'),
-  '@/../assets/audio/quest-3.mp3': require('@/../assets/audio/quest-3.mp3'),
-  '@/../assets/audio/quest-3a.mp3': require('@/../assets/audio/quest-3a.mp3'),
-  '@/../assets/audio/quest-3b.mp3': require('@/../assets/audio/quest-3b.mp3'),
-  '@/../assets/audio/quest-4.mp3': require('@/../assets/audio/quest-4.mp3'),
-  '@/../assets/audio/quest-4a.mp3': require('@/../assets/audio/quest-4a.mp3'),
-  '@/../assets/audio/quest-4b.mp3': require('@/../assets/audio/quest-4b.mp3'),
-  '@/../assets/audio/quest-5.mp3': require('@/../assets/audio/quest-5.mp3'),
-  '@/../assets/audio/quest-5a.mp3': require('@/../assets/audio/quest-5a.mp3'),
-  '@/../assets/audio/quest-5b.mp3': require('@/../assets/audio/quest-5b.mp3'),
-  '@/../assets/audio/quest-6.mp3': require('@/../assets/audio/quest-6.mp3'),
-  '@/../assets/audio/quest-6a.mp3': require('@/../assets/audio/quest-6a.mp3'),
-  '@/../assets/audio/quest-6b.mp3': require('@/../assets/audio/quest-6b.mp3'),
-  '@/../assets/audio/quest-7.mp3': require('@/../assets/audio/quest-7.mp3'),
-  '@/../assets/audio/quest-7a.mp3': require('@/../assets/audio/quest-7a.mp3'),
-  '@/../assets/audio/quest-7b.mp3': require('@/../assets/audio/quest-7b.mp3'),
-  '@/../assets/audio/quest-8.mp3': require('@/../assets/audio/quest-8.mp3'),
-  '@/../assets/audio/quest-8a.mp3': require('@/../assets/audio/quest-8a.mp3'),
-  '@/../assets/audio/quest-8b.mp3': require('@/../assets/audio/quest-8b.mp3'),
-  '@/../assets/audio/quest-9.mp3': require('@/../assets/audio/quest-9.mp3'),
-  '@/../assets/audio/quest-9a.mp3': require('@/../assets/audio/quest-9a.mp3'),
-  '@/../assets/audio/quest-9b.mp3': require('@/../assets/audio/quest-9b.mp3'),
-  '@/../assets/audio/quest-10.mp3': require('@/../assets/audio/quest-10.mp3'),
-  '@/../assets/audio/quest-10a.mp3': require('@/../assets/audio/quest-10a.mp3'),
-  '@/../assets/audio/quest-10b.mp3': require('@/../assets/audio/quest-10b.mp3'),
-};
-
-// Function to look up the audio asset by path
-const getAudioAsset = (audioPath: string) => {
-  if (!audioPath) return null;
-  return AUDIO_ASSETS[audioPath] || null;
+  'quest-1': require('@/../assets/audio/quest-1.mp3'),
+  'quest-1a': require('@/../assets/audio/quest-1a.mp3'),
+  'quest-1b': require('@/../assets/audio/quest-1b.mp3'),
+  'quest-2': require('@/../assets/audio/quest-2.mp3'),
+  'quest-2a': require('@/../assets/audio/quest-2a.mp3'),
+  'quest-2b': require('@/../assets/audio/quest-2b.mp3'),
+  'quest-3': require('@/../assets/audio/quest-3.mp3'),
+  'quest-3a': require('@/../assets/audio/quest-3a.mp3'),
+  'quest-3b': require('@/../assets/audio/quest-3b.mp3'),
+  'quest-4': require('@/../assets/audio/quest-4.mp3'),
+  'quest-4a': require('@/../assets/audio/quest-4a.mp3'),
+  'quest-4b': require('@/../assets/audio/quest-4b.mp3'),
+  'quest-5': require('@/../assets/audio/quest-5.mp3'),
+  'quest-5a': require('@/../assets/audio/quest-5a.mp3'),
+  'quest-5b': require('@/../assets/audio/quest-5b.mp3'),
+  'quest-6': require('@/../assets/audio/quest-6.mp3'),
+  'quest-6a': require('@/../assets/audio/quest-6a.mp3'),
+  'quest-6b': require('@/../assets/audio/quest-6b.mp3'),
+  'quest-7': require('@/../assets/audio/quest-7.mp3'),
+  'quest-7a': require('@/../assets/audio/quest-7a.mp3'),
+  'quest-7b': require('@/../assets/audio/quest-7b.mp3'),
+  'quest-8': require('@/../assets/audio/quest-8.mp3'),
+  'quest-8a': require('@/../assets/audio/quest-8a.mp3'),
+  'quest-8b': require('@/../assets/audio/quest-8b.mp3'),
+  'quest-9': require('@/../assets/audio/quest-9.mp3'),
+  'quest-9a': require('@/../assets/audio/quest-9a.mp3'),
+  'quest-9b': require('@/../assets/audio/quest-9b.mp3'),
+  'quest-10': require('@/../assets/audio/quest-10.mp3'),
 };
 
 export function StoryNarration({ quest }: Props) {
   const progressBarRef = useRef<ProgressBarRef>(null);
   const appStateRef = useRef(AppState.currentState);
-  const { audioFile } = quest;
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { id } = quest;
 
-  // Process the audio asset
-  const audioAsset = audioFile
-    ? typeof audioFile === 'string'
-      ? getAudioAsset(audioFile)
-      : audioFile
-    : null;
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
 
-  // Initialize audio player
-  const player = useAudioPlayer(audioAsset || undefined);
+  // Prepare audio source based on platform
+  const resolveAudioSource = () => {
+    if (!id) return null;
 
+    if (Platform.OS === 'android' && !__DEV__) {
+      // For Android production builds, use Asset module
+      const asset = Audio.Sound.createAsync({ uri: `asset:///raw/${id}` });
+      return asset;
+    }
+
+    // For iOS and dev builds, use the require'd file
+    return AUDIO_ASSETS[id];
+  };
+
+  // Initialize Audio
   useEffect(() => {
-    (async () => {
-      await AudioModule.setAudioModeAsync({
-        playsInSilentMode: true,
-      });
-    })();
+    const initAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: true,
+        });
+      } catch (error) {
+        console.error('Failed to set audio mode:', error);
+      }
+    };
+
+    initAudio();
+
+    return () => {
+      // Clean up
+      if (soundRef.current) {
+        soundRef.current
+          .unloadAsync()
+          .catch((e) => console.log('Unload error:', e));
+        soundRef.current = null;
+      }
+      stopProgressTracking();
+    };
   }, []);
 
-  // Get reactive status updates
-  const playerStatus = useAudioPlayerStatus(player);
+  // Load audio when component mounts
+  useEffect(() => {
+    let isMounted = true;
 
-  // Calculate progress percentage based on status
-  const progress = playerStatus.duration
-    ? playerStatus.currentTime / playerStatus.duration
-    : 0;
-
-  // Check if audio has completed playback
-  const isCompleted =
-    playerStatus.didJustFinish ||
-    (playerStatus.duration > 0 &&
-      playerStatus.currentTime >= playerStatus.duration &&
-      !playerStatus.playing);
-
-  // Pause audio when screen loses focus (navigation)
-  useFocusEffect(
-    useCallback(() => {
-      // Setup - do nothing, we only want to pause on blur
-
-      // Cleanup - pause audio when navigating away
-      return () => {
-        if (player.playing) {
-          player.pause();
+    const loadAudio = async () => {
+      try {
+        // Clean up any existing sound object
+        if (soundRef.current) {
+          await soundRef.current.unloadAsync();
+          soundRef.current = null;
         }
-      };
-    }, [player])
-  );
 
-  // Set up app state change listener to pause audio when app goes to background
+        const audioSource = resolveAudioSource();
+        if (!audioSource) {
+          throw new Error('Failed to resolve audio source');
+        }
+
+        setIsLoading(true);
+
+        // Create the sound object
+        const { sound, status } = await Audio.Sound.createAsync(
+          audioSource,
+          { shouldPlay: false },
+          onPlaybackStatusUpdate
+        );
+
+        if (!isMounted) {
+          await sound.unloadAsync();
+          return;
+        }
+
+        soundRef.current = sound;
+
+        if (status.isLoaded) {
+          setDuration(status.durationMillis || 0);
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error loading audio:', error);
+        if (isMounted) {
+          setLoadError(
+            `Failed to load audio: ${error instanceof Error ? error.message : 'unknown error'}`
+          );
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadAudio();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  // Status update callback
+  const onPlaybackStatusUpdate = (status) => {
+    if (!status.isLoaded) return;
+
+    setIsPlaying(status.isPlaying);
+
+    if (status.didJustFinish) {
+      setIsPlaying(false);
+      setProgress(0);
+      stopProgressTracking();
+
+      if (progressBarRef.current) {
+        progressBarRef.current.setProgress(0);
+      }
+    }
+  };
+
+  // Progress tracking
+  const startProgressTracking = () => {
+    stopProgressTracking();
+
+    progressIntervalRef.current = setInterval(async () => {
+      if (!soundRef.current) {
+        stopProgressTracking();
+        return;
+      }
+
+      try {
+        const status = await soundRef.current.getStatusAsync();
+        if (status.isLoaded && status.durationMillis) {
+          const newProgress = status.positionMillis / status.durationMillis;
+          setProgress(newProgress);
+
+          if (progressBarRef.current) {
+            progressBarRef.current.setProgress(newProgress * 100);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting sound status:', error);
+        stopProgressTracking();
+      }
+    }, 100);
+  };
+
+  const stopProgressTracking = () => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  };
+
+  // Play control
+  const togglePlayback = async () => {
+    if (!soundRef.current) return;
+
+    try {
+      if (isPlaying) {
+        await soundRef.current.pauseAsync();
+        setIsPlaying(false);
+        stopProgressTracking();
+      } else {
+        await soundRef.current.playAsync();
+        setIsPlaying(true);
+        startProgressTracking();
+      }
+    } catch (error) {
+      console.error('Error toggling playback:', error);
+    }
+  };
+
+  // Replay control
+  const handleReplay = async () => {
+    if (!soundRef.current) return;
+
+    try {
+      await soundRef.current.stopAsync();
+      await soundRef.current.playFromPositionAsync(0);
+      setIsPlaying(true);
+      setProgress(0);
+
+      if (progressBarRef.current) {
+        progressBarRef.current.setProgress(0);
+      }
+
+      startProgressTracking();
+    } catch (error) {
+      console.error('Error replaying:', error);
+    }
+  };
+
+  // App state changes
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (
         appStateRef.current === 'active' &&
         nextAppState.match(/inactive|background/)
       ) {
-        // App is going to background, pause audio
-        player.pause();
+        // Pause playback when app goes to background
+        if (soundRef.current && isPlaying) {
+          soundRef.current
+            .pauseAsync()
+            .then(() => setIsPlaying(false))
+            .catch((e) =>
+              console.error('Error pausing on app state change:', e)
+            );
+          stopProgressTracking();
+        }
       }
       appStateRef.current = nextAppState;
     };
@@ -122,46 +277,55 @@ export function StoryNarration({ quest }: Props) {
       handleAppStateChange
     );
 
-    // Ensure audio is only active in foreground
-    AudioModule.setIsAudioActiveAsync(true);
-
     return () => {
       subscription.remove();
     };
-  }, [player]);
+  }, [isPlaying]);
 
-  // Update progress bar when position changes
-  useEffect(() => {
-    // Ensure smooth transition to 100% when completed
-    if (isCompleted && progressBarRef.current) {
-      progressBarRef.current.setProgress(100);
-    } else {
-      progressBarRef.current?.setProgress(progress * 100);
-    }
-  }, [progress, isCompleted]);
+  // Route focus changes
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        // Pause when navigating away
+        if (soundRef.current && isPlaying) {
+          soundRef.current
+            .pauseAsync()
+            .then(() => setIsPlaying(false))
+            .catch((e) => console.error('Error pausing on blur:', e));
+          stopProgressTracking();
+        }
+      };
+    }, [isPlaying])
+  );
 
-  // Format seconds to MM:SS
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  // Format seconds to MM:SS format
+  const formatTime = (milliseconds: number) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  // Early return if no audio
-  if (!audioFile || !audioAsset) {
-    return null;
+  if (loadError) {
+    return (
+      <View className="bg-background-light mt-4 w-full items-center rounded-lg p-4">
+        <Text className="text-red-500">{loadError}</Text>
+      </View>
+    );
   }
 
-  // Handle replay
-  const handleReplay = () => {
-    player.seekTo(0);
-    try {
-      player.play();
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  if (isLoading) {
+    return (
+      <View className="bg-background-light mt-4 w-full items-center rounded-lg p-4">
+        <Text className="text-neutral-600">Loading audio narration...</Text>
+      </View>
+    );
+  }
 
+  const currentPosition = progress * duration;
+  const isCompleted = duration > 0 && currentPosition >= duration && !isPlaying;
+
+  // Render player UI
   return (
     <View className="bg-background-light mt-4 w-full rounded-lg p-4">
       <View className="mb-2 w-full">
@@ -172,45 +336,28 @@ export function StoryNarration({ quest }: Props) {
         />
         <View className="mt-1 flex-row justify-between">
           <Text className="text-xs text-neutral-600">
-            {formatTime(playerStatus.currentTime)}
+            {formatTime(currentPosition)}
           </Text>
           <Text className="text-xs text-neutral-600">
-            {formatTime(playerStatus.duration)}
+            {formatTime(duration)}
           </Text>
         </View>
       </View>
 
       <View className="mt-2 flex-row items-center justify-center">
-        <Pressable
-          className="mx-4 p-2"
-          onPress={handleReplay}
-          disabled={!playerStatus.isLoaded}
-        >
-          <Feather
-            name="rotate-ccw"
-            size={24}
-            color="#3B7A57"
-            style={!playerStatus.isLoaded ? { opacity: 0.5 } : undefined}
-          />
+        <Pressable className="mx-4 p-2" onPress={handleReplay}>
+          <Feather name="rotate-ccw" size={24} color="#3B7A57" />
         </Pressable>
 
-        {/* Only show play/pause button if not completed */}
         {!isCompleted ? (
-          <Pressable
-            onPress={() =>
-              playerStatus.playing ? player.pause() : player.play()
-            }
-            disabled={!playerStatus.isLoaded}
-          >
+          <Pressable onPress={togglePlayback}>
             <Feather
-              name={playerStatus.playing ? 'pause-circle' : 'play-circle'}
+              name={isPlaying ? 'pause-circle' : 'play-circle'}
               size={32}
               color="#3B7A57"
-              style={!playerStatus.isLoaded ? { opacity: 0.5 } : undefined}
             />
           </Pressable>
         ) : (
-          /* Show a disabled play button to prevent layout shift */
           <Feather
             name="play-circle"
             size={32}

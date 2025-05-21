@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import {
   cancelStreakWarningNotification,
-  scheduleTomorrowStreakWarning,
+  scheduleStreakWarningNotification,
 } from '@/lib/services/notifications';
 import QuestTimer from '@/lib/services/quest-timer';
 import { getItem, removeItem, setItem } from '@/lib/storage';
@@ -136,7 +136,7 @@ export const useQuestStore = create<QuestState>()(
             // and schedule tomorrow's warning
             if (isFirstQuestOfTheDay) {
               cancelStreakWarningNotification()
-                .then(() => scheduleTomorrowStreakWarning())
+                .then(() => scheduleStreakWarningNotification(true))
                 .catch((err) =>
                   console.error('Error scheduling streak notifications:', err)
                 );
