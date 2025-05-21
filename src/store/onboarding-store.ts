@@ -8,6 +8,8 @@ export enum OnboardingStep {
   INTRO_COMPLETED = 'intro_completed',
   NOTIFICATIONS_COMPLETED = 'notifications_completed',
   CHARACTER_SELECTED = 'character_selected',
+  FIRST_QUEST_COMPLETED = 'first_quest_completed',
+  SIGNUP_PROMPT_SHOWN = 'signup_prompt_shown',
   COMPLETED = 'completed',
 }
 
@@ -18,6 +20,8 @@ type OnboardingState = {
   // Actions
   setCurrentStep: (step: OnboardingStep) => void;
   isOnboardingComplete: () => boolean;
+  hasCompletedFirstQuest: () => boolean;
+  hasSeenSignupPrompt: () => boolean;
   resetOnboarding: () => void;
 };
 
@@ -43,8 +47,27 @@ export const useOnboardingStore = create<OnboardingState>()(
 
       // Step management
       setCurrentStep: (step) => set({ currentStep: step }),
-      isOnboardingComplete: () =>
-        get().currentStep === OnboardingStep.COMPLETED,
+      isOnboardingComplete: () => {
+        // Only consider onboarding complete when COMPLETED step is reached
+        return get().currentStep === OnboardingStep.COMPLETED;
+      },
+
+      hasCompletedFirstQuest: () => {
+        const step = get().currentStep;
+        return (
+          step === OnboardingStep.FIRST_QUEST_COMPLETED ||
+          step === OnboardingStep.SIGNUP_PROMPT_SHOWN ||
+          step === OnboardingStep.COMPLETED
+        );
+      },
+
+      hasSeenSignupPrompt: () => {
+        const step = get().currentStep;
+        return (
+          step === OnboardingStep.SIGNUP_PROMPT_SHOWN ||
+          step === OnboardingStep.COMPLETED
+        );
+      },
 
       resetOnboarding: () =>
         set({

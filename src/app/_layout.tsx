@@ -19,11 +19,10 @@ import { APIProvider } from '@/api';
 import { ReminderPromptController } from '@/components/ReminderPromptController';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
+import { useNavigationGuard } from '@/lib/navigation/use-navigation-guard';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
-import { getItem } from '@/lib/storage';
 import { useThemeConfig } from '@/lib/use-theme-config';
 import { useCharacterStore } from '@/store/character-store';
-import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 export { ErrorBoundary } from 'expo-router';
@@ -59,7 +58,6 @@ function RootLayout() {
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
-  const currentStep = useOnboardingStore((s) => s.currentStep);
   const pathname = usePathname();
 
   // Add both quest states
@@ -93,59 +91,10 @@ function RootLayout() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!hydrationFinished || authStatus === 'hydrating') return;
-
-    // First, explicitly check onboarding completion
-    const isOnboardingComplete = useOnboardingStore
-      .getState()
-      .isOnboardingComplete();
-    const isOnboardingPath =
-      pathname.includes('onboarding') || pathname.includes('welcome');
-
-    // If onboarding isn't complete, always redirect to the correct onboarding step
-    // regardless of auth status
-    if (!isOnboardingComplete) {
-      if (!isOnboardingPath && !pathname.includes('pending-quest')) {
-        // Get the target step from the onboarding store
-        console.log('Redirecting to onboarding - current step:', currentStep);
-        router.replace('/onboarding');
-        return;
-      }
-    }
-
-    // Only after the onboarding check, look at auth and public paths
-    const isPublicPath =
-      pathname.includes('onboarding') ||
-      pathname.includes('welcome') ||
-      pathname.includes('pending-quest') ||
-      pathname.includes('login');
-
-    // If we're at the beginning of onboarding, direct to welcome screen
-    if (
-      currentStep === OnboardingStep.NOT_STARTED &&
-      !pathname.includes('welcome')
-    ) {
-      router.replace('./welcome');
-      return;
-    }
-
-    // Don't check auth for public paths
-    if (isPublicPath) {
-      return;
-    }
-
-    // Only check auth for app routes after confirming we need to be there
-    if (authStatus !== 'signIn' && pathname.startsWith('/(app)')) {
-      console.log('Auth check failed, redirecting to login');
-      router.replace('/login');
-    }
-  }, [currentStep, pathname, hydrationFinished, authStatus]);
+  // Centralised navigation guard (replaces the large effect)
+  useNavigationGuard(hydrationFinished && authStatus !== 'hydrating');
 
   useEffect(() => {
-    // Skip until hydration is complete
-    if (!hydrationFinished || authStatus === 'hydrating') return;
-
     if (pendingQuest) {
       // Check if we're already on the pending-quest screen
       if (pathname.includes('pending-quest')) {
@@ -218,50 +167,6 @@ function RootLayout() {
     checkAndScheduleStreakWarning();
   }, []);
 
-  // Add this effect to handle the post-quest signup flow
-  useEffect(() => {
-    if (!hydrationFinished || authStatus === 'hydrating') return;
-
-    console.log('provisional access token', getItem('provisionalAccessToken'));
-    console.log('provisional user id', getItem('provisionalUserId'));
-
-    // Get the data we need to make decisions
-    const hasProvisionalToken = !!getItem('provisionalAccessToken');
-    const hasProvisionalUserId = !!getItem('provisionalUserId');
-    const completedQuests = useQuestStore.getState().completedQuests;
-    const hasCompletedQuests = completedQuests.length > 0;
-    const isOnboardingComplete = useOnboardingStore
-      .getState()
-      .isOnboardingComplete();
-
-    console.log('checking for signup redirect');
-    console.log('hasProvisionalToken', hasProvisionalToken);
-    console.log('hasProvisionalUserId', hasProvisionalUserId);
-    console.log('hasCompletedQuests', hasCompletedQuests);
-    console.log('authStatus', authStatus);
-    console.log('isOnboardingComplete', isOnboardingComplete);
-    console.log('pathname', pathname);
-
-    // If user:
-    // 1. Has a provisional account (token or ID exists)
-    // 2. Has completed at least one quest
-    // 3. Is not authenticated with a full account
-    // 4. Has completed onboarding
-    // 5. Is not already on the signup screen
-    if (
-      (hasProvisionalToken || hasProvisionalUserId) &&
-      hasCompletedQuests &&
-      authStatus !== 'signIn' &&
-      isOnboardingComplete &&
-      !pathname.includes('quest-completed-signup') &&
-      !pathname.includes('login')
-    ) {
-      console.log('Redirecting to quest completed signup screen');
-      router.replace('/quest-completed-signup');
-      return;
-    }
-  }, [hydrationFinished, authStatus, pathname]);
-
   const onLayoutRootView = useCallback(async () => {
     // Check both flags: hydration promise resolved AND auth status is final
     if (hydrationFinished && authStatus !== 'hydrating') {
@@ -282,7 +187,10 @@ function RootLayout() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="welcome" options={{ headerShown: false }} />
         <Stack.Screen name="pending-quest" options={{ headerShown: false }} />
-        <Stack.Screen name="quest/[id]" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="first-quest-result"
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="quest-completed-signup"
           options={{ headerShown: false }}

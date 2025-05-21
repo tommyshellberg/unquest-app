@@ -18,10 +18,20 @@ export default function OnboardingLayout() {
     [OnboardingStep.INTRO_COMPLETED]: '/onboarding/app-introduction',
     [OnboardingStep.NOTIFICATIONS_COMPLETED]: '/onboarding/choose-character',
     [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/first-quest',
+    [OnboardingStep.FIRST_QUEST_COMPLETED]: '/quest/quest-1',
+    [OnboardingStep.SIGNUP_PROMPT_SHOWN]: '/quest-completed-signup',
     [OnboardingStep.COMPLETED]: '/(app)',
   };
 
-  console.log('ONBOARDING LAYOUT');
+  console.log('ONBOARDING LAYOUT - current step:', currentStep, 'path:', path);
+
+  // If we're on the signup screen and that's the current step, don't redirect
+  if (
+    path === '/quest-completed-signup' &&
+    currentStep === OnboardingStep.SIGNUP_PROMPT_SHOWN
+  ) {
+    return <Slot />;
+  }
 
   // Backward compatibility: if they've completed a quest already before introducing onboarding steps, redirect to the app
   if (
@@ -51,7 +61,6 @@ export default function OnboardingLayout() {
     !(currentStep === OnboardingStep.NOT_STARTED && path === '/onboarding')
   ) {
     posthog.capture('onboarding_redirect_to_correct_target');
-
     return <Redirect href={target as any} />;
   }
 

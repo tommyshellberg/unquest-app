@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, {
   cancelAnimation,
+  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -12,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Image, Text, View } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
@@ -21,11 +23,20 @@ import { StoryNarration } from './StoryNarration';
 import { StreakCounter } from './StreakCounter';
 
 type QuestCompleteProps = {
-  quest: Quest;
+  quest: Quest & { heroName?: string };
   story: string;
+  onContinue?: () => void;
+  continueText?: string;
+  showActionButton?: boolean;
 };
 
-export function QuestComplete({ quest, story }: QuestCompleteProps) {
+export function QuestComplete({
+  quest,
+  story,
+  onContinue,
+  continueText = 'Continue',
+  showActionButton = true,
+}: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
   const lottieRef = useRef<LottieView>(null);
@@ -96,6 +107,11 @@ export function QuestComplete({ quest, story }: QuestCompleteProps) {
   // Determine if this is a story quest or custom quest - they need different card styling
   const isStoryQuest = quest.mode === 'story';
 
+  const handleBackToJournal = () => {
+    // Implement the logic to handle going back to the journal
+    console.log('Going back to journal');
+  };
+
   return (
     <View className="relative flex-1">
       {/* Background Image */}
@@ -138,12 +154,11 @@ export function QuestComplete({ quest, story }: QuestCompleteProps) {
         </View>
 
         <Animated.View
+          entering={FadeInDown.delay(200).duration(600)}
           className="my-4 w-full"
-          // Add flex-1 only for story quests, which usually have longer content
           style={[storyStyle, isStoryQuest ? { flex: 1 } : {}]}
         >
           <Card
-            // Use dynamic styling based on quest type
             className={`rounded-xl bg-neutral-100 ${
               isStoryQuest ? 'flex-1' : 'auto-h'
             }`}
@@ -168,13 +183,23 @@ export function QuestComplete({ quest, story }: QuestCompleteProps) {
           )}
         </Animated.View>
 
-        <View className="mt-4 w-full items-center gap-4">
-          <Animated.View style={rewardStyle}>
-            <Text className="text-cream text-center text-lg font-bold drop-shadow-md">
+        <Animated.View entering={FadeInDown.delay(400).duration(600)}>
+          <View className="mb-6 items-center">
+            <Text className="text-lg font-bold">
               Reward: {quest.reward.xp} XP
             </Text>
-          </Animated.View>
-        </View>
+          </View>
+
+          {showActionButton && onContinue && (
+            <Button
+              label={continueText}
+              onPress={onContinue}
+              className="rounded-lg bg-primary-500 py-3 shadow-md"
+              textClassName="font-semibold text-white"
+              accessibilityLabel={continueText}
+            />
+          )}
+        </Animated.View>
       </View>
     </View>
   );

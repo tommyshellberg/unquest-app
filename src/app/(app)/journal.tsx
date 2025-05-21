@@ -134,7 +134,7 @@ export default function JournalScreen() {
                 key={`${quest.id}-${quest.stopTime}`}
                 onPress={() => {
                   router.push({
-                    pathname: '/quest/[id]',
+                    pathname: '/(app)/quest/[id]',
                     params: {
                       id: quest.id,
                       timestamp: quest.stopTime?.toString(),

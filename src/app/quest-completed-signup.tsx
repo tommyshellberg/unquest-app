@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Image } from 'react-native';
 import Animated, {
   FadeIn,
@@ -9,18 +9,36 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { useOnboardingStore } from '@/store/onboarding-store';
+import { OnboardingStep } from '@/store/onboarding-store';
 
 export default function QuestCompletedSignupScreen() {
   const posthog = usePostHog();
+  const setOnboardingStep = useOnboardingStore((state) => state.setCurrentStep);
+  const currentStep = useOnboardingStore((state) => state.currentStep);
 
   useEffect(() => {
+    console.log(
+      'QuestCompletedSignupScreen mounted, current step:',
+      currentStep
+    );
     posthog.capture('first_quest_completed_signup_screen_viewed');
-  }, [posthog]);
+  }, [posthog, currentStep]);
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = useCallback(() => {
+    console.log('Create account button pressed, setting step to COMPLETED');
     posthog.capture('first_quest_completed_signup_cta_clicked');
-    router.push('/login');
-  };
+
+    // Important: Update the onboarding step to COMPLETED when navigating to login
+    // This prevents further redirects back to the signup screen
+    setOnboardingStep(OnboardingStep.COMPLETED);
+
+    // Use replace instead of push to avoid navigation stack issues
+    // Small delay to ensure the state is updated before navigation
+    setTimeout(() => {
+      router.replace('/login');
+    }, 100);
+  }, [posthog, setOnboardingStep]);
 
   return (
     <View className="flex-1">
@@ -43,14 +61,14 @@ export default function QuestCompletedSignupScreen() {
 
           <Animated.View entering={FadeInDown.delay(600)}>
             <Text className="mb-2 font-semibold text-white">
-              You’ve completed your first quest—Vaedros already feels safer!
+              You've completed your first quest—Vaedros already feels safer!
             </Text>
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(1100)}>
             <Text className="mb-4">
-              Create a free account to keep your hero’s story alive and unlock
-              the realm’s social magic.
+              Create a free account to keep your hero's story alive and unlock
+              the realm's social magic.
             </Text>
           </Animated.View>
 
