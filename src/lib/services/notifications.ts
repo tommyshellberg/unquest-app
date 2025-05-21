@@ -17,7 +17,6 @@ const STREAK_WARNING_ID = 'streak-warning';
 // If the SchedulableTriggerInputTypes enum isn't directly available, define it
 enum SchedulableTriggerInputTypes {
   TIME_INTERVAL = 'timeInterval',
-  CALENDAR = 'calendar',
   DAILY = 'daily',
 }
 
@@ -181,18 +180,28 @@ export const cancelDailyReminderNotification = async (): Promise<boolean> => {
   }
 };
 
-// Update the scheduleStreakWarningNotification function
-export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
+// Create a centralized function for scheduling streak warnings
+export const scheduleStreakWarningNotification = async (
+  forTomorrow = false
+): Promise<boolean> => {
   // Check if notifications are enabled
   const enabled = await areNotificationsEnabled();
-  console.log('scheduleStreakWarningNotification enabled: ', enabled);
   if (!enabled) {
+    console.log('Notifications not enabled, skipping streak warning');
     return false;
   }
 
   // Check if streak warning is enabled in settings
   const streakWarning = useSettingsStore.getState().streakWarning;
   if (!streakWarning.enabled) {
+    console.log('Streak warnings disabled in settings');
+    return false;
+  }
+
+  // Get current streak count from character store
+  const dailyQuestStreak = useCharacterStore.getState().dailyQuestStreak;
+  if (dailyQuestStreak === 0) {
+    console.log('No active streak, skipping warning');
     return false;
   }
 
@@ -200,115 +209,71 @@ export const scheduleStreakWarningNotification = async (): Promise<boolean> => {
     // Cancel any existing streak warnings first
     await ExpoNotifications.cancelScheduledNotificationAsync(STREAK_WARNING_ID);
 
-    // Get current streak count from character store
-    const dailyQuestStreak = useCharacterStore.getState().dailyQuestStreak;
-
-    // Don't schedule if streak is 0
-    if (dailyQuestStreak === 0) {
-      return false;
+    // Target date: today or tomorrow
+    const targetDate = new Date();
+    if (forTomorrow) {
+      targetDate.setDate(targetDate.getDate() + 1);
     }
 
-    // Get current date and set time to the user's preferred time (default 6 PM)
-    const today = new Date();
-    const warningTime = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      streakWarning.time?.hour || 18, // Use settings or default to 6 PM
-      streakWarning.time?.minute || 0 // Use settings or default to 0 minutes
-    );
+    // Set time to user's preferred time
+    const hour = streakWarning.time?.hour || 18; // Default 6 PM
+    const minute = streakWarning.time?.minute || 0;
 
-    console.log('warningTime: ', warningTime);
-    console.log('today: ', today);
+    targetDate.setHours(hour, minute, 0, 0);
 
-    // If it's already past the set time, schedule for tomorrow instead
-    if (today > warningTime) {
-      console.log('scheduling tomorrow');
-      return await scheduleTomorrowStreakWarning();
+    // Check if we need to schedule for tomorrow instead (if today's time has passed)
+    const now = new Date();
+    if (!forTomorrow && now > targetDate) {
+      console.log('Time already passed today, scheduling for tomorrow instead');
+      return scheduleStreakWarningNotification(true);
     }
 
-    // Calculate seconds until the warning time
-    const secondsUntilWarning = Math.floor(
-      (warningTime.getTime() - today.getTime()) / 1000
-    );
-    console.log('secondsUntilWarning: ', secondsUntilWarning);
+    // Content is the same regardless of timing
+    const content = {
+      title: `Don't break your ${dailyQuestStreak} day streak! 🔥`,
+      body: 'Complete a quest today to keep your streak going',
+      data: { screen: '/(app)' },
+      sound: true,
+    };
 
-    await ExpoNotifications.scheduleNotificationAsync({
-      identifier: STREAK_WARNING_ID,
-      content: {
-        title: `Don't break your ${dailyQuestStreak} day streak! 🔥`,
-        body: 'Complete a quest today to keep your streak going',
-        data: { screen: '/(app)' }, // Navigate to home screen
-        sound: true,
-      },
-      trigger: {
+    // Use different trigger strategies based on whether it's for today or tomorrow
+    let trigger;
+    if (forTomorrow || targetDate.getDate() !== now.getDate()) {
+      // For tomorrow, use DAILY trigger type which works on both platforms
+      trigger = {
+        type: SchedulableTriggerInputTypes.DAILY,
+        hour,
+        minute,
+        channelId: Platform.OS === 'android' ? QUEST_CHANNEL_ID : undefined,
+      };
+      console.log(
+        `Scheduling streak warning for tomorrow at ${hour}:${minute}`
+      );
+    } else {
+      // For today, calculate seconds until the target time
+      const secondsUntilWarning = Math.floor(
+        (targetDate.getTime() - now.getTime()) / 1000
+      );
+      trigger = {
         type: SchedulableTriggerInputTypes.TIME_INTERVAL,
         seconds: secondsUntilWarning,
         channelId: Platform.OS === 'android' ? QUEST_CHANNEL_ID : undefined,
-      },
+      };
+      console.log(
+        `Scheduling streak warning for today in ${secondsUntilWarning} seconds`
+      );
+    }
+
+    // Schedule the notification
+    await ExpoNotifications.scheduleNotificationAsync({
+      identifier: STREAK_WARNING_ID,
+      content,
+      trigger,
     });
 
-    console.log(
-      `Streak warning scheduled for today at ${warningTime.toLocaleTimeString()}`
-    );
     return true;
   } catch (error) {
     console.error('Failed to schedule streak warning:', error);
-    return false;
-  }
-};
-
-export const scheduleTomorrowStreakWarning = async (): Promise<boolean> => {
-  // Check if notifications are enabled
-  const enabled = await areNotificationsEnabled();
-  if (!enabled) {
-    return false;
-  }
-
-  // Check if streak warning is enabled in settings
-  const streakWarning = useSettingsStore.getState().streakWarning;
-  if (!streakWarning.enabled) {
-    return false;
-  }
-
-  try {
-    // Cancel any existing streak warnings first
-    await ExpoNotifications.cancelScheduledNotificationAsync(STREAK_WARNING_ID);
-
-    // Get current streak count from character store
-    const dailyQuestStreak = useCharacterStore.getState().dailyQuestStreak;
-
-    // Schedule for tomorrow at user's preferred time
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(
-      streakWarning.time?.hour || 18,
-      streakWarning.time?.minute || 0,
-      0,
-      0
-    );
-
-    await ExpoNotifications.scheduleNotificationAsync({
-      identifier: STREAK_WARNING_ID,
-      content: {
-        title: `Don't break your ${dailyQuestStreak} day streak! 🔥`,
-        body: 'Complete a quest today to keep your streak going',
-        data: { screen: '/(app)' }, // Navigate to home screen
-        sound: true,
-      },
-      trigger: {
-        type: SchedulableTriggerInputTypes.CALENDAR,
-        date: tomorrow,
-        channelId: Platform.OS === 'android' ? QUEST_CHANNEL_ID : undefined,
-      },
-    });
-
-    console.log(
-      `Streak warning scheduled for tomorrow at ${tomorrow.toLocaleTimeString()}`
-    );
-    return true;
-  } catch (error) {
-    console.error("Failed to schedule tomorrow's streak warning:", error);
     return false;
   }
 };
