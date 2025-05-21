@@ -1,7 +1,7 @@
 import { Env } from '@env';
 import axios from 'axios';
 
-import { removeItem } from '@/lib/storage';
+import { getItem, removeItem } from '@/lib/storage';
 
 import { apiClient } from './common';
 import * as tokenService from './token';
@@ -33,7 +33,12 @@ export interface RegisterResponse {
  */
 export const requestMagicLink = async (email: string): Promise<void> => {
   try {
-    const response = await authClient.post('/auth/magiclink', { email });
+    const provisionalId = getItem('provisionalUserId');
+    console.log('provisionalId', provisionalId);
+    const response = await authClient.post('/auth/magiclink', {
+      email,
+      provisionalId,
+    });
     return response.data;
   } catch (error) {
     console.error('Magic link request error:', error);

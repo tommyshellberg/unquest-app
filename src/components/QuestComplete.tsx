@@ -194,8 +194,6 @@ export function QuestComplete({
             <Button
               label={continueText}
               onPress={onContinue}
-              className="rounded-lg bg-primary-500 py-3 shadow-md"
-              textClassName="font-semibold text-white"
               accessibilityLabel={continueText}
             />
           )}

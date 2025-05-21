@@ -40,11 +40,7 @@ export default function AppQuestDetailsScreen() {
     if (failedQuest && failedQuest.id === id) {
       resetFailedQuest();
     }
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(app)'); // Fallback to app home
-    }
+    router.replace('/(app)'); // Fallback to app home
   };
 
   useEffect(() => {
@@ -184,12 +180,6 @@ export default function AppQuestDetailsScreen() {
         <FailedQuest
           quest={quest}
           onRetry={() => {
-            // When retrying, we should clear the global failedQuest state for THIS quest,
-            // then navigate back. The previous screen (e.g., journal or home) can then decide
-            // if it wants to re-initiate the quest or offer other options.
-            if (failedQuest && failedQuest.id === id) {
-              resetFailedQuest();
-            }
             handleBackNavigation();
           }}
         />
