@@ -1,8 +1,14 @@
 import { Feather } from '@expo/vector-icons';
 import { AudioModule, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useFocusEffect } from 'expo-router';
-import React, { useCallback, useEffect, useRef } from 'react';
-import { AppState, type AppStateStatus, Pressable, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  AppState,
+  type AppStateStatus,
+  Platform,
+  Pressable,
+  View,
+} from 'react-native';
 
 import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
@@ -46,10 +52,33 @@ const AUDIO_ASSETS = {
   '@/../assets/audio/quest-10b.mp3': require('@/../assets/audio/quest-10b.mp3'),
 };
 
-// Function to look up the audio asset by path
-const getAudioAsset = (audioPath: string) => {
+// Non-hook function to get the asset path
+const getAssetPath = (audioPath: string) => {
   if (!audioPath) return null;
-  return AUDIO_ASSETS[audioPath] || null;
+
+  // For Android in production mode, we need special handling
+  if (Platform.OS === 'android' && !__DEV__) {
+    console.log('Android production mode detected, using special URI handling');
+
+    // Extract just the filename from the path
+    const fileName = audioPath.split('/').pop()?.split('.')[0];
+
+    if (!fileName) return null;
+
+    // Try the raw resource approach (similar to PR)
+    const rawResourceUri = `asset:///raw/${fileName}`;
+    console.log(`Using raw resource URI: ${rawResourceUri}`);
+    return { uri: rawResourceUri };
+  }
+
+  // Check if the path exists in our AUDIO_ASSETS object before accessing it
+  if (Object.prototype.hasOwnProperty.call(AUDIO_ASSETS, audioPath)) {
+    return AUDIO_ASSETS[audioPath as keyof typeof AUDIO_ASSETS];
+  }
+
+  // If it doesn't exist in our mapping, try to handle it as a URI
+  console.warn(`Audio asset not found for path: ${audioPath}`);
+  return null;
 };
 
 export function StoryNarration({ quest }: Props) {
@@ -57,16 +86,19 @@ export function StoryNarration({ quest }: Props) {
   const appStateRef = useRef(AppState.currentState);
   const { audioFile } = quest;
 
-  // Process the audio asset
-  const audioAsset = audioFile
-    ? typeof audioFile === 'string'
-      ? getAudioAsset(audioFile)
-      : audioFile
-    : null;
+  // State management
+  const [audioSource, setAudioSource] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
-  // Initialize audio player
-  const player = useAudioPlayer(audioAsset || undefined);
+  // Always initialize the player hook, even if we don't have a source yet
+  // Use a fallback empty object if no source is available
+  const player = useAudioPlayer(audioSource || {});
 
+  // Always get player status, even if loading
+  const playerStatus = useAudioPlayerStatus(player);
+
+  // Initialize audio
   useEffect(() => {
     (async () => {
       await AudioModule.setAudioModeAsync({
@@ -75,8 +107,23 @@ export function StoryNarration({ quest }: Props) {
     })();
   }, []);
 
-  // Get reactive status updates
-  const playerStatus = useAudioPlayerStatus(player);
+  // Load audio asynchronously
+  useEffect(() => {
+    const loadAudio = async () => {
+      try {
+        setIsLoading(true);
+        const source = getAssetPath(audioFile);
+        setAudioSource(source);
+      } catch (error) {
+        console.error('Error loading audio:', error);
+        setLoadError(error?.message || "Couldn't load audio");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAudio();
+  }, [audioFile]);
 
   // Calculate progress percentage based on status
   const progress = playerStatus.duration
@@ -93,8 +140,6 @@ export function StoryNarration({ quest }: Props) {
   // Pause audio when screen loses focus (navigation)
   useFocusEffect(
     useCallback(() => {
-      // Setup - do nothing, we only want to pause on blur
-
       // Cleanup - pause audio when navigating away
       return () => {
         if (player.playing) {
@@ -132,11 +177,13 @@ export function StoryNarration({ quest }: Props) {
 
   // Update progress bar when position changes
   useEffect(() => {
-    // Ensure smooth transition to 100% when completed
-    if (isCompleted && progressBarRef.current) {
-      progressBarRef.current.setProgress(100);
-    } else {
-      progressBarRef.current?.setProgress(progress * 100);
+    // Only update if we have a valid progress bar ref
+    if (progressBarRef.current) {
+      if (isCompleted) {
+        progressBarRef.current.setProgress(100);
+      } else {
+        progressBarRef.current.setProgress(progress * 100);
+      }
     }
   }, [progress, isCompleted]);
 
@@ -147,21 +194,38 @@ export function StoryNarration({ quest }: Props) {
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
 
-  // Early return if no audio
-  if (!audioFile || !audioAsset) {
-    return null;
-  }
-
   // Handle replay
   const handleReplay = () => {
-    player.seekTo(0);
-    try {
-      player.play();
-    } catch (error) {
-      console.error(error);
+    if (audioSource) {
+      player.seekTo(0);
+      try {
+        player.play();
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
+  // Render based on state
+  if (isLoading) {
+    return (
+      <View className="bg-background-light mt-4 w-full items-center rounded-lg p-4">
+        <Text className="text-neutral-600">Loading audio narration...</Text>
+      </View>
+    );
+  }
+
+  if (loadError || !audioSource) {
+    return (
+      <View className="bg-background-light mt-4 w-full items-center rounded-lg p-4">
+        <Text className="text-red-500">
+          {loadError || "Couldn't load audio narration"}
+        </Text>
+      </View>
+    );
+  }
+
+  // Now render the actual player UI
   return (
     <View className="bg-background-light mt-4 w-full rounded-lg p-4">
       <View className="mb-2 w-full">
@@ -194,7 +258,6 @@ export function StoryNarration({ quest }: Props) {
           />
         </Pressable>
 
-        {/* Only show play/pause button if not completed */}
         {!isCompleted ? (
           <Pressable
             onPress={() =>
@@ -210,7 +273,6 @@ export function StoryNarration({ quest }: Props) {
             />
           </Pressable>
         ) : (
-          /* Show a disabled play button to prevent layout shift */
           <Feather
             name="play-circle"
             size={32}
