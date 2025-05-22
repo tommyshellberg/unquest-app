@@ -125,29 +125,22 @@ describe('useNavigationGuard', () => {
     expect(mockedReplace).toHaveBeenCalledWith('/pending-quest');
   });
 
-  it('redirects to quest detail with timestamp if first quest was recently completed', () => {
+  it('redirects to /first-quest-result if first quest was recently completed during early onboarding', () => {
     mockQuestState.recentCompletedQuest = {
       id: 'quest-1',
-      stopTime: Date.now(),
+      stopTime: Date.now(), // stopTime is not strictly used by this rule but good for consistency
     };
-    mockOnboardingState.currentStep = OnboardingStep.FIRST_QUEST_COMPLETED;
-    jest.requireMock('expo-router').usePathname.mockReturnValue('/journal');
+    // User is in an onboarding step *before* FIRST_QUEST_COMPLETED
+    mockOnboardingState.currentStep = OnboardingStep.CHARACTER_SELECTED;
+    // User lands on a generic page like root, or reopens app
+    jest.requireMock('expo-router').usePathname.mockReturnValue('/');
     render(<TestComponent />);
     expect(mockedReplace).toHaveBeenCalledWith(
       expect.objectContaining({
-        pathname: '/quest/[id]',
-        params: expect.objectContaining({ id: 'quest-1' }),
+        pathname: '/first-quest-result',
+        params: { outcome: 'completed' },
       })
     );
-  });
-
-  it('redirects to /quest/quest-1 if currentStep is FIRST_QUEST_COMPLETED and user is not on quest detail', () => {
-    mockOnboardingState.currentStep = OnboardingStep.FIRST_QUEST_COMPLETED;
-    mockQuestState.recentCompletedQuest = null;
-    mockAuthState.status = 'signOut'; // User is not yet fully authenticated.
-    jest.requireMock('expo-router').usePathname.mockReturnValue('/journal');
-    render(<TestComponent />);
-    expect(mockedReplace).toHaveBeenCalledWith('/quest/quest-1');
   });
 
   it('redirects to signup prompt when step is SIGNUP_PROMPT_SHOWN and not on signup screen', () => {
@@ -204,5 +197,75 @@ describe('useNavigationGuard', () => {
       .usePathname.mockReturnValue('/quest-completed-signup');
     render(<TestComponent />);
     expect(mockedReplace).toHaveBeenCalledWith('/(app)');
+  });
+
+  it('does not redirect from /welcome to /login if onboarding is NOT_STARTED', () => {
+    mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+    jest.requireMock('expo-router').usePathname.mockReturnValue('/login'); // User is navigating to login
+    render(<TestComponent />);
+    expect(mockedReplace).not.toHaveBeenCalled();
+  });
+
+  // Tests for the new rule: Redirect to App if Signed In and Onboarding Complete
+  describe('when signed in and onboarding is complete', () => {
+    beforeEach(() => {
+      mockAuthState.status = 'signIn';
+      mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
+      mockQuestState.pendingQuest = null;
+      mockQuestState.failedQuest = null;
+      mockQuestState.recentCompletedQuest = null;
+    });
+
+    it('redirects from / to /(app)', () => {
+      jest.requireMock('expo-router').usePathname.mockReturnValue('/');
+      render(<TestComponent />);
+      expect(mockedReplace).toHaveBeenCalledWith('/(app)');
+    });
+
+    it('redirects from /welcome to /(app)', () => {
+      jest.requireMock('expo-router').usePathname.mockReturnValue('/welcome');
+      render(<TestComponent />);
+      expect(mockedReplace).toHaveBeenCalledWith('/(app)');
+    });
+
+    it('redirects from /login to /(app)', () => {
+      jest.requireMock('expo-router').usePathname.mockReturnValue('/login');
+      render(<TestComponent />);
+      expect(mockedReplace).toHaveBeenCalledWith('/(app)');
+    });
+
+    it('redirects from /onboarding to /(app)', () => {
+      jest
+        .requireMock('expo-router')
+        .usePathname.mockReturnValue('/onboarding');
+      render(<TestComponent />);
+      expect(mockedReplace).toHaveBeenCalledWith('/(app)');
+    });
+
+    it('redirects from /first-quest-result to /(app)', () => {
+      jest
+        .requireMock('expo-router')
+        .usePathname.mockReturnValue('/first-quest-result');
+      render(<TestComponent />);
+      expect(mockedReplace).toHaveBeenCalledWith('/(app)');
+    });
+
+    // This existing test case also fits here and is covered by the new rule.
+    // It can be kept for explicitness or if specific setup for this route is ever needed.
+    it('redirects from /quest-completed-signup to /(app)', () => {
+      jest
+        .requireMock('expo-router')
+        .usePathname.mockReturnValue('/quest-completed-signup');
+      render(<TestComponent />);
+      expect(mockedReplace).toHaveBeenCalledWith('/(app)');
+    });
+
+    it('does NOT redirect if already on an /app route', () => {
+      jest
+        .requireMock('expo-router')
+        .usePathname.mockReturnValue('/(app)/some-page');
+      render(<TestComponent />);
+      expect(mockedReplace).not.toHaveBeenCalled();
+    });
   });
 });

@@ -53,7 +53,8 @@ export function useNavigationGuard(enabled: boolean = true) {
     // ===== 0. Welcome for brand-new installs =====
     if (
       onboarding.currentStep === OnboardingStep.NOT_STARTED &&
-      !pathname.startsWith('/welcome')
+      !pathname.startsWith('/welcome') &&
+      !pathname.startsWith('/login') // Allow navigating to login from welcome
     ) {
       log('Redirecting to /welcome');
       router.replace('/welcome');
@@ -147,14 +148,36 @@ export function useNavigationGuard(enabled: boolean = true) {
       return;
     }
 
+    // ===== NEW RULE: Redirect to App if Signed In and Onboarding Complete =====
+    const nonAppRoutes = [
+      '/', // Root often redirects to welcome or onboarding initially
+      '/welcome',
+      '/login',
+      '/onboarding',
+      '/first-quest-result',
+      '/quest-completed-signup',
+    ];
+    if (
+      authStatus === 'signIn' &&
+      onboarding.currentStep === OnboardingStep.COMPLETED &&
+      nonAppRoutes.some((route) => pathname.startsWith(route)) && // Check if current path is one of the non-app routes
+      !pathname.startsWith('/(app)') // And not already in /app
+    ) {
+      log(
+        'User is signed in and onboarding is complete. Redirecting from non-app route to /(app).'
+      );
+      router.replace('/(app)');
+      return;
+    }
+
     // ===== 4. Main onboarding flow (pre-COMPLETED) =====
     // If onboarding is not COMPLETED and user tries to access (app) routes, send to /onboarding screen.
     // This rule should come after specific step checks like FIRST_QUEST_COMPLETED or SIGNUP_PROMPT_SHOWN
     // to allow those screens to be shown without being part of (app) group yet.
     if (
-      onboarding.currentStep < OnboardingStep.COMPLETED &&
-      onboarding.currentStep !== OnboardingStep.FIRST_QUEST_COMPLETED && // Allow /first-quest-result (which sets this)
-      onboarding.currentStep !== OnboardingStep.SIGNUP_PROMPT_SHOWN && // Allow /quest-completed-signup
+      onboarding.currentStep !== OnboardingStep.COMPLETED &&
+      onboarding.currentStep !== OnboardingStep.FIRST_QUEST_COMPLETED &&
+      onboarding.currentStep !== OnboardingStep.SIGNUP_PROMPT_SHOWN &&
       pathname.startsWith('/(app)')
     ) {
       log(

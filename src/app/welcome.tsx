@@ -1,6 +1,7 @@
 // src/app/index.tsx
 import { useRouter } from 'expo-router';
 import React from 'react';
+import { TouchableOpacity } from 'react-native';
 
 import {
   Button,
@@ -19,6 +20,11 @@ export default function WelcomeScreen() {
     setCurrentStep(OnboardingStep.INTRO_COMPLETED);
     // Navigate to onboarding since they haven't completed it yet.
     router.replace('/onboarding');
+  };
+
+  const handleLogin = () => {
+    // Navigate to the login screen
+    router.replace('/login');
   };
 
   return (
@@ -54,9 +60,17 @@ export default function WelcomeScreen() {
         <View className="mb-10">
           <Button
             testID="get-started-button"
-            label="Begin Your Journey"
+            label="Begin New Journey"
             onPress={handleGetStarted}
           />
+          <TouchableOpacity
+            onPress={handleLogin}
+            className="mt-4 items-center"
+            accessibilityRole="button"
+            accessibilityLabel="Log in to existing account"
+          >
+            <Text className="text-base underline">Have an account? Log In</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

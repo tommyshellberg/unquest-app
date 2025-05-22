@@ -33,12 +33,19 @@ export interface RegisterResponse {
  */
 export const requestMagicLink = async (email: string): Promise<void> => {
   try {
-    const provisionalId = getItem('provisionalUserId');
-    console.log('provisionalId', provisionalId);
-    const response = await authClient.post('/auth/magiclink', {
-      email,
-      provisionalId,
-    });
+    const provisionalIdFromStorage = getItem('provisionalUserId');
+    console.log('provisionalId from storage:', provisionalIdFromStorage);
+    const body: { email: string; provisionalId?: string } = { email };
+
+    // Only add provisionalId if it's a non-empty string
+    if (
+      typeof provisionalIdFromStorage === 'string' &&
+      provisionalIdFromStorage.length > 0
+    ) {
+      body.provisionalId = provisionalIdFromStorage;
+    }
+
+    const response = await authClient.post('/auth/magiclink', body);
     return response.data;
   } catch (error) {
     console.error('Magic link request error:', error);

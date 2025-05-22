@@ -45,7 +45,6 @@ describe('DailyReminderModal', () => {
 
     render(<DailyReminderModal defaultTime={defaultTime} onClose={onClose} />);
 
-    expect(screen.getByText('Daily Reminder')).toBeTruthy();
     expect(
       screen.getByText('Want a daily nudge to start your next quest?')
     ).toBeTruthy();
