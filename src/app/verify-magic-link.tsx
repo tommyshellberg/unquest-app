@@ -4,7 +4,7 @@ import { ActivityIndicator } from 'react-native';
 
 import { verifyMagicLink } from '@/api/auth';
 import { Text, View } from '@/components/ui';
-import { signIn } from '@/lib/auth';
+import { signIn, signOut } from '@/lib/auth';
 
 export default function VerifyMagicLinkScreen() {
   const router = useRouter();
@@ -16,10 +16,10 @@ export default function VerifyMagicLinkScreen() {
   useEffect(() => {
     if (!token) {
       console.error('No token found in params:', params);
-      router.replace(
-        '/login?error=' +
-          encodeURIComponent('No token found. Please try again.')
-      );
+      router.replace({
+        pathname: '/login',
+        params: { error: 'No token found. Please try again.' },
+      });
       return;
     }
 
@@ -40,17 +40,22 @@ export default function VerifyMagicLinkScreen() {
         // router.replace('/');
       } catch (error) {
         console.error('Error verifying magic link:', error);
+
+        // Explicitly sign out to clear any stale auth state
+        signOut();
+
         setError(
           'Magic link verification failed. The link may have expired. Please try again.'
         );
 
         // @todo: check this behavior in a test somehow.
-        router.replace(
-          '/login?error=' +
-            encodeURIComponent(
-              'Magic link verification failed. The link may have expired. Please try again.'
-            )
-        );
+        router.replace({
+          pathname: '/login',
+          params: {
+            error:
+              'Magic link verification failed. The link may have expired. Please try again.',
+          },
+        });
       } finally {
         setLoading(false);
       }

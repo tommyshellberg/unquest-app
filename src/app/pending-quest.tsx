@@ -1,7 +1,7 @@
 import { BlurView } from 'expo-blur';
-import { router } from 'expo-router';
-import React, { useEffect } from 'react';
-import { Image } from 'react-native';
+import { Redirect } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { AppState, Image } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -13,14 +13,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
-import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 export default function PendingQuestScreen() {
+  const [appState, setAppState] = useState(AppState.currentState);
+
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
+  const recentCompletedQuest = useQuestStore(
+    (state) => state.recentCompletedQuest
+  );
+  const failedQuest = useQuestStore((state) => state.failedQuest);
+  const isOnboardingComplete = useOnboardingStore((state) =>
+    state.isOnboardingComplete()
+  );
   const insets = useSafeAreaInsets();
   const cancelQuest = useQuestStore((state) => state.cancelQuest);
-  const currentStep = useOnboardingStore((state) => state.currentStep);
 
   // Get the quest to display (either pending or active)
   const displayQuest = pendingQuest;
@@ -33,39 +41,7 @@ export default function PendingQuestScreen() {
   const buttonOpacity = useSharedValue(0);
   const buttonScale = useSharedValue(0.9);
 
-  useLockStateDetection();
-
-  useEffect(() => {
-    // Only redirect automatically if we don't have a quest
-    // AND we're not in the onboarding flow
-    if (!displayQuest && currentStep === OnboardingStep.COMPLETED) {
-      router.replace('/');
-    } else if (
-      !displayQuest &&
-      currentStep === OnboardingStep.CHARACTER_SELECTED
-    ) {
-      // If we're in onboarding and cancelled a quest, go back to first-quest screen
-      router.replace('/onboarding/first-quest');
-    }
-  }, [displayQuest, currentStep]);
-
-  useEffect(() => {
-    // Simple animation sequence
-    headerOpacity.value = withTiming(1, { duration: 500 });
-    headerScale.value = withTiming(1, { duration: 500 });
-    cardOpacity.value = withDelay(500, withTiming(1, { duration: 500 }));
-    cardScale.value = withDelay(500, withTiming(1, { duration: 500 }));
-    buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
-    buttonScale.value = withDelay(1000, withTiming(1, { duration: 500 }));
-  }, [
-    buttonOpacity,
-    buttonScale,
-    cardOpacity,
-    cardScale,
-    headerOpacity,
-    headerScale,
-  ]);
-
+  // Animations must be defined before conditionals (for React Hook Rules)
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
     transform: [{ scale: headerScale.value }],
@@ -81,8 +57,72 @@ export default function PendingQuestScreen() {
     transform: [{ scale: buttonScale.value }],
   }));
 
+  // Always enable lock detection
+  useLockStateDetection();
+
+  // Track app state to prevent background redirects
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      setAppState(nextAppState);
+    });
+
+    return () => subscription?.remove();
+  }, []);
+
+  // Run animations when component mounts
+  useEffect(() => {
+    if (pendingQuest) {
+      // Simple animation sequence
+      headerOpacity.value = withTiming(1, { duration: 500 });
+      headerScale.value = withTiming(1, { duration: 500 });
+      cardOpacity.value = withDelay(500, withTiming(1, { duration: 500 }));
+      cardScale.value = withDelay(500, withTiming(1, { duration: 500 }));
+      buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
+      buttonScale.value = withDelay(1000, withTiming(1, { duration: 500 }));
+    }
+  }, [
+    pendingQuest,
+    buttonOpacity,
+    buttonScale,
+    cardOpacity,
+    cardScale,
+    headerOpacity,
+    headerScale,
+  ]);
+
+  if (recentCompletedQuest && !isOnboardingComplete) {
+    console.log('[PendingQuestScreen] Redirecting to first quest result');
+    return <Redirect href={`/first-quest-result?outcome=completed`} />;
+  }
+
+  if (failedQuest && !isOnboardingComplete) {
+    console.log('[PendingQuestScreen] Redirecting to first quest result');
+    return <Redirect href={`/first-quest-result?outcome=failed`} />;
+  }
+
+  if (recentCompletedQuest && isOnboardingComplete) {
+    console.log('[PendingQuestScreen] Redirecting to quest details');
+    return <Redirect href={`/(app)/quest/${recentCompletedQuest.id}`} />;
+  }
+
+  if (failedQuest && isOnboardingComplete) {
+    console.log('[PendingQuestScreen] Redirecting to quest details');
+    return <Redirect href={`/(app)/quest/${failedQuest.id}`} />;
+  }
+
+  if (!pendingQuest) {
+    console.log('[PendingQuestScreen] No pending quest, redirecting to home');
+    // if we are in the onboarding flow, go back to the onboarding flow
+    if (!isOnboardingComplete) {
+      return <Redirect href="/onboarding" />;
+    }
+    // otherwise go to the home screen
+    return <Redirect href="/(app)" />;
+  }
+
   const handleCancelQuest = () => {
     cancelQuest();
+    // go back to previous screen
   };
 
   return (

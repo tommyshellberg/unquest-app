@@ -12,9 +12,13 @@ export default function OnboardingLayout() {
   const completedQuests = useQuestStore((s) => s.completedQuests);
   const posthog = usePostHog();
 
+  // Get quest states for onboarding-level redirects
+  const failedQuest = useQuestStore((s) => s.failedQuest);
+  const recentCompletedQuest = useQuestStore((s) => s.recentCompletedQuest);
+
   // Map each step to the matching route
   const stepToRoute: Record<OnboardingStep, string> = {
-    [OnboardingStep.NOT_STARTED]: '/onboarding',
+    [OnboardingStep.NOT_STARTED]: '/onboarding/welcome',
     [OnboardingStep.INTRO_COMPLETED]: '/onboarding/app-introduction',
     [OnboardingStep.NOTIFICATIONS_COMPLETED]: '/onboarding/choose-character',
     [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/first-quest',
@@ -24,6 +28,26 @@ export default function OnboardingLayout() {
   };
 
   console.log('ONBOARDING LAYOUT - current step:', currentStep, 'path:', path);
+
+  // Onboarding-level quest redirects (during onboarding flow)
+
+  // Redirect to failed quest result if one exists and we're not already at first-quest-result
+  if (failedQuest && !path.startsWith('/first-quest-result')) {
+    console.log(
+      '[OnboardingLayout] Redirecting to failed quest result',
+      failedQuest.id
+    );
+    return <Redirect href="/first-quest-result?outcome=failed" />;
+  }
+
+  // Redirect to completed quest result if one exists and we're not already at first-quest-result
+  if (recentCompletedQuest && !path.startsWith('/first-quest-result')) {
+    console.log(
+      '[OnboardingLayout] Redirecting to completed quest result',
+      recentCompletedQuest.id
+    );
+    return <Redirect href="/first-quest-result?outcome=completed" />;
+  }
 
   // If we're on the signup screen and that's the current step, don't redirect
   if (

@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 import { verifyMagicLink } from '@/api/auth';
-import { apiClient } from '@/api/common/client';
 import { Text, View } from '@/components/ui';
+import { getUserDetails } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
 
@@ -48,30 +48,25 @@ export default function MagicLinkVerifyScreen() {
         // If no local data, try to fetch user data from server
         if (!hasExistingData) {
           try {
-            // Make sure this endpoint matches what your server expects
-            const userResponse = await apiClient.get('/users/me');
+            const userResponse = await getUserDetails();
 
             // Store user data in user store
-            if (
-              userResponse.data &&
-              userResponse.data.id &&
-              userResponse.data.email
-            ) {
+            if (userResponse && userResponse.id && userResponse.email) {
               setUser({
-                id: userResponse.data.id,
-                email: userResponse.data.email,
-                name: userResponse.data.name,
-                avatar: userResponse.data.avatar,
-                createdAt: userResponse.data.createdAt,
+                id: userResponse.id,
+                email: userResponse.email,
+                name: userResponse.name,
+                avatar: userResponse.avatar,
+                createdAt: userResponse.createdAt,
               });
             }
 
             // Check if the response has character data with required fields
             if (
-              userResponse.data &&
-              userResponse.data.character &&
-              userResponse.data.character.type &&
-              userResponse.data.character.name
+              userResponse &&
+              userResponse.character &&
+              userResponse.character.type &&
+              userResponse.character.name
             ) {
               // Create character from server data
               const serverCharacter = userResponse.data.character;

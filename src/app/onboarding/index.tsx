@@ -8,7 +8,7 @@ export default function OnboardingIndex() {
 
   // Map each step to the matching route
   const stepToRoute: Record<OnboardingStep, string> = {
-    [OnboardingStep.NOT_STARTED]: '/welcome',
+    [OnboardingStep.NOT_STARTED]: '/onboarding/welcome',
     [OnboardingStep.INTRO_COMPLETED]: '/onboarding/app-introduction',
     [OnboardingStep.NOTIFICATIONS_COMPLETED]: '/onboarding/choose-character',
     [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/first-quest',

@@ -1,11 +1,17 @@
 import { Feather } from '@expo/vector-icons';
-import { Tabs, useRootNavigationState } from 'expo-router';
+import {
+  Redirect,
+  Tabs,
+  usePathname,
+  useRootNavigationState,
+} from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 
 import { white } from '@/components/ui/colors';
+import { useAuth } from '@/lib/auth';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
-import { useNavigationGuard } from '@/lib/navigation/use-navigation-guard';
+import { useQuestStore } from '@/store/quest-store';
 
 // Tab icon component
 function TabBarIcon({
@@ -51,16 +57,39 @@ function CenterButton({
 
 export default function TabLayout() {
   const navigationState = useRootNavigationState();
+  const pathname = usePathname();
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
 
-  // Use the centralized navigation guard instead of multiple effects
-  useNavigationGuard(!!navigationState?.key);
+  const authStatus = useAuth((state) => state.status);
+
+  // Get quest states for app-level redirects
+  const failedQuest = useQuestStore((s) => s.failedQuest);
+  const pendingQuest = useQuestStore((s) => s.pendingQuest);
+
+  // Auth protection
+  if (authStatus === 'signOut') {
+    console.log('[AppLayout] Redirecting to login - not authenticated');
+    return <Redirect href="/login" />;
+  }
 
   // Check if navigation is ready
   if (!navigationState?.key) {
     return null;
+  }
+
+  // App-level quest redirects (within the protected app area)
+
+  if (pendingQuest && !pathname.includes('pending-quest')) {
+    console.log('[AppLayout] Redirecting to pending quest', pendingQuest.id);
+    return <Redirect href="/pending-quest" />;
+  }
+
+  // Redirect to failed quest details if one exists and we're not already in quest route
+  if (failedQuest && !pathname.includes('quest')) {
+    console.log('[AppLayout] Redirecting to failed quest', failedQuest.id);
+    return <Redirect href={`/(app)/quest/${failedQuest.id}`} />;
   }
 
   return (

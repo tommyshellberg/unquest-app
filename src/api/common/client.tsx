@@ -43,6 +43,7 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 apiClient.interceptors.request.use(
   (config) => {
     const tokenData = getToken();
+    console.log('tokenData', tokenData);
     const accessToken = tokenData?.access;
 
     if (accessToken) {
@@ -86,6 +87,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        console.log('Refreshing token');
         const newTokens = await refreshAccessToken();
 
         if (newTokens?.access?.token) {

@@ -3,7 +3,6 @@ import axios from 'axios';
 
 import { getItem, removeItem } from '@/lib/storage';
 
-import { apiClient } from './common';
 import * as tokenService from './token';
 
 // Create a separate axios instance for auth requests to avoid circular dependencies
@@ -34,7 +33,11 @@ export interface RegisterResponse {
 export const requestMagicLink = async (email: string): Promise<void> => {
   try {
     const provisionalIdFromStorage = getItem('provisionalUserId');
+    const provisionalToken = getItem('provisionalAccessToken');
+
     console.log('provisionalId from storage:', provisionalIdFromStorage);
+    console.log('provisionalToken exists:', !!provisionalToken);
+
     const body: { email: string; provisionalId?: string } = { email };
 
     // Only add provisionalId if it's a non-empty string
@@ -45,7 +48,23 @@ export const requestMagicLink = async (email: string): Promise<void> => {
       body.provisionalId = provisionalIdFromStorage;
     }
 
-    const response = await authClient.post('/auth/magiclink', body);
+    // Prepare headers - manually add Authorization for provisional token
+    const headers: { [key: string]: string } = {
+      'Content-Type': 'application/json',
+    };
+
+    if (typeof provisionalToken === 'string' && provisionalToken.length > 0) {
+      headers.Authorization = `Bearer ${provisionalToken}`;
+      console.log(
+        'Adding Bearer token for provisional user:',
+        provisionalToken.substring(0, 20) + '...'
+      );
+    }
+
+    // Use authClient with manual headers for provisional tokens
+    const response = await authClient.post('/auth/magiclink', body, {
+      headers,
+    });
     return response.data;
   } catch (error) {
     console.error('Magic link request error:', error);
@@ -87,17 +106,17 @@ export const verifyMagicLink = async (
 /**
  * Check if user is authenticated
  */
-export const isAuthenticated = async (): Promise<boolean> => {
-  const token = await tokenService.getAccessToken();
+export const isAuthenticated = (): boolean => {
+  const token = tokenService.getAccessToken();
   return !!token;
 };
 
 /**
  * Clear all authentication data
  */
-export const logout = async (): Promise<void> => {
+export const logout = (): void => {
   try {
-    await tokenService.removeTokens();
+    tokenService.removeTokens();
   } catch (error) {
     console.error('Error during logout:', error);
     throw error;
@@ -110,18 +129,21 @@ export const logout = async (): Promise<void> => {
 export const refreshAccessToken =
   async (): Promise<tokenService.AuthTokens | null> => {
     try {
+      console.log('refreshing access token');
       const refreshToken = tokenService.getRefreshToken();
+      console.log('refreshToken', refreshToken);
       if (!refreshToken) {
         return null;
       }
 
-      const response = await apiClient.post('/auth/refresh-tokens', {
+      const response = await authClient.post('/auth/refresh-tokens', {
         refreshToken,
       });
 
       // The server now returns nested tokens consistently:
       // { access: { token, expires }, refresh: { token, expires } }
       const newTokens: tokenService.AuthTokens = response.data;
+      console.log('newTokens', newTokens);
       tokenService.storeTokens(newTokens);
       return newTokens;
     } catch (error) {

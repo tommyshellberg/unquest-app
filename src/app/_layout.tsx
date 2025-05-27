@@ -5,7 +5,7 @@ import { Env } from '@env';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { router, Stack, usePathname } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { PostHogProvider } from 'posthog-react-native';
 import React, { useCallback, useEffect } from 'react';
@@ -19,7 +19,6 @@ import { APIProvider } from '@/api';
 import { ReminderPromptController } from '@/components/ReminderPromptController';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
-import { useNavigationGuard } from '@/lib/navigation/use-navigation-guard';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { useThemeConfig } from '@/lib/use-theme-config';
 import { useCharacterStore } from '@/store/character-store';
@@ -58,11 +57,6 @@ function RootLayout() {
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
-  const pathname = usePathname();
-
-  // Add both quest states
-  const pendingQuest = useQuestStore((state) => state.pendingQuest);
-  const failedQuest = useQuestStore((state) => state.failedQuest);
 
   useEffect(() => {
     async function prepare() {
@@ -90,54 +84,6 @@ function RootLayout() {
       }
     }
   }, []);
-
-  // Centralised navigation guard (replaces the large effect)
-  useNavigationGuard(hydrationFinished && authStatus !== 'hydrating');
-
-  useEffect(() => {
-    if (pendingQuest) {
-      // Check if we're already on the pending-quest screen
-      if (pathname.includes('pending-quest')) {
-        return;
-      }
-
-      // Redirect to the root pending-quest screen, not the protected one
-      router.replace('/pending-quest');
-    }
-  }, [pendingQuest, hydrationFinished, authStatus, pathname]);
-
-  // Add this effect to handle redirects to the individual quest screen for failed quests
-  useEffect(() => {
-    // Skip until hydration is complete
-    if (!hydrationFinished || authStatus === 'hydrating') return;
-
-    if (failedQuest) {
-      // Don't redirect if we're already on a quest screen
-      if (pathname.includes('/quest/')) {
-        return;
-      }
-
-      requestAnimationFrame(() => {
-        try {
-          // Route to the quest details page with the ID of the failed quest
-          router.replace({
-            pathname: '/quest/[id]',
-            params: { id: failedQuest.id },
-          });
-        } catch (error) {
-          console.error('Failed quest navigation failed, will retry', error);
-          setTimeout(() => {
-            if (hydrationFinished && authStatus !== 'idle') {
-              router.replace({
-                pathname: '/quest/[id]',
-                params: { id: failedQuest.id },
-              });
-            }
-          }, 500);
-        }
-      });
-    }
-  }, [failedQuest, hydrationFinished, authStatus, pathname]);
 
   useEffect(() => {
     const checkAndScheduleStreakWarning = async () => {
@@ -179,13 +125,13 @@ function RootLayout() {
     return null;
   }
 
+  // Always render the Stack - let child layouts handle redirects
   return (
     <Providers onLayout={onLayoutRootView}>
       <Stack>
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="welcome" options={{ headerShown: false }} />
         <Stack.Screen name="pending-quest" options={{ headerShown: false }} />
         <Stack.Screen
           name="first-quest-result"

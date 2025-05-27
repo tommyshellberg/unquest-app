@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { logout } from '@/api/auth';
 import { apiClient } from '@/api/common/client';
 import { setItem } from '@/lib/storage';
 import type { Character } from '@/store/types';
@@ -67,22 +66,16 @@ export interface InvitationsResponse {
   totalResults: number;
 }
 
-// @TODO: check if we need this, particularly the automatic logout.
 export const getUserDetails = async (): Promise<UserDetails> => {
   try {
+    console.log('fetching user details');
     const response = await apiClient.get('/users/me');
     return response.data;
   } catch (error) {
     console.error('Error fetching user details:', error);
-
-    // If the error is authentication-related and token refresh failed,
-    // we should log the user out
-    if (error instanceof Error && error.message === 'Token refresh failed') {
-      await logout();
-      // You might want to navigate to the login screen here
-      // or emit an event that the app can listen to
-    }
-
+    // Note: The apiClient interceptor already handles 401 errors and token refresh failures
+    // If token refresh fails, the interceptor calls signOut() which clears auth state
+    // No additional handling needed here to avoid dependency cycles
     throw error;
   }
 };
@@ -325,10 +318,15 @@ export async function createProvisionalUser(
     }
 
     return response.data.user;
-  } catch (error) {
+  } catch (error: unknown) {
     // If email is taken, we can indicate it for special handling
-    if (error.response?.data?.message === 'Email already taken') {
-      throw new Error('PROVISIONAL_EMAIL_TAKEN');
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response?: { data?: { message?: string } };
+      };
+      if (axiosError.response?.data?.message === 'Email already taken') {
+        throw new Error('PROVISIONAL_EMAIL_TAKEN');
+      }
     }
     throw error;
   }
