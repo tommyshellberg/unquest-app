@@ -1,17 +1,11 @@
 import { Feather } from '@expo/vector-icons';
-import {
-  Redirect,
-  Tabs,
-  usePathname,
-  useRootNavigationState,
-} from 'expo-router';
+import { Redirect, Tabs, useRootNavigationState } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 
 import { white } from '@/components/ui/colors';
 import { useAuth } from '@/lib/auth';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
-import { useQuestStore } from '@/store/quest-store';
 
 // Tab icon component
 function TabBarIcon({
@@ -57,16 +51,11 @@ function CenterButton({
 
 export default function TabLayout() {
   const navigationState = useRootNavigationState();
-  const pathname = usePathname();
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
 
   const authStatus = useAuth((state) => state.status);
-
-  // Get quest states for app-level redirects
-  const failedQuest = useQuestStore((s) => s.failedQuest);
-  const pendingQuest = useQuestStore((s) => s.pendingQuest);
 
   // Auth protection
   if (authStatus === 'signOut') {
@@ -77,19 +66,6 @@ export default function TabLayout() {
   // Check if navigation is ready
   if (!navigationState?.key) {
     return null;
-  }
-
-  // App-level quest redirects (within the protected app area)
-
-  if (pendingQuest && !pathname.includes('pending-quest')) {
-    console.log('[AppLayout] Redirecting to pending quest', pendingQuest.id);
-    return <Redirect href="/pending-quest" />;
-  }
-
-  // Redirect to failed quest details if one exists and we're not already in quest route
-  if (failedQuest && !pathname.includes('quest')) {
-    console.log('[AppLayout] Redirecting to failed quest', failedQuest.id);
-    return <Redirect href={`/(app)/quest/${failedQuest.id}`} />;
   }
 
   return (
@@ -105,8 +81,12 @@ export default function TabLayout() {
           backgroundColor: white,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
-          // Only hide tab bar for pending-quest and failed-quest
-          display: ['pending-quest'].includes(route.name) ? 'none' : 'flex',
+          // Hide tab bar for quest screens and pending-quest
+          display:
+            ['pending-quest'].includes(route.name) ||
+            route.name.startsWith('quest/')
+              ? 'none'
+              : 'flex',
         },
         tabBarLabelStyle: {
           fontSize: 12,

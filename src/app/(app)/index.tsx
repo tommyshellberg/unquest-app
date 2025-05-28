@@ -193,8 +193,19 @@ export default function Home() {
     );
 
     if (selectedQuest) {
+      console.log('🎯 Selected quest:', selectedQuest);
+      // Check state BEFORE
+      console.log(
+        '🎯 BEFORE prepareQuest - pendingQuest:',
+        useQuestStore.getState().pendingQuest
+      );
       posthog.capture('trigger_start_quest');
       prepareQuest(selectedQuest);
+      // Check state AFTER (should be immediate)
+      console.log(
+        '🎯 AFTER prepareQuest - pendingQuest:',
+        useQuestStore.getState().pendingQuest
+      );
       await QuestTimer.prepareQuest(selectedQuest);
       posthog.capture('success_start_quest');
     }

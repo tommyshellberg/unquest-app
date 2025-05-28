@@ -78,6 +78,13 @@ jest.mock('@/components/ui', () => ({
   },
 }));
 
+jest.mock('react-native-bg-actions', () => ({
+  start: jest.fn().mockResolvedValue(undefined),
+  stop: jest.fn().mockResolvedValue(undefined),
+  isRunning: jest.fn().mockReturnValue(false),
+  updateNotification: jest.fn().mockResolvedValue(undefined),
+}));
+
 // Mock API URL for testing
 process.env.API_URL = 'http://test-api.example.com';
 

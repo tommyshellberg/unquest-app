@@ -38,13 +38,14 @@ export default function ReminderSetup() {
       },
     });
 
+    console.log('[ReminderSetup] Setting daily reminder');
     posthog.capture('set_daily_reminder');
     router.replace('/(app)');
   };
 
   const handleSkip = () => {
     setDailyReminder({ enabled: false, time: null });
-    console.log('declined daily reminder');
+    console.log('[ReminderSetup] declined daily reminder');
     posthog.capture('declined_daily_reminder');
     router.replace('/(app)');
   };

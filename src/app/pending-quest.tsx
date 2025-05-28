@@ -1,5 +1,4 @@
 import { BlurView } from 'expo-blur';
-import { Redirect } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { AppState, Image } from 'react-native';
 import Animated, {
@@ -89,36 +88,6 @@ export default function PendingQuestScreen() {
     headerOpacity,
     headerScale,
   ]);
-
-  if (recentCompletedQuest && !isOnboardingComplete) {
-    console.log('[PendingQuestScreen] Redirecting to first quest result');
-    return <Redirect href={`/first-quest-result?outcome=completed`} />;
-  }
-
-  if (failedQuest && !isOnboardingComplete) {
-    console.log('[PendingQuestScreen] Redirecting to first quest result');
-    return <Redirect href={`/first-quest-result?outcome=failed`} />;
-  }
-
-  if (recentCompletedQuest && isOnboardingComplete) {
-    console.log('[PendingQuestScreen] Redirecting to quest details');
-    return <Redirect href={`/(app)/quest/${recentCompletedQuest.id}`} />;
-  }
-
-  if (failedQuest && isOnboardingComplete) {
-    console.log('[PendingQuestScreen] Redirecting to quest details');
-    return <Redirect href={`/(app)/quest/${failedQuest.id}`} />;
-  }
-
-  if (!pendingQuest) {
-    console.log('[PendingQuestScreen] No pending quest, redirecting to home');
-    // if we are in the onboarding flow, go back to the onboarding flow
-    if (!isOnboardingComplete) {
-      return <Redirect href="/onboarding" />;
-    }
-    // otherwise go to the home screen
-    return <Redirect href="/(app)" />;
-  }
 
   const handleCancelQuest = () => {
     cancelQuest();

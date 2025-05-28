@@ -24,6 +24,12 @@ export default function AppQuestDetailsScreen() {
   const completedQuests = useQuestStore((state) => state.completedQuests);
   const failedQuest = useQuestStore((state) => state.failedQuest); // Global failed quest state
   const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
+  const recentCompletedQuest = useQuestStore(
+    (state) => state.recentCompletedQuest
+  );
+  const clearRecentCompletedQuest = useQuestStore(
+    (state) => state.clearRecentCompletedQuest
+  );
 
   const headerOpacity = useSharedValue(0);
 
@@ -35,25 +41,27 @@ export default function AppQuestDetailsScreen() {
     opacity: headerOpacity.value,
   }));
 
+  useEffect(() => {
+    console.log('[QuestDetails] Quest ID:', id);
+  }, [id]);
+
   const handleBackNavigation = () => {
+    // Clear the recent completed quest if it matches this quest
+    if (recentCompletedQuest && recentCompletedQuest.id === id) {
+      console.log(
+        '[QuestDetails] Clearing recent completed quest on navigation:',
+        id
+      );
+      clearRecentCompletedQuest();
+    }
+
     // If we are viewing the globally stored failedQuest, clear it before navigating.
     if (failedQuest && failedQuest.id === id) {
       resetFailedQuest();
     }
+    console.log('[QuestDetails] Navigating to app home');
     router.replace('/(app)'); // Fallback to app home
   };
-
-  useEffect(() => {
-    // Optional: If a global failedQuest is set and this screen is for a *different* quest,
-    // it might be desirable to clear the global failedQuest to avoid stale state.
-    // However, primary cleanup of failedQuest for *this* quest ID is handled in handleBackNavigation or onRetry.
-    return () => {
-      // If unmounting and the current global failedQuest matches this screen's quest ID,
-      // it implies the user is navigating away without explicit retry/back action from this screen.
-      // Consider if resetFailedQuest() is appropriate here or if it should only be tied to explicit actions.
-      // For now, let's keep reset logic tied to explicit actions (onRetry, handleBackNavigation).
-    };
-  }, [id]); // Removed failedQuest, resetFailedQuest to avoid loop if store changes elsewhere
 
   const quest = useMemo(() => {
     if (timestamp) {

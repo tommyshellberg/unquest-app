@@ -24,6 +24,8 @@ import { useThemeConfig } from '@/lib/use-theme-config';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 
+import NavigationGate from './navigation-gate';
+
 export { ErrorBoundary } from 'expo-router';
 
 const integrations =
@@ -128,6 +130,7 @@ function RootLayout() {
   // Always render the Stack - let child layouts handle redirects
   return (
     <Providers onLayout={onLayoutRootView}>
+      <NavigationGate />
       <Stack>
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
@@ -182,5 +185,4 @@ function Providers({
     </SafeAreaView>
   );
 }
-
 export default Sentry.wrap(RootLayout);

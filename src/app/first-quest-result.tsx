@@ -50,6 +50,10 @@ export default function FirstQuestResultScreen() {
       stopTime: Date.now(),
       // Explicitly cast to Quest; ensure all required fields are present or made optional in QuestComplete/FailedQuest if not always available
     } as Quest;
+    console.log(
+      '[FirstQuestResult] Completed quest for display:',
+      completedQuestForDisplay
+    );
 
     return (
       <View className="flex-1 bg-background">
@@ -74,6 +78,10 @@ export default function FirstQuestResultScreen() {
       ...baseQuestProps,
       status: 'failed' as const, // Ensure status is of type QuestStatus
     } as Quest;
+    console.log(
+      '[FirstQuestResult] Failed quest for display:',
+      failedQuestForDisplay
+    );
     return (
       <View className="flex-1 bg-background">
         <FocusAwareStatusBar />

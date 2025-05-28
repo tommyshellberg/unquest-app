@@ -82,8 +82,24 @@ const mockCompletedQuestSingleOption = {
 // Mock the quest store
 const mockPrepareQuest = jest.fn();
 
+// Create a mock quest store state that can be shared
+let mockQuestStoreState: any = {
+  activeQuest: null,
+  pendingQuest: null,
+  availableQuests: [],
+  completedQuests: [],
+  getCompletedQuests: () => [],
+  prepareQuest: mockPrepareQuest,
+  refreshAvailableQuests: jest.fn(),
+};
+
 jest.mock('@/store/quest-store', () => ({
-  useQuestStore: jest.fn(),
+  useQuestStore: Object.assign(
+    jest.fn((selector) => selector(mockQuestStoreState)),
+    {
+      getState: jest.fn(() => mockQuestStoreState),
+    }
+  ),
 }));
 
 // Mock AVAILABLE_QUESTS from data file
@@ -130,21 +146,26 @@ const Home = require('./index').default;
 describe('Home Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset the mock quest store state
+    mockQuestStoreState = {
+      activeQuest: null,
+      pendingQuest: null,
+      availableQuests: [],
+      completedQuests: [],
+      getCompletedQuests: () => [],
+      prepareQuest: mockPrepareQuest,
+      refreshAvailableQuests: jest.fn(),
+    };
   });
 
   it('should render "Wake up" button when no story quests are completed', () => {
-    // Setup the mock to return no completed quests
-    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) =>
-      selector({
-        activeQuest: null,
-        pendingQuest: null,
-        availableQuests: [mockFirstQuest],
-        completedQuests: [],
-        getCompletedQuests: () => [],
-        prepareQuest: mockPrepareQuest,
-        refreshAvailableQuests: jest.fn(),
-      })
-    );
+    // Setup the mock state
+    mockQuestStoreState = {
+      ...mockQuestStoreState,
+      availableQuests: [mockFirstQuest],
+      completedQuests: [],
+      getCompletedQuests: () => [],
+    };
 
     render(<Home />);
 
@@ -158,18 +179,13 @@ describe('Home Component', () => {
   });
 
   it('should render two option buttons when last completed quest has two options', () => {
-    // Setup the mock with a completed quest that has two options
-    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) =>
-      selector({
-        activeQuest: null,
-        pendingQuest: null,
-        availableQuests: [mockQuestWithSingleOption], // Next available quest
-        completedQuests: [mockCompletedQuest],
-        getCompletedQuests: () => [mockCompletedQuest],
-        prepareQuest: mockPrepareQuest,
-        refreshAvailableQuests: jest.fn(),
-      })
-    );
+    // Setup the mock state
+    mockQuestStoreState = {
+      ...mockQuestStoreState,
+      availableQuests: [mockQuestWithSingleOption],
+      completedQuests: [mockCompletedQuest],
+      getCompletedQuests: () => [mockCompletedQuest],
+    };
 
     render(<Home />);
 
@@ -185,18 +201,13 @@ describe('Home Component', () => {
   });
 
   it('should render a single option button when last completed quest has one option', () => {
-    // Setup the mock with a completed quest that has one option
-    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) =>
-      selector({
-        activeQuest: null,
-        pendingQuest: null,
-        availableQuests: [], // Just for this test
-        completedQuests: [mockCompletedQuestSingleOption],
-        getCompletedQuests: () => [mockCompletedQuestSingleOption],
-        prepareQuest: mockPrepareQuest,
-        refreshAvailableQuests: jest.fn(),
-      })
-    );
+    // Setup the mock state
+    mockQuestStoreState = {
+      ...mockQuestStoreState,
+      availableQuests: [],
+      completedQuests: [mockCompletedQuestSingleOption],
+      getCompletedQuests: () => [mockCompletedQuestSingleOption],
+    };
 
     render(<Home />);
 
@@ -216,17 +227,13 @@ describe('Home Component', () => {
       startTime: Date.now(),
     };
 
-    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) =>
-      selector({
-        activeQuest: activeQuest,
-        pendingQuest: null,
-        availableQuests: [],
-        completedQuests: [],
-        getCompletedQuests: () => [],
-        prepareQuest: mockPrepareQuest,
-        refreshAvailableQuests: jest.fn(),
-      })
-    );
+    mockQuestStoreState = {
+      ...mockQuestStoreState,
+      activeQuest: activeQuest,
+      availableQuests: [],
+      completedQuests: [],
+      getCompletedQuests: () => [],
+    };
 
     render(<Home />);
 
@@ -237,18 +244,14 @@ describe('Home Component', () => {
   });
 
   it('should show story options even when there is a pending quest', () => {
-    // Setup the mock with a pending quest
-    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) =>
-      selector({
-        activeQuest: null,
-        pendingQuest: mockFirstQuest,
-        availableQuests: [],
-        completedQuests: [],
-        getCompletedQuests: () => [],
-        prepareQuest: mockPrepareQuest,
-        refreshAvailableQuests: jest.fn(),
-      })
-    );
+    // Setup the mock state
+    mockQuestStoreState = {
+      ...mockQuestStoreState,
+      pendingQuest: mockFirstQuest,
+      availableQuests: [],
+      completedQuests: [],
+      getCompletedQuests: () => [],
+    };
 
     render(<Home />);
 
@@ -265,18 +268,14 @@ describe('Home Component', () => {
   it('should call refreshAvailableQuests when there is no active or pending quest', async () => {
     const mockRefreshAvailableQuests = jest.fn();
 
-    // Setup the mock with no active or pending quest
-    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) =>
-      selector({
-        activeQuest: null,
-        pendingQuest: null,
-        availableQuests: [mockFirstQuest],
-        completedQuests: [],
-        getCompletedQuests: () => [],
-        prepareQuest: mockPrepareQuest,
-        refreshAvailableQuests: mockRefreshAvailableQuests,
-      })
-    );
+    // Setup the mock state
+    mockQuestStoreState = {
+      ...mockQuestStoreState,
+      availableQuests: [mockFirstQuest],
+      completedQuests: [],
+      getCompletedQuests: () => [],
+      refreshAvailableQuests: mockRefreshAvailableQuests,
+    };
 
     render(<Home />);
 

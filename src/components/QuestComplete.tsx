@@ -57,13 +57,11 @@ export function QuestComplete({
     opacity: storyOpacity.value,
   }));
 
-  const rewardStyle = useAnimatedStyle(() => ({
+  const _rewardStyle = useAnimatedStyle(() => ({
     opacity: rewardOpacity.value,
   }));
 
   useEffect(() => {
-    let isMounted = true;
-
     // Initial celebration animations
     scale.value = withSequence(withSpring(1.2), withSpring(1));
     headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
@@ -75,39 +73,19 @@ export function QuestComplete({
       lottieRef.current.play();
     }
 
-    // Set up a timer to clear the recent completed quest flag after a reasonable
-    // amount of time (15 seconds) to ensure user has had time to see it
-    const clearTimer = setTimeout(() => {
-      if (isMounted) {
-        clearRecentCompletedQuest();
-      }
-    }, 15000);
-
     return () => {
-      isMounted = false;
-      clearTimeout(clearTimer);
-
-      // Important: Clear the flag when component unmounts
-      clearRecentCompletedQuest();
-
       // Cancel animations
       cancelAnimation(scale);
       cancelAnimation(headerOpacity);
       cancelAnimation(storyOpacity);
       cancelAnimation(rewardOpacity);
     };
-  }, [
-    clearRecentCompletedQuest,
-    scale,
-    headerOpacity,
-    storyOpacity,
-    rewardOpacity,
-  ]);
+  }, [scale, headerOpacity, storyOpacity, rewardOpacity]);
 
   // Determine if this is a story quest or custom quest - they need different card styling
   const isStoryQuest = quest.mode === 'story';
 
-  const handleBackToJournal = () => {
+  const _handleBackToJournal = () => {
     // Implement the logic to handle going back to the journal
     console.log('Going back to journal');
   };

@@ -73,6 +73,9 @@ export default function MagicLinkVerifyScreen() {
               createCharacter(serverCharacter.type, serverCharacter.name);
 
               // User has complete character data on server, navigate to home
+              console.log(
+                '[MagicLinkVerify] User has complete character data on server, navigating to home'
+              );
               router.replace('/(app)/');
             } else {
               // No complete character data on server, navigate to app-introduction
@@ -85,6 +88,9 @@ export default function MagicLinkVerifyScreen() {
           }
         } else {
           // User already has local data, navigate to home
+          console.log(
+            '[MagicLinkVerify] User already has local data, navigating to home'
+          );
           router.replace('/(app)/');
         }
       } catch (error) {
