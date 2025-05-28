@@ -187,6 +187,25 @@ describe('Navigation State Resolver', () => {
     expect(result.current).toEqual({ type: 'app' });
   });
 
+  it('updates navigation target when auth status changes from signOut to signIn', () => {
+    // Start with signed out state
+    setAuthState({ status: 'signOut' });
+    setOnboardingState({ isOnboardingComplete: () => true });
+    setQuestState({});
+
+    const { result, rerender } = renderHook(() => useNavigationTarget());
+
+    // Should initially redirect to login
+    expect(result.current).toEqual({ type: 'login' });
+
+    // Simulate auth status change (magic link verification)
+    setAuthState({ status: 'signIn' });
+    rerender();
+
+    // Should now redirect to app
+    expect(result.current).toEqual({ type: 'app' });
+  });
+
   it('prioritizes quest states in correct order', () => {
     setAuthState({ status: 'signIn' });
     setOnboardingState({ isOnboardingComplete: () => true });

@@ -15,6 +15,9 @@ export default function FirstQuestResultScreen() {
   }>();
   const setOnboardingStep = useOnboardingStore((state) => state.setCurrentStep);
   const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
+  const clearRecentCompletedQuest = useQuestStore(
+    (state) => state.clearRecentCompletedQuest
+  );
 
   // Find quest-1 details (assuming it has a fixed ID like 'quest-1')
   const firstQuestData = AVAILABLE_QUESTS.find((q) => q.id === 'quest-1');
@@ -25,6 +28,11 @@ export default function FirstQuestResultScreen() {
     }
     // No specific onboarding step for failure here, as retrying might loop back
   }, [outcome, setOnboardingStep]);
+
+  const handleCompletedContinue = () => {
+    router.push('/quest-completed-signup');
+    clearRecentCompletedQuest();
+  };
 
   if (!firstQuestData) {
     // Handle case where quest-1 is not found, though unlikely
@@ -65,7 +73,7 @@ export default function FirstQuestResultScreen() {
               ? firstQuestData.story
               : 'You completed your first trial!'
           }
-          onContinue={() => router.push('/quest-completed-signup')}
+          onContinue={handleCompletedContinue}
           continueText="Continue Your Journey"
           showActionButton={true} // Always show for this screen
         />

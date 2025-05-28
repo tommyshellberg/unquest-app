@@ -1,7 +1,11 @@
 import { Env } from '@env';
 import axios from 'axios';
 
+import { signIn } from '@/lib/auth';
+import { getUserDetails } from '@/lib/services/user';
 import { getItem, removeItem } from '@/lib/storage';
+import { useCharacterStore } from '@/store/character-store';
+import { useUserStore } from '@/store/user-store';
 
 import * as tokenService from './token';
 
@@ -99,6 +103,71 @@ export const verifyMagicLink = async (
     return response.data;
   } catch (error) {
     console.error('Magic link verification error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Comprehensive magic link verification that includes user fetching and auth store updates
+ * Returns navigation target: 'onboarding' | 'app'
+ */
+export const verifyMagicLinkAndSignIn = async (
+  token: string
+): Promise<'onboarding' | 'app'> => {
+  try {
+    // Step 1: Verify the magic link and store tokens
+    const tokens = await verifyMagicLink(token);
+
+    // Step 2: Update auth store with proper signIn call
+    signIn({
+      token: {
+        access: tokens.access.token,
+        refresh: tokens.refresh.token,
+      },
+    });
+
+    // Step 3: Check if user has existing character data locally
+    const character = useCharacterStore.getState().character;
+    const hasExistingData = !!character;
+
+    if (hasExistingData) {
+      // User already has local data, navigate to home
+      console.log(
+        '[Auth] User already has local character data, navigating to app'
+      );
+      return 'app';
+    }
+
+    // Step 4: Fetch user data from server
+    try {
+      const userResponse = await getUserDetails();
+
+      // Store user data in user store (using only available properties)
+      if (userResponse && userResponse.id && userResponse.email) {
+        useUserStore.getState().setUser({
+          id: userResponse.id,
+          email: userResponse.email,
+          name: userResponse.name,
+        });
+      }
+
+      // For now, assume no character data comes from getUserDetails
+      // If character data is available from a different endpoint, we can add that logic later
+      console.log(
+        '[Auth] User data fetched, no character data available, navigating to onboarding'
+      );
+      return 'onboarding';
+    } catch (fetchError) {
+      console.error(
+        'Error fetching user data during verification:',
+        fetchError
+      );
+      // If we can't fetch user data, go to onboarding
+      console.log('[Auth] Failed to fetch user data, navigating to onboarding');
+      return 'onboarding';
+    }
+  } catch (error) {
+    console.error('Magic link verification failed:', error);
     throw error;
   }
 };
