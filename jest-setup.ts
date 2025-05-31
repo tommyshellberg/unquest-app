@@ -5,7 +5,7 @@ global.window = {};
 global.window = global;
 
 // Mock OneSignal for LiveActivities
-global.OneSignal = {
+(global as any).OneSignal = {
   LiveActivities: {
     startDefault: jest.fn(),
     exit: jest.fn(),
@@ -37,12 +37,12 @@ jest.mock('react-native-reanimated', () => {
       ...Reanimated.default,
       call: jest.fn(),
     },
-    useSharedValue: (val) => ({ value: val }),
+    useSharedValue: (val: any) => ({ value: val }),
     useAnimatedStyle: () => ({}),
-    withTiming: (val) => val,
-    withDelay: (_, val) => val,
-    withSpring: (val) => val,
-    withSequence: (...args) => args[args.length - 1],
+    withTiming: (val: any) => val,
+    withDelay: (_: any, val: any) => val,
+    withSpring: (val: any) => val,
+    withSequence: (...args: any[]) => args[args.length - 1],
   };
 });
 
@@ -89,7 +89,7 @@ jest.mock('react-native-bg-actions', () => ({
 process.env.API_URL = 'http://test-api.example.com';
 
 // react-hook form setup
-global.window = { ...global };
+(global as any).window = { ...global };
 
 // Mock OneSignal
 jest.mock('react-native-onesignal', () => ({
@@ -120,4 +120,11 @@ jest.mock('posthog-react-native', () => ({
   usePostHog: () => ({
     capture: jest.fn(),
   }),
+}));
+
+// Mock BlurView from expo-blur
+jest.mock('expo-blur', () => ({
+  BlurView: function MockBlurView(props: any) {
+    return props.children;
+  },
 }));

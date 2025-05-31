@@ -1,16 +1,15 @@
 import React from "react";
 import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
 import ChooseCharacterScreen from "../choose-character";
-import { updateUserCharacter } from '@/lib/services/user';
+import { createProvisionalUser } from '@/lib/services/user';
 import { Dimensions } from 'react-native';
 import { useOnboardingStore, OnboardingStep } from '@/store/onboarding-store';
+import { useCharacterStore } from '@/store/character-store';
 
-// Mock updateUserCharacter so we can simulate both success and failure.
+// Mock createProvisionalUser so we can simulate both success and failure.
 jest.mock('@/lib/services/user', () => ({
-  updateUserCharacter: jest.fn(),
+  createProvisionalUser: jest.fn(),
 }));
-
-// We no longer mock expo‑router—screens don't call router.push() any more.
 
 // Provide a mock for useNavigation to avoid missing navigation object errors.
 jest.mock('@react-navigation/native', () => ({
@@ -44,59 +43,43 @@ jest.mock('@/app/data/characters', () => ({
   ],
 }));
 
-// Mock Animated components from react-native-reanimated
-jest.mock('react-native-reanimated', () => {
-  const mockAnimated = {
-    View: function MockAnimatedView(props) {
-      return props.children;
-    },
-    createAnimatedComponent: (component) => component,
-    useSharedValue: (initialValue) => ({ value: initialValue }),
-    useAnimatedStyle: () => ({}),
-    withTiming: (toValue) => toValue,
-    withDelay: (delay, animation) => animation,
-  };
+// Mock character store
+const mockCharacterStore = {
+  character: null,
+  createCharacter: jest.fn(),
+  resetCharacter: jest.fn(),
+};
 
-  return {
-    ...jest.requireActual('react-native-reanimated/mock'),
-    ...mockAnimated,
-    default: {
-      ...jest.requireActual('react-native-reanimated/mock').default,
-      ...mockAnimated,
-    },
-  };
-});
-
-// Create a fake implementation for the character store.
-// We now call the selector on our fake state so that useCharacterStore(selector)
-// returns the value the component expects.
-const mockCreateCharacter = jest.fn();
 jest.mock('@/store/character-store', () => ({
   useCharacterStore: jest.fn((selector) =>
-    selector({ createCharacter: mockCreateCharacter })
+    selector ? selector(mockCharacterStore) : mockCharacterStore
   ),
 }));
+
+// Add getState method to the mock for direct access
+(useCharacterStore as any).getState = () => mockCharacterStore;
 
 // Get screen dimensions and define card dimensions
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
-const snapInterval = cardWidth;
 
 describe('ChooseCharacterScreen', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     // Stub the store setter:
     useOnboardingStore.getState().setCurrentStep = jest.fn();
-    (updateUserCharacter as jest.Mock).mockClear();
+    (createProvisionalUser as jest.Mock).mockClear();
+    mockCharacterStore.createCharacter.mockClear();
+    mockCharacterStore.resetCharacter.mockClear();
   });
 
   afterEach(() => {
     jest.useRealTimers();
   });
 
-  it('should send a patch request with the correct data and navigate on a successful update', async () => {
+  it('should create provisional user with correct data and navigate on success', async () => {
     // Set up the mock to resolve successfully
-    (updateUserCharacter as jest.Mock).mockResolvedValue({ success: true });
+    (createProvisionalUser as jest.Mock).mockResolvedValue({ success: true });
 
     const { getByPlaceholderText, getByText, UNSAFE_getAllByType } = render(
       <ChooseCharacterScreen />
@@ -112,7 +95,7 @@ describe('ChooseCharacterScreen', () => {
     });
 
     // Get the FlatList component and simulate swipe to knight (second character)
-    const flatList = UNSAFE_getAllByType('RCTScrollView')[0];
+    const flatList = UNSAFE_getAllByType('RCTScrollView' as any)[0];
     fireEvent(flatList, 'onMomentumScrollEnd', {
       nativeEvent: {
         contentOffset: {
@@ -142,24 +125,24 @@ describe('ChooseCharacterScreen', () => {
     });
 
     // Now verify the expectations
-    expect(updateUserCharacter).toHaveBeenCalledWith({
-      level: 1,
-      currentXP: 0,
-      xpToNextLevel: 100,
+    expect(createProvisionalUser).toHaveBeenCalledWith({
       type: 'knight',
       name: 'Arthur',
     });
 
-    expect(mockCreateCharacter).toHaveBeenCalledWith('knight', 'Arthur');
+    expect(mockCharacterStore.createCharacter).toHaveBeenCalledWith(
+      'knight',
+      'Arthur'
+    );
     expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
       OnboardingStep.CHARACTER_SELECTED
     );
   });
 
-  it('should gracefully handle a failed API request and still navigate', async () => {
-    // Set up the mock to reject with an error
-    (updateUserCharacter as jest.Mock).mockRejectedValue(
-      new Error('API error')
+  it('should handle PROVISIONAL_EMAIL_TAKEN error and still navigate', async () => {
+    // Set up the mock to reject with the specific recoverable error
+    (createProvisionalUser as jest.Mock).mockRejectedValue(
+      new Error('PROVISIONAL_EMAIL_TAKEN')
     );
 
     const { getByPlaceholderText, getByText } = render(
@@ -185,18 +168,117 @@ describe('ChooseCharacterScreen', () => {
       jest.runAllTimers();
     });
 
-    // Now verify the expectations
-    expect(updateUserCharacter).toHaveBeenCalledWith({
-      level: 1,
-      currentXP: 0,
-      xpToNextLevel: 100,
+    // Verify the API was called
+    expect(createProvisionalUser).toHaveBeenCalledWith({
       type: 'alchemist', // The default selected character
       name: 'Merlin',
     });
 
-    expect(mockCreateCharacter).toHaveBeenCalledWith('alchemist', 'Merlin');
+    // Should still create character locally and proceed
+    expect(mockCharacterStore.createCharacter).toHaveBeenCalledWith(
+      'alchemist',
+      'Merlin'
+    );
     expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
       OnboardingStep.CHARACTER_SELECTED
     );
+
+    // Should not reset character store for this recoverable error
+    expect(mockCharacterStore.resetCharacter).not.toHaveBeenCalled();
+  });
+
+  it('should handle general API failure and not navigate', async () => {
+    // Set up the mock to reject with a general error
+    (createProvisionalUser as jest.Mock).mockRejectedValue(
+      new Error('Network error')
+    );
+
+    const { getByPlaceholderText, getByText, queryByText } = render(
+      <ChooseCharacterScreen />
+    );
+
+    const input = getByPlaceholderText('Enter character name');
+    fireEvent.changeText(input, 'Gandalf');
+
+    // Flush debounce.
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    const continueButton = getByText('Continue');
+
+    // We need to handle promise rejection manually in tests
+    await act(async () => {
+      fireEvent.press(continueButton);
+      // Flush promises
+      await Promise.resolve();
+      // Advance any timers that may be used internally
+      jest.runAllTimers();
+    });
+
+    // Verify the API was called
+    expect(createProvisionalUser).toHaveBeenCalledWith({
+      type: 'alchemist',
+      name: 'Gandalf',
+    });
+
+    // Should create character locally first
+    expect(mockCharacterStore.createCharacter).toHaveBeenCalledWith(
+      'alchemist',
+      'Gandalf'
+    );
+
+    // Should reset character store due to failure
+    expect(mockCharacterStore.resetCharacter).toHaveBeenCalled();
+
+    // Should NOT proceed to next step
+    expect(useOnboardingStore.getState().setCurrentStep).not.toHaveBeenCalled();
+
+    // Should show error message - the component shows "Failed to create account. Please try again." for general errors
+    await waitFor(() => {
+      expect(queryByText(/Failed to create account/)).toBeTruthy();
+    });
+  });
+
+  it('should show loading state during creation', async () => {
+    // Set up a promise that we can control
+    let resolvePromise: ((value: any) => void) | undefined;
+    const controlledPromise = new Promise<any>((resolve) => {
+      resolvePromise = resolve;
+    });
+    (createProvisionalUser as jest.Mock).mockReturnValue(controlledPromise);
+
+    const { getByPlaceholderText, getByText, queryByText } = render(
+      <ChooseCharacterScreen />
+    );
+
+    const input = getByPlaceholderText('Enter character name');
+    fireEvent.changeText(input, 'TestUser');
+
+    // Flush debounce.
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    const continueButton = getByText('Continue');
+
+    // Press the button but don't resolve the promise yet
+    act(() => {
+      fireEvent.press(continueButton);
+    });
+
+    // Should show loading state with different button text
+    expect(queryByText('Creating...')).toBeTruthy();
+    expect(queryByText('Continue')).toBeFalsy();
+
+    // Resolve the promise
+    await act(async () => {
+      resolvePromise!({ success: true });
+      await Promise.resolve();
+    });
+
+    // Should return to normal state
+    expect(queryByText('Continue')).toBeTruthy();
+    expect(queryByText('Creating...')).toBeFalsy();
   });
 });
