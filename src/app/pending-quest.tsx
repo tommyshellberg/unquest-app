@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
-import React, { useEffect, useState } from 'react';
-import { AppState, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { Image } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -11,20 +11,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
-import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 export default function PendingQuestScreen() {
-  const [appState, setAppState] = useState(AppState.currentState);
-
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
-  const recentCompletedQuest = useQuestStore(
-    (state) => state.recentCompletedQuest
-  );
-  const failedQuest = useQuestStore((state) => state.failedQuest);
-  const isOnboardingComplete = useOnboardingStore((state) =>
-    state.isOnboardingComplete()
-  );
   const insets = useSafeAreaInsets();
   const cancelQuest = useQuestStore((state) => state.cancelQuest);
 
@@ -54,15 +44,6 @@ export default function PendingQuestScreen() {
     opacity: buttonOpacity.value,
     transform: [{ scale: buttonScale.value }],
   }));
-
-  // Track app state to prevent background redirects
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
-      setAppState(nextAppState);
-    });
-
-    return () => subscription?.remove();
-  }, []);
 
   // Run animations when component mounts
   useEffect(() => {

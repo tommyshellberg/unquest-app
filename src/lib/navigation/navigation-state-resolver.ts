@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
+import { useCharacterStore } from '@/store/character-store';
 import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -14,12 +15,13 @@ export type NavigationTarget =
   | { type: 'loading' };
 
 export function useNavigationTarget(): NavigationTarget {
-  // Get auth and onboarding state normally
+  // Get auth, onboarding, and character state
   const authStatus = useAuth((state) => state.status);
   const isOnboardingComplete = useOnboardingStore((s) =>
     s.isOnboardingComplete()
   );
   const currentStep = useOnboardingStore((s) => s.currentStep);
+  const character = useCharacterStore((s) => s.character);
 
   // Use direct subscription for quest state
   const [questState, setQuestState] = useState(() => {
@@ -59,11 +61,16 @@ export function useNavigationTarget(): NavigationTarget {
 
   const { pendingQuest, recentCompletedQuest, failedQuest } = questState;
 
+  // Enhanced onboarding completion check with backward compatibility
+  const isEffectivelyOnboardingComplete = isOnboardingComplete || !!character;
+
   // Debug current state
   useEffect(() => {
     console.log('🧭 Navigation target evaluation:', {
       authStatus,
       isOnboardingComplete,
+      hasCharacterData: !!character,
+      isEffectivelyOnboardingComplete,
       currentStep,
       pendingQuest: pendingQuest?.id || null,
       recentCompletedQuest: recentCompletedQuest?.id || null,
@@ -72,6 +79,8 @@ export function useNavigationTarget(): NavigationTarget {
   }, [
     authStatus,
     isOnboardingComplete,
+    character,
+    isEffectivelyOnboardingComplete,
     currentStep,
     pendingQuest,
     recentCompletedQuest,
@@ -95,7 +104,7 @@ export function useNavigationTarget(): NavigationTarget {
 
   if (failedQuest) {
     console.log('🧭 Found failed quest:', failedQuest.id);
-    if (failedQuest.id === 'quest-1' && !isOnboardingComplete) {
+    if (failedQuest.id === 'quest-1' && !isEffectivelyOnboardingComplete) {
       return { type: 'first-quest-result', outcome: 'failed' };
     }
     return { type: 'quest-result', questId: failedQuest.id, outcome: 'failed' };
@@ -113,13 +122,15 @@ export function useNavigationTarget(): NavigationTarget {
     };
   }
 
-  // Priority 2: Onboarding
-  if (!isOnboardingComplete) {
+  // Priority 2: Onboarding (with backward compatibility)
+  if (!isEffectivelyOnboardingComplete) {
     console.log(
       '🧭 [NavigationStateResolver] Current onboarding step:',
       currentStep
     );
-    console.log('🧭 Onboarding not complete');
+    console.log(
+      '🧭 Onboarding not complete (or no character data for legacy users)'
+    );
     return { type: 'onboarding' };
   }
 

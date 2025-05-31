@@ -13,6 +13,17 @@ export enum OnboardingStep {
   COMPLETED = 'completed',
 }
 
+// Define step order for comparison
+const stepOrder: Record<OnboardingStep, number> = {
+  [OnboardingStep.NOT_STARTED]: 0,
+  [OnboardingStep.INTRO_COMPLETED]: 1,
+  [OnboardingStep.NOTIFICATIONS_COMPLETED]: 2,
+  [OnboardingStep.CHARACTER_SELECTED]: 3,
+  [OnboardingStep.FIRST_QUEST_COMPLETED]: 4,
+  [OnboardingStep.SIGNUP_PROMPT_SHOWN]: 5,
+  [OnboardingStep.COMPLETED]: 6,
+};
+
 type OnboardingState = {
   // Step tracking
   currentStep: OnboardingStep;
@@ -45,8 +56,23 @@ export const useOnboardingStore = create<OnboardingState>()(
       // Initial step state
       currentStep: OnboardingStep.NOT_STARTED,
 
-      // Step management
-      setCurrentStep: (step) => set({ currentStep: step }),
+      // Step management with forward-only protection
+      setCurrentStep: (step) => {
+        const currentStep = get().currentStep;
+        const currentOrder = stepOrder[currentStep];
+        const newOrder = stepOrder[step];
+
+        // Only allow forward movement or staying at the same step
+        if (newOrder >= currentOrder) {
+          console.log(`[Onboarding] Moving from ${currentStep} to ${step}`);
+          set({ currentStep: step });
+        } else {
+          console.warn(
+            `[Onboarding] Attempted backward movement from ${currentStep} to ${step} - blocked`
+          );
+        }
+      },
+
       isOnboardingComplete: () => {
         // Only consider onboarding complete when COMPLETED step is reached
         return get().currentStep === OnboardingStep.COMPLETED;

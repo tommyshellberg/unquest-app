@@ -13,6 +13,10 @@ const mockOnboardingState = {
   currentStep: OnboardingStep.NOT_STARTED,
 };
 
+const mockCharacterState = {
+  character: null as any,
+};
+
 const mockQuestState = {
   pendingQuest: null as any,
   recentCompletedQuest: null as any,
@@ -38,6 +42,11 @@ jest.mock('@/store/onboarding-store', () => ({
   },
 }));
 
+// Mock character store
+jest.mock('@/store/character-store', () => ({
+  useCharacterStore: jest.fn((selector) => selector(mockCharacterState)),
+}));
+
 // Mock quest store with proper Zustand interface
 jest.mock('@/store/quest-store', () => ({
   useQuestStore: Object.assign(
@@ -61,6 +70,10 @@ const setOnboardingState = (state: Partial<typeof mockOnboardingState>) => {
   Object.assign(mockOnboardingState, state);
 };
 
+const setCharacterState = (state: Partial<typeof mockCharacterState>) => {
+  Object.assign(mockCharacterState, state);
+};
+
 const setQuestState = (state: Partial<typeof mockQuestState>) => {
   Object.assign(mockQuestState, state);
 };
@@ -72,6 +85,7 @@ beforeEach(() => {
     isOnboardingComplete: () => false,
     currentStep: OnboardingStep.NOT_STARTED,
   });
+  setCharacterState({ character: null });
   setQuestState({
     pendingQuest: null,
     recentCompletedQuest: null,
@@ -103,6 +117,7 @@ describe('Navigation State Resolver', () => {
   it('redirects to first-quest-result for failed quest-1 during onboarding', () => {
     setAuthState({ status: 'signIn' });
     setOnboardingState({ isOnboardingComplete: () => false });
+    setCharacterState({ character: null });
     setQuestState({ failedQuest: { id: 'quest-1' } });
 
     const { result } = renderHook(() => useNavigationTarget());
@@ -154,17 +169,64 @@ describe('Navigation State Resolver', () => {
     });
   });
 
-  it('redirects to onboarding when not complete', () => {
+  it('redirects to onboarding when not complete and no character data', () => {
     setAuthState({ status: 'signIn' });
     setOnboardingState({
       isOnboardingComplete: () => false,
       currentStep: OnboardingStep.NOT_STARTED,
     });
+    setCharacterState({ character: null });
     setQuestState({});
 
     const { result } = renderHook(() => useNavigationTarget());
 
     expect(result.current).toEqual({ type: 'onboarding' });
+  });
+
+  it('redirects to app for legacy users with character data but incomplete onboarding', () => {
+    setAuthState({ status: 'signIn' });
+    setOnboardingState({
+      isOnboardingComplete: () => false,
+      currentStep: OnboardingStep.CHARACTER_SELECTED,
+    });
+    setCharacterState({
+      character: {
+        name: 'LegacyChar',
+        type: 'warrior',
+        level: 5,
+        currentXP: 200,
+        xpToNextLevel: 300,
+      },
+    });
+    setQuestState({});
+
+    const { result } = renderHook(() => useNavigationTarget());
+
+    expect(result.current).toEqual({ type: 'app' });
+  });
+
+  it('handles failed quest-1 correctly for legacy users with character data', () => {
+    setAuthState({ status: 'signIn' });
+    setOnboardingState({ isOnboardingComplete: () => false });
+    setCharacterState({
+      character: {
+        name: 'LegacyChar',
+        type: 'druid',
+        level: 1,
+        currentXP: 0,
+        xpToNextLevel: 100,
+      },
+    });
+    setQuestState({ failedQuest: { id: 'quest-1' } });
+
+    const { result } = renderHook(() => useNavigationTarget());
+
+    // Should redirect to regular quest-result since character data indicates effective completion
+    expect(result.current).toEqual({
+      type: 'quest-result',
+      questId: 'quest-1',
+      outcome: 'failed',
+    });
   });
 
   it('redirects to login when signed out', () => {
