@@ -11,7 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
-import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -55,9 +54,6 @@ export default function PendingQuestScreen() {
     opacity: buttonOpacity.value,
     transform: [{ scale: buttonScale.value }],
   }));
-
-  // Always enable lock detection
-  useLockStateDetection();
 
   // Track app state to prevent background redirects
   useEffect(() => {

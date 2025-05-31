@@ -19,6 +19,7 @@ import { APIProvider } from '@/api';
 import { ReminderPromptController } from '@/components/ReminderPromptController';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
+import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { useThemeConfig } from '@/lib/use-theme-config';
 import { useCharacterStore } from '@/store/character-store';
@@ -121,6 +122,9 @@ function RootLayout() {
       await SplashScreen.hideAsync();
     }
   }, [hydrationFinished, authStatus]);
+
+  // Activate lock detection for the whole main app.
+  useLockStateDetection();
 
   // Return null until hydration promise is done AND auth status is final
   if (!hydrationFinished || authStatus === 'hydrating') {

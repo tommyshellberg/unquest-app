@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
-import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 export type NavigationTarget =
@@ -114,7 +114,11 @@ export function useNavigationTarget(): NavigationTarget {
   }
 
   // Priority 2: Onboarding
-  if (!isOnboardingComplete && currentStep !== OnboardingStep.COMPLETED) {
+  if (!isOnboardingComplete) {
+    console.log(
+      '🧭 [NavigationStateResolver] Current onboarding step:',
+      currentStep
+    );
     console.log('🧭 Onboarding not complete');
     return { type: 'onboarding' };
   }

@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { usePostHog } from 'posthog-react-native';
 import React, { useCallback, useEffect } from 'react';
 import { Image } from 'react-native';
 import Animated, {
@@ -13,21 +12,32 @@ import { useOnboardingStore } from '@/store/onboarding-store';
 import { OnboardingStep } from '@/store/onboarding-store';
 
 export default function QuestCompletedSignupScreen() {
-  const posthog = usePostHog();
   const setOnboardingStep = useOnboardingStore((state) => state.setCurrentStep);
   const currentStep = useOnboardingStore((state) => state.currentStep);
+
+  useEffect(() => {
+    console.log(
+      '🧭 [QuestCompletedSignupScreen] Current onboarding step:',
+      currentStep
+    );
+  }, [currentStep]);
 
   useEffect(() => {
     console.log(
       'QuestCompletedSignupScreen mounted, current step:',
       currentStep
     );
-    posthog.capture('first_quest_completed_signup_screen_viewed');
-  }, [posthog, currentStep]);
+    // set the current step to SIGNUP_PROMPT_SHOWN if it's not already SIGNUP_PROMPT_SHOWN or COMPLETED
+    if (
+      currentStep !== OnboardingStep.SIGNUP_PROMPT_SHOWN &&
+      currentStep !== OnboardingStep.COMPLETED
+    ) {
+      setOnboardingStep(OnboardingStep.SIGNUP_PROMPT_SHOWN);
+    }
+  }, [currentStep, setOnboardingStep]);
 
   const handleCreateAccount = useCallback(() => {
     console.log('Create account button pressed, setting step to COMPLETED');
-    posthog.capture('first_quest_completed_signup_cta_clicked');
 
     // Important: Update the onboarding step to COMPLETED when navigating to login
     // This prevents further redirects back to the signup screen
@@ -38,7 +48,7 @@ export default function QuestCompletedSignupScreen() {
     setTimeout(() => {
       router.replace('/login');
     }, 100);
-  }, [posthog, setOnboardingStep]);
+  }, [setOnboardingStep]);
 
   return (
     <View className="flex-1">

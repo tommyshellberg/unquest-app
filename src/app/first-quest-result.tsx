@@ -97,7 +97,7 @@ export default function FirstQuestResultScreen() {
           quest={failedQuestForDisplay}
           onRetry={() => {
             resetFailedQuest(); // Clear the failed state
-            router.replace('/'); // Go to app entry, should re-trigger onboarding to first quest
+            router.replace('/onboarding/first-quest'); // Go to app entry, should re-trigger onboarding to first quest
           }}
         />
       </View>

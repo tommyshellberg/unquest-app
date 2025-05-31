@@ -16,7 +16,6 @@ import { Image, Text, View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
-import { useQuestStore } from '@/store/quest-store';
 import { type Quest } from '@/store/types';
 
 import { StoryNarration } from './StoryNarration';
@@ -40,9 +39,6 @@ export function QuestComplete({
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
   const lottieRef = useRef<LottieView>(null);
-  const clearRecentCompletedQuest = useQuestStore(
-    (state) => state.clearRecentCompletedQuest
-  );
 
   const scale = useSharedValue(0);
   const headerOpacity = useSharedValue(0);
