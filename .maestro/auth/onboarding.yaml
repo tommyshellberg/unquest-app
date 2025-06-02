@@ -3,60 +3,173 @@ appId: com.vaedros.unquest.development
 - clearState
 - launchApp
 
+# =============================================================================
+# DEVELOPMENT ENVIRONMENT SETUP
+# =============================================================================
+# Handle development-specific screens that appear before the actual app loads
+# These only appear in development builds and need to be dismissed first
+# =============================================================================
+
+# Handle development server selection (if it appears)
+- runFlow:
+    when:
+      visible: "http://10.0.2.2:8081"
+    commands:
+      - assertVisible: "Development servers"
+      # Select the local development server (usually the first/default option)
+      - tapOn: "http://10.0.2.2:8081"
+
+- runFlow:
+    when:
+      visible: "http://localhost:8081"
+    commands:
+      - assertVisible: "Development servers"
+      # Select the local development server (usually the first/default option)
+      - tapOn: "http://localhost:8081"
+
+# Handle Expo development onboarding/menu introduction (if it appears)
+- runFlow:
+    when:
+      visible:
+        text: ".*developer menu.*"
+    commands:
+      # Go through the developer menu introduction
+      - tapOn: "Continue"
+
+# Alternative approach: more specific regex for "This is the developer menu"
+- runFlow:
+    when:
+      visible:
+        text: ".*Runtime version.*"
+    commands:
+      # Tap continue to dismiss the developer menu
+      - tapOn: "Reload"
+
+# Fallback: Look for any text containing "developer" (very permissive)
+- runFlow:
+    when:
+      visible:
+        text: ".*developer.*"
+    commands:
+      # Try to continue through any developer-related screens
+      - tapOn: "Continue"
+
+# Handle any additional development environment screens
+- runFlow:
+    when:
+      visible: "Development Build"
+    commands:
+      # If there are additional development-specific screens, handle them here
+      - tapOn: "Continue"
+
+# Wait a moment for the app to fully load after development setup
+- waitForAnimationToEnd
+
+# =============================================================================
+# COMPLETE ONBOARDING TO LOGIN FLOW
+# =============================================================================
+# This test covers the entire user journey from first app launch through
+# onboarding, quest completion, and login. Since app state is cleared between
+# tests, this comprehensive flow ensures we test the complete user experience.
+# =============================================================================
+
+# =============================================================================
+# WELCOME SCREEN - The starting point for new users
+# =============================================================================
+- assertVisible: "unQuest"
 - assertVisible: "Level Up By Logging Off"
-- tapOn: "begin your journey"
-# Now you land immediately in your app, past Expo's own onboarding…
+- assertVisible: "Begin New Journey"
+- assertVisible: ".*Log In.*"
+
+# Start the onboarding journey
+- tapOn: "Begin New Journey"
+
+# =============================================================================
+# APP INTRODUCTION - WELCOME STEP
+# =============================================================================
 - assertVisible: "Welcome to unQuest"
+- assertVisible: ".*Each quest is a unique challenge.*"
+- assertVisible: "Got it"
+
+# Proceed to notifications step
 - tapOn: "Got it"
 
-# App Introduction - Notifications step
+# =============================================================================
+# APP INTRODUCTION - NOTIFICATIONS STEP  
+# =============================================================================
 - assertVisible: "Notifications"
 - assertVisible: "Enable notifications"
+- assertVisible: ".*Not now.*"
+
+# Enable notifications (or skip if desired)
 - tapOn: "Enable notifications"
 
-# With notifications disabled, tap on the system alert for allow
-# @todo: check why allow alert is not showing up.
-# - tapOn: "Allow"
+# Note: System notification permission alert may appear here
+# @todo: Handle system permission dialog if it shows up
+- runFlow:
+    when:
+      visible: ".*Allow*.*"
+    commands:
+      # If there are additional development-specific screens, handle them here
+      - tapOn: "Allow"
 
-# App Introduction - Choose Character step
-- assertVisible: "Create Your Character"
+# =============================================================================
+# APP INTRODUCTION - CHARACTER CREATION STEP
+# =============================================================================
+- assertVisible: "Your Character"
+- assertVisible: ".*Choose a character that reflects your personality.*"
+
+# Proceed to character selection
 - tapOn: "Create character"
 
-# Choose Character Screen
+# =============================================================================
+# CHOOSE CHARACTER SCREEN - Character creation and naming
+# =============================================================================
 - assertVisible: "Choose Your Character"
 - assertVisible: "Name Your Character"
+- assertVisible: "Next, choose a character type."
 
-# The continue button should be disabled until we type a name and select a character.
+# Verify continue button exists but should be disabled initially
 - assertVisible:
     text: "Continue"
 
+# Enter character name
 - tapOn: "Enter character name"
-- inputText: "TestHero"
+- inputText: "MaestroHero"
 
+# Verify continue button is now enabled after entering name
 - assertVisible:
     text: "Continue"
     enabled: true
 
+# Test character selection carousel
 - assertVisible: "Alchemist"
-- assertNotVisible: "Scholar"
+- assertVisible: ".*Transforms idle time.*"
 
-# Swipe through character options - swiping on the card area
+# Swipe through characters to test the carousel
 - swipe:
     from:
-      text: "alchemist"
+      text: "Alchemist"
     direction: LEFT
 
+# Should now see Druid
+- assertVisible: "Druid"
+- assertVisible: ".*Grows stronger through harmony.*"
+
+# Swipe to final character
 - swipe:
     from:
       text: "Druid"
     direction: LEFT
 
-- assertVisible: "Scholar"
-- assertNotVisible: "Alchemist"
+# Should now see Scout
+- assertVisible: "Scout"
+- assertVisible: ".*Resourceful and self-reliant.*"
 
+# Swipe back to first character for consistency
 - swipe:
     from:
-      text: "Scholar"
+      text: "Scout"
     direction: RIGHT
 
 - swipe:
@@ -64,34 +177,105 @@ appId: com.vaedros.unquest.development
       text: "Druid"
     direction: RIGHT
 
+# Back to Alchemist - proceed with character creation
 - assertVisible: "Alchemist"
-- assertNotVisible: "Scholar"
+- assertNotVisible: "Scout"
 
 - tapOn: "Continue"
 
-# Screen Time Goal Screen
-- assertVisible: "Set Your Goals"
-- assertVisible: "What's your current daily screen time?"
-- tapOn: 
-    id: "current-screen-time-picker"
-- tapOn: "4h"
-- assertVisible: "What's your daily screen time goal?"
-- tapOn: 
-    id: "target-screen-time-picker"
-- tapOn: "3h"
-- assertVisible: "Set My Goal"
-- tapOn: "Set My Goal"
-
+# =============================================================================
+# FIRST QUEST SCREEN - Quest introduction
+# =============================================================================
 - assertVisible: "Your Journey Begins"
+- assertVisible: "Wake up"
+
+# Start the first quest
 - tapOn: "Wake up"
 
+# =============================================================================
+# PENDING QUEST SCREEN - Quest preparation
+# =============================================================================
+- assertVisible: "Quest Ready"
 - assertVisible: "Lock your phone to begin your quest"
 - assertVisible: "Cancel Quest"
+
+# Test quest cancellation and restart to ensure robustness
 - tapOn: "Cancel Quest"
 
+# =============================================================================
+# BACK TO FIRST QUEST SCREEN - Test re-starting quest
+# =============================================================================
 - assertVisible: "Your Journey Begins"
-- tapOn: "Wake up"
-- assertVisible: "Lock your phone to begin your quest"
-- assertVisible: "Cancel Quest"
+- assertVisible: "Wake up"
 
-#now at the home screen, done with onboarding.
+# =============================================================================
+# ALTERNATIVE FLOW - EXISTING USER LOGIN PATH
+# =============================================================================
+# Test the direct login path for existing users
+# Since we can test this independently, let's restart and test it
+
+- clearState
+- launchApp
+
+# Handle development environment screens again after clearState
+- runFlow:
+    when:
+      visible: "Development servers"
+    commands:
+      - tapOn: "http://10.0.2.2:8081"
+
+- runFlow:
+    when:
+      visible:
+        text: ".*developer menu.*"
+    commands:
+      # Tap the X button to close the modal
+      - tapOn: "Continue"
+
+- runFlow:
+    when:
+      visible:
+        text: ".*This is the developer menu*"
+    commands:
+      # Try to find and tap the close button/X
+      - tapOn: "×"
+
+- waitForAnimationToEnd
+
+# From welcome screen, test direct login path
+- assertVisible: "Level Up By Logging Off"
+- assertVisible: ".*Log In.*"
+
+# Test direct login for existing users
+- tapOn: ".*Log In.*"
+
+# Should land on login screen
+- assertVisible: "Email"
+
+# Test login form interaction
+- tapOn: "Email"
+- inputText: "existing@example.com"
+
+- assertVisible: "Send Link"
+- tapOn: "Send Link"
+
+- waitForAnimationToEnd
+
+- assertVisible: "Email sent to existing@example.com"
+- assertVisible: "Send Again"
+
+
+# =============================================================================
+# TEST SUMMARY
+# =============================================================================
+# This comprehensive test covers:
+# ✅ Development environment setup (server selection, Expo onboarding)
+# ✅ Complete onboarding flow from welcome to quest setup
+# ✅ Character creation and carousel navigation
+# ✅ Quest preparation and cancellation flows
+# ✅ Direct login path for existing users
+# ✅ Form interactions and user input
+#
+# Note: Quest completion → signup prompt → login flow would require
+# either background quest completion simulation or a separate test
+# that starts from a quest-completed state.

@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, {
   cancelAnimation,
+  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -12,26 +13,32 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Image, Text, View } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
-import { useQuestStore } from '@/store/quest-store';
 import { type Quest } from '@/store/types';
 
 import { StoryNarration } from './StoryNarration';
 import { StreakCounter } from './StreakCounter';
 
 type QuestCompleteProps = {
-  quest: Quest;
+  quest: Quest & { heroName?: string };
   story: string;
+  onContinue?: () => void;
+  continueText?: string;
+  showActionButton?: boolean;
 };
 
-export function QuestComplete({ quest, story }: QuestCompleteProps) {
+export function QuestComplete({
+  quest,
+  story,
+  onContinue,
+  continueText = 'Continue',
+  showActionButton = true,
+}: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
   const lottieRef = useRef<LottieView>(null);
-  const clearRecentCompletedQuest = useQuestStore(
-    (state) => state.clearRecentCompletedQuest
-  );
 
   const scale = useSharedValue(0);
   const headerOpacity = useSharedValue(0);
@@ -46,13 +53,11 @@ export function QuestComplete({ quest, story }: QuestCompleteProps) {
     opacity: storyOpacity.value,
   }));
 
-  const rewardStyle = useAnimatedStyle(() => ({
+  const _rewardStyle = useAnimatedStyle(() => ({
     opacity: rewardOpacity.value,
   }));
 
   useEffect(() => {
-    let isMounted = true;
-
     // Initial celebration animations
     scale.value = withSequence(withSpring(1.2), withSpring(1));
     headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
@@ -64,37 +69,22 @@ export function QuestComplete({ quest, story }: QuestCompleteProps) {
       lottieRef.current.play();
     }
 
-    // Set up a timer to clear the recent completed quest flag after a reasonable
-    // amount of time (15 seconds) to ensure user has had time to see it
-    const clearTimer = setTimeout(() => {
-      if (isMounted) {
-        clearRecentCompletedQuest();
-      }
-    }, 15000);
-
     return () => {
-      isMounted = false;
-      clearTimeout(clearTimer);
-
-      // Important: Clear the flag when component unmounts
-      clearRecentCompletedQuest();
-
       // Cancel animations
       cancelAnimation(scale);
       cancelAnimation(headerOpacity);
       cancelAnimation(storyOpacity);
       cancelAnimation(rewardOpacity);
     };
-  }, [
-    clearRecentCompletedQuest,
-    scale,
-    headerOpacity,
-    storyOpacity,
-    rewardOpacity,
-  ]);
+  }, [scale, headerOpacity, storyOpacity, rewardOpacity]);
 
   // Determine if this is a story quest or custom quest - they need different card styling
   const isStoryQuest = quest.mode === 'story';
+
+  const _handleBackToJournal = () => {
+    // Implement the logic to handle going back to the journal
+    console.log('Going back to journal');
+  };
 
   return (
     <View className="relative flex-1">
@@ -138,12 +128,11 @@ export function QuestComplete({ quest, story }: QuestCompleteProps) {
         </View>
 
         <Animated.View
+          entering={FadeInDown.delay(200).duration(600)}
           className="my-4 w-full"
-          // Add flex-1 only for story quests, which usually have longer content
           style={[storyStyle, isStoryQuest ? { flex: 1 } : {}]}
         >
           <Card
-            // Use dynamic styling based on quest type
             className={`rounded-xl bg-neutral-100 ${
               isStoryQuest ? 'flex-1' : 'auto-h'
             }`}
@@ -168,13 +157,21 @@ export function QuestComplete({ quest, story }: QuestCompleteProps) {
           )}
         </Animated.View>
 
-        <View className="mt-4 w-full items-center gap-4">
-          <Animated.View style={rewardStyle}>
-            <Text className="text-cream text-center text-lg font-bold drop-shadow-md">
+        <Animated.View entering={FadeInDown.delay(400).duration(600)}>
+          <View className="mb-6 items-center">
+            <Text className="text-lg font-bold">
               Reward: {quest.reward.xp} XP
             </Text>
-          </Animated.View>
-        </View>
+          </View>
+
+          {showActionButton && onContinue && (
+            <Button
+              label={continueText}
+              onPress={onContinue}
+              accessibilityLabel={continueText}
+            />
+          )}
+        </Animated.View>
       </View>
     </View>
   );

@@ -10,10 +10,6 @@ export interface User {
   name?: string;
   avatar?: string;
   createdAt?: string;
-  screenTimeGoals?: {
-    currentTime: number;
-    targetTime: number;
-  };
 }
 
 interface UserState {

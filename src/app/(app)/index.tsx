@@ -75,6 +75,10 @@ export default function Home() {
     opacity: scrollContainerOpacity.value,
   }));
 
+  useEffect(() => {
+    console.log('Home screen is mounting');
+  }, []);
+
   // Get next quest options based on the last completed story quest
   useEffect(() => {
     if (activeQuest || pendingQuest) return; // Don't update if there's an active quest
@@ -189,8 +193,19 @@ export default function Home() {
     );
 
     if (selectedQuest) {
+      console.log('🎯 Selected quest:', selectedQuest);
+      // Check state BEFORE
+      console.log(
+        '🎯 BEFORE prepareQuest - pendingQuest:',
+        useQuestStore.getState().pendingQuest
+      );
       posthog.capture('trigger_start_quest');
       prepareQuest(selectedQuest);
+      // Check state AFTER (should be immediate)
+      console.log(
+        '🎯 AFTER prepareQuest - pendingQuest:',
+        useQuestStore.getState().pendingQuest
+      );
       await QuestTimer.prepareQuest(selectedQuest);
       posthog.capture('success_start_quest');
     }
@@ -272,30 +287,6 @@ export default function Home() {
   // Render story quest option buttons
   const renderStoryOptions = () => {
     if (activeIndex !== 0) return null; // Only show for story mode
-
-    // If no completed quests, show "Wake up" button
-    if (!completedQuests.some((quest) => quest.mode === 'story')) {
-      // Find the first story quest
-      const firstStoryQuest = AVAILABLE_QUESTS.find(
-        (quest) => quest.mode === 'story'
-      );
-
-      if (firstStoryQuest) {
-        return (
-          <View className="items-center justify-center">
-            <Button
-              label="Wake up"
-              onPress={() => handleQuestOptionSelect(firstStoryQuest.id)}
-              className="mb-2 rounded-md bg-primary-400"
-              textClassName="text-white font-bold"
-              style={{ width: cardWidth }}
-            />
-          </View>
-        );
-      } else {
-        return null;
-      }
-    }
 
     // Otherwise show buttons for each option in a row
     return (

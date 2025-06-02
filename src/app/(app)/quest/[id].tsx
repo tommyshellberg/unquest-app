@@ -9,27 +9,30 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
-import { FailedQuest } from '@/components/failed-quest/index';
+import { FailedQuest } from '@/components/failed-quest';
 import { QuestComplete } from '@/components/QuestComplete';
 import { FocusAwareStatusBar, Text, View } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
 
-export default function QuestDetailsScreen() {
-  // Get the quest ID from the route params
+export default function AppQuestDetailsScreen() {
   const { id, timestamp } = useLocalSearchParams<{
     id: string;
-    timestamp: string;
+    timestamp?: string;
   }>();
 
-  // Get all quests from store
   const completedQuests = useQuestStore((state) => state.completedQuests);
-  const failedQuest = useQuestStore((state) => state.failedQuest);
+  const failedQuest = useQuestStore((state) => state.failedQuest); // Global failed quest state
   const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
+  const recentCompletedQuest = useQuestStore(
+    (state) => state.recentCompletedQuest
+  );
+  const clearRecentCompletedQuest = useQuestStore(
+    (state) => state.clearRecentCompletedQuest
+  );
 
   const headerOpacity = useSharedValue(0);
 
-  // Initialize animation
   useEffect(() => {
     headerOpacity.value = withTiming(1, { duration: 800 });
   }, [headerOpacity]);
@@ -38,28 +41,29 @@ export default function QuestDetailsScreen() {
     opacity: headerOpacity.value,
   }));
 
-  // Handle navigation back to journal
-  const handleBackToJournal = () => {
-    // Clear failed quest state when navigating away
-    if (failedQuest) {
+  useEffect(() => {
+    console.log('[QuestDetails] Quest ID:', id);
+  }, [id]);
+
+  const handleBackNavigation = () => {
+    // Clear the recent completed quest if it matches this quest
+    if (recentCompletedQuest && recentCompletedQuest.id === id) {
+      console.log(
+        '[QuestDetails] Clearing recent completed quest on navigation:',
+        id
+      );
+      clearRecentCompletedQuest();
+    }
+
+    // If we are viewing the globally stored failedQuest, clear it before navigating.
+    if (failedQuest && failedQuest.id === id) {
       resetFailedQuest();
     }
-    router.back();
+    console.log('[QuestDetails] Navigating to app home');
+    router.replace('/(app)'); // Fallback to app home
   };
 
-  // Set up cleanup effect for unmount
-  useEffect(() => {
-    return () => {
-      // Clear failed quest when component unmounts
-      if (failedQuest) {
-        resetFailedQuest();
-      }
-    };
-  }, [failedQuest, resetFailedQuest]);
-
-  // Find the specific quest by ID and timestamp (if available)
   const quest = useMemo(() => {
-    // First check completed quests (with timestamp if provided)
     if (timestamp) {
       const completedMatch = completedQuests.find(
         (q) =>
@@ -69,97 +73,77 @@ export default function QuestDetailsScreen() {
       );
       if (completedMatch) return completedMatch;
     }
-
-    // Check completed quests without timestamp
-    const completedMatch = completedQuests.find(
+    const completedMatchNoTimestamp = completedQuests.find(
       (q) => q.id === id && q.status === 'completed'
     );
-    if (completedMatch) return completedMatch;
+    if (completedMatchNoTimestamp) return completedMatchNoTimestamp;
 
-    // Check current failed quest
-    console.log('failedQuest', failedQuest);
+    // Check if the current global failedQuest is the one for this screen
     if (
       failedQuest &&
       failedQuest.id === id &&
-      'status' in failedQuest &&
       failedQuest.status === 'failed'
     ) {
       return failedQuest;
     }
 
-    // Check failed quests history
-    const failedQuests = useQuestStore.getState().failedQuests;
-    const failedMatch = failedQuests.find(
-      (q) => q.id === id && q.status === 'failed'
-    );
-    if (failedMatch) return failedMatch;
+    // Check in failedQuests history from the store if you have one
+    const failedQuestsHistory = useQuestStore.getState().failedQuests;
+    if (failedQuestsHistory) {
+      const failedMatchInHistory = failedQuestsHistory.find(
+        (q) => q.id === id && q.status === 'failed'
+      );
+      if (failedMatchInHistory) return failedMatchInHistory;
+    }
 
     return null;
   }, [id, timestamp, completedQuests, failedQuest]);
 
-  // If the quest is not found, show an error
   if (!quest) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <FocusAwareStatusBar />
         <Feather name="alert-circle" size={48} color={colors.neutral[500]} />
         <Text className="mt-4 text-center text-neutral-600">
-          Quest not found
+          Quest not found.
         </Text>
         <TouchableOpacity
           className="mt-6 rounded-lg bg-primary-300 px-6 py-3"
-          onPress={handleBackToJournal}
+          onPress={handleBackNavigation} // Changed text to be more generic
         >
-          <Text className="font-medium text-white">Back to Journal</Text>
+          <Text className="font-medium text-white">Go Back</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // Generate completion text for completed quests
   const getQuestCompletionText = () => {
-    // For story quests, use the built-in story
-    if (quest.mode === 'story' && 'story' in quest) {
+    if (quest.mode === 'story' && 'story' in quest && quest.story) {
       return quest.story;
     }
-
-    // For custom quests, find a matching story from our collection
-    if (quest.mode === 'custom' && 'category' in quest) {
-      // Filter stories that match the quest category
+    if (quest.mode === 'custom' && 'category' in quest && quest.category) {
       const matchingStories = AVAILABLE_CUSTOM_QUEST_STORIES.filter(
         (storyItem) =>
-          storyItem.category.toLowerCase() === quest.category.toLowerCase()
+          storyItem.category.toLowerCase() === quest.category?.toLowerCase()
       );
-
-      // If we have matching stories, pick a random one (but consistently based on quest ID)
       if (matchingStories.length > 0) {
-        // Use quest ID's hash to get a consistent index
-        const questIdHash = quest.id
-          .split('')
-          .reduce((a, b) => a + b.charCodeAt(0), 0);
-        const index = questIdHash % matchingStories.length;
-        const selectedStory = matchingStories[index];
-
-        // Return just the story without the XP message (since it's shown separately)
-        return selectedStory.story;
+        const questIdHash =
+          quest.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0) %
+          matchingStories.length;
+        return matchingStories[questIdHash].story;
       }
     }
-
-    // Fallback if no matching story is found
     return 'Congratulations on completing your quest!';
   };
 
-  // If quest is completed and has a stopTime
   if (quest.status === 'completed' && quest.stopTime) {
     return (
       <View className="flex-1 bg-background">
         <FocusAwareStatusBar />
-
-        {/* Header with back arrow */}
         <Animated.View style={headerStyle} className="mb-4 px-4">
           <View className="flex-row items-center">
             <TouchableOpacity
-              onPress={handleBackToJournal}
+              onPress={handleBackNavigation}
               className="mr-3 p-1"
               hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
             >
@@ -172,23 +156,23 @@ export default function QuestDetailsScreen() {
             <Text className="text-xl font-bold">Quest Details</Text>
           </View>
         </Animated.View>
-
-        <QuestComplete quest={quest} story={getQuestCompletionText()} />
+        <QuestComplete
+          quest={quest}
+          story={getQuestCompletionText()}
+          showActionButton={false} // Always false in this context
+        />
       </View>
     );
   }
 
-  // If it's a failed quest (doesn't have status 'completed')
-  if (quest && quest.status === 'failed') {
+  if (quest.status === 'failed') {
     return (
       <View className="flex-1 bg-background">
         <FocusAwareStatusBar />
-
-        {/* Header with back arrow */}
         <Animated.View style={headerStyle} className="mb-4 px-4">
           <View className="flex-row items-center">
             <TouchableOpacity
-              onPress={handleBackToJournal}
+              onPress={handleBackNavigation}
               className="mr-3 p-1"
               hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
             >
@@ -201,19 +185,16 @@ export default function QuestDetailsScreen() {
             <Text className="text-xl font-bold">Quest Details</Text>
           </View>
         </Animated.View>
-
         <FailedQuest
           quest={quest}
           onRetry={() => {
-            resetFailedQuest();
-            router.replace('/');
+            handleBackNavigation();
           }}
         />
       </View>
     );
   }
 
-  // Fallback case (should not reach here in normal flow)
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <FocusAwareStatusBar />

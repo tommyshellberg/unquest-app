@@ -1,5 +1,7 @@
-import { logout } from '@/api/auth';
+import { v4 as uuidv4 } from 'uuid';
+
 import { apiClient } from '@/api/common/client';
+import { setItem } from '@/lib/storage';
 import type { Character } from '@/store/types';
 
 export interface UserDetails {
@@ -64,22 +66,16 @@ export interface InvitationsResponse {
   totalResults: number;
 }
 
-// @TODO: check if we need this, particularly the automatic logout.
 export const getUserDetails = async (): Promise<UserDetails> => {
   try {
+    console.log('fetching user details');
     const response = await apiClient.get('/users/me');
     return response.data;
   } catch (error) {
     console.error('Error fetching user details:', error);
-
-    // If the error is authentication-related and token refresh failed,
-    // we should log the user out
-    if (error instanceof Error && error.message === 'Token refresh failed') {
-      await logout();
-      // You might want to navigate to the login screen here
-      // or emit an event that the app can listen to
-    }
-
+    // Note: The apiClient interceptor already handles 401 errors and token refresh failures
+    // If token refresh fails, the interceptor calls signOut() which clears auth state
+    // No additional handling needed here to avoid dependency cycles
     throw error;
   }
 };
@@ -282,6 +278,56 @@ export async function deleteUserAccount(): Promise<{
     return response.data;
   } catch (error) {
     console.error('Error deleting user account:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a provisional user account with the selected character
+ * @param character Character details to associate with the provisional user
+ * @returns The created provisional user data
+ */
+export async function createProvisionalUser(
+  character: Character
+): Promise<any> {
+  try {
+    // Generate a provisional email using UUID
+    const provisionalEmail = `${uuidv4()}@unquestapp.com`;
+
+    // Store the email in local storage
+    setItem('provisionalEmail', provisionalEmail);
+
+    const response = await apiClient.post('/users/provisional', {
+      character,
+      email: provisionalEmail,
+    });
+
+    console.log('response data', response.data);
+
+    // Store the user ID and tokens
+    console.log('setting provisional user id', response.data.user.id);
+    setItem('provisionalUserId', response.data.user.id);
+
+    // Store the access token separately from regular auth tokens
+    if (response.data.tokens?.access?.token) {
+      console.log(
+        'setting provisional access token',
+        response.data.tokens.access.token
+      );
+      setItem('provisionalAccessToken', response.data.tokens.access.token);
+    }
+
+    return response.data.user;
+  } catch (error: unknown) {
+    // If email is taken, we can indicate it for special handling
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response?: { data?: { message?: string } };
+      };
+      if (axiosError.response?.data?.message === 'Email already taken') {
+        throw new Error('PROVISIONAL_EMAIL_TAKEN');
+      }
+    }
     throw error;
   }
 }

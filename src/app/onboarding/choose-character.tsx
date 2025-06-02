@@ -18,7 +18,7 @@ import Animated, {
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { primary } from '@/components/ui/colors';
-import { updateUserCharacter } from '@/lib/services/user';
+import { createProvisionalUser } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { type Character, type CharacterType } from '@/store/types';
@@ -92,6 +92,8 @@ export default function ChooseCharacterScreen() {
   );
   const [inputName, setInputName] = useState<string>('');
   const [debouncedName, setDebouncedName] = useState<string>('');
+  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Memoized renderItem callback for FlatList - must be declared before conditional returns
   const renderItem = useCallback(
@@ -114,18 +116,26 @@ export default function ChooseCharacterScreen() {
     return () => clearTimeout(handler);
   }, [inputName]);
 
+  // Clear error when user changes inputs
+  useEffect(() => {
+    if (error) {
+      setError(null);
+    }
+  }, [debouncedName, selectedCharacter]);
+
   const handleContinue = async () => {
-    posthog.capture('onboarding_trigger_continue_choose_character');
-    if (!debouncedName.trim()) return;
+    if (!debouncedName.trim() || isCreating) return;
+
     const selected = CHARACTERS.find((c) => c.id === selectedCharacter);
     if (!selected) return;
+
+    setIsCreating(true);
+    setError(null);
+    posthog.capture('onboarding_trigger_continue_choose_character');
 
     try {
       // Create the new character object
       const newCharacter = {
-        level: 1,
-        currentXP: 0,
-        xpToNextLevel: 100,
         type: selected.id,
         name: debouncedName.trim(),
       };
@@ -133,15 +143,54 @@ export default function ChooseCharacterScreen() {
       // 1. First update local character store
       createCharacter(selected.id as CharacterType, debouncedName.trim());
       posthog.capture('onboarding_update_character_local_store_success');
-      // 2. Update the user's character on the server
-      await updateUserCharacter(newCharacter as Character);
-      posthog.capture('onboarding_update_character_server_success');
-    } catch (error) {
-      posthog.capture('onboarding_update_character_error');
-    } finally {
+
+      // 2. Create a provisional user on the server
+      await createProvisionalUser(newCharacter as Character);
+      posthog.capture('onboarding_create_provisional_user_success');
+
+      // Only proceed if both operations succeeded
       useOnboardingStore
         .getState()
         .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
+    } catch (error: unknown) {
+      // Handle specific error types
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
+      if (errorMessage === 'PROVISIONAL_EMAIL_TAKEN') {
+        posthog.capture('onboarding_provisional_email_taken');
+        // This is recoverable - the provisional account already exists, so we can continue
+        useOnboardingStore
+          .getState()
+          .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
+      } else {
+        // For all other errors, don't proceed and show error to user
+        posthog.capture('onboarding_create_provisional_user_error', {
+          error: errorMessage,
+        });
+
+        // Reset character store since we couldn't create provisional account
+        useCharacterStore.getState().resetCharacter();
+
+        // Show user-friendly error message
+        if (
+          errorMessage.includes('network') ||
+          errorMessage.includes('fetch')
+        ) {
+          setError(
+            'Network error. Please check your connection and try again.'
+          );
+        } else if (
+          errorMessage.includes('server') ||
+          errorMessage.includes('500')
+        ) {
+          setError('Server error. Please try again in a moment.');
+        } else {
+          setError('Failed to create account. Please try again.');
+        }
+      }
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -213,11 +262,17 @@ export default function ChooseCharacterScreen() {
 
       {/* Continue Button */}
       <Animated.View className="p-6" entering={FadeIn.delay(2100)}>
+        {error && (
+          <View className="mb-4 rounded-lg bg-red-100 p-4">
+            <Text className="text-center text-red-800">{error}</Text>
+          </View>
+        )}
+
         <Button
-          label="Continue"
+          label={isCreating ? 'Creating...' : 'Continue'}
           onPress={handleContinue}
-          disabled={!debouncedName.trim()}
-          className={`rounded-xl bg-primary-500 ${!debouncedName.trim() ? 'opacity-50' : ''}`}
+          disabled={!debouncedName.trim() || isCreating}
+          className={`rounded-xl bg-primary-500 ${!debouncedName.trim() || isCreating ? 'opacity-50' : ''}`}
           textClassName="text-white font-bold"
         />
       </Animated.View>

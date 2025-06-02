@@ -5,7 +5,7 @@ import { Env } from '@env';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { router, Stack, usePathname } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { PostHogProvider } from 'posthog-react-native';
 import React, { useCallback, useEffect } from 'react';
@@ -19,18 +19,15 @@ import { APIProvider } from '@/api';
 import { ReminderPromptController } from '@/components/ReminderPromptController';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
+import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { useThemeConfig } from '@/lib/use-theme-config';
 import { useCharacterStore } from '@/store/character-store';
-import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
-export { ErrorBoundary } from 'expo-router';
+import NavigationGate from './navigation-gate';
 
-// @todo: I don't think we use this at all.
-export const unstable_settings = {
-  initialRouteName: '(app)',
-};
+export { ErrorBoundary } from 'expo-router';
 
 const integrations =
   Env.APP_ENV === 'production'
@@ -63,12 +60,6 @@ function RootLayout() {
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
-  const currentStep = useOnboardingStore((s) => s.currentStep);
-  const pathname = usePathname();
-
-  // Add both quest states
-  const pendingQuest = useQuestStore((state) => state.pendingQuest);
-  const failedQuest = useQuestStore((state) => state.failedQuest);
 
   useEffect(() => {
     async function prepare() {
@@ -96,63 +87,6 @@ function RootLayout() {
       }
     }
   }, []);
-
-  useEffect(() => {
-    if (!hydrationFinished || authStatus === 'hydrating') return;
-    if (
-      currentStep === OnboardingStep.NOT_STARTED &&
-      !pathname.includes('welcome')
-    ) {
-      router.replace('./welcome');
-    }
-  }, [currentStep, pathname, hydrationFinished, authStatus]);
-
-  useEffect(() => {
-    // Skip until hydration is complete
-    if (!hydrationFinished || authStatus === 'hydrating') return;
-
-    if (pendingQuest) {
-      // Check if we're already on the pending-quest screen
-      if (pathname.includes('pending-quest')) {
-        return;
-      }
-
-      router.replace('/(app)/pending-quest');
-    }
-  }, [pendingQuest, hydrationFinished, authStatus, pathname]);
-
-  // Add this effect to handle redirects to the individual quest screen for failed quests
-  useEffect(() => {
-    // Skip until hydration is complete
-    if (!hydrationFinished || authStatus === 'hydrating') return;
-
-    if (failedQuest) {
-      // Don't redirect if we're already on a quest screen
-      if (pathname.includes('/quest/')) {
-        return;
-      }
-
-      requestAnimationFrame(() => {
-        try {
-          // Route to the quest details page with the ID of the failed quest
-          router.replace({
-            pathname: '/(app)/quest/[id]',
-            params: { id: failedQuest.id },
-          });
-        } catch (error) {
-          console.error('Failed quest navigation failed, will retry', error);
-          setTimeout(() => {
-            if (hydrationFinished && authStatus !== 'idle') {
-              router.replace({
-                pathname: '/(app)/quest/[id]',
-                params: { id: failedQuest.id },
-              });
-            }
-          }, 500);
-        }
-      });
-    }
-  }, [failedQuest, hydrationFinished, authStatus, pathname]);
 
   useEffect(() => {
     const checkAndScheduleStreakWarning = async () => {
@@ -189,18 +123,31 @@ function RootLayout() {
     }
   }, [hydrationFinished, authStatus]);
 
+  // Activate lock detection for the whole main app.
+  useLockStateDetection();
+
   // Return null until hydration promise is done AND auth status is final
   if (!hydrationFinished || authStatus === 'hydrating') {
     return null;
   }
 
+  // Always render the Stack - let child layouts handle redirects
   return (
     <Providers onLayout={onLayoutRootView}>
+      <NavigationGate />
       <Stack>
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+        <Stack.Screen name="pending-quest" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="first-quest-result"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="quest-completed-signup"
+          options={{ headerShown: false }}
+        />
       </Stack>
     </Providers>
   );
@@ -242,5 +189,4 @@ function Providers({
     </SafeAreaView>
   );
 }
-
 export default Sentry.wrap(RootLayout);

@@ -1,5 +1,4 @@
-import { Redirect } from 'expo-router';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { useQuestStore } from '@/store/quest-store';
 import { useSettingsStore } from '@/store/settings-store';
@@ -30,7 +29,8 @@ export function ReminderPromptController() {
   // Redirect to reminder setup when conditions are met
   if (shouldPrompt) {
     console.log('Redirecting to reminder setup');
-    return <Redirect href="/(app)/reminder-setup" />;
+    // TODO: Redirect to reminder setup
+    // return <Redirect href="/(app)/reminder-setup" />;
   }
 
   // No need to render anything if not redirecting

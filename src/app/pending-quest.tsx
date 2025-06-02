@@ -1,5 +1,4 @@
 import { BlurView } from 'expo-blur';
-import { router } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Image } from 'react-native';
 import Animated, {
@@ -12,14 +11,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
-import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 export default function PendingQuestScreen() {
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const insets = useSafeAreaInsets();
   const cancelQuest = useQuestStore((state) => state.cancelQuest);
-  const currentStep = useOnboardingStore((state) => state.currentStep);
 
   // Get the quest to display (either pending or active)
   const displayQuest = pendingQuest;
@@ -32,34 +29,7 @@ export default function PendingQuestScreen() {
   const buttonOpacity = useSharedValue(0);
   const buttonScale = useSharedValue(0.9);
 
-  useEffect(() => {
-    // Only redirect automatically if we don't have a quest
-    // AND we're not in the onboarding flow
-    if (!displayQuest && currentStep === OnboardingStep.COMPLETED) {
-      router.replace('/');
-    } else if (!displayQuest && currentStep === OnboardingStep.GOALS_SET) {
-      // If we're in onboarding and cancelled a quest, go back to first-quest screen
-      router.replace('/onboarding/first-quest');
-    }
-  }, [displayQuest, currentStep]);
-
-  useEffect(() => {
-    // Simple animation sequence
-    headerOpacity.value = withTiming(1, { duration: 500 });
-    headerScale.value = withTiming(1, { duration: 500 });
-    cardOpacity.value = withDelay(500, withTiming(1, { duration: 500 }));
-    cardScale.value = withDelay(500, withTiming(1, { duration: 500 }));
-    buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
-    buttonScale.value = withDelay(1000, withTiming(1, { duration: 500 }));
-  }, [
-    buttonOpacity,
-    buttonScale,
-    cardOpacity,
-    cardScale,
-    headerOpacity,
-    headerScale,
-  ]);
-
+  // Animations must be defined before conditionals (for React Hook Rules)
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
     transform: [{ scale: headerScale.value }],
@@ -75,8 +45,30 @@ export default function PendingQuestScreen() {
     transform: [{ scale: buttonScale.value }],
   }));
 
+  // Run animations when component mounts
+  useEffect(() => {
+    if (pendingQuest) {
+      // Simple animation sequence
+      headerOpacity.value = withTiming(1, { duration: 500 });
+      headerScale.value = withTiming(1, { duration: 500 });
+      cardOpacity.value = withDelay(500, withTiming(1, { duration: 500 }));
+      cardScale.value = withDelay(500, withTiming(1, { duration: 500 }));
+      buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
+      buttonScale.value = withDelay(1000, withTiming(1, { duration: 500 }));
+    }
+  }, [
+    pendingQuest,
+    buttonOpacity,
+    buttonScale,
+    cardOpacity,
+    cardScale,
+    headerOpacity,
+    headerScale,
+  ]);
+
   const handleCancelQuest = () => {
     cancelQuest();
+    // go back to previous screen
   };
 
   return (

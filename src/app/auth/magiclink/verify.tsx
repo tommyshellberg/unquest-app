@@ -1,118 +1,80 @@
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 
-import { verifyMagicLink } from '@/api/auth';
-import { apiClient } from '@/api/common/client';
+import { verifyMagicLinkAndSignIn } from '@/api/auth';
 import { Text, View } from '@/components/ui';
-import { useCharacterStore } from '@/store/character-store';
-import { useUserStore } from '@/store/user-store';
+import { signOut } from '@/lib/auth';
 
-export default function MagicLinkVerifyScreen() {
+export default function VerifyMagicLinkScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const token = params.token as string;
   const [loading, setLoading] = useState(true);
-
-  const character = useCharacterStore((state) => state.character);
-  const createCharacter = useCharacterStore((state) => state.createCharacter);
-
-  // Replace account-store with user-store
-  const user = useUserStore((state) => state.user);
-  const setUser = useUserStore((state) => state.setUser);
-
-  const navigation = useNavigation();
-
-  useEffect(() => {
-    navigation.setOptions({ headerShown: false });
-  }, [navigation]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) {
       console.error('No token found in params:', params);
-      router.replace(
-        '/onboarding?error=' +
-          encodeURIComponent('No token found. Please try again.')
-      );
+      router.replace({
+        pathname: '/login',
+        params: { error: 'No token found. Please try again.' },
+      });
       return;
     }
 
     async function verifyToken() {
       try {
-        // Call the auth service function to verify and store tokens
-        const responseData = await verifyMagicLink(token);
+        // Call the comprehensive verification function
+        const navigationTarget = await verifyMagicLinkAndSignIn(token);
 
-        // Check if user has character data locally
-        const hasExistingData = !!character;
-
-        // If no local data, try to fetch user data from server
-        if (!hasExistingData) {
-          try {
-            // Make sure this endpoint matches what your server expects
-            const userResponse = await apiClient.get('/users/me');
-
-            // Store user data in user store
-            if (
-              userResponse.data &&
-              userResponse.data.id &&
-              userResponse.data.email
-            ) {
-              setUser({
-                id: userResponse.data.id,
-                email: userResponse.data.email,
-                name: userResponse.data.name,
-                avatar: userResponse.data.avatar,
-                createdAt: userResponse.data.createdAt,
-              });
-            }
-
-            // Check if the response has character data with required fields
-            if (
-              userResponse.data &&
-              userResponse.data.character &&
-              userResponse.data.character.type &&
-              userResponse.data.character.name
-            ) {
-              // Create character from server data
-              const serverCharacter = userResponse.data.character;
-              createCharacter(serverCharacter.type, serverCharacter.name);
-
-              // User has complete character data on server, navigate to home
-              router.replace('/(app)/');
-            } else {
-              // No complete character data on server, navigate to app-introduction
-              router.replace('/onboarding');
-            }
-          } catch (fetchError) {
-            console.error('Error fetching user data:', fetchError);
-            // If we can't fetch user data, go to app-introduction
-            router.replace('/onboarding');
-          }
-        } else {
-          // User already has local data, navigate to home
+        // Navigate based on the returned target
+        if (navigationTarget === 'app') {
+          console.log('[VerifyMagicLink] Navigating to app');
           router.replace('/(app)/');
+        } else {
+          console.log('[VerifyMagicLink] Navigating to onboarding');
+          router.replace('/onboarding');
         }
       } catch (error) {
         console.error('Error verifying magic link:', error);
-        router.replace(
-          '/onboarding?error=' +
-            encodeURIComponent(
-              'Magic link verification failed. The link may have expired. Please try again.'
-            )
+
+        // Explicitly sign out to clear any stale auth state
+        signOut();
+
+        setError(
+          'Magic link verification failed. The link may have expired. Please try again.'
         );
+
+        router.replace({
+          pathname: '/login',
+          params: {
+            error:
+              'Magic link verification failed. The link may have expired. Please try again.',
+          },
+        });
       } finally {
         setLoading(false);
       }
     }
 
     verifyToken();
-  }, [token, router, params, character, user, createCharacter, setUser]);
+  }, [token, router, params]);
 
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
         <Text className="mt-4">Verifying your login...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-center text-red-500">{error}</Text>
+        <Text className="mt-4 text-center">Redirecting to login...</Text>
       </View>
     );
   }

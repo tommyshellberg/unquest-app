@@ -11,7 +11,6 @@ import { getItem, removeItem, setItem } from '@/lib/storage';
 import { usePOIStore } from '@/store/poi-store';
 
 import { useCharacterStore } from './character-store';
-import { OnboardingStep, useOnboardingStore } from './onboarding-store';
 import {
   type CustomQuestTemplate,
   type Quest,
@@ -125,12 +124,6 @@ export const useQuestStore = create<QuestState>()(
             }
 
             characterStore.addXP(completedQuest.reward.xp);
-            // If we're not already done with onboarding, set the current step to COMPLETED.
-            if (!useOnboardingStore.getState().isOnboardingComplete()) {
-              useOnboardingStore
-                .getState()
-                .setCurrentStep(OnboardingStep.COMPLETED);
-            }
 
             // If this is the first quest completed today, cancel today's warning
             // and schedule tomorrow's warning

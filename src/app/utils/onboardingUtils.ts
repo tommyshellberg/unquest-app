@@ -1,12 +1,15 @@
 import * as Notifications from 'expo-notifications';
 
+import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
-import { useUserStore } from '@/store/user-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 
 export interface OnboardingState {
   hasCharacter: boolean;
-  hasScreenTimeGoal: boolean;
   hasNotificationPermission: boolean;
+  hasCompletedFirstQuest: boolean;
+  hasSeenSignupPrompt: boolean;
+  hasProvisionalAccount: boolean;
 }
 
 export async function checkOnboardingState(): Promise<OnboardingState> {
@@ -14,25 +17,30 @@ export async function checkOnboardingState(): Promise<OnboardingState> {
     // Check for character data
     const character = useCharacterStore.getState().character;
 
-    // Check for screen time goals
-    const user = useUserStore.getState().user;
-
     // Check notification permissions
     const { status } = await Notifications.getPermissionsAsync();
 
+    // Check onboarding progress
+    const onboardingStore = useOnboardingStore.getState();
+
+    // Check for provisional account
+    const provisionalUserId = getItem('provisionalUserId');
+
     return {
       hasCharacter: !!character,
-      hasScreenTimeGoal: !!(
-        user?.screenTimeGoals?.currentTime && user?.screenTimeGoals?.targetTime
-      ),
       hasNotificationPermission: status === 'granted',
+      hasCompletedFirstQuest: onboardingStore.hasCompletedFirstQuest(),
+      hasSeenSignupPrompt: onboardingStore.hasSeenSignupPrompt(),
+      hasProvisionalAccount: !!provisionalUserId,
     };
   } catch (error) {
     console.error('Error checking onboarding state:', error);
     return {
       hasCharacter: false,
-      hasScreenTimeGoal: false,
       hasNotificationPermission: false,
+      hasCompletedFirstQuest: false,
+      hasSeenSignupPrompt: false,
+      hasProvisionalAccount: false,
     };
   }
 }

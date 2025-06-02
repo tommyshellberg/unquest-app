@@ -1,16 +1,24 @@
 import { Feather } from '@expo/vector-icons';
-import { router, Tabs, usePathname, useRootNavigationState } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import { Redirect, Tabs, useRootNavigationState } from 'expo-router';
+import React from 'react';
 import { View } from 'react-native';
 
-import { getAccessToken } from '@/api/token';
 import { white } from '@/components/ui/colors';
+import { useAuth } from '@/lib/auth';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
-import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
-import { useQuestStore } from '@/store/quest-store';
 
 // Tab icon component
-function TabBarIcon({ name, color, size = 24, focused = false }) {
+function TabBarIcon({
+  name,
+  color,
+  size = 24,
+  focused = false,
+}: {
+  name: React.ComponentProps<typeof Feather>['name'];
+  color: string;
+  size?: number;
+  focused?: boolean;
+}) {
   return (
     <Feather
       name={name}
@@ -22,7 +30,12 @@ function TabBarIcon({ name, color, size = 24, focused = false }) {
 }
 
 // Custom center button component
-function CenterButton({ focused, color }) {
+function CenterButton({
+  focused,
+}: {
+  focused: boolean;
+  color?: string; // Unused but required by the tab bar API
+}) {
   return (
     <View className="-mt-5 items-center justify-center">
       <View
@@ -38,92 +51,17 @@ function CenterButton({ focused, color }) {
 
 export default function TabLayout() {
   const navigationState = useRootNavigationState();
-  const pathname = usePathname();
-  const { currentStep } = useOnboardingStore((s) => ({
-    currentStep: s.currentStep,
-  }));
-  const hasRedirectedToCompletedRef = useRef(false);
-
-  // Quest state from store
-  const failedQuest = useQuestStore((state) => state.failedQuest);
-  const recentCompletedQuest = useQuestStore(
-    (state) => state.recentCompletedQuest
-  );
-  const pendingQuest = useQuestStore((state) => state.pendingQuest);
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
 
-  useEffect(() => {
-    if (!navigationState?.key) return;
+  const authStatus = useAuth((state) => state.status);
 
-    if (recentCompletedQuest && !hasRedirectedToCompletedRef.current) {
-      hasRedirectedToCompletedRef.current = true;
-
-      // Redirect to quest/[id] instead of quest-complete
-      router.replace({
-        pathname: '/(app)/quest/[id]',
-        params: {
-          id: recentCompletedQuest.id,
-          timestamp: recentCompletedQuest.stopTime?.toString(),
-        },
-      });
-    }
-  }, [recentCompletedQuest, navigationState?.key]);
-
-  // Don't forget to reset the redirect flag when recentCompletedQuest is cleared
-  useEffect(() => {
-    if (!navigationState?.key) return;
-    if (!recentCompletedQuest) {
-      hasRedirectedToCompletedRef.current = false;
-    }
-  }, [navigationState?.key, recentCompletedQuest]);
-
-  // Handle auth check and redirects.
-  useEffect(() => {
-    if (!navigationState?.key) return;
-
-    async function checkAuth() {
-      // Check for the presence of an access token
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        router.replace('/login');
-        return;
-      }
-
-      // *** NEW: Skip onboarding redirect if there's a pending quest ***
-      // This gives priority to quest flow over onboarding flow
-      if (pendingQuest) {
-        return;
-      }
-
-      // Use the onboarding store to check completion status
-      const isOnboardingComplete = useOnboardingStore
-        .getState()
-        .isOnboardingComplete();
-
-      if (currentStep !== OnboardingStep.NOT_STARTED && !isOnboardingComplete) {
-        router.replace('/onboarding');
-        return;
-      }
-    }
-    checkAuth();
-  }, [currentStep, failedQuest, navigationState?.key, pathname, pendingQuest]);
-
-  useEffect(() => {
-    if (!navigationState?.key) return;
-
-    // Clear failed quest when switching tabs
-    if (failedQuest) {
-      const currentPath = pathname || '';
-      const isQuestDetailScreen = currentPath.includes('/quest/');
-
-      // Only clear failedQuest if we're not on the quest detail screen
-      if (!isQuestDetailScreen) {
-        useQuestStore.getState().resetFailedQuest();
-      }
-    }
-  }, [navigationState?.key, pathname, failedQuest]);
+  // Auth protection
+  if (authStatus === 'signOut') {
+    console.log('[AppLayout] Redirecting to login - not authenticated');
+    return <Redirect href="/login" />;
+  }
 
   // Check if navigation is ready
   if (!navigationState?.key) {
@@ -143,8 +81,12 @@ export default function TabLayout() {
           backgroundColor: white,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
-          // Only hide tab bar for pending-quest and failed-quest
-          display: ['pending-quest'].includes(route.name) ? 'none' : 'flex',
+          // Hide tab bar for quest screens and pending-quest
+          display:
+            ['pending-quest'].includes(route.name) ||
+            route.name.startsWith('quest/')
+              ? 'none'
+              : 'flex',
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -208,23 +150,8 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Hide special screens from tabs */}
-      <Tabs.Screen
-        name="pending-quest"
-        options={{
-          href: null,
-        }}
-      />
-
       <Tabs.Screen
         name="custom-quest"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
-        name="quest/[id]"
         options={{
           href: null,
         }}
@@ -233,6 +160,15 @@ export default function TabLayout() {
         name="reminder-setup"
         options={{
           href: null,
+        }}
+      />
+      {/* Screen for viewing quest details within the (app) group */}
+      <Tabs.Screen
+        name="quest/[id]"
+        options={{
+          href: null, // Doesn't show in the tab bar
+          // Optional: if you want a specific title for this screen in a stack header (if applicable)
+          // title: "Quest Details",
         }}
       />
     </Tabs>

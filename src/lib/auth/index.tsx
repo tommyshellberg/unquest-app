@@ -23,6 +23,7 @@ const _useAuth = create<AuthState>((set, get) => ({
   signIn: async (response) => {
     const { token, user } = response;
     // @todo: why are we calling setToken instead of storeTokens?
+    console.log('signing in with token', token);
     setToken(token);
 
     // Always fetch fresh user details after sign in
@@ -45,8 +46,10 @@ const _useAuth = create<AuthState>((set, get) => ({
     removeToken();
     useUserStore.getState().clearUser();
     set({ status: 'signOut', token: null });
+    console.log('signing out');
   },
   hydrate: async () => {
+    console.log('hydrating auth');
     set({ status: 'hydrating' });
     // 1) test‑only override
     if (__DEV__ && Constants.expoConfig?.extra?.maestroAccessToken) {
@@ -63,6 +66,7 @@ const _useAuth = create<AuthState>((set, get) => ({
     }
     try {
       const userToken = getToken();
+      console.log('userToken', userToken);
       if (userToken !== null) {
         set({ token: userToken });
 
