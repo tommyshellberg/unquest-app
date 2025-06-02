@@ -176,6 +176,7 @@ export default function FirstQuestScreen() {
         <Animated.View style={buttonStyle} className="mb-8 items-center">
           <Button
             label="Wake up"
+            testID="wake-up-button"
             onPress={handleStartQuest}
             className="rounded-xl bg-primary-400 px-10"
             textClassName="text-white font-bold"

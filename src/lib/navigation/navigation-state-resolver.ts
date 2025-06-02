@@ -61,16 +61,11 @@ export function useNavigationTarget(): NavigationTarget {
 
   const { pendingQuest, recentCompletedQuest, failedQuest } = questState;
 
-  // Enhanced onboarding completion check with backward compatibility
-  const isEffectivelyOnboardingComplete = isOnboardingComplete || !!character;
-
   // Debug current state
   useEffect(() => {
     console.log('🧭 Navigation target evaluation:', {
       authStatus,
       isOnboardingComplete,
-      hasCharacterData: !!character,
-      isEffectivelyOnboardingComplete,
       currentStep,
       pendingQuest: pendingQuest?.id || null,
       recentCompletedQuest: recentCompletedQuest?.id || null,
@@ -80,7 +75,6 @@ export function useNavigationTarget(): NavigationTarget {
     authStatus,
     isOnboardingComplete,
     character,
-    isEffectivelyOnboardingComplete,
     currentStep,
     pendingQuest,
     recentCompletedQuest,
@@ -104,7 +98,7 @@ export function useNavigationTarget(): NavigationTarget {
 
   if (failedQuest) {
     console.log('🧭 Found failed quest:', failedQuest.id);
-    if (failedQuest.id === 'quest-1' && !isEffectivelyOnboardingComplete) {
+    if (failedQuest.id === 'quest-1' && !isOnboardingComplete) {
       return { type: 'first-quest-result', outcome: 'failed' };
     }
     return { type: 'quest-result', questId: failedQuest.id, outcome: 'failed' };
@@ -122,8 +116,7 @@ export function useNavigationTarget(): NavigationTarget {
     };
   }
 
-  // Priority 2: Onboarding (with backward compatibility)
-  if (!isEffectivelyOnboardingComplete) {
+  if (!isOnboardingComplete) {
     console.log(
       '🧭 [NavigationStateResolver] Current onboarding step:',
       currentStep

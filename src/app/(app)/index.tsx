@@ -288,30 +288,6 @@ export default function Home() {
   const renderStoryOptions = () => {
     if (activeIndex !== 0) return null; // Only show for story mode
 
-    // If no completed quests, show "Wake up" button
-    if (!completedQuests.some((quest) => quest.mode === 'story')) {
-      // Find the first story quest
-      const firstStoryQuest = AVAILABLE_QUESTS.find(
-        (quest) => quest.mode === 'story'
-      );
-
-      if (firstStoryQuest) {
-        return (
-          <View className="items-center justify-center">
-            <Button
-              label="Wake up"
-              onPress={() => handleQuestOptionSelect(firstStoryQuest.id)}
-              className="mb-2 rounded-md bg-primary-400"
-              textClassName="text-white font-bold"
-              style={{ width: cardWidth }}
-            />
-          </View>
-        );
-      } else {
-        return null;
-      }
-    }
-
     // Otherwise show buttons for each option in a row
     return (
       <View className="w-full flex-row justify-between gap-2 px-2">
