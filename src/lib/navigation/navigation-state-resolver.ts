@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
+import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
-import { useOnboardingStore } from '@/store/onboarding-store';
+import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 export type NavigationTarget =
@@ -21,15 +22,17 @@ export function useNavigationTarget(): NavigationTarget {
     s.isOnboardingComplete()
   );
   const currentStep = useOnboardingStore((s) => s.currentStep);
+  const setCurrentStep = useOnboardingStore((s) => s.setCurrentStep);
   const character = useCharacterStore((s) => s.character);
 
-  // Use direct subscription for quest state
+  // Use direct subscription for quest state including completed quests
   const [questState, setQuestState] = useState(() => {
     const state = useQuestStore.getState();
     return {
       pendingQuest: state.pendingQuest,
       recentCompletedQuest: state.recentCompletedQuest,
       failedQuest: state.failedQuest,
+      completedQuests: state.completedQuests,
     };
   });
 
@@ -45,11 +48,13 @@ export function useNavigationTarget(): NavigationTarget {
         pendingQuest: state.pendingQuest?.id || null,
         recentCompletedQuest: state.recentCompletedQuest?.id || null,
         failedQuest: state.failedQuest?.id || null,
+        completedQuestsCount: state.completedQuests.length,
       });
       setQuestState({
         pendingQuest: state.pendingQuest,
         recentCompletedQuest: state.recentCompletedQuest,
         failedQuest: state.failedQuest,
+        completedQuests: state.completedQuests,
       });
     });
 
@@ -59,7 +64,57 @@ export function useNavigationTarget(): NavigationTarget {
     };
   }, []);
 
-  const { pendingQuest, recentCompletedQuest, failedQuest } = questState;
+  const { pendingQuest, recentCompletedQuest, failedQuest, completedQuests } =
+    questState;
+
+  // Synchronize onboarding state when user is signed in but onboarding appears incomplete
+  useEffect(() => {
+    if (authStatus === 'signIn' && !isOnboardingComplete) {
+      const hasCharacter = !!character;
+      const hasCompletedQuests = completedQuests && completedQuests.length > 0;
+
+      // Check if user has provisional data (indicating they're a new user going through onboarding)
+      const hasProvisionalData = !!(
+        getItem('provisionalUserId') ||
+        getItem('provisionalAccessToken') ||
+        getItem('provisionalEmail')
+      );
+
+      if (hasCharacter || hasCompletedQuests) {
+        console.log(
+          '🧭 Detected inconsistent onboarding state - user has completed onboarding but store shows incomplete'
+        );
+        console.log('🧭 Synchronizing onboarding state to COMPLETED');
+
+        // Mark onboarding as complete
+        setCurrentStep(OnboardingStep.COMPLETED);
+
+        console.log('🧭 Onboarding state synchronized successfully');
+      } else if (!hasProvisionalData) {
+        // User is signed in with no provisional data and no local data
+        // This indicates they're a verified user logging in on a fresh install
+        console.log(
+          '🧭 Detected verified user with no local data - marking onboarding as complete'
+        );
+        console.log(
+          '🧭 Synchronizing onboarding state to COMPLETED for verified user'
+        );
+
+        // Mark onboarding as complete for verified users
+        setCurrentStep(OnboardingStep.COMPLETED);
+
+        console.log(
+          '🧭 Onboarding state synchronized successfully for verified user'
+        );
+      }
+    }
+  }, [
+    authStatus,
+    isOnboardingComplete,
+    character,
+    completedQuests,
+    setCurrentStep,
+  ]);
 
   // Debug current state
   useEffect(() => {
@@ -67,6 +122,7 @@ export function useNavigationTarget(): NavigationTarget {
       authStatus,
       isOnboardingComplete,
       currentStep,
+      completedQuestsCount: completedQuests?.length || 0,
       pendingQuest: pendingQuest?.id || null,
       recentCompletedQuest: recentCompletedQuest?.id || null,
       failedQuest: failedQuest?.id || null,
@@ -76,6 +132,7 @@ export function useNavigationTarget(): NavigationTarget {
     isOnboardingComplete,
     character,
     currentStep,
+    completedQuests,
     pendingQuest,
     recentCompletedQuest,
     failedQuest,
@@ -106,7 +163,7 @@ export function useNavigationTarget(): NavigationTarget {
 
   if (recentCompletedQuest) {
     console.log('🧭 Found completed quest:', recentCompletedQuest.id);
-    if (recentCompletedQuest.id === 'quest-1') {
+    if (recentCompletedQuest.id === 'quest-1' && !isOnboardingComplete) {
       return { type: 'first-quest-result', outcome: 'completed' };
     }
     return {
@@ -116,6 +173,7 @@ export function useNavigationTarget(): NavigationTarget {
     };
   }
 
+  // Priority 2: Onboarding
   if (!isOnboardingComplete) {
     console.log(
       '🧭 [NavigationStateResolver] Current onboarding step:',

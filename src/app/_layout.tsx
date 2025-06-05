@@ -16,7 +16,6 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
 
 import { APIProvider } from '@/api';
-import { ReminderPromptController } from '@/components/ReminderPromptController';
 import { SafeAreaView } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
@@ -177,7 +176,6 @@ function Providers({
             >
               <APIProvider>
                 <BottomSheetModalProvider>
-                  <ReminderPromptController />
                   {children}
                   <FlashMessage position="top" />
                 </BottomSheetModalProvider>
