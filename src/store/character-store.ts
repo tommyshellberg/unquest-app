@@ -12,6 +12,7 @@ interface CharacterState {
   updateCharacter: (updatedCharacter: Partial<Character>) => void;
   addXP: (amount: XP) => void;
   updateStreak: (previousCompletionTimestamp: number | null) => void;
+  setStreak: (streak: number) => void;
   resetStreak: () => void;
   resetCharacter: () => void;
 }
@@ -135,6 +136,11 @@ export const useCharacterStore = create<CharacterState>()(
             set({ dailyQuestStreak: 1 });
           }
         }
+      },
+
+      // Method to set streak directly (for syncing from server)
+      setStreak: (streak) => {
+        set({ dailyQuestStreak: streak });
       },
 
       // Method to reset streak

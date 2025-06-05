@@ -20,34 +20,33 @@ interface AuthState {
 const _useAuth = create<AuthState>((set, get) => ({
   status: 'idle',
   token: null,
-  signIn: async (response) => {
-    const { token, user } = response;
-    // @todo: why are we calling setToken instead of storeTokens?
-    console.log('signing in with token', token);
-    setToken(token);
+  signIn: (loginResponse) => {
+    console.log('tokenData', loginResponse.token);
+    setToken({
+      access: loginResponse.token.access,
+      refresh: loginResponse.token.refresh,
+    });
 
-    // Always fetch fresh user details after sign in
-    try {
-      // Use existing user data if available, but then fetch fresh data
-      if (user) {
-        useUserStore.getState().setUser(user);
-      }
-
-      // Fetch fresh user details regardless
-      const freshUserDetails = await getUserDetails();
-      useUserStore.getState().setUser(freshUserDetails);
-    } catch (error) {
-      console.error('Failed to fetch user details after login:', error);
-    }
-
-    set({ status: 'signIn', token });
+    set({
+      status: 'signIn',
+      token: {
+        access: loginResponse.token.access,
+        refresh: loginResponse.token.refresh,
+      },
+    });
   },
+
   signOut: () => {
     removeToken();
+    set({
+      status: 'signOut',
+      token: null,
+    });
+
+    // Clear user store
     useUserStore.getState().clearUser();
-    set({ status: 'signOut', token: null });
-    console.log('signing out');
   },
+
   hydrate: async () => {
     console.log('hydrating auth');
     set({ status: 'hydrating' });
@@ -72,7 +71,49 @@ const _useAuth = create<AuthState>((set, get) => ({
 
         try {
           const user = await getUserDetails();
+          console.log('[Auth] User response during hydration:', JSON.stringify(user, null, 2));
           useUserStore.getState().setUser(user);
+          
+          // Sync character data if available
+          // Check both nested character object and top-level properties
+          if (user.character || ((user as any).type && (user as any).name)) {
+            const { useCharacterStore } = await import('@/store/character-store');
+            const characterStore = useCharacterStore.getState();
+            
+            // Handle both formats: nested character object or top-level properties
+            const characterData = user.character || {
+              type: (user as any).type,
+              name: (user as any).name,
+              level: (user as any).level || 1,
+              currentXP: (user as any).xp || 0,
+              xpToNextLevel: 100, // Default XP to next level
+            };
+            
+            // First create the character if it doesn't exist locally
+            if (!characterStore.character) {
+              characterStore.createCharacter(
+                characterData.type as any,
+                characterData.name
+              );
+            }
+            
+            // Then update with the server data
+            characterStore.updateCharacter({
+              level: characterData.level || (user as any).level || 1,
+              currentXP: characterData.currentXP || (user as any).xp || 0,
+              xpToNextLevel: characterData.xpToNextLevel || 100,
+            });
+            
+            // Also update streak if provided
+            if (user.dailyQuestStreak !== undefined) {
+              characterStore.setStreak(user.dailyQuestStreak);
+            }
+            
+            console.log('[Auth] Character data synchronized during hydration');
+          } else {
+            console.log('[Auth] No character data found during hydration');
+          }
+          
           set({ status: 'signIn', token: userToken });
         } catch (fetchError) {
           console.error(
@@ -93,7 +134,7 @@ const _useAuth = create<AuthState>((set, get) => ({
 
 export const useAuth = createSelectors(_useAuth);
 
-export const signOut = () => _useAuth.getState().signOut();
 export const signIn = (response: UserLoginResponse) =>
   _useAuth.getState().signIn(response);
+export const signOut = () => _useAuth.getState().signOut();
 export const hydrateAuth = async () => _useAuth.getState().hydrate();

@@ -9,6 +9,15 @@ export interface UserDetails {
   name: string;
   email: string;
   role: string;
+  character?: {
+    type: string;
+    name: string;
+    level: number;
+    currentXP: number;
+    xpToNextLevel: number;
+    _id?: string;
+  };
+  dailyQuestStreak?: number;
   // Add other user fields as needed
 }
 

@@ -19,8 +19,10 @@ import { FocusAwareStatusBar, Text, useModal, View } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 // Import hooks
 import { useProfileData } from '@/lib/hooks/use-profile-data';
+import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
+import { type CharacterType } from '@/store/types';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -93,12 +95,58 @@ export default function ProfileScreen() {
   // Check if character exists and handle redirect
   useEffect(() => {
     if (!character && !isRedirecting) {
-      // Set redirecting state to prevent double redirects
-      setIsRedirecting(true);
-      // Use setTimeout to ensure this happens after the current render cycle
-      setTimeout(() => {
-        router.replace('/onboarding/choose-character');
-      }, 0);
+      // For verified users, we should sync character data from the server
+      // rather than redirecting to onboarding
+      const syncCharacterFromUser = async () => {
+        try {
+          const { getUserDetails } = await import('@/lib/services/user');
+          const user = await getUserDetails();
+          
+          // Check if user has character data at the top level (legacy format)
+          if (user && (user as any).type && (user as any).name && (user as any).level !== undefined) {
+            // Create character from user data
+            const characterStore = useCharacterStore.getState();
+            characterStore.createCharacter(
+              (user as any).type as CharacterType,
+              (user as any).name
+            );
+            
+            // Update with level and XP data
+            characterStore.updateCharacter({
+              level: (user as any).level || 1,
+              currentXP: (user as any).xp || 0,
+              xpToNextLevel: 100, // Default XP to next level
+            });
+            
+            // Update streak if available
+            if ((user as any).dailyQuestStreak !== undefined) {
+              characterStore.setStreak((user as any).dailyQuestStreak);
+            }
+          } else {
+            // Only redirect to onboarding if this is truly a new user
+            // Check for provisional data to determine if they're in onboarding
+            const hasProvisionalData = !!(
+              getItem('provisionalUserId') ||
+              getItem('provisionalAccessToken') ||
+              getItem('provisionalEmail')
+            );
+            
+            if (hasProvisionalData) {
+              // User is in onboarding flow, redirect to choose character
+              setIsRedirecting(true);
+              setTimeout(() => {
+                router.replace('/onboarding/choose-character');
+              }, 0);
+            }
+            // For verified users without character data, we'll show a message
+            // rather than redirecting to onboarding
+          }
+        } catch (error) {
+          console.error('Error syncing character data:', error);
+        }
+      };
+      
+      syncCharacterFromUser();
     }
   }, [character, router, isRedirecting]);
 

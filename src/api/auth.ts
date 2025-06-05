@@ -4,7 +4,6 @@ import axios from 'axios';
 import { signIn } from '@/lib/auth';
 import { getUserDetails } from '@/lib/services/user';
 import { getItem, removeItem } from '@/lib/storage';
-import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
 
 import * as tokenService from './token';
@@ -126,45 +125,76 @@ export const verifyMagicLinkAndSignIn = async (
       },
     });
 
-    // Step 3: Check if user has existing character data locally
-    const character = useCharacterStore.getState().character;
-    const hasExistingData = !!character;
-
-    if (hasExistingData) {
-      // User already has local data, navigate to home
-      console.log(
-        '[Auth] User already has local character data, navigating to app'
-      );
-      return 'app';
-    }
-
-    // Step 4: Fetch user data from server
+    // Step 3: Fetch and store user data
     try {
       const userResponse = await getUserDetails();
+      console.log('[Auth] User response from server:', JSON.stringify(userResponse, null, 2));
 
-      // Store user data in user store (using only available properties)
+      // Store user data in user store
       if (userResponse && userResponse.id && userResponse.email) {
         useUserStore.getState().setUser({
           id: userResponse.id,
           email: userResponse.email,
           name: userResponse.name,
         });
+
+        // If user has character data from server, store it in character store
+        // Check both nested character object and top-level properties
+        if (userResponse.character || ((userResponse as any).type && (userResponse as any).name)) {
+          const { useCharacterStore } = await import('@/store/character-store');
+          const characterStore = useCharacterStore.getState();
+          
+          // Handle both formats: nested character object or top-level properties
+          const characterData = userResponse.character || {
+            type: (userResponse as any).type,
+            name: (userResponse as any).name,
+            level: (userResponse as any).level || 1,
+            currentXP: (userResponse as any).xp || 0,
+            xpToNextLevel: 100, // Default XP to next level
+          };
+          
+          // First create the character if it doesn't exist locally
+          if (!characterStore.character) {
+            characterStore.createCharacter(
+              characterData.type as any,
+              characterData.name
+            );
+          }
+          
+          // Then update with the server data
+          characterStore.updateCharacter({
+            level: characterData.level || (userResponse as any).level || 1,
+            currentXP: characterData.currentXP || (userResponse as any).xp || 0,
+            xpToNextLevel: characterData.xpToNextLevel || 100,
+          });
+
+          // Also update streak if provided
+          if (userResponse.dailyQuestStreak !== undefined) {
+            characterStore.setStreak(userResponse.dailyQuestStreak);
+          }
+
+          console.log('[Auth] Character data synchronized from server');
+        } else {
+          console.log('[Auth] No character data found in server response');
+        }
       }
 
-      // For now, assume no character data comes from getUserDetails
-      // If character data is available from a different endpoint, we can add that logic later
-      console.log(
-        '[Auth] User data fetched, no character data available, navigating to onboarding'
-      );
-      return 'onboarding';
+      console.log('[Auth] User data fetched and stored successfully');
+
+      // Let the navigation resolver determine the correct route
+      // Since we've cleared provisional data and signed in with real tokens,
+      // the navigation resolver will detect this is a verified user and handle routing appropriately
+      return 'app';
     } catch (fetchError) {
       console.error(
         'Error fetching user data during verification:',
         fetchError
       );
-      // If we can't fetch user data, go to onboarding
-      console.log('[Auth] Failed to fetch user data, navigating to onboarding');
-      return 'onboarding';
+      // If we can't fetch user data but verification succeeded, still let navigation resolver decide
+      console.log(
+        '[Auth] Failed to fetch user data, letting navigation resolver decide routing'
+      );
+      return 'app';
     }
   } catch (error) {
     console.error('Magic link verification failed:', error);
