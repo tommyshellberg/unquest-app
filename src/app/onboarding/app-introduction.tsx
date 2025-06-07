@@ -157,12 +157,12 @@ export default function AppIntroductionScreen() {
 
             <Animated.View entering={FadeInDown.delay(2100)}>
               {isIOS ? (
-                <Text className="mb-4 font-medium text-white">
+                <Text className="mb-4 font-medium">
                   iOS uses Live Activities to update your quest progress in
                   real-time on your lock screen.
                 </Text>
               ) : (
-                <Text className="mb-4 font-medium text-white">
+                <Text className="mb-4 font-medium">
                   For the best experience, set your lock screen notification
                   settings to "Show conversations and notifications"
                 </Text>
@@ -173,7 +173,6 @@ export default function AppIntroductionScreen() {
               entering={FadeInDown.delay(2600)}
               className="items-center"
             >
-              <Text className="mb-2 font-medium">Here's what you'll see:</Text>
               <Image
                 source={notificationImage}
                 style={{ width: screenWidth, height: 150 }}

@@ -88,31 +88,47 @@ function RootLayout() {
   }, []);
 
   useEffect(() => {
-    const checkAndScheduleStreakWarning = async () => {
-      const lastCompletedQuestTimestamp =
-        useQuestStore.getState().lastCompletedQuestTimestamp;
-      const dailyQuestStreak = useCharacterStore.getState().dailyQuestStreak;
+    // Check streak status on app launch
+    const lastCompletedQuestTimestamp =
+      useQuestStore.getState().lastCompletedQuestTimestamp;
+    const characterStore = useCharacterStore.getState();
+    const dailyQuestStreak = characterStore.dailyQuestStreak;
 
-      if (dailyQuestStreak > 0) {
-        // Check if user has completed a quest today
-        const now = new Date();
-        const lastCompletionDate = lastCompletedQuestTimestamp
-          ? new Date(lastCompletedQuestTimestamp)
-          : null;
+    // First check if streak should be reset (24+ hours since last completion)
+    if (lastCompletedQuestTimestamp && dailyQuestStreak > 0) {
+      const now = Date.now();
+      const hoursSinceLastCompletion =
+        (now - lastCompletedQuestTimestamp) / (1000 * 60 * 60);
 
-        // If no quest completed today and there's an active streak, schedule warning
-        if (
-          !lastCompletionDate ||
-          lastCompletionDate.getDate() !== now.getDate() ||
-          lastCompletionDate.getMonth() !== now.getMonth() ||
-          lastCompletionDate.getFullYear() !== now.getFullYear()
-        ) {
-          await scheduleStreakWarningNotification();
-        }
+      if (hoursSinceLastCompletion > 24) {
+        // Reset the streak if it's been more than 24 hours
+        characterStore.resetStreak();
+        console.log(
+          'Streak reset: More than 24 hours since last quest completion'
+        );
+        return; // No need to schedule warning if streak is already broken
       }
-    };
+    }
 
-    checkAndScheduleStreakWarning();
+    // If streak is still active, check if we need to schedule a warning
+    if (dailyQuestStreak > 0) {
+      // Check if user has completed a quest today
+      const now = new Date();
+      const lastCompletionDate = lastCompletedQuestTimestamp
+        ? new Date(lastCompletedQuestTimestamp)
+        : null;
+
+      // If no quest completed today and there's an active streak, schedule warning
+      if (
+        !lastCompletionDate ||
+        lastCompletionDate.getDate() !== now.getDate() ||
+        lastCompletionDate.getMonth() !== now.getMonth() ||
+        lastCompletionDate.getFullYear() !== now.getFullYear()
+      ) {
+        // Only this part needs to be async
+        scheduleStreakWarningNotification().catch(console.error);
+      }
+    }
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
