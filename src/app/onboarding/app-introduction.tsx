@@ -124,7 +124,7 @@ export default function AppIntroductionScreen() {
       case IntroStep.NOTIFICATIONS:
         const isIOS = Platform.OS === 'ios';
         const notificationImage = isIOS
-          ? require('@/../assets/images/ios-notification.jpg')
+          ? require('@/../assets/images/ios-notification.png')
           : require('@/../assets/images/android-notification.jpg');
 
         return (
@@ -173,11 +173,7 @@ export default function AppIntroductionScreen() {
               entering={FadeInDown.delay(2600)}
               className="items-center"
             >
-              <Image
-                source={notificationImage}
-                style={{ width: screenWidth, height: 150 }}
-                className="rounded-lg"
-              />
+              <Image source={notificationImage} className="rounded-lg" />
             </Animated.View>
           </View>
         );
