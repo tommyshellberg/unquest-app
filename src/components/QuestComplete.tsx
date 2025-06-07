@@ -27,6 +27,7 @@ type QuestCompleteProps = {
   onContinue?: () => void;
   continueText?: string;
   showActionButton?: boolean;
+  showStreak?: boolean;
 };
 
 export function QuestComplete({
@@ -35,6 +36,7 @@ export function QuestComplete({
   onContinue,
   continueText = 'Continue',
   showActionButton = true,
+  showStreak = true,
 }: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
@@ -110,22 +112,24 @@ export function QuestComplete({
         </Animated.View>
 
         {/* Lottie animation positioned behind the streak counter */}
-        <View className="relative h-[150px] w-full items-center justify-center">
-          <LottieView
-            ref={lottieRef}
-            source={require('@/../assets/animations/congrats.json')}
-            style={{
-              position: 'absolute',
-              width: '150%',
-              height: '150%',
-              opacity: 0.8,
-            }}
-            loop={false}
-            autoPlay={false}
-            resizeMode="cover"
-          />
-          <StreakCounter animate={true} size="large" />
-        </View>
+        {showStreak && (
+          <View className="relative h-[150px] w-full items-center justify-center">
+            <LottieView
+              ref={lottieRef}
+              source={require('@/../assets/animations/congrats.json')}
+              style={{
+                position: 'absolute',
+                width: '150%',
+                height: '150%',
+                opacity: 0.8,
+              }}
+              loop={false}
+              autoPlay={false}
+              resizeMode="cover"
+            />
+            <StreakCounter animate={true} size="large" />
+          </View>
+        )}
 
         <Animated.View
           entering={FadeInDown.delay(200).duration(600)}

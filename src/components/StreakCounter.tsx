@@ -16,6 +16,7 @@ type Props = {
   animate?: boolean;
   size?: 'small' | 'large';
   position?: 'topRight' | 'default';
+  showCountdown?: boolean;
 };
 
 export function StreakCounter({

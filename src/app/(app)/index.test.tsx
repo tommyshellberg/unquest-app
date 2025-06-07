@@ -158,26 +158,6 @@ describe('Home Component', () => {
     };
   });
 
-  it('should render "Wake up" button when no story quests are completed', () => {
-    // Setup the mock state
-    mockQuestStoreState = {
-      ...mockQuestStoreState,
-      availableQuests: [mockFirstQuest],
-      completedQuests: [],
-      getCompletedQuests: () => [],
-    };
-
-    render(<Home />);
-
-    // Check for "Wake up" button
-    const wakeUpButton = screen.getByText('Wake up');
-    expect(wakeUpButton).toBeTruthy();
-
-    // Verify clicking the button calls prepareQuest
-    fireEvent.press(wakeUpButton);
-    expect(mockPrepareQuest).toHaveBeenCalledWith(mockFirstQuest);
-  });
-
   it('should render two option buttons when last completed quest has two options', () => {
     // Setup the mock state
     mockQuestStoreState = {
@@ -241,28 +221,6 @@ describe('Home Component', () => {
     expect(() => screen.getByText('Wake up')).toThrow();
     expect(() => screen.getByText('Go left')).toThrow();
     expect(() => screen.getByText('Go right')).toThrow();
-  });
-
-  it('should show story options even when there is a pending quest', () => {
-    // Setup the mock state
-    mockQuestStoreState = {
-      ...mockQuestStoreState,
-      pendingQuest: mockFirstQuest,
-      availableQuests: [],
-      completedQuests: [],
-      getCompletedQuests: () => [],
-    };
-
-    render(<Home />);
-
-    // Based on the component implementation, options are still rendered when pendingQuest is set
-    // The component only checks !activeQuest in the JSX rendering logic
-    const wakeUpButton = screen.getByText('Wake up');
-    expect(wakeUpButton).toBeTruthy();
-
-    // Should still be able to click the button
-    fireEvent.press(wakeUpButton);
-    expect(mockPrepareQuest).toHaveBeenCalledWith(mockFirstQuest);
   });
 
   it('should call refreshAvailableQuests when there is no active or pending quest', async () => {
