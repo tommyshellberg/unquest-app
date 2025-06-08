@@ -160,6 +160,7 @@ export default function AppQuestDetailsScreen() {
           quest={quest}
           story={getQuestCompletionText()}
           showActionButton={false} // Always false in this context
+          showStreak={false} // Don't show streak when viewing from journal
         />
       </View>
     );

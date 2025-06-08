@@ -84,6 +84,11 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
             'Network error. Please check your connection and try again.'
           );
           posthog.capture('magic_link_request_failed_network_error', { email });
+        } else if (err.response.status === 409) {
+          setError(
+            'This email address is already associated with an account. Please use a different email address.'
+          );
+          posthog.capture('magic_link_request_failed_email_in_use', { email });
         } else {
           setError(
             `Failed to send login link: ${err.response.data?.message || err.message}`

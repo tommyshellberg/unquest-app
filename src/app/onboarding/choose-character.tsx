@@ -43,7 +43,8 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
       style={{ width: cardWidth }}
     >
       <Card
-        className={`elevation-2 aspect-[0.75] w-full overflow-hidden ${isSelected ? 'scale-100' : 'scale-90 opacity-60'}`}
+        className={`elevation-2 w-full overflow-hidden ${isSelected ? 'scale-100' : 'scale-90 opacity-60'}`}
+        style={{ height: screenWidth * 1.2 }} // Fixed height instead of aspect ratio
       >
         <ImageBackground
           source={item.image}
@@ -54,27 +55,35 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
             <BlurView
               intensity={10}
               tint="light"
-              className="overflow-hidden p-4"
+              className="overflow-hidden px-4 py-3"
             >
               <Text
-                className="text-xl font-bold"
+                className="text-lg font-bold leading-tight"
                 style={{
                   color: primary[500],
                   letterSpacing: 1,
                 }}
+                numberOfLines={1}
+                adjustsFontSizeToFit
               >
                 {item.type.toUpperCase()}
               </Text>
             </BlurView>
 
-            {/* Bottom section with description - now using BlurView */}
+            {/* Bottom section with description */}
             <BlurView
               intensity={Platform.OS === 'ios' ? 50 : 100}
               tint="extraLight"
-              className="mt-auto overflow-hidden p-4"
+              className="mt-auto overflow-hidden px-4 py-3"
+              style={{ minHeight: screenWidth * 0.25 }} // Ensure minimum height for description
             >
-              {/* Character Description */}
-              <Text>{item.description}</Text>
+              <Text 
+                className="text-sm leading-relaxed"
+                numberOfLines={4}
+                ellipsizeMode="tail"
+              >
+                {item.description}
+              </Text>
             </BlurView>
           </View>
         </ImageBackground>

@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
+import axios from 'axios';
 
 import { verifyMagicLinkAndSignIn } from '@/api/auth';
 import { Text, View } from '@/components/ui';
@@ -42,15 +43,19 @@ export default function VerifyMagicLinkScreen() {
         // Explicitly sign out to clear any stale auth state
         signOut();
 
-        setError(
-          'Magic link verification failed. The link may have expired. Please try again.'
-        );
+        // Check if this is a 409 error indicating email already in use
+        let errorMessage = 'Magic link verification failed. The link may have expired. Please try again.';
+        
+        if (axios.isAxiosError(error) && error.response?.status === 409) {
+          errorMessage = 'This email address is already associated with an account. Please use a different email address.';
+        }
+
+        setError(errorMessage);
 
         router.replace({
           pathname: '/login',
           params: {
-            error:
-              'Magic link verification failed. The link may have expired. Please try again.',
+            error: errorMessage,
           },
         });
       } finally {
