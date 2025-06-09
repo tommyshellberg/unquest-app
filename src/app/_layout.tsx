@@ -16,7 +16,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
 
 import { APIProvider } from '@/api';
-import { SafeAreaView } from '@/components/ui';
+import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
@@ -192,6 +192,7 @@ function Providers({
             >
               <APIProvider>
                 <BottomSheetModalProvider>
+                  <UpdateNotificationBar />
                   {children}
                   <FlashMessage position="top" />
                 </BottomSheetModalProvider>

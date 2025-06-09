@@ -3,6 +3,7 @@ import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import * as Linking from 'expo-linking';
+import * as Updates from 'expo-updates';
 import { Link, useRouter } from 'expo-router';
 import { Flame } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -42,6 +43,7 @@ export default function Settings() {
     useSettingsStore();
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showStreakTimePicker, setShowStreakTimePicker] = useState(false);
+  const [updateId, setUpdateId] = useState<string | null>(null);
 
   // Animation value for header
   const headerOpacity = useSharedValue(0);
@@ -84,6 +86,13 @@ export default function Settings() {
 
     fetchUserIfNeeded();
   }, [user]);
+
+  // Get EAS Update ID
+  useEffect(() => {
+    if (!__DEV__ && Updates.updateId) {
+      setUpdateId(Updates.updateId);
+    }
+  }, []);
 
   // Handle notification toggle
   const handleNotificationsToggle = async (value: boolean) => {
@@ -619,9 +628,16 @@ export default function Settings() {
           </View>
 
           {/* Version Info */}
-          <Text className="mb-6 mt-8 text-center text-neutral-500">
-            Version {APP_VERSION}
-          </Text>
+          <View className="mb-6 mt-8">
+            <Text className="text-center text-neutral-500">
+              Version {APP_VERSION}
+            </Text>
+            {updateId && (
+              <Text className="mt-1 text-center text-xs text-neutral-400">
+                Update: {updateId.slice(0, 7)}
+              </Text>
+            )}
+          </View>
         </View>
       </ScrollView>
     </View>
