@@ -89,12 +89,72 @@ jest.mock('@/components/ui', () => ({
   View: 'View',
 }));
 
+// Mock expo-updates
+let mockUpdateId = 'abc123def456789';
+jest.mock('expo-updates', () => ({
+  get updateId() {
+    return mockUpdateId;
+  },
+  checkForUpdateAsync: jest.fn(),
+  fetchUpdateAsync: jest.fn(),
+  reloadAsync: jest.fn(),
+  useUpdates: jest.fn(() => ({
+    isUpdateAvailable: false,
+    isUpdatePending: false,
+  })),
+}));
+
 // Test that the component renders without errors
 describe('Settings Screen', () => {
+  beforeEach(() => {
+    // Reset __DEV__ for each test
+    global.__DEV__ = false;
+    // Reset mockUpdateId to default value
+    mockUpdateId = 'abc123def456789';
+  });
+
+  afterEach(() => {
+    // Restore __DEV__
+    global.__DEV__ = true;
+  });
+
   it('renders without crashing', async () => {
     const { getByText } = render(<Settings />);
     await waitFor(() => {
       expect(getByText('Settings')).toBeTruthy();
+    });
+  });
+
+  it('displays EAS Update version when available in production', async () => {
+    const { getByText } = render(<Settings />);
+    
+    await waitFor(() => {
+      // Should display the shortened update ID
+      expect(getByText('Update: abc123d')).toBeTruthy();
+    });
+  });
+
+  it('does not display EAS Update version in development', async () => {
+    // Set __DEV__ to true for this test
+    global.__DEV__ = true;
+    
+    const { queryByText } = render(<Settings />);
+    
+    await waitFor(() => {
+      // Should not display update ID in dev mode
+      expect(queryByText(/Update:/)).toBeNull();
+    });
+  });
+
+  it('does not display EAS Update version when updateId is null', async () => {
+    // Set updateId to null for this test
+    mockUpdateId = null;
+    
+    const { queryByText } = render(<Settings />);
+    
+    await waitFor(() => {
+      // Should not display update section when updateId is null
+      expect(queryByText(/Update:/)).toBeNull();
     });
   });
 });
