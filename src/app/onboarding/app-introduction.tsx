@@ -101,7 +101,7 @@ export default function AppIntroductionScreen() {
               <Text className="text-xl font-bold">Welcome to unQuest</Text>
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 text-lg font-semibold text-white">
+              <Text className="mb-6 text-sm font-semibold">
                 Discover quests and embrace your journey.
               </Text>
             </Animated.View>
@@ -133,7 +133,7 @@ export default function AppIntroductionScreen() {
               <Text className="text-xl font-bold">Notifications</Text>
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 text-lg font-semibold text-white">
+              <Text className="mb-6 text-sm font-semibold">
                 The key to successful quests
               </Text>
             </Animated.View>
@@ -183,7 +183,7 @@ export default function AppIntroductionScreen() {
           <View key="character">
             <Animated.View entering={FadeInDown.delay(100)}>
               <Text className="mb-4 text-xl font-bold">Your Character</Text>
-              <Text className="mb-6 text-lg font-semibold text-white">
+              <Text className="mb-6 text-sm font-semibold">
                 Your companion on this journey
               </Text>
             </Animated.View>
