@@ -74,14 +74,17 @@ export function QuestComplete({
   const isStoryQuest = quest.mode === 'story';
 
   const handleContinue = () => {
-    // Always clear the quest state first
-    clearRecentCompletedQuest();
-    
-    // Set flag to show streak celebration if enabled AND not shown in last 24 hours
+    // Set flag to show streak celebration first (before clearing quest)
+    // This prevents intermediate navigation states
     if (showStreakCelebration && shouldShowStreakCelebration()) {
       setShouldShowStreak(true);
     }
-    
+
+    // Then clear the quest state - this will trigger navigation
+    // Since quest results have higher priority than streak, no navigation
+    // happens until we clear the quest
+    clearRecentCompletedQuest();
+
     // Navigate to continue or home
     if (onContinue) {
       onContinue();
