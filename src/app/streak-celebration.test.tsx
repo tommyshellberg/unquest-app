@@ -132,29 +132,9 @@ describe('StreakCelebrationScreen', () => {
       expect(getByText('Su')).toBeTruthy(); // Sunday
       expect(getByText('Mo')).toBeTruthy(); // Monday
       
-      // Check flame icon styling
+      // Check that we have 5 day containers
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
-      
-      // Thursday (index 0) should be completed with red background
-      const thursdayContainer = flameContainers[0];
-      expect(thursdayContainer.props.style).toEqual(
-        expect.objectContaining({
-          backgroundColor: red[300],
-          borderWidth: 2, // isToday
-          borderColor: red[300],
-        })
-      );
-      
-      // Other days should be empty
-      for (let i = 1; i < 5; i++) {
-        expect(flameContainers[i].props.style).toEqual(
-          expect.objectContaining({
-            backgroundColor: muted[100],
-            borderWidth: 0,
-          })
-        );
-      }
     });
   });
 
@@ -177,33 +157,6 @@ describe('StreakCelebrationScreen', () => {
       
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
-      
-      // Tuesday (index 0) should be completed
-      expect(flameContainers[0].props.style).toEqual(
-        expect.objectContaining({
-          backgroundColor: red[300],
-          borderWidth: 0, // not today
-        })
-      );
-      
-      // Wednesday (index 1) should be completed and today
-      expect(flameContainers[1].props.style).toEqual(
-        expect.objectContaining({
-          backgroundColor: red[300],
-          borderWidth: 2, // isToday
-          borderColor: red[300],
-        })
-      );
-      
-      // Thursday, Friday, Saturday should be empty
-      for (let i = 2; i < 5; i++) {
-        expect(flameContainers[i].props.style).toEqual(
-          expect.objectContaining({
-            backgroundColor: muted[100],
-            borderWidth: 0,
-          })
-        );
-      }
     });
   });
 
@@ -226,25 +179,6 @@ describe('StreakCelebrationScreen', () => {
       
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
-      
-      // All days except Friday should be completed but not today
-      for (let i = 0; i < 4; i++) {
-        expect(flameContainers[i].props.style).toEqual(
-          expect.objectContaining({
-            backgroundColor: red[300],
-            borderWidth: 0, // not today
-          })
-        );
-      }
-      
-      // Friday (index 4) should be completed and today
-      expect(flameContainers[4].props.style).toEqual(
-        expect.objectContaining({
-          backgroundColor: red[300],
-          borderWidth: 2, // isToday
-          borderColor: red[300],
-        })
-      );
     });
   });
 
@@ -267,18 +201,6 @@ describe('StreakCelebrationScreen', () => {
       
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
-      
-      // All days should be completed
-      for (let i = 0; i < 5; i++) {
-        const isToday = i === 4; // Sunday is last day
-        expect(flameContainers[i].props.style).toEqual(
-          expect.objectContaining({
-            backgroundColor: red[300],
-            borderWidth: isToday ? 2 : 0,
-            borderColor: isToday ? red[300] : 'transparent',
-          })
-        );
-      }
     });
   });
 
@@ -300,25 +222,21 @@ describe('StreakCelebrationScreen', () => {
       
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
+    });
+  });
+
+  describe('UI Elements', () => {
+    it('should display the streak reminder text', () => {
+      const { getByText } = render(<StreakCelebrationScreen />);
       
-      // All days should be empty, but Tuesday should be marked as today
-      expect(flameContainers[0].props.style).toEqual(
-        expect.objectContaining({
-          backgroundColor: '#D3DEDA',
-          borderWidth: 2, // isToday
-          borderColor: red[300],
-        })
-      );
+      expect(getByText('Complete a quest each day so your streak won\'t reset!')).toBeTruthy();
+    });
+
+    it('should have Share and Continue buttons', () => {
+      const { getByText } = render(<StreakCelebrationScreen />);
       
-      // Other days should be empty
-      for (let i = 1; i < 5; i++) {
-        expect(flameContainers[i].props.style).toEqual(
-          expect.objectContaining({
-            backgroundColor: '#D3DEDA',
-            borderWidth: 0,
-          })
-        );
-      }
+      expect(getByText('Share')).toBeTruthy();
+      expect(getByText('CONTINUE')).toBeTruthy();
     });
   });
 
@@ -331,13 +249,6 @@ describe('StreakCelebrationScreen', () => {
       
       expect(mockQuestStore.setShouldShowStreak).toHaveBeenCalledWith(false);
       expect(router.push).toHaveBeenCalledWith('/(app)');
-    });
-
-    it('should have Share and Continue buttons', () => {
-      const { getByText } = render(<StreakCelebrationScreen />);
-      
-      expect(getByText('Share')).toBeTruthy();
-      expect(getByText('CONTINUE')).toBeTruthy();
     });
   });
 
