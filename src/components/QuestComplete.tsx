@@ -1,16 +1,13 @@
-import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, {
-  cancelAnimation,
   FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
-  withSequence,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { router } from 'expo-router';
 
 import { Image, Text, View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
@@ -19,7 +16,6 @@ import { useCharacterStore } from '@/store/character-store';
 import { type Quest } from '@/store/types';
 
 import { StoryNarration } from './StoryNarration';
-import { StreakCounter } from './StreakCounter';
 
 type QuestCompleteProps = {
   quest: Quest & { heroName?: string };
@@ -27,7 +23,7 @@ type QuestCompleteProps = {
   onContinue?: () => void;
   continueText?: string;
   showActionButton?: boolean;
-  showStreak?: boolean;
+  showStreakCelebration?: boolean;
 };
 
 export function QuestComplete({
@@ -36,13 +32,11 @@ export function QuestComplete({
   onContinue,
   continueText = 'Continue',
   showActionButton = true,
-  showStreak = true,
+  showStreakCelebration = true,
 }: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
-  const lottieRef = useRef<LottieView>(null);
 
-  const scale = useSharedValue(0);
   const headerOpacity = useSharedValue(0);
   const storyOpacity = useSharedValue(0);
   const rewardOpacity = useSharedValue(0);
@@ -61,31 +55,20 @@ export function QuestComplete({
 
   useEffect(() => {
     // Initial celebration animations
-    scale.value = withSequence(withSpring(1.2), withSpring(1));
-    headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
-    storyOpacity.value = withDelay(1000, withTiming(1, { duration: 1000 }));
-    rewardOpacity.value = withDelay(3000, withTiming(1, { duration: 1000 }));
-
-    // Play the Lottie animation once
-    if (lottieRef.current) {
-      lottieRef.current.play();
-    }
-
-    return () => {
-      // Cancel animations
-      cancelAnimation(scale);
-      cancelAnimation(headerOpacity);
-      cancelAnimation(storyOpacity);
-      cancelAnimation(rewardOpacity);
-    };
-  }, [scale, headerOpacity, storyOpacity, rewardOpacity]);
+    headerOpacity.value = withDelay(200, withTiming(1, { duration: 800 }));
+    storyOpacity.value = withDelay(600, withTiming(1, { duration: 800 }));
+    rewardOpacity.value = withDelay(1000, withTiming(1, { duration: 800 }));
+  }, [headerOpacity, storyOpacity, rewardOpacity]);
 
   // Determine if this is a story quest or custom quest - they need different card styling
   const isStoryQuest = quest.mode === 'story';
 
-  const _handleBackToJournal = () => {
-    // Implement the logic to handle going back to the journal
-    console.log('Going back to journal');
+  const handleContinue = () => {
+    if (showStreakCelebration) {
+      router.push('/streak-celebration');
+    } else if (onContinue) {
+      onContinue();
+    }
   };
 
   return (
@@ -111,25 +94,6 @@ export function QuestComplete({
           </Text>
         </Animated.View>
 
-        {/* Lottie animation positioned behind the streak counter */}
-        {showStreak && (
-          <View className="relative h-[150px] w-full items-center justify-center">
-            <LottieView
-              ref={lottieRef}
-              source={require('@/../assets/animations/congrats.json')}
-              style={{
-                position: 'absolute',
-                width: '150%',
-                height: '150%',
-                opacity: 0.8,
-              }}
-              loop={false}
-              autoPlay={false}
-              resizeMode="cover"
-            />
-            <StreakCounter animate={true} size="large" />
-          </View>
-        )}
 
         <Animated.View
           entering={FadeInDown.delay(200).duration(600)}
@@ -168,10 +132,10 @@ export function QuestComplete({
             </Text>
           </View>
 
-          {showActionButton && onContinue && (
+          {showActionButton && (
             <Button
               label={continueText}
-              onPress={onContinue}
+              onPress={handleContinue}
               accessibilityLabel={continueText}
             />
           )}

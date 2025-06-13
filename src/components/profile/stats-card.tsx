@@ -1,4 +1,6 @@
 import React from 'react';
+import { Pressable } from 'react-native';
+import { router } from 'expo-router';
 
 import { Card, Text, View } from '@/components/ui';
 
@@ -32,14 +34,17 @@ export function StatsCard({
 
         <View className="h-4/5 w-px bg-gray-300" />
 
-        <View className="items-center">
+        <Pressable
+          className="items-center"
+          onPress={() => router.push('/streak-celebration')}
+        >
           <View className="flex-row items-center">
             <Text className="text-2xl font-bold text-teal-700">
               {streakCount}
             </Text>
           </View>
           <Text className="text-gray-600">Day Streak</Text>
-        </View>
+        </Pressable>
       </View>
     </Card>
   );
