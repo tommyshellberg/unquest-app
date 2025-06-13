@@ -15,9 +15,6 @@ export default function FirstQuestResultScreen() {
   }>();
   const setOnboardingStep = useOnboardingStore((state) => state.setCurrentStep);
   const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
-  const clearRecentCompletedQuest = useQuestStore(
-    (state) => state.clearRecentCompletedQuest
-  );
 
   // Find quest-1 details (assuming it has a fixed ID like 'quest-1')
   const firstQuestData = AVAILABLE_QUESTS.find((q) => q.id === 'quest-1');
@@ -31,7 +28,6 @@ export default function FirstQuestResultScreen() {
 
   const handleCompletedContinue = () => {
     router.push('/quest-completed-signup');
-    clearRecentCompletedQuest();
   };
 
   if (!firstQuestData) {

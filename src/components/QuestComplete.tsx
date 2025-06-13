@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import React, { useEffect } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, {
@@ -7,12 +8,12 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
-import { router } from 'expo-router';
 
 import { Image, Text, View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
+import { useQuestStore } from '@/store/quest-store';
 import { type Quest } from '@/store/types';
 
 import { StoryNarration } from './StoryNarration';
@@ -36,6 +37,9 @@ export function QuestComplete({
 }: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
+  const clearRecentCompletedQuest = useQuestStore(
+    (state) => state.clearRecentCompletedQuest
+  );
 
   const headerOpacity = useSharedValue(0);
   const storyOpacity = useSharedValue(0);
@@ -64,6 +68,7 @@ export function QuestComplete({
   const isStoryQuest = quest.mode === 'story';
 
   const handleContinue = () => {
+    clearRecentCompletedQuest();
     if (showStreakCelebration) {
       router.push('/streak-celebration');
     } else if (onContinue) {
@@ -93,7 +98,6 @@ export function QuestComplete({
             You've completed the quest!
           </Text>
         </Animated.View>
-
 
         <Animated.View
           entering={FadeInDown.delay(200).duration(600)}
