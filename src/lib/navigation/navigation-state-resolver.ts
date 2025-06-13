@@ -10,6 +10,7 @@ export type NavigationTarget =
   | { type: 'pending-quest'; questId: string }
   | { type: 'quest-result'; questId: string; outcome: 'completed' | 'failed' }
   | { type: 'first-quest-result'; outcome: 'completed' | 'failed' }
+  | { type: 'streak-celebration' }
   | { type: 'onboarding' }
   | { type: 'login' }
   | { type: 'app' }
@@ -33,6 +34,7 @@ export function useNavigationTarget(): NavigationTarget {
       recentCompletedQuest: state.recentCompletedQuest,
       failedQuest: state.failedQuest,
       completedQuests: state.completedQuests,
+      shouldShowStreak: state.shouldShowStreak,
     };
   });
 
@@ -49,12 +51,14 @@ export function useNavigationTarget(): NavigationTarget {
         recentCompletedQuest: state.recentCompletedQuest?.id || null,
         failedQuest: state.failedQuest?.id || null,
         completedQuestsCount: state.completedQuests.length,
+        shouldShowStreak: state.shouldShowStreak,
       });
       setQuestState({
         pendingQuest: state.pendingQuest,
         recentCompletedQuest: state.recentCompletedQuest,
         failedQuest: state.failedQuest,
         completedQuests: state.completedQuests,
+        shouldShowStreak: state.shouldShowStreak,
       });
     });
 
@@ -64,8 +68,13 @@ export function useNavigationTarget(): NavigationTarget {
     };
   }, []);
 
-  const { pendingQuest, recentCompletedQuest, failedQuest, completedQuests } =
-    questState;
+  const {
+    pendingQuest,
+    recentCompletedQuest,
+    failedQuest,
+    completedQuests,
+    shouldShowStreak,
+  } = questState;
 
   // Synchronize onboarding state when user is signed in but onboarding appears incomplete
   useEffect(() => {
@@ -126,6 +135,7 @@ export function useNavigationTarget(): NavigationTarget {
       pendingQuest: pendingQuest?.id || null,
       recentCompletedQuest: recentCompletedQuest?.id || null,
       failedQuest: failedQuest?.id || null,
+      shouldShowStreak,
     });
   }, [
     authStatus,
@@ -136,6 +146,7 @@ export function useNavigationTarget(): NavigationTarget {
     pendingQuest,
     recentCompletedQuest,
     failedQuest,
+    shouldShowStreak,
   ]);
 
   // Still hydrating? Don't make routing decisions yet
@@ -173,7 +184,13 @@ export function useNavigationTarget(): NavigationTarget {
     };
   }
 
-  // Priority 2: Onboarding
+  // Priority 2: Streak celebration
+  if (shouldShowStreak) {
+    console.log('🧭 Should show streak celebration');
+    return { type: 'streak-celebration' };
+  }
+
+  // Priority 3: Onboarding
   if (!isOnboardingComplete) {
     console.log(
       '🧭 [NavigationStateResolver] Current onboarding step:',
@@ -185,13 +202,13 @@ export function useNavigationTarget(): NavigationTarget {
     return { type: 'onboarding' };
   }
 
-  // Priority 3: Authentication
+  // Priority 4: Authentication
   if (authStatus === 'signOut') {
     console.log('🧭 User signed out');
     return { type: 'login' };
   }
 
-  // Priority 4: Default to app
+  // Priority 5: Default to app
   console.log('🧭 Default to app');
   return { type: 'app' };
 }

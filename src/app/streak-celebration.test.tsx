@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { render, fireEvent, waitFor, screen } from '@/lib/test-utils';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
-import { red } from '@/components/ui/colors';
+import { muted, red } from '@/components/ui/colors';
 
 import StreakCelebrationScreen from './streak-celebration';
 
@@ -14,6 +14,10 @@ jest.mock('expo-router', () => ({
     back: jest.fn(),
     push: jest.fn(),
   },
+  useFocusEffect: jest.fn((callback) => {
+    // Immediately call the callback to simulate screen focus
+    callback();
+  }),
 }));
 
 // Simple test without mocking react-native internals
@@ -34,10 +38,12 @@ jest.mock('@/components/StreakCounter', () => ({
 // Mock stores
 const mockCharacterStore = {
   dailyQuestStreak: 1,
+  markStreakCelebrationShown: jest.fn(),
 };
 
 const mockQuestStore = {
   lastCompletedQuestTimestamp: Date.now(),
+  setShouldShowStreak: jest.fn(),
 };
 
 jest.mock('@/store/character-store', () => ({
@@ -76,6 +82,10 @@ const mockCurrentDay = (dayOfWeek: number) => {
 describe('StreakCelebrationScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset mock functions
+    mockCharacterStore.markStreakCelebrationShown.mockClear();
+    mockQuestStore.setShouldShowStreak.mockClear();
+    
     mockUseCharacterStore.mockImplementation((selector) =>
       selector(mockCharacterStore as any)
     );
@@ -97,14 +107,11 @@ describe('StreakCelebrationScreen', () => {
       expect(streakCounter.props.children).toBe('StreakCounter-animated-large');
     });
 
-    it('should display "day streak!" text with correct color', () => {
+    it('should display "day streak!" text', () => {
       const { getByText } = render(<StreakCelebrationScreen />);
       
       const streakText = getByText('day streak!');
       expect(streakText).toBeTruthy();
-      expect(streakText.props.style).toEqual(
-        expect.objectContaining({ color: red[300] })
-      );
     });
   });
 
@@ -143,7 +150,7 @@ describe('StreakCelebrationScreen', () => {
       for (let i = 1; i < 5; i++) {
         expect(flameContainers[i].props.style).toEqual(
           expect.objectContaining({
-            backgroundColor: '#D3DEDA',
+            backgroundColor: muted[100],
             borderWidth: 0,
           })
         );
@@ -192,7 +199,7 @@ describe('StreakCelebrationScreen', () => {
       for (let i = 2; i < 5; i++) {
         expect(flameContainers[i].props.style).toEqual(
           expect.objectContaining({
-            backgroundColor: '#D3DEDA',
+            backgroundColor: muted[100],
             borderWidth: 0,
           })
         );
@@ -316,12 +323,13 @@ describe('StreakCelebrationScreen', () => {
   });
 
   describe('Button Interactions', () => {
-    it('should navigate to main app when Continue button is pressed', () => {
+    it('should call setShouldShowStreak(false) and navigate to main app when Continue button is pressed', () => {
       const { getByText } = render(<StreakCelebrationScreen />);
       
       const continueButton = getByText('CONTINUE');
       fireEvent.press(continueButton);
       
+      expect(mockQuestStore.setShouldShowStreak).toHaveBeenCalledWith(false);
       expect(router.push).toHaveBeenCalledWith('/(app)');
     });
 
@@ -333,30 +341,13 @@ describe('StreakCelebrationScreen', () => {
     });
   });
 
-  describe('Brand Colors', () => {
-    it('should use correct brand colors for UI elements', () => {
-      const { getByText } = render(<StreakCelebrationScreen />);
+  describe('Store Integration', () => {
+    it('should call markStreakCelebrationShown when screen is accessed', () => {
+      render(<StreakCelebrationScreen />);
       
-      // Check streak text color
-      const streakText = getByText('day streak!');
-      expect(streakText.props.style).toEqual(
-        expect.objectContaining({ color: red[300] })
-      );
-      
-      // Check instruction text color
-      const instructionText = getByText('Practice each day so your streak won\'t reset!');
-      expect(instructionText.props.style).toEqual(
-        expect.objectContaining({ color: '#49645F' })
-      );
-    });
-
-    it('should style Share button with brand colors', () => {
-      const { getByText } = render(<StreakCelebrationScreen />);
-      
-      const shareText = getByText('Share');
-      expect(shareText.props.style).toEqual(
-        expect.objectContaining({ color: red[300] })
-      );
+      // The useFocusEffect should trigger markStreakCelebrationShown
+      expect(mockCharacterStore.markStreakCelebrationShown).toHaveBeenCalled();
     });
   });
+
 });

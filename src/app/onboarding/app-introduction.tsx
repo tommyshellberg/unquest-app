@@ -125,7 +125,7 @@ export default function AppIntroductionScreen() {
         const isIOS = Platform.OS === 'ios';
         const notificationImage = isIOS
           ? require('@/../assets/images/ios-notification.png')
-          : require('@/../assets/images/android-notification.jpg');
+          : require('@/../assets/images/android-notification.png');
 
         return (
           <View key="notifications">

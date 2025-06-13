@@ -16,17 +16,6 @@ export default function QuestCompletedSignupScreen() {
   const currentStep = useOnboardingStore((state) => state.currentStep);
 
   useEffect(() => {
-    console.log(
-      '🧭 [QuestCompletedSignupScreen] Current onboarding step:',
-      currentStep
-    );
-  }, [currentStep]);
-
-  useEffect(() => {
-    console.log(
-      'QuestCompletedSignupScreen mounted, current step:',
-      currentStep
-    );
     // set the current step to SIGNUP_PROMPT_SHOWN if it's not already SIGNUP_PROMPT_SHOWN or COMPLETED
     if (
       currentStep !== OnboardingStep.SIGNUP_PROMPT_SHOWN &&

@@ -8,6 +8,7 @@ import { type Character, type CharacterType, type XP } from './types';
 interface CharacterState {
   character: Character | null;
   dailyQuestStreak: number;
+  lastStreakCelebrationShown: number | null;
   createCharacter: (type: CharacterType, name: string) => void;
   updateCharacter: (updatedCharacter: Partial<Character>) => void;
   addXP: (amount: XP) => void;
@@ -15,6 +16,8 @@ interface CharacterState {
   setStreak: (streak: number) => void;
   resetStreak: () => void;
   resetCharacter: () => void;
+  markStreakCelebrationShown: () => void;
+  shouldShowStreakCelebration: () => boolean;
 }
 
 const INITIAL_CHARACTER: Omit<Character, 'type' | 'name'> = {
@@ -46,6 +49,7 @@ export const useCharacterStore = create<CharacterState>()(
     (set, get) => ({
       character: null,
       dailyQuestStreak: 0,
+      lastStreakCelebrationShown: null,
       createCharacter: (type, name) =>
         set({
           character: {
@@ -97,6 +101,7 @@ export const useCharacterStore = create<CharacterState>()(
           ...state,
           character: null,
           dailyQuestStreak: 0,
+          lastStreakCelebrationShown: null,
         }));
       },
 
@@ -146,6 +151,21 @@ export const useCharacterStore = create<CharacterState>()(
       // Method to reset streak
       resetStreak: () => {
         set({ dailyQuestStreak: 0 });
+      },
+
+      // Track when streak celebration was last shown
+      markStreakCelebrationShown: () => {
+        set({ lastStreakCelebrationShown: Date.now() });
+      },
+
+      // Check if streak celebration should be shown (not shown in last 24 hours)
+      shouldShowStreakCelebration: () => {
+        const lastShown = get().lastStreakCelebrationShown;
+        if (!lastShown) return true;
+        
+        const now = Date.now();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        return (now - lastShown) > twentyFourHours;
       },
     }),
     {

@@ -27,6 +27,7 @@ interface QuestState {
   lastCompletedQuestTimestamp: number | null;
   currentLiveActivityId: string | null;
   failedQuests: Quest[];
+  shouldShowStreak: boolean;
   cancelQuest: () => void;
   startQuest: (quest: Quest) => void;
   completeQuest: (ignoreDuration?: boolean) => Quest | null;
@@ -38,6 +39,7 @@ interface QuestState {
   getCompletedQuests: () => Quest[];
   prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => void;
   setLiveActivityId: (id: string | null) => void;
+  setShouldShowStreak: (value: boolean) => void;
 }
 
 // Create type-safe functions for Zustand's storage
@@ -66,6 +68,7 @@ export const useQuestStore = create<QuestState>()(
       lastCompletedQuestTimestamp: null,
       currentLiveActivityId: null,
       failedQuests: [],
+      shouldShowStreak: false,
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
         set({ pendingQuest: quest, availableQuests: [] });
       },
@@ -296,6 +299,10 @@ export const useQuestStore = create<QuestState>()(
         set({ recentCompletedQuest: null });
       },
 
+      setShouldShowStreak: (value: boolean) => {
+        set({ shouldShowStreak: value });
+      },
+
       getCompletedQuests: () => {
         return get().completedQuests;
       },
@@ -315,6 +322,7 @@ export const useQuestStore = create<QuestState>()(
           lastCompletedQuestTimestamp: null,
           currentLiveActivityId: null, // Reset activity ID
           failedQuests: [],
+          shouldShowStreak: false,
         });
         useCharacterStore.getState().resetStreak();
         // Need a way to signal QuestTimer to stop without direct import

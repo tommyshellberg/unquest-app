@@ -90,9 +90,13 @@ const AnimatedDay = ({
 
 export default function StreakCelebrationScreen() {
   const dailyQuestStreak = useCharacterStore((state) => state.dailyQuestStreak);
+  const markStreakCelebrationShown = useCharacterStore(
+    (state) => state.markStreakCelebrationShown
+  );
   const lastCompletedQuestTimestamp = useQuestStore(
     (state) => state.lastCompletedQuestTimestamp
   );
+  const setShouldShowStreak = useQuestStore((state) => state.setShouldShowStreak);
   const lottieRef = useRef<LottieView>(null);
 
   const weekViewOpacity = useSharedValue(0);
@@ -193,8 +197,10 @@ export default function StreakCelebrationScreen() {
   // Play animations when screen comes into focus
   useFocusEffect(
     useCallback(() => {
+      // Mark that the streak celebration was shown when accessing this screen
+      markStreakCelebrationShown();
       playAnimations();
-    }, [playAnimations])
+    }, [playAnimations, markStreakCelebrationShown])
   );
 
   const handleShare = async () => {
@@ -216,6 +222,7 @@ export default function StreakCelebrationScreen() {
   };
 
   const handleContinue = () => {
+    setShouldShowStreak(false);
     router.push('/(app)');
   };
 
