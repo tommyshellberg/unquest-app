@@ -1,0 +1,362 @@
+import React from 'react';
+import { router } from 'expo-router';
+
+import { render, fireEvent, waitFor, screen } from '@/lib/test-utils';
+import { useCharacterStore } from '@/store/character-store';
+import { useQuestStore } from '@/store/quest-store';
+import { red } from '@/components/ui/colors';
+
+import StreakCelebrationScreen from './streak-celebration';
+
+// Mock dependencies
+jest.mock('expo-router', () => ({
+  router: {
+    back: jest.fn(),
+    push: jest.fn(),
+  },
+}));
+
+// Simple test without mocking react-native internals
+
+jest.mock('lottie-react-native', () => 'LottieView');
+
+jest.mock('@/components/StreakCounter', () => ({
+  StreakCounter: ({ animate, size }: { animate: boolean; size: string }) => {
+    const MockStreakCounter = require('react-native').Text;
+    return (
+      <MockStreakCounter testID="streak-counter">
+        {`StreakCounter-${animate ? 'animated' : 'static'}-${size}`}
+      </MockStreakCounter>
+    );
+  },
+}));
+
+// Mock stores
+const mockCharacterStore = {
+  dailyQuestStreak: 1,
+};
+
+const mockQuestStore = {
+  lastCompletedQuestTimestamp: Date.now(),
+};
+
+jest.mock('@/store/character-store', () => ({
+  useCharacterStore: jest.fn(),
+}));
+
+jest.mock('@/store/quest-store', () => ({
+  useQuestStore: jest.fn(),
+}));
+
+const mockUseCharacterStore = useCharacterStore as jest.MockedFunction<typeof useCharacterStore>;
+const mockUseQuestStore = useQuestStore as jest.MockedFunction<typeof useQuestStore>;
+
+// Helper function to mock current day
+const mockCurrentDay = (dayOfWeek: number) => {
+  const mockDate = new Date();
+  mockDate.setDate(mockDate.getDate() - mockDate.getDay() + dayOfWeek);
+  
+  // Mock both Date constructor and Date.now
+  const realDate = Date;
+  global.Date = jest.fn(() => mockDate) as any;
+  global.Date.now = jest.fn(() => mockDate.getTime());
+  global.Date.getDay = jest.fn(() => dayOfWeek);
+  
+  // Copy other static methods from real Date
+  Object.setPrototypeOf(global.Date, realDate);
+  Object.getOwnPropertyNames(realDate).forEach(name => {
+    if (name !== 'now' && name !== 'constructor') {
+      (global.Date as any)[name] = (realDate as any)[name];
+    }
+  });
+  
+  return mockDate;
+};
+
+describe('StreakCelebrationScreen', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseCharacterStore.mockImplementation((selector) =>
+      selector(mockCharacterStore as any)
+    );
+    mockUseQuestStore.mockImplementation((selector) =>
+      selector(mockQuestStore as any)
+    );
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe('StreakCounter Integration', () => {
+    it('should render StreakCounter with correct props', () => {
+      const { getByTestId } = render(<StreakCelebrationScreen />);
+      
+      const streakCounter = getByTestId('streak-counter');
+      expect(streakCounter).toBeTruthy();
+      expect(streakCounter.props.children).toBe('StreakCounter-animated-large');
+    });
+
+    it('should display "day streak!" text with correct color', () => {
+      const { getByText } = render(<StreakCelebrationScreen />);
+      
+      const streakText = getByText('day streak!');
+      expect(streakText).toBeTruthy();
+      expect(streakText.props.style).toEqual(
+        expect.objectContaining({ color: red[300] })
+      );
+    });
+  });
+
+  describe('1-Day Streak (Thursday)', () => {
+    beforeEach(() => {
+      // Mock Thursday (day 4 of week)
+      mockCurrentDay(4);
+      mockCharacterStore.dailyQuestStreak = 1;
+    });
+
+    it('should show Thursday as completed and 4 empty days after', () => {
+      const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
+      
+      // Check day names are displayed correctly
+      expect(getByText('Th')).toBeTruthy(); // Thursday - first day
+      expect(getByText('Fr')).toBeTruthy(); // Friday
+      expect(getByText('Sa')).toBeTruthy(); // Saturday  
+      expect(getByText('Su')).toBeTruthy(); // Sunday
+      expect(getByText('Mo')).toBeTruthy(); // Monday
+      
+      // Check flame icon styling
+      const flameContainers = getAllByTestId('flame-container');
+      expect(flameContainers).toHaveLength(5);
+      
+      // Thursday (index 0) should be completed with red background
+      const thursdayContainer = flameContainers[0];
+      expect(thursdayContainer.props.style).toEqual(
+        expect.objectContaining({
+          backgroundColor: red[300],
+          borderWidth: 2, // isToday
+          borderColor: red[300],
+        })
+      );
+      
+      // Other days should be empty
+      for (let i = 1; i < 5; i++) {
+        expect(flameContainers[i].props.style).toEqual(
+          expect.objectContaining({
+            backgroundColor: '#D3DEDA',
+            borderWidth: 0,
+          })
+        );
+      }
+    });
+  });
+
+  describe('2-Day Streak (Wednesday)', () => {
+    beforeEach(() => {
+      // Mock Wednesday (day 3 of week) 
+      mockCurrentDay(3);
+      mockCharacterStore.dailyQuestStreak = 2;
+    });
+
+    it('should show Tuesday and Wednesday as completed, 3 empty days after', () => {
+      const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
+      
+      // Check day names - should start with Tuesday (streak start)
+      expect(getByText('Tu')).toBeTruthy(); // Tuesday - streak start
+      expect(getByText('We')).toBeTruthy(); // Wednesday - today
+      expect(getByText('Th')).toBeTruthy(); // Thursday - empty
+      expect(getByText('Fr')).toBeTruthy(); // Friday - empty
+      expect(getByText('Sa')).toBeTruthy(); // Saturday - empty
+      
+      const flameContainers = getAllByTestId('flame-container');
+      expect(flameContainers).toHaveLength(5);
+      
+      // Tuesday (index 0) should be completed
+      expect(flameContainers[0].props.style).toEqual(
+        expect.objectContaining({
+          backgroundColor: red[300],
+          borderWidth: 0, // not today
+        })
+      );
+      
+      // Wednesday (index 1) should be completed and today
+      expect(flameContainers[1].props.style).toEqual(
+        expect.objectContaining({
+          backgroundColor: red[300],
+          borderWidth: 2, // isToday
+          borderColor: red[300],
+        })
+      );
+      
+      // Thursday, Friday, Saturday should be empty
+      for (let i = 2; i < 5; i++) {
+        expect(flameContainers[i].props.style).toEqual(
+          expect.objectContaining({
+            backgroundColor: '#D3DEDA',
+            borderWidth: 0,
+          })
+        );
+      }
+    });
+  });
+
+  describe('5-Day Streak (Friday)', () => {
+    beforeEach(() => {
+      // Mock Friday (day 5 of week)
+      mockCurrentDay(5);
+      mockCharacterStore.dailyQuestStreak = 5;
+    });
+
+    it('should show all 5 days as completed ending with today', () => {
+      const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
+      
+      // Should show Monday through Friday (5 consecutive days ending today)
+      expect(getByText('Mo')).toBeTruthy(); // Monday
+      expect(getByText('Tu')).toBeTruthy(); // Tuesday
+      expect(getByText('We')).toBeTruthy(); // Wednesday
+      expect(getByText('Th')).toBeTruthy(); // Thursday
+      expect(getByText('Fr')).toBeTruthy(); // Friday - today
+      
+      const flameContainers = getAllByTestId('flame-container');
+      expect(flameContainers).toHaveLength(5);
+      
+      // All days except Friday should be completed but not today
+      for (let i = 0; i < 4; i++) {
+        expect(flameContainers[i].props.style).toEqual(
+          expect.objectContaining({
+            backgroundColor: red[300],
+            borderWidth: 0, // not today
+          })
+        );
+      }
+      
+      // Friday (index 4) should be completed and today
+      expect(flameContainers[4].props.style).toEqual(
+        expect.objectContaining({
+          backgroundColor: red[300],
+          borderWidth: 2, // isToday
+          borderColor: red[300],
+        })
+      );
+    });
+  });
+
+  describe('6+ Day Streak (Sunday)', () => {
+    beforeEach(() => {
+      // Mock Sunday (day 0 of week)
+      mockCurrentDay(0);
+      mockCharacterStore.dailyQuestStreak = 7;
+    });
+
+    it('should show 5 most recent completed days ending with today', () => {
+      const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
+      
+      // Should show Wednesday through Sunday (5 days ending with today)
+      expect(getByText('We')).toBeTruthy(); // Wednesday
+      expect(getByText('Th')).toBeTruthy(); // Thursday
+      expect(getByText('Fr')).toBeTruthy(); // Friday
+      expect(getByText('Sa')).toBeTruthy(); // Saturday
+      expect(getByText('Su')).toBeTruthy(); // Sunday - today
+      
+      const flameContainers = getAllByTestId('flame-container');
+      expect(flameContainers).toHaveLength(5);
+      
+      // All days should be completed
+      for (let i = 0; i < 5; i++) {
+        const isToday = i === 4; // Sunday is last day
+        expect(flameContainers[i].props.style).toEqual(
+          expect.objectContaining({
+            backgroundColor: red[300],
+            borderWidth: isToday ? 2 : 0,
+            borderColor: isToday ? red[300] : 'transparent',
+          })
+        );
+      }
+    });
+  });
+
+  describe('0-Day Streak', () => {
+    beforeEach(() => {
+      mockCurrentDay(2); // Tuesday
+      mockCharacterStore.dailyQuestStreak = 0;
+    });
+
+    it('should show today and 4 empty days after', () => {
+      const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
+      
+      // Should show Tuesday through Saturday
+      expect(getByText('Tu')).toBeTruthy(); // Tuesday - today
+      expect(getByText('We')).toBeTruthy(); // Wednesday
+      expect(getByText('Th')).toBeTruthy(); // Thursday
+      expect(getByText('Fr')).toBeTruthy(); // Friday
+      expect(getByText('Sa')).toBeTruthy(); // Saturday
+      
+      const flameContainers = getAllByTestId('flame-container');
+      expect(flameContainers).toHaveLength(5);
+      
+      // All days should be empty, but Tuesday should be marked as today
+      expect(flameContainers[0].props.style).toEqual(
+        expect.objectContaining({
+          backgroundColor: '#D3DEDA',
+          borderWidth: 2, // isToday
+          borderColor: red[300],
+        })
+      );
+      
+      // Other days should be empty
+      for (let i = 1; i < 5; i++) {
+        expect(flameContainers[i].props.style).toEqual(
+          expect.objectContaining({
+            backgroundColor: '#D3DEDA',
+            borderWidth: 0,
+          })
+        );
+      }
+    });
+  });
+
+  describe('Button Interactions', () => {
+    it('should navigate to main app when Continue button is pressed', () => {
+      const { getByText } = render(<StreakCelebrationScreen />);
+      
+      const continueButton = getByText('CONTINUE');
+      fireEvent.press(continueButton);
+      
+      expect(router.push).toHaveBeenCalledWith('/(app)');
+    });
+
+    it('should have Share and Continue buttons', () => {
+      const { getByText } = render(<StreakCelebrationScreen />);
+      
+      expect(getByText('Share')).toBeTruthy();
+      expect(getByText('CONTINUE')).toBeTruthy();
+    });
+  });
+
+  describe('Brand Colors', () => {
+    it('should use correct brand colors for UI elements', () => {
+      const { getByText } = render(<StreakCelebrationScreen />);
+      
+      // Check streak text color
+      const streakText = getByText('day streak!');
+      expect(streakText.props.style).toEqual(
+        expect.objectContaining({ color: red[300] })
+      );
+      
+      // Check instruction text color
+      const instructionText = getByText('Practice each day so your streak won\'t reset!');
+      expect(instructionText.props.style).toEqual(
+        expect.objectContaining({ color: '#49645F' })
+      );
+    });
+
+    it('should style Share button with brand colors', () => {
+      const { getByText } = render(<StreakCelebrationScreen />);
+      
+      const shareText = getByText('Share');
+      expect(shareText.props.style).toEqual(
+        expect.objectContaining({ color: red[300] })
+      );
+    });
+  });
+});

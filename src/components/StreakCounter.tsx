@@ -1,10 +1,12 @@
 import { Flame } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
+import { Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { router } from 'expo-router';
 
 import { Text, View } from '@/components/ui';
 import { useCharacterStore } from '@/store/character-store';
@@ -17,12 +19,16 @@ type Props = {
   size?: 'small' | 'large';
   position?: 'topRight' | 'default';
   showCountdown?: boolean;
+  onPress?: () => void;
+  disablePress?: boolean;
 };
 
 export function StreakCounter({
   animate = false,
   size = 'large',
   position = 'default',
+  onPress,
+  disablePress = false,
 }: Props) {
   const dailyQuestStreak = useCharacterStore((state) => state.dailyQuestStreak);
   const lastCompletedQuestTimestamp = useQuestStore(
@@ -70,11 +76,22 @@ export function StreakCounter({
     return <>{children}</>;
   };
 
+  const handlePress = () => {
+    if (disablePress) return;
+    if (onPress) {
+      onPress();
+    } else {
+      router.push('/streak-celebration');
+    }
+  };
+
   if (size === 'small') {
     return (
       <Wrapper>
         <Animated.View style={streakStyle}>
-          <View
+          <Pressable
+            onPress={handlePress}
+            disabled={disablePress}
             className={`
               flex-row items-center rounded-full px-2 py-[2px]
               ${isStreakActive ? 'bg-transparent' : 'bg-neutral-400/50'}
@@ -84,7 +101,7 @@ export function StreakCounter({
             <Text className="font-semibold text-primary-500">
               {dailyQuestStreak}
             </Text>
-          </View>
+          </Pressable>
         </Animated.View>
       </Wrapper>
     );
@@ -96,7 +113,9 @@ export function StreakCounter({
         className="items-center justify-center"
         style={streakStyle}
       >
-        <View
+        <Pressable
+          onPress={handlePress}
+          disabled={disablePress}
           className={`
             size-[90px] 
             items-center 
@@ -115,16 +134,7 @@ export function StreakCounter({
           >
             {dailyQuestStreak}
           </Text>
-          <Text
-            className={`
-              text-text-light 
-              -mt-1.5
-              text-sm
-            `}
-          >
-            day streak
-          </Text>
-        </View>
+        </Pressable>
       </Animated.View>
     </Wrapper>
   );

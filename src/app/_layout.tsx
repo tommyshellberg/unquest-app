@@ -163,6 +163,10 @@ function RootLayout() {
           name="quest-completed-signup"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="streak-celebration"
+          options={{ headerShown: false }}
+        />
       </Stack>
     </Providers>
   );
