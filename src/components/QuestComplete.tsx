@@ -37,8 +37,14 @@ export function QuestComplete({
 }: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
+  const shouldShowStreakCelebration = useCharacterStore(
+    (state) => state.shouldShowStreakCelebration
+  );
   const clearRecentCompletedQuest = useQuestStore(
     (state) => state.clearRecentCompletedQuest
+  );
+  const setShouldShowStreak = useQuestStore(
+    (state) => state.setShouldShowStreak
   );
 
   const headerOpacity = useSharedValue(0);
@@ -68,11 +74,19 @@ export function QuestComplete({
   const isStoryQuest = quest.mode === 'story';
 
   const handleContinue = () => {
+    // Always clear the quest state first
     clearRecentCompletedQuest();
-    if (showStreakCelebration) {
-      router.push('/streak-celebration');
-    } else if (onContinue) {
+    
+    // Set flag to show streak celebration if enabled AND not shown in last 24 hours
+    if (showStreakCelebration && shouldShowStreakCelebration()) {
+      setShouldShowStreak(true);
+    }
+    
+    // Navigate to continue or home
+    if (onContinue) {
       onContinue();
+    } else {
+      router.push('/(app)');
     }
   };
 

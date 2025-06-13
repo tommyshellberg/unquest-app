@@ -39,6 +39,7 @@ export default function Home() {
   const router = useRouter();
   const activeQuest = useQuestStore((state) => state.activeQuest);
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
+  const shouldShowStreak = useQuestStore((state) => state.shouldShowStreak);
   const refreshAvailableQuests = useQuestStore(
     (state) => state.refreshAvailableQuests
   );

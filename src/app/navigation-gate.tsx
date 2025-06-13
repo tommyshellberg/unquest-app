@@ -52,6 +52,10 @@ export default function NavigationGate() {
         );
         router.replace(`/(app)/quest/${target.questId}` as any);
         break;
+      case 'streak-celebration':
+        console.log('[NavigationGate] Redirecting to streak celebration');
+        router.replace('/streak-celebration');
+        break;
       case 'onboarding':
         console.log('[NavigationGate] Redirecting to onboarding');
         router.replace('/onboarding');

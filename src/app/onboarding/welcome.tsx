@@ -69,7 +69,9 @@ export default function WelcomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Log in to existing account"
           >
-            <Text className="text-base underline">Have an account? Log In</Text>
+            <Text className="text-base text-white underline shadow-md">
+              Have an account? Log In
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
