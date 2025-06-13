@@ -199,7 +199,7 @@ export default function StreakCelebrationScreen() {
 
   const handleShare = async () => {
     try {
-      const shareMessage = `I'm on a ${dailyQuestStreak} day quest streak in unQuest! 🔥 Join me on this epic adventure!`;
+      const shareMessage = `I'm on a ${dailyQuestStreak} day quest streak in unQuest! 🔥 Join me on this epic adventure!\n\nhttps://unquestapp.com`;
 
       const result = await RNShare.share({
         message: shareMessage,
