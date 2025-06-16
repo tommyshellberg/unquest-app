@@ -135,7 +135,7 @@ describe('ChooseCharacterScreen', () => {
       'Arthur'
     );
     expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
-      OnboardingStep.CHARACTER_SELECTED
+      OnboardingStep.VIEWING_INTRO
     );
   });
 
@@ -180,7 +180,7 @@ describe('ChooseCharacterScreen', () => {
       'Merlin'
     );
     expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
-      OnboardingStep.CHARACTER_SELECTED
+      OnboardingStep.VIEWING_INTRO
     );
 
     // Should not reset character store for this recoverable error

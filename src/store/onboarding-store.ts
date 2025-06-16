@@ -5,22 +5,22 @@ import { getItem, removeItem, setItem } from '@/lib/storage';
 
 export enum OnboardingStep {
   NOT_STARTED = 'not_started',
-  INTRO_COMPLETED = 'intro_completed',
-  NOTIFICATIONS_COMPLETED = 'notifications_completed',
-  CHARACTER_SELECTED = 'character_selected',
-  FIRST_QUEST_COMPLETED = 'first_quest_completed',
-  SIGNUP_PROMPT_SHOWN = 'signup_prompt_shown',
+  SELECTING_CHARACTER = 'selecting_character',
+  VIEWING_INTRO = 'viewing_intro',
+  REQUESTING_NOTIFICATIONS = 'requesting_notifications',
+  STARTING_FIRST_QUEST = 'starting_first_quest',
+  VIEWING_SIGNUP_PROMPT = 'viewing_signup_prompt',
   COMPLETED = 'completed',
 }
 
 // Define step order for comparison
 const stepOrder: Record<OnboardingStep, number> = {
   [OnboardingStep.NOT_STARTED]: 0,
-  [OnboardingStep.INTRO_COMPLETED]: 1,
-  [OnboardingStep.NOTIFICATIONS_COMPLETED]: 2,
-  [OnboardingStep.CHARACTER_SELECTED]: 3,
-  [OnboardingStep.FIRST_QUEST_COMPLETED]: 4,
-  [OnboardingStep.SIGNUP_PROMPT_SHOWN]: 5,
+  [OnboardingStep.SELECTING_CHARACTER]: 1,
+  [OnboardingStep.VIEWING_INTRO]: 2,
+  [OnboardingStep.REQUESTING_NOTIFICATIONS]: 3,
+  [OnboardingStep.STARTING_FIRST_QUEST]: 4,
+  [OnboardingStep.VIEWING_SIGNUP_PROMPT]: 5,
   [OnboardingStep.COMPLETED]: 6,
 };
 
@@ -80,17 +80,15 @@ export const useOnboardingStore = create<OnboardingState>()(
 
       hasCompletedFirstQuest: () => {
         const step = get().currentStep;
-        return (
-          step === OnboardingStep.FIRST_QUEST_COMPLETED ||
-          step === OnboardingStep.SIGNUP_PROMPT_SHOWN ||
-          step === OnboardingStep.COMPLETED
-        );
+        const stepIndex = stepOrder[step];
+        // First quest is completed from VIEWING_SIGNUP_PROMPT onwards (after completing the first quest)
+        return stepIndex >= stepOrder[OnboardingStep.VIEWING_SIGNUP_PROMPT];
       },
 
       hasSeenSignupPrompt: () => {
         const step = get().currentStep;
         return (
-          step === OnboardingStep.SIGNUP_PROMPT_SHOWN ||
+          step === OnboardingStep.VIEWING_SIGNUP_PROMPT ||
           step === OnboardingStep.COMPLETED
         );
       },

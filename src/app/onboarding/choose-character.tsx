@@ -160,7 +160,7 @@ export default function ChooseCharacterScreen() {
       // Only proceed if both operations succeeded
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
+        .setCurrentStep(OnboardingStep.VIEWING_INTRO);
     } catch (error: unknown) {
       // Handle specific error types
       const errorMessage =
@@ -171,7 +171,7 @@ export default function ChooseCharacterScreen() {
         // This is recoverable - the provisional account already exists, so we can continue
         useOnboardingStore
           .getState()
-          .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
+          .setCurrentStep(OnboardingStep.VIEWING_INTRO);
       } else {
         // For all other errors, don't proceed and show error to user
         posthog.capture('onboarding_create_provisional_user_error', {

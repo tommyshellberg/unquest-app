@@ -21,7 +21,7 @@ export default function FirstQuestResultScreen() {
 
   React.useEffect(() => {
     if (outcome === 'completed') {
-      setOnboardingStep(OnboardingStep.FIRST_QUEST_COMPLETED);
+      setOnboardingStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
     }
     // No specific onboarding step for failure here, as retrying might loop back
   }, [outcome, setOnboardingStep]);
