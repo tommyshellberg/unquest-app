@@ -24,7 +24,6 @@ type QuestCompleteProps = {
   onContinue?: () => void;
   continueText?: string;
   showActionButton?: boolean;
-  showStreakCelebration?: boolean;
 };
 
 export function QuestComplete({
@@ -33,18 +32,11 @@ export function QuestComplete({
   onContinue,
   continueText = 'Continue',
   showActionButton = true,
-  showStreakCelebration = true,
 }: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
-  const shouldShowStreakCelebration = useCharacterStore(
-    (state) => state.shouldShowStreakCelebration
-  );
   const clearRecentCompletedQuest = useQuestStore(
     (state) => state.clearRecentCompletedQuest
-  );
-  const setShouldShowStreak = useQuestStore(
-    (state) => state.setShouldShowStreak
   );
 
   const headerOpacity = useSharedValue(0);
@@ -74,15 +66,7 @@ export function QuestComplete({
   const isStoryQuest = quest.mode === 'story';
 
   const handleContinue = () => {
-    // Set flag to show streak celebration first (before clearing quest)
-    // This prevents intermediate navigation states
-    if (showStreakCelebration && shouldShowStreakCelebration()) {
-      setShouldShowStreak(true);
-    }
-
-    // Then clear the quest state - this will trigger navigation
-    // Since quest results have higher priority than streak, no navigation
-    // happens until we clear the quest
+    // Clear the quest state - this will trigger navigation
     clearRecentCompletedQuest();
 
     // Navigate to continue or home

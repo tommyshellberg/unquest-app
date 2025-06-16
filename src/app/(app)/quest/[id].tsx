@@ -161,7 +161,6 @@ export default function AppQuestDetailsScreen() {
           quest={quest}
           story={getQuestCompletionText()}
           showActionButton={from !== 'journal'}
-          showStreakCelebration={true}
         />
       </View>
     );

@@ -131,7 +131,6 @@ describe('QuestStore - refreshAvailableQuests', () => {
       recentCompletedQuest: null,
       lastCompletedQuestTimestamp: null,
       currentLiveActivityId: null,
-      shouldShowStreak: false,
     });
   });
 
@@ -254,60 +253,5 @@ describe('QuestStore - refreshAvailableQuests', () => {
     const state = useQuestStore.getState();
     // If the next quest isn't in our fixture, we should get empty array
     expect(state.availableQuests.length).toBe(0);
-  });
-});
-
-describe('QuestStore - shouldShowStreak functionality', () => {
-  beforeEach(() => {
-    // Reset the store before each test
-    useQuestStore.setState({
-      activeQuest: null,
-      pendingQuest: null,
-      availableQuests: [],
-      completedQuests: [],
-      failedQuest: null,
-      recentCompletedQuest: null,
-      lastCompletedQuestTimestamp: null,
-      currentLiveActivityId: null,
-      shouldShowStreak: false,
-    });
-  });
-
-  test('should initialize shouldShowStreak as false', () => {
-    const state = useQuestStore.getState();
-    expect(state.shouldShowStreak).toBe(false);
-  });
-
-  test('should set shouldShowStreak to true', () => {
-    // Act
-    useQuestStore.getState().setShouldShowStreak(true);
-
-    // Assert
-    const state = useQuestStore.getState();
-    expect(state.shouldShowStreak).toBe(true);
-  });
-
-  test('should set shouldShowStreak to false', () => {
-    // Arrange - first set it to true
-    useQuestStore.setState({ shouldShowStreak: true });
-
-    // Act
-    useQuestStore.getState().setShouldShowStreak(false);
-
-    // Assert
-    const state = useQuestStore.getState();
-    expect(state.shouldShowStreak).toBe(false);
-  });
-
-  test('should reset shouldShowStreak to false when store is reset', () => {
-    // Arrange - set shouldShowStreak to true
-    useQuestStore.setState({ shouldShowStreak: true });
-
-    // Act
-    useQuestStore.getState().reset();
-
-    // Assert
-    const state = useQuestStore.getState();
-    expect(state.shouldShowStreak).toBe(false);
   });
 });

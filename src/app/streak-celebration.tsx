@@ -96,7 +96,6 @@ export default function StreakCelebrationScreen() {
   const lastCompletedQuestTimestamp = useQuestStore(
     (state) => state.lastCompletedQuestTimestamp
   );
-  const setShouldShowStreak = useQuestStore((state) => state.setShouldShowStreak);
   const lottieRef = useRef<LottieView>(null);
 
   const weekViewOpacity = useSharedValue(0);
@@ -222,7 +221,6 @@ export default function StreakCelebrationScreen() {
   };
 
   const handleContinue = () => {
-    setShouldShowStreak(false);
     router.push('/(app)');
   };
 
