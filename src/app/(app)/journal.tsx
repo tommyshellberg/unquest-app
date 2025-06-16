@@ -138,6 +138,7 @@ export default function JournalScreen() {
                     params: {
                       id: quest.id,
                       timestamp: quest.stopTime?.toString(),
+                      from: 'journal',
                     },
                   });
                 }}
