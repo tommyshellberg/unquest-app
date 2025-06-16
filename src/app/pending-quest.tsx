@@ -110,11 +110,11 @@ export default function PendingQuestScreen() {
             </Text>
 
             <Text className="mb-6 text-center text-base leading-6">
-              `Your character is ready to embark on their journey, but they need
+              Your character is ready to embark on their journey, but they need
               you to put your phone away first.
             </Text>
             <Text className="mb-6 text-center text-base leading-6">
-              The quest will begin when your phone is locked.`
+              The quest will begin when your phone is locked.
             </Text>
 
             <View className="my-4 border-b border-[#3B7A57]" />

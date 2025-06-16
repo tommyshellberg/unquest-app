@@ -1,16 +1,15 @@
+import { router } from 'expo-router';
 import { Flame } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { router } from 'expo-router';
 
 import { Text, View } from '@/components/ui';
 import { useCharacterStore } from '@/store/character-store';
-import { useQuestStore } from '@/store/quest-store';
 
 import { red } from './ui/colors';
 
@@ -31,26 +30,9 @@ export function StreakCounter({
   disablePress = false,
 }: Props) {
   const dailyQuestStreak = useCharacterStore((state) => state.dailyQuestStreak);
-  const lastCompletedQuestTimestamp = useQuestStore(
-    (state) => state.lastCompletedQuestTimestamp
-  );
-  const [isStreakActive, setIsStreakActive] = useState(true);
 
   // Animation value
   const scale = useSharedValue(animate ? 0.5 : 1);
-
-  // Calculate if streak is still active (within 24 hours of last completion)
-  useEffect(() => {
-    if (lastCompletedQuestTimestamp) {
-      const now = Date.now();
-      const timeSinceLastCompletion = now - lastCompletedQuestTimestamp;
-      const oneDayInMs = 24 * 60 * 60 * 1000;
-
-      setIsStreakActive(timeSinceLastCompletion < oneDayInMs);
-    } else {
-      setIsStreakActive(false);
-    }
-  }, [lastCompletedQuestTimestamp]);
 
   // Trigger animation if animate prop is true
   useEffect(() => {
@@ -93,8 +75,8 @@ export function StreakCounter({
             onPress={handlePress}
             disabled={disablePress}
             className={`
-              flex-row items-center rounded-full px-2 py-[2px]
-              ${isStreakActive ? 'bg-transparent' : 'bg-neutral-400/50'}
+              flex-row items-center rounded-full bg-transparent px-2
+              py-[2px]
             `}
           >
             <Flame size={20} color={red[300]} />
@@ -122,7 +104,6 @@ export function StreakCounter({
             justify-center
             rounded-[45px]
             bg-secondary-100 shadow-lg
-            ${!isStreakActive ? 'bg-muted-400' : ''}
           `}
         >
           <Text

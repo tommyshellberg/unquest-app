@@ -43,7 +43,6 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 apiClient.interceptors.request.use(
   (config) => {
     const tokenData = getToken();
-    console.log('tokenData', tokenData);
     const accessToken = tokenData?.access;
 
     if (accessToken) {

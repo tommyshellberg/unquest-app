@@ -21,7 +21,6 @@ const _useAuth = create<AuthState>((set, get) => ({
   status: 'idle',
   token: null,
   signIn: (loginResponse) => {
-    console.log('tokenData', loginResponse.token);
     setToken({
       access: loginResponse.token.access,
       refresh: loginResponse.token.refresh,

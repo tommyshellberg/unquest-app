@@ -16,9 +16,10 @@ import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
 
 export default function AppQuestDetailsScreen() {
-  const { id, timestamp } = useLocalSearchParams<{
+  const { id, timestamp, from } = useLocalSearchParams<{
     id: string;
     timestamp?: string;
+    from?: string;
   }>();
 
   const completedQuests = useQuestStore((state) => state.completedQuests);
@@ -159,8 +160,7 @@ export default function AppQuestDetailsScreen() {
         <QuestComplete
           quest={quest}
           story={getQuestCompletionText()}
-          showActionButton={true}
-          showStreakCelebration={true}
+          showActionButton={from !== 'journal'}
         />
       </View>
     );

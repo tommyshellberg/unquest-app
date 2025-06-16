@@ -43,7 +43,6 @@ const mockCharacterStore = {
 
 const mockQuestStore = {
   lastCompletedQuestTimestamp: Date.now(),
-  setShouldShowStreak: jest.fn(),
 };
 
 jest.mock('@/store/character-store', () => ({
@@ -84,7 +83,6 @@ describe('StreakCelebrationScreen', () => {
     jest.clearAllMocks();
     // Reset mock functions
     mockCharacterStore.markStreakCelebrationShown.mockClear();
-    mockQuestStore.setShouldShowStreak.mockClear();
     
     mockUseCharacterStore.mockImplementation((selector) =>
       selector(mockCharacterStore as any)
@@ -241,13 +239,12 @@ describe('StreakCelebrationScreen', () => {
   });
 
   describe('Button Interactions', () => {
-    it('should call setShouldShowStreak(false) and navigate to main app when Continue button is pressed', () => {
+    it('should navigate to main app when Continue button is pressed', () => {
       const { getByText } = render(<StreakCelebrationScreen />);
       
       const continueButton = getByText('CONTINUE');
       fireEvent.press(continueButton);
       
-      expect(mockQuestStore.setShouldShowStreak).toHaveBeenCalledWith(false);
       expect(router.push).toHaveBeenCalledWith('/(app)');
     });
   });

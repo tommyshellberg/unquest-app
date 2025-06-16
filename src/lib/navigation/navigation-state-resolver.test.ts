@@ -29,7 +29,6 @@ const mockQuestState = {
   recentCompletedQuest: null as any,
   failedQuest: null as any,
   completedQuests: [] as any[],
-  shouldShowStreak: false,
 };
 
 // Mock auth store
@@ -101,7 +100,6 @@ beforeEach(() => {
     recentCompletedQuest: null,
     failedQuest: null,
     completedQuests: [],
-    shouldShowStreak: false,
   });
 
   // Reset storage mock - return null by default (no provisional data)
@@ -202,41 +200,6 @@ describe('Navigation State Resolver', () => {
     });
   });
 
-  it('redirects to streak-celebration when shouldShowStreak is true', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({ shouldShowStreak: true });
-
-    const { result } = renderHook(() => useNavigationTarget());
-
-    expect(result.current).toEqual({ type: 'streak-celebration' });
-  });
-
-  it('prioritizes streak celebration over other non-quest states', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({ shouldShowStreak: true });
-
-    const { result } = renderHook(() => useNavigationTarget());
-
-    expect(result.current).toEqual({ type: 'streak-celebration' });
-  });
-
-  it('prioritizes quest states over streak celebration', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({
-      pendingQuest: { id: 'quest-1' },
-      shouldShowStreak: true,
-    });
-
-    const { result } = renderHook(() => useNavigationTarget());
-
-    expect(result.current).toEqual({
-      type: 'pending-quest',
-      questId: 'quest-1',
-    });
-  });
 
   it('redirects to onboarding when not complete and user has provisional data', () => {
     setAuthState({ status: 'signIn' });

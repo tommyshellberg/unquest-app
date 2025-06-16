@@ -17,7 +17,6 @@ interface CharacterState {
   resetStreak: () => void;
   resetCharacter: () => void;
   markStreakCelebrationShown: () => void;
-  shouldShowStreakCelebration: () => boolean;
 }
 
 const INITIAL_CHARACTER: Omit<Character, 'type' | 'name'> = {
@@ -156,16 +155,6 @@ export const useCharacterStore = create<CharacterState>()(
       // Track when streak celebration was last shown
       markStreakCelebrationShown: () => {
         set({ lastStreakCelebrationShown: Date.now() });
-      },
-
-      // Check if streak celebration should be shown (not shown in last 24 hours)
-      shouldShowStreakCelebration: () => {
-        const lastShown = get().lastStreakCelebrationShown;
-        if (!lastShown) return true;
-        
-        const now = Date.now();
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        return (now - lastShown) > twentyFourHours;
       },
     }),
     {
