@@ -20,7 +20,6 @@ import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 enum IntroStep {
   WELCOME = 'welcome',
   NOTIFICATIONS = 'notifications',
-  READY_FOR_CHARACTER = 'ready_for_character',
 }
 
 export default function AppIntroductionScreen() {
@@ -64,7 +63,7 @@ export default function AppIntroductionScreen() {
       setPermissionsGranted(false);
     }
 
-    setIntroStep(IntroStep.READY_FOR_CHARACTER);
+    setCurrentStep(OnboardingStep.STARTING_FIRST_QUEST);
     posthog.capture('onboarding_request_notification_permissions_completed');
   };
 
@@ -73,19 +72,17 @@ export default function AppIntroductionScreen() {
     switch (introStep) {
       case IntroStep.WELCOME:
         setIntroStep(IntroStep.NOTIFICATIONS);
+        setCurrentStep(OnboardingStep.REQUESTING_NOTIFICATIONS);
         break;
       case IntroStep.NOTIFICATIONS:
         requestPermissions();
-        break;
-      case IntroStep.READY_FOR_CHARACTER:
-        setCurrentStep(OnboardingStep.NOTIFICATIONS_COMPLETED);
         break;
     }
   };
 
   // Skip notifications and continue
   const handleSkipNotifications = () => {
-    setIntroStep(IntroStep.READY_FOR_CHARACTER);
+    setCurrentStep(OnboardingStep.STARTING_FIRST_QUEST);
   };
 
   // Get screen width to set full-width image
@@ -178,32 +175,6 @@ export default function AppIntroductionScreen() {
           </View>
         );
 
-      case IntroStep.READY_FOR_CHARACTER:
-        return (
-          <View key="character">
-            <Animated.View entering={FadeInDown.delay(100)}>
-              <Text className="mb-4 text-xl font-bold">Your Character</Text>
-              <Text className="mb-6 text-sm font-semibold">
-                Your companion on this journey
-              </Text>
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-4">
-                Choose a character that reflects your personality. Each
-                character offers a different approach to mindfulness and
-                balance.
-              </Text>
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(1100)}>
-              <Text className="mb-4">
-                In future updates, characters will gain unique abilities to help
-                complete quests and earn rewards.
-              </Text>
-            </Animated.View>
-          </View>
-        );
 
       default:
         return null;
@@ -217,8 +188,6 @@ export default function AppIntroductionScreen() {
         return 'Got it';
       case IntroStep.NOTIFICATIONS:
         return 'Enable notifications';
-      case IntroStep.READY_FOR_CHARACTER:
-        return 'Create character';
     }
   };
 
@@ -239,9 +208,7 @@ export default function AppIntroductionScreen() {
         <View className="mt-6">{renderContent()}</View>
 
         <Animated.View
-          entering={FadeIn.delay(
-            introStep === IntroStep.READY_FOR_CHARACTER ? 1600 : 2800
-          )}
+          entering={FadeIn.delay(2800)}
           className="mb-6"
           key={`button-${introStep}`}
         >

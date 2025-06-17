@@ -85,7 +85,15 @@ describe('ChooseCharacterScreen', () => {
       <ChooseCharacterScreen />
     );
 
-    // Simulate typing in the name input.
+    // Step 1: Should start on intro screen
+    expect(getByText('Your Character')).toBeTruthy();
+    expect(getByText('Your companion on this journey')).toBeTruthy();
+
+    // Click Continue to go to name input step
+    fireEvent.press(getByText('Continue'));
+
+    // Step 2: Should now be on name input step
+    expect(getByText('Name Your Character')).toBeTruthy();
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'Arthur');
 
@@ -93,6 +101,13 @@ describe('ChooseCharacterScreen', () => {
     act(() => {
       jest.advanceTimersByTime(500);
     });
+
+    // Click Next to go to character selection step
+    fireEvent.press(getByText('Next'));
+
+    // Step 3: Should now be on character selection step
+    expect(getByText('Choose Character Type')).toBeTruthy();
+    expect(getByText('Select the character that speaks to you, Arthur')).toBeTruthy();
 
     // Get the FlatList component and simulate swipe to knight (second character)
     const flatList = UNSAFE_getAllByType('RCTScrollView' as any)[0];
@@ -112,12 +127,12 @@ describe('ChooseCharacterScreen', () => {
       },
     });
 
-    // Tap the Continue button.
-    const continueButton = getByText('Continue');
+    // Tap the Create Character button.
+    const createButton = getByText('Create Character');
 
     // We need to handle promise resolution manually in tests
     await act(async () => {
-      fireEvent.press(continueButton);
+      fireEvent.press(createButton);
       // Flush promises
       await Promise.resolve();
       // Advance any timers that may be used internally
@@ -135,7 +150,7 @@ describe('ChooseCharacterScreen', () => {
       'Arthur'
     );
     expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
-      OnboardingStep.CHARACTER_SELECTED
+      OnboardingStep.VIEWING_INTRO
     );
   });
 
@@ -149,6 +164,11 @@ describe('ChooseCharacterScreen', () => {
       <ChooseCharacterScreen />
     );
 
+    // Navigate through the steps
+    // Step 1: Click Continue from intro
+    fireEvent.press(getByText('Continue'));
+
+    // Step 2: Enter name
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'Merlin');
 
@@ -157,11 +177,15 @@ describe('ChooseCharacterScreen', () => {
       jest.advanceTimersByTime(500);
     });
 
-    const continueButton = getByText('Continue');
+    // Click Next to go to character selection
+    fireEvent.press(getByText('Next'));
+
+    // Step 3: Character selection (default is alchemist)
+    const createButton = getByText('Create Character');
 
     // We need to handle promise rejection manually in tests
     await act(async () => {
-      fireEvent.press(continueButton);
+      fireEvent.press(createButton);
       // Flush promises
       await Promise.resolve();
       // Advance any timers that may be used internally
@@ -180,7 +204,7 @@ describe('ChooseCharacterScreen', () => {
       'Merlin'
     );
     expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
-      OnboardingStep.CHARACTER_SELECTED
+      OnboardingStep.VIEWING_INTRO
     );
 
     // Should not reset character store for this recoverable error
@@ -197,6 +221,11 @@ describe('ChooseCharacterScreen', () => {
       <ChooseCharacterScreen />
     );
 
+    // Navigate through the steps
+    // Step 1: Click Continue from intro
+    fireEvent.press(getByText('Continue'));
+
+    // Step 2: Enter name
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'Gandalf');
 
@@ -205,11 +234,15 @@ describe('ChooseCharacterScreen', () => {
       jest.advanceTimersByTime(500);
     });
 
-    const continueButton = getByText('Continue');
+    // Click Next to go to character selection
+    fireEvent.press(getByText('Next'));
+
+    // Step 3: Try to create character
+    const createButton = getByText('Create Character');
 
     // We need to handle promise rejection manually in tests
     await act(async () => {
-      fireEvent.press(continueButton);
+      fireEvent.press(createButton);
       // Flush promises
       await Promise.resolve();
       // Advance any timers that may be used internally
@@ -252,6 +285,11 @@ describe('ChooseCharacterScreen', () => {
       <ChooseCharacterScreen />
     );
 
+    // Navigate through the steps
+    // Step 1: Click Continue from intro
+    fireEvent.press(getByText('Continue'));
+
+    // Step 2: Enter name
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'TestUser');
 
@@ -260,16 +298,20 @@ describe('ChooseCharacterScreen', () => {
       jest.advanceTimersByTime(500);
     });
 
-    const continueButton = getByText('Continue');
+    // Click Next to go to character selection
+    fireEvent.press(getByText('Next'));
+
+    // Step 3: Try to create character
+    const createButton = getByText('Create Character');
 
     // Press the button but don't resolve the promise yet
     act(() => {
-      fireEvent.press(continueButton);
+      fireEvent.press(createButton);
     });
 
     // Should show loading state with different button text
     expect(queryByText('Creating...')).toBeTruthy();
-    expect(queryByText('Continue')).toBeFalsy();
+    expect(queryByText('Create Character')).toBeFalsy();
 
     // Resolve the promise
     await act(async () => {
@@ -277,8 +319,10 @@ describe('ChooseCharacterScreen', () => {
       await Promise.resolve();
     });
 
-    // Should return to normal state
-    expect(queryByText('Continue')).toBeTruthy();
-    expect(queryByText('Creating...')).toBeFalsy();
+    // Should return to normal state (but actually it will navigate away after success)
+    // The component should have processed the success and updated the onboarding state
+    expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
+      OnboardingStep.VIEWING_INTRO
+    );
   });
 });

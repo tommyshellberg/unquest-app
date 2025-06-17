@@ -22,20 +22,36 @@ describe('OnboardingStore', () => {
         OnboardingStep.NOT_STARTED
       );
 
-      // Move forward to INTRO_COMPLETED
+      // Move forward to SELECTING_CHARACTER
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.INTRO_COMPLETED);
+        .setCurrentStep(OnboardingStep.SELECTING_CHARACTER);
       expect(useOnboardingStore.getState().currentStep).toBe(
-        OnboardingStep.INTRO_COMPLETED
+        OnboardingStep.SELECTING_CHARACTER
       );
 
-      // Move forward to CHARACTER_SELECTED
+      // Move forward to VIEWING_INTRO
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
+        .setCurrentStep(OnboardingStep.VIEWING_INTRO);
       expect(useOnboardingStore.getState().currentStep).toBe(
-        OnboardingStep.CHARACTER_SELECTED
+        OnboardingStep.VIEWING_INTRO
+      );
+
+      // Move forward to REQUESTING_NOTIFICATIONS
+      useOnboardingStore
+        .getState()
+        .setCurrentStep(OnboardingStep.REQUESTING_NOTIFICATIONS);
+      expect(useOnboardingStore.getState().currentStep).toBe(
+        OnboardingStep.REQUESTING_NOTIFICATIONS
+      );
+
+      // Move forward to STARTING_FIRST_QUEST
+      useOnboardingStore
+        .getState()
+        .setCurrentStep(OnboardingStep.STARTING_FIRST_QUEST);
+      expect(useOnboardingStore.getState().currentStep).toBe(
+        OnboardingStep.STARTING_FIRST_QUEST
       );
 
       // Move forward to COMPLETED
@@ -46,20 +62,20 @@ describe('OnboardingStore', () => {
     });
 
     it('allows staying at the same step', () => {
-      // Move to INTRO_COMPLETED
+      // Move to VIEWING_INTRO
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.INTRO_COMPLETED);
+        .setCurrentStep(OnboardingStep.VIEWING_INTRO);
       expect(useOnboardingStore.getState().currentStep).toBe(
-        OnboardingStep.INTRO_COMPLETED
+        OnboardingStep.VIEWING_INTRO
       );
 
       // Try to set the same step again
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.INTRO_COMPLETED);
+        .setCurrentStep(OnboardingStep.VIEWING_INTRO);
       expect(useOnboardingStore.getState().currentStep).toBe(
-        OnboardingStep.INTRO_COMPLETED
+        OnboardingStep.VIEWING_INTRO
       );
     });
 
@@ -72,10 +88,10 @@ describe('OnboardingStore', () => {
         OnboardingStep.COMPLETED
       );
 
-      // Try to move backward to SIGNUP_PROMPT_SHOWN
+      // Try to move backward to VIEWING_SIGNUP_PROMPT
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.SIGNUP_PROMPT_SHOWN);
+        .setCurrentStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
 
       // Should remain at COMPLETED
       expect(useOnboardingStore.getState().currentStep).toBe(
@@ -84,7 +100,7 @@ describe('OnboardingStore', () => {
 
       // Should have logged a warning
       expect(consoleSpy).toHaveBeenCalledWith(
-        '[Onboarding] Attempted backward movement from completed to signup_prompt_shown - blocked'
+        '[Onboarding] Attempted backward movement from completed to viewing_signup_prompt - blocked'
       );
 
       consoleSpy.mockRestore();
@@ -93,26 +109,26 @@ describe('OnboardingStore', () => {
     it('prevents multiple backward movements', () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      // Move to CHARACTER_SELECTED
+      // Move to VIEWING_INTRO
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
+        .setCurrentStep(OnboardingStep.VIEWING_INTRO);
       expect(useOnboardingStore.getState().currentStep).toBe(
-        OnboardingStep.CHARACTER_SELECTED
+        OnboardingStep.VIEWING_INTRO
       );
 
-      // Try to move backward to INTRO_COMPLETED
+      // Try to move backward to SELECTING_CHARACTER
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.INTRO_COMPLETED);
+        .setCurrentStep(OnboardingStep.SELECTING_CHARACTER);
       expect(useOnboardingStore.getState().currentStep).toBe(
-        OnboardingStep.CHARACTER_SELECTED
+        OnboardingStep.VIEWING_INTRO
       );
 
       // Try to move backward to NOT_STARTED
       useOnboardingStore.getState().setCurrentStep(OnboardingStep.NOT_STARTED);
       expect(useOnboardingStore.getState().currentStep).toBe(
-        OnboardingStep.CHARACTER_SELECTED
+        OnboardingStep.VIEWING_INTRO
       );
 
       // Should have logged warnings for both attempts
@@ -126,10 +142,10 @@ describe('OnboardingStore', () => {
 
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.INTRO_COMPLETED);
+        .setCurrentStep(OnboardingStep.VIEWING_INTRO);
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        '[Onboarding] Moving from not_started to intro_completed'
+        '[Onboarding] Moving from not_started to viewing_intro'
       );
 
       consoleSpy.mockRestore();
@@ -144,12 +160,12 @@ describe('OnboardingStore', () => {
       // Should not be complete at intermediate steps
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
+        .setCurrentStep(OnboardingStep.SELECTING_CHARACTER);
       expect(useOnboardingStore.getState().isOnboardingComplete()).toBe(false);
 
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.SIGNUP_PROMPT_SHOWN);
+        .setCurrentStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
       expect(useOnboardingStore.getState().isOnboardingComplete()).toBe(false);
 
       // Should be complete only at COMPLETED step
@@ -166,20 +182,21 @@ describe('OnboardingStore', () => {
       // Should not have completed at early steps
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.CHARACTER_SELECTED);
+        .setCurrentStep(OnboardingStep.SELECTING_CHARACTER);
       expect(useOnboardingStore.getState().hasCompletedFirstQuest()).toBe(
         false
       );
 
-      // Should have completed from FIRST_QUEST_COMPLETED onwards
+      // Should not have completed yet at STARTING_FIRST_QUEST
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.FIRST_QUEST_COMPLETED);
-      expect(useOnboardingStore.getState().hasCompletedFirstQuest()).toBe(true);
+        .setCurrentStep(OnboardingStep.STARTING_FIRST_QUEST);
+      expect(useOnboardingStore.getState().hasCompletedFirstQuest()).toBe(false);
 
+      // Should have completed from VIEWING_SIGNUP_PROMPT onwards
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.SIGNUP_PROMPT_SHOWN);
+        .setCurrentStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
       expect(useOnboardingStore.getState().hasCompletedFirstQuest()).toBe(true);
 
       useOnboardingStore.getState().setCurrentStep(OnboardingStep.COMPLETED);
@@ -193,13 +210,13 @@ describe('OnboardingStore', () => {
       // Should not have seen at early steps
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.FIRST_QUEST_COMPLETED);
+        .setCurrentStep(OnboardingStep.STARTING_FIRST_QUEST);
       expect(useOnboardingStore.getState().hasSeenSignupPrompt()).toBe(false);
 
-      // Should have seen from SIGNUP_PROMPT_SHOWN onwards
+      // Should have seen from VIEWING_SIGNUP_PROMPT onwards
       useOnboardingStore
         .getState()
-        .setCurrentStep(OnboardingStep.SIGNUP_PROMPT_SHOWN);
+        .setCurrentStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
       expect(useOnboardingStore.getState().hasSeenSignupPrompt()).toBe(true);
 
       useOnboardingStore.getState().setCurrentStep(OnboardingStep.COMPLETED);

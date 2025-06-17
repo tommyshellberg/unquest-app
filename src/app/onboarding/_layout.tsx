@@ -16,11 +16,11 @@ export default function OnboardingLayout() {
   // Handle onboarding step navigation only
   const stepToRoute: Record<OnboardingStep, string> = {
     [OnboardingStep.NOT_STARTED]: '/onboarding/welcome',
-    [OnboardingStep.INTRO_COMPLETED]: '/onboarding/app-introduction',
-    [OnboardingStep.NOTIFICATIONS_COMPLETED]: '/onboarding/choose-character',
-    [OnboardingStep.CHARACTER_SELECTED]: '/onboarding/first-quest',
-    [OnboardingStep.FIRST_QUEST_COMPLETED]: '/', // Let root handle
-    [OnboardingStep.SIGNUP_PROMPT_SHOWN]: '/quest-completed-signup',
+    [OnboardingStep.SELECTING_CHARACTER]: '/onboarding/choose-character',
+    [OnboardingStep.VIEWING_INTRO]: '/onboarding/app-introduction',
+    [OnboardingStep.REQUESTING_NOTIFICATIONS]: '/onboarding/app-introduction',
+    [OnboardingStep.STARTING_FIRST_QUEST]: '/onboarding/first-quest',
+    [OnboardingStep.VIEWING_SIGNUP_PROMPT]: '/quest-completed-signup',
     [OnboardingStep.COMPLETED]: '/',
   };
 

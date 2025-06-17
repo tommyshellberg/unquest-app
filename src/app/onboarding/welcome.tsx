@@ -17,9 +17,8 @@ export default function WelcomeScreen() {
   const { setCurrentStep } = useOnboardingStore();
 
   const handleGetStarted = () => {
-    setCurrentStep(OnboardingStep.INTRO_COMPLETED);
-    // Navigate to onboarding since they haven't completed it yet.
-    router.replace('/onboarding');
+    // Update the onboarding step to SELECTING_CHARACTER which will trigger navigation
+    setCurrentStep(OnboardingStep.SELECTING_CHARACTER);
   };
 
   const handleLogin = () => {

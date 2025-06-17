@@ -1,15 +1,17 @@
 import React from 'react';
-import { View } from 'react-native';
+import { type StyleProp, View, type ViewStyle } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 
 type CardProps = {
   children: React.ReactNode;
   className?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
-export function Card({ children, className = '' }: CardProps) {
+export function Card({ children, className = '', style }: CardProps) {
   return (
     <View
+      style={style}
       className={twMerge(
         'rounded-lg overflow-hidden bg-cardBackground shadow-sm elevation-1',
         className

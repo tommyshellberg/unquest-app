@@ -16,12 +16,12 @@ export default function QuestCompletedSignupScreen() {
   const currentStep = useOnboardingStore((state) => state.currentStep);
 
   useEffect(() => {
-    // set the current step to SIGNUP_PROMPT_SHOWN if it's not already SIGNUP_PROMPT_SHOWN or COMPLETED
+    // set the current step to VIEWING_SIGNUP_PROMPT if it's not already VIEWING_SIGNUP_PROMPT or COMPLETED
     if (
-      currentStep !== OnboardingStep.SIGNUP_PROMPT_SHOWN &&
+      currentStep !== OnboardingStep.VIEWING_SIGNUP_PROMPT &&
       currentStep !== OnboardingStep.COMPLETED
     ) {
-      setOnboardingStep(OnboardingStep.SIGNUP_PROMPT_SHOWN);
+      setOnboardingStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
     }
   }, [currentStep, setOnboardingStep]);
 

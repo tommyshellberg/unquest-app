@@ -101,7 +101,7 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     story: `
     I move through the undergrowth, the brittle branches snapping beneath my boots. The hut appears through the mist like something forgotten—leaning slightly, its wooden door swaying on rusted hinges.
     I step inside. The air is stale, thick with dust and old wood. Whoever was here didn't take much when they left. There's no sign of struggle, no overturned furniture. Just absence.
-    I find a candle and strike a match. The light flickers, stretching long shadows across the walls. Something stiff in my pocket. I pull it free—a **map**. Or part of one. Most of it is blank, except for a jagged outline of trees, a river, and a thick smear of shifting darkness at the edges. 
+    I find a candle and strike a match. The light flickers, stretching long shadows across the walls. Something stiff in my pocket. I pull it free—a map. Or part of one. Most of it is blank, except for a jagged outline of trees, a river, and a thick smear of shifting darkness at the edges. 
     I press the parchment flat on the table. I could use some supplies, but, the map beckons for me to inspect it further. What now?
     `,
     options: [

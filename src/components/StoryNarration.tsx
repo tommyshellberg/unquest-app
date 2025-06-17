@@ -225,6 +225,7 @@ export function StoryNarration({ quest }: Props) {
           ref={progressBarRef}
           initialProgress={progress * 100}
           className="h-1.5 rounded"
+          style={{ backgroundColor: '#e5e5e5' }}
         />
         <View className="mt-1 flex-row justify-between">
           <Text className="text-xs text-neutral-600">

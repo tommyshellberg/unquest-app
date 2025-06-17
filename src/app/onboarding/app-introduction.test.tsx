@@ -114,7 +114,7 @@ describe('AppIntroductionScreen', () => {
     });
   });
 
-  it('moves to next steps after requesting permissions', async () => {
+  it('completes onboarding step after requesting permissions', async () => {
     const { getByText } = render(<AppIntroductionScreen />);
 
     // Wait for initial render to complete
@@ -132,14 +132,15 @@ describe('AppIntroductionScreen', () => {
     // Press "Enable notifications" button
     fireEvent.press(getByText('Enable notifications'));
 
-    // Check that we've moved to the next steps
+    // Check that onboarding step was updated
     await waitFor(() => {
-      expect(getByText('Your Character')).toBeTruthy();
-      expect(getByText('Create character')).toBeTruthy();
+      expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
+        OnboardingStep.STARTING_FIRST_QUEST
+      );
     });
   });
 
-  it("navigates to choose-character when 'Create character' is pressed", async () => {
+  it("skips notifications when 'Not now' is pressed", async () => {
     const { getByText } = render(<AppIntroductionScreen />);
 
     // Wait for initial render to complete
@@ -152,20 +153,15 @@ describe('AppIntroductionScreen', () => {
 
     await waitFor(() => {
       expect(getByText('Enable notifications')).toBeTruthy();
+      expect(getByText('Not now')).toBeTruthy();
     });
 
-    fireEvent.press(getByText('Enable notifications'));
+    // Press "Not now" button
+    fireEvent.press(getByText('Not now'));
 
-    await waitFor(() => {
-      expect(getByText('Create character')).toBeTruthy();
-    });
-
-    // Press "Create character" button
-    fireEvent.press(getByText('Create character'));
-
-    // Check that it navigates to choose-character
+    // Check that it still completes the notifications step
     expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
-      OnboardingStep.NOTIFICATIONS_COMPLETED
+      OnboardingStep.STARTING_FIRST_QUEST
     );
   });
 
@@ -192,10 +188,12 @@ describe('AppIntroductionScreen', () => {
     // Press "Enable notifications" button
     fireEvent.press(getByText('Enable notifications'));
 
-    // Even with an error, the flow should continue to next steps
+    // Even with an error, the flow should continue
     await waitFor(() => {
       expect(setupNotifications).toHaveBeenCalled();
-      expect(getByText('Your Character')).toBeTruthy();
+      expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
+        OnboardingStep.STARTING_FIRST_QUEST
+      );
     });
   });
 
