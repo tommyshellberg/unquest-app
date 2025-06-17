@@ -11,10 +11,10 @@ jest.mock('@/lib/services/user', () => ({
   createProvisionalUser: jest.fn(),
 }));
 
-// Provide a mock for useNavigation to avoid missing navigation object errors.
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({
-    setOptions: jest.fn(),
+// Mock posthog
+jest.mock('posthog-react-native', () => ({
+  usePostHog: () => ({
+    capture: jest.fn(),
   }),
 }));
 
@@ -61,7 +61,9 @@ jest.mock('@/store/character-store', () => ({
 
 // Get screen dimensions and define card dimensions
 const screenWidth = Dimensions.get('window').width;
-const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
+const cardWidth = screenWidth * 0.65; // 65% of screen width
+const cardSpacing = 16;
+const snapInterval = cardWidth + cardSpacing;
 
 describe('ChooseCharacterScreen', () => {
   beforeEach(() => {
@@ -81,19 +83,16 @@ describe('ChooseCharacterScreen', () => {
     // Set up the mock to resolve successfully
     (createProvisionalUser as jest.Mock).mockResolvedValue({ success: true });
 
-    const { getByPlaceholderText, getByText, UNSAFE_getAllByType } = render(
+    const { getByPlaceholderText, getByText, getByTestId } = render(
       <ChooseCharacterScreen />
     );
 
-    // Step 1: Should start on intro screen
+    // Step 1: Should start on intro and name input screen
     expect(getByText('Your Character')).toBeTruthy();
     expect(getByText('Your companion on this journey')).toBeTruthy();
-
-    // Click Continue to go to name input step
-    fireEvent.press(getByText('Continue'));
-
-    // Step 2: Should now be on name input step
-    expect(getByText('Name Your Character')).toBeTruthy();
+    expect(getByText('Character Name')).toBeTruthy();
+    
+    // Enter character name
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'Arthur');
 
@@ -102,27 +101,19 @@ describe('ChooseCharacterScreen', () => {
       jest.advanceTimersByTime(500);
     });
 
-    // Click Next to go to character selection step
-    fireEvent.press(getByText('Next'));
+    // Click Continue to go to character selection step
+    fireEvent.press(getByText('Continue'));
 
-    // Step 3: Should now be on character selection step
-    expect(getByText('Choose Character Type')).toBeTruthy();
-    expect(getByText('Select the character that speaks to you, Arthur')).toBeTruthy();
+    // Step 2: Should now be on character selection step
+    expect(getByText("Choose Arthur's Character Type")).toBeTruthy();
+    expect(getByText('Select the character that speaks to you')).toBeTruthy();
 
     // Get the FlatList component and simulate swipe to knight (second character)
-    const flatList = UNSAFE_getAllByType('RCTScrollView' as any)[0];
+    const flatList = getByTestId('character-carousel');
     fireEvent(flatList, 'onMomentumScrollEnd', {
       nativeEvent: {
         contentOffset: {
-          x: cardWidth, // This is the second card position (index 1)
-        },
-        contentSize: {
-          width: cardWidth * 2,
-          height: 400,
-        },
-        layoutMeasurement: {
-          width: screenWidth,
-          height: 400,
+          x: snapInterval, // This is the second card position (index 1)
         },
       },
     });
@@ -164,11 +155,7 @@ describe('ChooseCharacterScreen', () => {
       <ChooseCharacterScreen />
     );
 
-    // Navigate through the steps
-    // Step 1: Click Continue from intro
-    fireEvent.press(getByText('Continue'));
-
-    // Step 2: Enter name
+    // Step 1: Enter name on intro screen
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'Merlin');
 
@@ -177,10 +164,10 @@ describe('ChooseCharacterScreen', () => {
       jest.advanceTimersByTime(500);
     });
 
-    // Click Next to go to character selection
-    fireEvent.press(getByText('Next'));
+    // Click Continue to go to character selection
+    fireEvent.press(getByText('Continue'));
 
-    // Step 3: Character selection (default is alchemist)
+    // Step 2: Character selection (default is alchemist)
     const createButton = getByText('Create Character');
 
     // We need to handle promise rejection manually in tests
@@ -214,18 +201,14 @@ describe('ChooseCharacterScreen', () => {
   it('should handle general API failure and not navigate', async () => {
     // Set up the mock to reject with a general error
     (createProvisionalUser as jest.Mock).mockRejectedValue(
-      new Error('Network error')
+      new Error('network error')
     );
 
     const { getByPlaceholderText, getByText, queryByText } = render(
       <ChooseCharacterScreen />
     );
 
-    // Navigate through the steps
-    // Step 1: Click Continue from intro
-    fireEvent.press(getByText('Continue'));
-
-    // Step 2: Enter name
+    // Step 1: Enter name
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'Gandalf');
 
@@ -234,10 +217,10 @@ describe('ChooseCharacterScreen', () => {
       jest.advanceTimersByTime(500);
     });
 
-    // Click Next to go to character selection
-    fireEvent.press(getByText('Next'));
+    // Click Continue to go to character selection
+    fireEvent.press(getByText('Continue'));
 
-    // Step 3: Try to create character
+    // Step 2: Try to create character
     const createButton = getByText('Create Character');
 
     // We need to handle promise rejection manually in tests
@@ -267,9 +250,9 @@ describe('ChooseCharacterScreen', () => {
     // Should NOT proceed to next step
     expect(useOnboardingStore.getState().setCurrentStep).not.toHaveBeenCalled();
 
-    // Should show error message - the component shows "Failed to create account. Please try again." for general errors
+    // Should show error message
     await waitFor(() => {
-      expect(queryByText(/Failed to create account/)).toBeTruthy();
+      expect(queryByText(/Network error. Please check your connection and try again./)).toBeTruthy();
     });
   });
 
@@ -285,11 +268,7 @@ describe('ChooseCharacterScreen', () => {
       <ChooseCharacterScreen />
     );
 
-    // Navigate through the steps
-    // Step 1: Click Continue from intro
-    fireEvent.press(getByText('Continue'));
-
-    // Step 2: Enter name
+    // Step 1: Enter name
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'TestUser');
 
@@ -298,10 +277,10 @@ describe('ChooseCharacterScreen', () => {
       jest.advanceTimersByTime(500);
     });
 
-    // Click Next to go to character selection
-    fireEvent.press(getByText('Next'));
+    // Click Continue to go to character selection
+    fireEvent.press(getByText('Continue'));
 
-    // Step 3: Try to create character
+    // Step 2: Try to create character
     const createButton = getByText('Create Character');
 
     // Press the button but don't resolve the promise yet
@@ -324,5 +303,50 @@ describe('ChooseCharacterScreen', () => {
     expect(useOnboardingStore.getState().setCurrentStep).toHaveBeenCalledWith(
       OnboardingStep.VIEWING_INTRO
     );
+  });
+
+  it('should not allow continuing without entering a name', () => {
+    const { getByText, getByPlaceholderText } = render(
+      <ChooseCharacterScreen />
+    );
+
+    // Step 1: Should start with Continue button disabled
+    const continueButton = getByText('Continue');
+    
+    // Try to press without entering name - nothing should happen
+    fireEvent.press(continueButton);
+    
+    // Should still be on the same screen
+    expect(getByText('Your Character')).toBeTruthy();
+    expect(getByText('Character Name')).toBeTruthy();
+    
+    // Now enter a name
+    const input = getByPlaceholderText('Enter character name');
+    fireEvent.changeText(input, 'A');
+    
+    // Flush debounce
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+    
+    // Now should be able to continue
+    fireEvent.press(continueButton);
+    
+    // Should be on character selection screen
+    expect(getByText("Choose A's Character Type")).toBeTruthy();
+  });
+
+  it('should filter out special characters from name input', () => {
+    const { getByPlaceholderText } = render(
+      <ChooseCharacterScreen />
+    );
+
+    const input = getByPlaceholderText('Enter character name');
+    
+    // Try to enter special characters
+    fireEvent.changeText(input, 'Test@Name#123!');
+    
+    // Should only keep alphanumeric and spaces
+    expect(input.props.value).toBe('TestName123');
   });
 });

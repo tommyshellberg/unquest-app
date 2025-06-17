@@ -107,7 +107,6 @@ export default function ChooseCharacterScreen() {
     CharacterStep.INTRO_AND_NAME
   );
 
-  console.log('currentStep', currentStep);
 
   // Initialize with the first character selected
   const [selectedCharacter, setSelectedCharacter] = useState<string>(
