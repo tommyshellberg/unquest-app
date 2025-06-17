@@ -3,7 +3,7 @@ import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import * as Linking from 'expo-linking';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as Updates from 'expo-updates';
 import { Flame } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -586,7 +586,10 @@ export default function Settings() {
           </View>
 
           {/* Terms/Privacy Policy */}
-          <View className="mb-8 flex-row items-center justify-between">
+          <Pressable
+            className="mb-8 flex-row items-center justify-between"
+            onPress={() => Linking.openURL('https://unquestapp.com/terms')}
+          >
             <View className="flex-row items-center">
               <View
                 className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
@@ -594,16 +597,13 @@ export default function Settings() {
                 <Feather name="shield" size={24} color={iconColor} />
               </View>
               <View>
-                <Link
-                  href="https://unquestapp.com/terms"
-                  className="text-xl font-medium"
-                >
+                <Text className="text-xl font-medium">
                   Terms of Use & Privacy Policy
-                </Link>
+                </Text>
               </View>
             </View>
             <Feather name="chevron-right" size={20} color="#888" />
-          </View>
+          </Pressable>
 
           {/* Danger Zone */}
           <View className="mb-4">

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
-import { type Quest } from '@/store/types';
+import { type Quest, type StoryQuestTemplate } from '@/store/types';
 
 import { StoryNarration } from './StoryNarration';
 
@@ -64,6 +64,13 @@ export function QuestComplete({
 
   // Determine if this is a story quest or custom quest - they need different card styling
   const isStoryQuest = quest.mode === 'story';
+  
+  // Debug logging
+  console.log('[QuestComplete] Quest mode:', quest.mode);
+  console.log('[QuestComplete] isStoryQuest:', isStoryQuest);
+  if (quest.mode === 'story') {
+    console.log('[QuestComplete] Quest audioFile:', (quest as any).audioFile);
+  }
 
   const handleContinue = () => {
     // Clear the quest state - this will trigger navigation
@@ -123,8 +130,8 @@ export function QuestComplete({
           </Card>
 
           {/* Audio Controls - Only show if the quest has audio */}
-          {isStoryQuest && quest.audioFile && (
-            <StoryNarration quest={quest} />
+          {isStoryQuest && quest.mode === 'story' && quest.audioFile && (
+            <StoryNarration quest={quest as StoryQuestTemplate} />
           )}
         </Animated.View>
 

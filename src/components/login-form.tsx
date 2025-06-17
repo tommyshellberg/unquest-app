@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import * as Linking from 'expo-linking';
-import { Link } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
@@ -194,12 +193,12 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                 {/* Terms and privacy */}
                 <Text className="mb-4 px-6 text-center text-sm">
                   By signing in to this app you agree with our{' '}
-                  <Link
-                    href="https://unquestapp.com/terms"
+                  <Text
                     className="text-charcoal-600 underline"
+                    onPress={() => Linking.openURL('https://unquestapp.com/terms')}
                   >
                     Terms of Use and Privacy Policy
-                  </Link>
+                  </Text>
                   .
                 </Text>
 

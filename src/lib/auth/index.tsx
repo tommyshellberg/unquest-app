@@ -111,7 +111,7 @@ const _useAuth = create<AuthState>((set, get) => ({
             // Also update streak if provided
             if (user.dailyQuestStreak !== undefined) {
               // @TODO: Add this back when we properly sync streak
-              // characterStore.setStreak(user.dailyQuestStreak);
+              characterStore.setStreak(user.dailyQuestStreak);
             }
 
             console.log('[Auth] Character data synchronized during hydration');
