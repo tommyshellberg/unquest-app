@@ -371,7 +371,7 @@ describe('Streak Sync Integration Tests', () => {
       expect(characterResult.current.dailyQuestStreak).toBe(5);
     });
 
-    test('should reset streak after more than 24 hours', () => {
+    test('should reset streak after missing a calendar day', () => {
       const { result: characterResult } = renderHook(() => useCharacterStore());
 
       // Set initial streak
@@ -379,9 +379,13 @@ describe('Streak Sync Integration Tests', () => {
         characterResult.current.setStreak(10);
       });
 
-      // Complete quest after 25 hours (missed a day)
+      // Complete quest after missing a day (2+ calendar days ago)
+      const now = new Date();
+      const twoDaysAgo = new Date(now);
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
       act(() => {
-        characterResult.current.updateStreak(Date.now() - 25 * 60 * 60 * 1000);
+        characterResult.current.updateStreak(twoDaysAgo.getTime());
       });
 
       // Streak should reset to 1

@@ -123,22 +123,35 @@ export const useCharacterStore = create<CharacterState>()(
           previousDate.getMonth() !== now.getMonth() ||
           previousDate.getFullYear() !== now.getFullYear();
 
-        // Check if streak is broken (more than 24 hours since last completion)
-        const isStreakBroken =
-          now.getTime() - previousCompletionTimestamp > 24 * 60 * 60 * 1000;
-
-        if (isNewDay && !isStreakBroken) {
-          // Increment streak for a new day within the 24-hour window
-          set({ dailyQuestStreak: currentStreak + 1 });
-        } else if (isStreakBroken) {
-          // Reset streak if it's broken
-          set({ dailyQuestStreak: 1 });
-        } else {
+        if (!isNewDay) {
           // Same day, maintain current streak
           // If streak is 0, set it to 1 (this handles edge cases)
           if (currentStreak === 0) {
             set({ dailyQuestStreak: 1 });
           }
+          return;
+        }
+
+        // Different day - check if it's consecutive
+        // Create dates at midnight for accurate day difference calculation
+        const todayMidnight = new Date(now);
+        todayMidnight.setHours(0, 0, 0, 0);
+
+        const previousMidnight = new Date(previousDate);
+        previousMidnight.setHours(0, 0, 0, 0);
+
+        // Calculate the difference in days
+        const daysDifference = Math.floor(
+          (todayMidnight.getTime() - previousMidnight.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+
+        if (daysDifference === 1) {
+          // Exactly one day later - increment streak
+          set({ dailyQuestStreak: currentStreak + 1 });
+        } else {
+          // More than one day has passed - reset streak
+          set({ dailyQuestStreak: 1 });
         }
       },
 

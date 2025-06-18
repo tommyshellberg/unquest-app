@@ -171,6 +171,18 @@ export default function TabLayout() {
           // title: "Quest Details",
         }}
       />
+      <Tabs.Screen
+        name="leaderboard"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="achievements"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

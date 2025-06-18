@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
+import { Award, TrendingUp } from 'lucide-react-native';
 import React, { useCallback, useEffect } from 'react';
-import { RefreshControl, ScrollView } from 'react-native';
+import { Pressable, RefreshControl, ScrollView } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,7 +16,13 @@ import { ProfileCard } from '@/components/profile/profile-card';
 // Import components
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
 import { StatsCard } from '@/components/profile/stats-card';
-import { FocusAwareStatusBar, Text, useModal, View } from '@/components/ui';
+import {
+  Card,
+  FocusAwareStatusBar,
+  Text,
+  useModal,
+  View,
+} from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 // Import hooks
 import { useProfileData } from '@/lib/hooks/use-profile-data';
@@ -101,23 +108,28 @@ export default function ProfileScreen() {
         try {
           const { getUserDetails } = await import('@/lib/services/user');
           const user = await getUserDetails();
-          
+
           // Check if user has character data at the top level (legacy format)
-          if (user && (user as any).type && (user as any).name && (user as any).level !== undefined) {
+          if (
+            user &&
+            (user as any).type &&
+            (user as any).name &&
+            (user as any).level !== undefined
+          ) {
             // Create character from user data
             const characterStore = useCharacterStore.getState();
             characterStore.createCharacter(
               (user as any).type as CharacterType,
               (user as any).name
             );
-            
+
             // Update with level and XP data
             characterStore.updateCharacter({
               level: (user as any).level || 1,
               currentXP: (user as any).xp || 0,
               xpToNextLevel: 100, // Default XP to next level
             });
-            
+
             // Update streak if available
             if ((user as any).dailyQuestStreak !== undefined) {
               characterStore.setStreak((user as any).dailyQuestStreak);
@@ -130,7 +142,7 @@ export default function ProfileScreen() {
               getItem('provisionalAccessToken') ||
               getItem('provisionalEmail')
             );
-            
+
             if (hasProvisionalData) {
               // User is in onboarding flow, redirect to choose character
               setIsRedirecting(true);
@@ -145,7 +157,7 @@ export default function ProfileScreen() {
           console.error('Error syncing character data:', error);
         }
       };
-      
+
       syncCharacterFromUser();
     }
   }, [character, router, isRedirecting]);
@@ -199,6 +211,39 @@ export default function ProfileScreen() {
           minutesSaved={totalMinutesOffPhone}
           streakCount={streakCount}
         />
+
+        {/* Action Cards */}
+        <View className="mx-4 mt-4 flex-row gap-3">
+          <Pressable
+            onPress={() => router.push('/leaderboard')}
+            className="flex-1"
+          >
+            <Card className="items-center justify-center py-6">
+              <TrendingUp size={32} color="#2E948D" />
+              <Text className="mt-2 text-sm font-semibold text-gray-700">
+                View Leaderboard
+              </Text>
+              <Text className="mt-1 text-center text-xs text-gray-600">
+                See how others are doing
+              </Text>
+            </Card>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push('/achievements')}
+            className="flex-1"
+          >
+            <Card className="items-center justify-center py-6">
+              <Award size={32} color="#2E948D" />
+              <Text className="mt-2 text-sm font-semibold text-gray-700">
+                My Achievements
+              </Text>
+              <Text className="mt-1 text-center text-xs text-gray-600">
+                Track your progress
+              </Text>
+            </Card>
+          </Pressable>
+        </View>
 
         {/* Experience Progress */}
         <ExperienceCard character={character} />
