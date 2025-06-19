@@ -8,15 +8,30 @@ import {
   Trophy,
   Users,
 } from 'lucide-react-native';
-import React, { useState, useCallback } from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  View,
+} from 'react-native';
 
-import { Button, Card, FocusAwareStatusBar, Text, useModal } from '@/components/ui';
+import {
+  type LeaderboardEntry as ApiLeaderboardEntry,
+  useLeaderboardStats,
+} from '@/api/stats';
 import { InviteFriendModal } from '@/components/profile/invite-friend-modal';
+import {
+  Button,
+  Card,
+  FocusAwareStatusBar,
+  Text,
+  useModal,
+} from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { useProfileData } from '@/lib/hooks/use-profile-data';
-import { useCharacterStore } from '@/store/character-store';
-import { useQuestStore } from '@/store/quest-store';
+import { getItem } from '@/lib/storage';
 
 import CHARACTERS from '../data/characters';
 
@@ -40,82 +55,6 @@ type LeaderboardEntry = {
 
 type LeaderboardType = 'quests' | 'minutes' | 'streak';
 type ScopeType = 'friends' | 'global';
-
-// Dummy data
-const generateGlobalData = (
-  type: LeaderboardType,
-  currentUsername?: string,
-  currentUserCharacterType?: CharacterType,
-  currentUserMetric?: number
-): LeaderboardEntry[] => {
-  const userData = [
-    { username: 'DragonSlayer77', characterType: 'knight' as CharacterType },
-    { username: 'MysticWanderer', characterType: 'wizard' as CharacterType },
-    { username: 'QuestMaster42', characterType: 'scout' as CharacterType },
-    { username: 'SilentKnight', characterType: 'knight' as CharacterType },
-    { username: 'PhoenixRising', characterType: 'druid' as CharacterType },
-    { username: 'ThunderBolt99', characterType: 'wizard' as CharacterType },
-    {
-      username: currentUsername || 'User',
-      characterType: currentUserCharacterType || ('bard' as CharacterType),
-      isCurrentUser: true,
-    },
-    { username: 'IronWill88', characterType: 'knight' as CharacterType },
-    { username: 'SwiftArrow', characterType: 'scout' as CharacterType },
-    { username: 'GoldenEagle', characterType: 'alchemist' as CharacterType },
-  ];
-
-  const getMetric = (rank: number) => {
-    switch (type) {
-      case 'quests':
-        return Math.max(150 - rank * 15, 10);
-      case 'minutes':
-        return Math.max(2000 - rank * 180, 100);
-      case 'streak':
-        return Math.max(45 - rank * 4, 2);
-    }
-  };
-
-  return userData.map((user, i) => ({
-    rank: i + 1,
-    userId: user.isCurrentUser ? 'current-user' : `user-${i + 1}`,
-    username: user.username,
-    characterType: user.characterType,
-    metric:
-      user.isCurrentUser && currentUserMetric !== undefined
-        ? currentUserMetric
-        : getMetric(i),
-    isCurrentUser: user.isCurrentUser || false,
-    isFriend: i === 2 || i === 4, // QuestMaster42 and PhoenixRising are friends
-  }));
-};
-
-const generateFriendsData = (
-  type: LeaderboardType,
-  currentUserCharacterType?: CharacterType,
-  currentUsername?: string,
-  currentUserMetric?: number
-): LeaderboardEntry[] => {
-  // For users with no friends, just show current user
-  const currentUser = {
-    username: currentUsername || 'User',
-    characterType: currentUserCharacterType || ('bard' as CharacterType),
-    metric: currentUserMetric || 0,
-  };
-
-  // Just return current user
-  return [
-    {
-      rank: 1,
-      userId: 'current-user',
-      username: currentUser.username,
-      characterType: currentUser.characterType,
-      metric: currentUser.metric,
-      isCurrentUser: true,
-      isFriend: false,
-    },
-  ];
-};
 
 const LeaderboardItem = ({
   entry,
@@ -242,8 +181,8 @@ export default function LeaderboardScreen() {
 
   // Get user's data
   const { userEmail } = useProfileData();
-  const { 
-    friendsData, 
+  const {
+    friendsData,
     isLoadingFriends,
     inviteError,
     inviteSuccess,
@@ -252,9 +191,16 @@ export default function LeaderboardScreen() {
     handleSendFriendRequest,
     inviteMutation,
   } = useFriendManagement(userEmail);
-  const character = useCharacterStore((state) => state.character);
-  const questStore = useQuestStore();
-  const completedQuests = questStore.getCompletedQuests();
+
+  // Get current user ID
+  const currentUserId = getItem('userId');
+
+  // Fetch leaderboard data
+  const {
+    data: leaderboardStats,
+    isLoading: isLoadingStats,
+    error: statsError,
+  } = useLeaderboardStats();
 
   // Create the modal instance
   const inviteModal = useModal();
@@ -269,46 +215,84 @@ export default function LeaderboardScreen() {
     handleCloseInviteModal();
   }, [handleCloseInviteModal]);
 
-  // Calculate user's actual metrics
-  const getUserMetric = () => {
-    switch (selectedType) {
-      case 'quests':
-        return completedQuests.length;
-      case 'minutes':
-        return completedQuests.reduce(
-          (total, quest) => total + quest.durationMinutes,
-          0
-        );
-      case 'streak':
-        return useCharacterStore.getState().dailyQuestStreak;
-    }
-  };
-
-  // Extract username from email or use character name
-  const username = userEmail
-    ? userEmail.split('@')[0]
-    : character?.name || 'User';
-
   // Check if user actually has friends
-  const hasFriends = friendsData && friendsData.length > 0;
+  const hasFriends =
+    friendsData && friendsData.friends && friendsData.friends.length > 0;
 
-  const leaderboardData =
-    scope === 'global'
-      ? generateGlobalData(
-          selectedType,
-          username,
-          character?.type as CharacterType,
-          getUserMetric()
-        )
-      : generateFriendsData(
-          selectedType,
-          character?.type as CharacterType,
-          username,
-          getUserMetric()
-        );
+  // Transform API data to UI format
+  const leaderboardData = useMemo(() => {
+    if (!leaderboardStats) return [];
+
+    let apiData: ApiLeaderboardEntry[] = [];
+
+    if (scope === 'friends' && leaderboardStats.friends) {
+      // Use friends data from API
+      switch (selectedType) {
+        case 'quests':
+          apiData = leaderboardStats.friends.questsCompleted || [];
+          break;
+        case 'minutes':
+          apiData = leaderboardStats.friends.questMinutes || [];
+          break;
+        case 'streak':
+          apiData = leaderboardStats.friends.longestStreak || [];
+          break;
+      }
+    } else {
+      // Use global data
+      switch (selectedType) {
+        case 'quests':
+          apiData = leaderboardStats.global.questsCompleted || [];
+          break;
+        case 'minutes':
+          apiData = leaderboardStats.global.questMinutes || [];
+          break;
+        case 'streak':
+          apiData = leaderboardStats.global.longestStreak || [];
+          break;
+      }
+    }
+
+    // Transform API data to UI format
+    return apiData.map((entry, index) => ({
+      rank: index + 1,
+      userId: entry.userId,
+      username: entry.characterName,
+      characterType: entry.characterType as CharacterType,
+      metric: entry.value,
+      isCurrentUser: entry.userId === currentUserId,
+      isFriend:
+        scope === 'friends' ||
+        friendsData?.friends?.some((friend) => friend._id === entry.userId) ||
+        false,
+    }));
+  }, [leaderboardStats, selectedType, scope, currentUserId, friendsData]);
 
   const topUser = leaderboardData[0];
   const restOfUsers = leaderboardData.slice(1);
+
+  // Find current user's position if not in top 10
+  const currentUserPosition = useMemo(() => {
+    if (!leaderboardStats || scope === 'friends') return null;
+
+    let apiData: ApiLeaderboardEntry[] = [];
+    switch (selectedType) {
+      case 'quests':
+        apiData = leaderboardStats.global.questsCompleted || [];
+        break;
+      case 'minutes':
+        apiData = leaderboardStats.global.questMinutes || [];
+        break;
+      case 'streak':
+        apiData = leaderboardStats.global.longestStreak || [];
+        break;
+    }
+
+    const userIndex = apiData.findIndex(
+      (entry) => entry.userId === currentUserId
+    );
+    return userIndex >= 0 ? userIndex + 1 : null;
+  }, [leaderboardStats, selectedType, scope, currentUserId]);
 
   const tabs: {
     type: LeaderboardType;
@@ -332,6 +316,69 @@ export default function LeaderboardScreen() {
     },
   ];
 
+  // Handle loading state
+  if (isLoadingStats || isLoadingFriends) {
+    return (
+      <View className="flex-1 bg-background">
+        <FocusAwareStatusBar />
+        <View className="px-4 pb-4 pt-2">
+          <View className="flex-row items-center justify-between">
+            <Pressable
+              onPress={() => router.push('/profile')}
+              className="p-2"
+              accessibilityLabel="Back to Profile"
+              accessibilityRole="button"
+              testID="back-button"
+            >
+              <ArrowLeft size={24} color="#1f0f0c" />
+            </Pressable>
+            <Text className="text-xl font-bold">Leaderboard</Text>
+            <View className="w-10" />
+          </View>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#2E948D" />
+          <Text className="mt-2 text-gray-600">Loading leaderboard...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Handle error state
+  if (statsError) {
+    return (
+      <View className="flex-1 bg-background">
+        <FocusAwareStatusBar />
+        <View className="px-4 pb-4 pt-2">
+          <View className="flex-row items-center justify-between">
+            <Pressable
+              onPress={() => router.push('/profile')}
+              className="p-2"
+              accessibilityLabel="Back to Profile"
+              accessibilityRole="button"
+              testID="back-button"
+            >
+              <ArrowLeft size={24} color="#1f0f0c" />
+            </Pressable>
+            <Text className="text-xl font-bold">Leaderboard</Text>
+            <View className="w-10" />
+          </View>
+        </View>
+        <View className="flex-1 items-center justify-center px-4">
+          <Text className="text-center text-gray-600">
+            Unable to load leaderboard data
+          </Text>
+          <Button
+            label="Try Again"
+            variant="ghost"
+            onPress={() => window.location.reload()}
+            className="mt-4"
+          />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
@@ -339,7 +386,13 @@ export default function LeaderboardScreen() {
       {/* Header */}
       <View className="px-4 pb-4 pt-2">
         <View className="flex-row items-center justify-between">
-          <Pressable onPress={() => router.push('/profile')} className="p-2">
+          <Pressable
+            onPress={() => router.push('/profile')}
+            className="p-2"
+            accessibilityLabel="Back to Profile"
+            accessibilityRole="button"
+            testID="back-button"
+          >
             <ArrowLeft size={24} color="#1f0f0c" />
           </Pressable>
 
@@ -354,7 +407,7 @@ export default function LeaderboardScreen() {
         <Pressable
           onPress={() => setScope('friends')}
           className={`flex-1 rounded-full py-2 ${
-            scope === 'friends' ? 'bg-white' : ''
+            scope === 'friends' ? 'bg-neutral-300' : ''
           }`}
         >
           <Text
@@ -369,7 +422,7 @@ export default function LeaderboardScreen() {
         <Pressable
           onPress={() => setScope('global')}
           className={`flex-1 rounded-full py-2 ${
-            scope === 'global' ? 'bg-white' : ''
+            scope === 'global' ? 'bg-neutral-300' : ''
           }`}
         >
           <Text
@@ -409,7 +462,33 @@ export default function LeaderboardScreen() {
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {scope === 'friends' ? (
+        {scope === 'friends' && !leaderboardStats.friends ? (
+          <Card className="mx-4 mt-8 p-6">
+            <View className="items-center">
+              <Users size={48} color="#C9BFAF" className="mb-3" />
+              <Text className="mb-2 text-lg font-bold text-gray-900">
+                Sign in to see friends
+              </Text>
+              <Text className="text-center text-gray-600">
+                You need to be signed in to view your friends' rankings.
+              </Text>
+            </View>
+          </Card>
+        ) : leaderboardData.length === 0 ? (
+          <Card className="mx-4 mt-8 p-6">
+            <View className="items-center">
+              <Trophy size={48} color="#C9BFAF" className="mb-3" />
+              <Text className="mb-2 text-lg font-bold text-gray-900">
+                No Data Yet
+              </Text>
+              <Text className="text-center text-gray-600">
+                {scope === 'friends'
+                  ? "Your friends haven't started their journey yet."
+                  : 'Complete some quests to appear on the leaderboard!'}
+              </Text>
+            </View>
+          </Card>
+        ) : scope === 'friends' ? (
           <>
             {/* Show current user */}
             {topUser && (
@@ -433,7 +512,7 @@ export default function LeaderboardScreen() {
             )}
 
             {/* Show friends list if any */}
-            {restOfUsers.length > 0 && (
+            {restOfUsers.length > 0 ? (
               <Card className="mx-4 mb-4">
                 {restOfUsers.map((entry, index) => (
                   <React.Fragment key={entry.userId}>
@@ -444,6 +523,21 @@ export default function LeaderboardScreen() {
                   </React.Fragment>
                 ))}
               </Card>
+            ) : (
+              hasFriends &&
+              leaderboardData.length === 0 && (
+                <Card className="mx-4 mb-4 p-6">
+                  <View className="items-center">
+                    <Text className="text-center text-gray-600">
+                      {selectedType === 'quests'
+                        ? 'No friends have completed quests yet. Be the first!'
+                        : selectedType === 'minutes'
+                          ? 'No friends have saved time yet. Start your journey!'
+                          : 'No friends have active streaks. Start yours today!'}
+                    </Text>
+                  </View>
+                </Card>
+              )
             )}
 
             {/* Invite Friends Button */}
@@ -477,17 +571,19 @@ export default function LeaderboardScreen() {
             )}
 
             {/* Your Position (if not in top 10) */}
-            {!leaderboardData.some((e) => e.isCurrentUser) && (
-              <Card className="mx-4 mb-4">
-                <View className="items-center py-4">
-                  <Text className="text-gray-600">Your Position</Text>
-                  <Text className="text-primary-600 text-2xl font-bold">
-                    #47
-                  </Text>
-                  <Text className="text-sm text-gray-600">Keep going!</Text>
-                </View>
-              </Card>
-            )}
+            {currentUserPosition &&
+              currentUserPosition > 10 &&
+              !leaderboardData.some((e) => e.isCurrentUser) && (
+                <Card className="mx-4 mb-4">
+                  <View className="items-center py-4">
+                    <Text className="text-gray-600">Your Position</Text>
+                    <Text className="text-primary-600 text-2xl font-bold">
+                      #{currentUserPosition}
+                    </Text>
+                    <Text className="text-sm text-gray-600">Keep going!</Text>
+                  </View>
+                </Card>
+              )}
           </>
         )}
       </ScrollView>
