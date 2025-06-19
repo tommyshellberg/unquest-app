@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
-import { AppState, type AppStateStatus, Pressable, View } from 'react-native';
+import { AppState, type AppStateStatus, Platform, Pressable, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
@@ -23,6 +23,7 @@ export function StoryNarration({ quest }: Props) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
+  const [audioInitialized, setAudioInitialized] = useState(false);
 
   // Derived state - no useEffect needed (React best practice)
   const progress = duration > 0 ? position / duration : 0;
@@ -61,9 +62,17 @@ export function StoryNarration({ quest }: Props) {
 
         if (status.isLoaded) {
           setDuration(status.durationMillis || 0);
+          setAudioInitialized(true);
         }
 
-        setIsLoading(false);
+        // Add a small delay on Android to ensure the audio system is fully ready
+        if (Platform.OS === 'android') {
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 500);
+        } else {
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error('Failed to load audio:', error);
         if (isMounted) {
@@ -210,16 +219,13 @@ export function StoryNarration({ quest }: Props) {
     );
   }
 
-  if (isLoading) {
-    return (
-      <View className="bg-background-light mt-4 w-full items-center rounded-lg p-4">
-        <Text className="text-neutral-600">Loading audio narration...</Text>
-      </View>
-    );
-  }
-
   return (
     <View className="bg-background-light mt-4 w-full rounded-lg p-4">
+      {isLoading && (
+        <View className="absolute inset-0 z-10 items-center justify-center rounded-lg bg-background-light">
+          <Text className="text-sm text-neutral-600">Loading audio...</Text>
+        </View>
+      )}
       <View className="mb-2 w-full">
         <ProgressBar
           ref={progressBarRef}
@@ -238,16 +244,25 @@ export function StoryNarration({ quest }: Props) {
       </View>
 
       <View className="mt-2 flex-row items-center justify-center">
-        <Pressable className="mx-4 p-2" onPress={handleReplay}>
+        <Pressable 
+          className="mx-4 p-2" 
+          onPress={handleReplay}
+          disabled={isLoading || !audioInitialized}
+          style={{ opacity: isLoading || !audioInitialized ? 0.3 : 1 }}
+        >
           <Feather name="rotate-ccw" size={24} color="#3B7A57" />
         </Pressable>
 
         {!isCompleted ? (
-          <Pressable onPress={togglePlayback}>
+          <Pressable 
+            onPress={togglePlayback}
+            disabled={isLoading || !audioInitialized}
+          >
             <Feather
               name={isPlaying ? 'pause-circle' : 'play-circle'}
               size={32}
               color="#3B7A57"
+              style={{ opacity: isLoading || !audioInitialized ? 0.3 : 1 }}
             />
           </Pressable>
         ) : (

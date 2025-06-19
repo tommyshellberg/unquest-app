@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { router } from 'expo-router';
+import { Notebook } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import Animated, {
@@ -123,7 +124,7 @@ export default function JournalScreen() {
         >
           {sortedQuests.length === 0 ? (
             <View className="flex-1 items-center justify-center py-20">
-              <Feather name="book" size={48} color={colors.neutral[500]} />
+              <Notebook size={48} color={colors.neutral[500]} />
               <Text className="mt-4 text-center text-neutral-600">
                 No quests found in this category.
               </Text>
