@@ -99,6 +99,11 @@ export default function ProfileScreen() {
     handleCloseInviteModal();
   }, [handleCloseInviteModal]);
 
+  // Handle cancel without resetting form
+  const _handleCancelInviteModal = useCallback(() => {
+    inviteModal.dismiss();
+  }, [inviteModal]);
+
   // Check if character exists and handle redirect
   useEffect(() => {
     if (!character && !isRedirecting) {
@@ -269,6 +274,7 @@ export default function ProfileScreen() {
       <InviteFriendModal
         modalRef={inviteModal.ref}
         onClose={_handleCloseInviteModal}
+        onCancel={_handleCancelInviteModal}
         onSubmit={handleSendFriendRequest}
         formMethods={formMethods}
         error={inviteError}

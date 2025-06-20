@@ -10,6 +10,7 @@ export * from './image';
 export * from './input';
 export * from './list';
 export * from './modal';
+export { default as BottomSheetKeyboardAwareScrollView } from './modal-keyboard-aware-scroll-view';
 export * from './progress-bar';
 export * from './select';
 export * from './text';
