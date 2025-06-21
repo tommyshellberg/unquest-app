@@ -27,9 +27,7 @@ jest.mock('@/lib/auth', () => ({
 }));
 
 // Mock axios
-jest.mock('axios', () => ({
-  isAxiosError: jest.fn(),
-}));
+jest.mock('axios');
 
 describe('MagicLinkVerifyScreen', () => {
   let mockReplace: jest.Mock;

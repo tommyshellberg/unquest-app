@@ -21,8 +21,8 @@ interface CharacterState {
 
 const INITIAL_CHARACTER: Omit<Character, 'type' | 'name'> = {
   level: 1,
-  currentXP: 0,
-  xpToNextLevel: 100,
+  currentXP: 0, // Total XP, not progress
+  xpToNextLevel: 100, // Keep for backward compatibility, but not used
 };
 
 const calculateXPForLevel = (level: number): number => {
@@ -74,23 +74,27 @@ export const useCharacterStore = create<CharacterState>()(
         const { character } = get();
         if (!character) return;
 
-        let newXP = character.currentXP + amount;
-        let newLevel = character.level;
-        let xpToNext = character.xpToNextLevel;
-
-        // Level up logic
-        while (newXP >= xpToNext) {
-          newXP -= xpToNext;
-          newLevel++;
-          xpToNext = calculateXPForLevel(newLevel);
+        // Import levels data for accurate level calculation
+        const { levels } = require('@/app/data/level-progression');
+        
+        // Add XP to total
+        const newTotalXP = character.currentXP + amount;
+        
+        // Find new level based on total XP
+        let newLevel = 1;
+        for (let i = levels.length - 1; i >= 0; i--) {
+          if (newTotalXP >= levels[i].totalXPRequired) {
+            newLevel = levels[i].level;
+            break;
+          }
         }
 
         set({
           character: {
             ...character,
             level: newLevel,
-            currentXP: newXP,
-            xpToNextLevel: xpToNext,
+            currentXP: newTotalXP, // Store total XP, not progress
+            // Remove xpToNextLevel - we calculate it from static data now
           },
         });
       },

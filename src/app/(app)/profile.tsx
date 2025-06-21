@@ -99,6 +99,11 @@ export default function ProfileScreen() {
     handleCloseInviteModal();
   }, [handleCloseInviteModal]);
 
+  // Handle cancel without resetting form
+  const _handleCancelInviteModal = useCallback(() => {
+    inviteModal.dismiss();
+  }, [inviteModal]);
+
   // Check if character exists and handle redirect
   useEffect(() => {
     if (!character && !isRedirecting) {
@@ -124,10 +129,15 @@ export default function ProfileScreen() {
             );
 
             // Update with level and XP data
+            const level = (user as any).level || 1;
+            const calculateXPForLevel = (l: number): number => {
+              return Math.floor(100 * Math.pow(1.5, l - 1));
+            };
+            
             characterStore.updateCharacter({
-              level: (user as any).level || 1,
+              level: level,
               currentXP: (user as any).xp || 0,
-              xpToNextLevel: 100, // Default XP to next level
+              xpToNextLevel: calculateXPForLevel(level),
             });
 
             // Update streak if available
@@ -269,6 +279,7 @@ export default function ProfileScreen() {
       <InviteFriendModal
         modalRef={inviteModal.ref}
         onClose={_handleCloseInviteModal}
+        onCancel={_handleCancelInviteModal}
         onSubmit={handleSendFriendRequest}
         formMethods={formMethods}
         error={inviteError}

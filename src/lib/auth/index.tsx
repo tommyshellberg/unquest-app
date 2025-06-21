@@ -102,10 +102,15 @@ const _useAuth = create<AuthState>((set, get) => ({
             }
 
             // Then update with the server data
+            const level = characterData.level || (user as any).level || 1;
+            const calculateXPForLevel = (level: number): number => {
+              return Math.floor(100 * Math.pow(1.5, level - 1));
+            };
+            
             characterStore.updateCharacter({
-              level: characterData.level || (user as any).level || 1,
+              level: level,
               currentXP: characterData.currentXP || (user as any).xp || 0,
-              xpToNextLevel: characterData.xpToNextLevel || 100,
+              xpToNextLevel: characterData.xpToNextLevel || calculateXPForLevel(level),
             });
 
             // Also update streak if provided
