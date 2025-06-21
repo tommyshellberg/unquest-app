@@ -1,5 +1,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 
+import { levels } from '@/app/data/level-progression';
+
 import { useCharacterStore } from './character-store';
 
 // Mock storage
@@ -9,18 +11,143 @@ jest.mock('@/lib/storage', () => ({
   removeItem: jest.fn(),
 }));
 
-describe('Character Store - Streak Management', () => {
+// Mock the level progression data
+jest.mock('@/app/data/level-progression', () => ({
+  levels: [
+    { level: 1, totalXPRequired: 0 },
+    { level: 2, totalXPRequired: 100 },
+    { level: 3, totalXPRequired: 250 },
+    { level: 4, totalXPRequired: 475 },
+    { level: 5, totalXPRequired: 812 },
+  ],
+}));
+
+describe('Character Store', () => {
   beforeEach(() => {
     // Reset the store before each test
     useCharacterStore.setState({
-      selectedCharacter: null,
+      character: null,
       dailyQuestStreak: 0,
       lastStreakCelebrationShown: null,
     });
     jest.clearAllMocks();
   });
 
-  describe('setStreak', () => {
+  describe('XP and Level Management', () => {
+    beforeEach(() => {
+      // Create a test character at level 1
+      act(() => {
+        useCharacterStore.getState().createCharacter('knight', 'Test Knight');
+      });
+    });
+
+    test('should start at level 1 with 0 total XP', () => {
+      const { result } = renderHook(() => useCharacterStore());
+      
+      expect(result.current.character?.level).toBe(1);
+      expect(result.current.character?.currentXP).toBe(0);
+    });
+
+    test('should add XP correctly without leveling up', () => {
+      const { result } = renderHook(() => useCharacterStore());
+      
+      act(() => {
+        result.current.addXP(50);
+      });
+
+      expect(result.current.character?.currentXP).toBe(50);
+      expect(result.current.character?.level).toBe(1);
+    });
+
+    test('should level up from 1 to 2 at 100 total XP', () => {
+      const { result } = renderHook(() => useCharacterStore());
+      
+      act(() => {
+        result.current.addXP(100);
+      });
+
+      expect(result.current.character?.currentXP).toBe(100);
+      expect(result.current.character?.level).toBe(2);
+    });
+
+    test('should handle multiple level ups correctly', () => {
+      const { result } = renderHook(() => useCharacterStore());
+      
+      // Add 300 XP at once (should go from level 1 to level 3)
+      act(() => {
+        result.current.addXP(300);
+      });
+
+      expect(result.current.character?.currentXP).toBe(300);
+      expect(result.current.character?.level).toBe(3);
+    });
+
+    test('should accumulate XP across multiple additions', () => {
+      const { result } = renderHook(() => useCharacterStore());
+      
+      act(() => {
+        result.current.addXP(50);
+      });
+      expect(result.current.character?.currentXP).toBe(50);
+      expect(result.current.character?.level).toBe(1);
+
+      act(() => {
+        result.current.addXP(75);
+      });
+      expect(result.current.character?.currentXP).toBe(125);
+      expect(result.current.character?.level).toBe(2);
+
+      act(() => {
+        result.current.addXP(125);
+      });
+      expect(result.current.character?.currentXP).toBe(250);
+      expect(result.current.character?.level).toBe(3);
+    });
+
+    test('should handle edge case at exact level threshold', () => {
+      const { result } = renderHook(() => useCharacterStore());
+      
+      // Exactly 250 XP should be level 3
+      act(() => {
+        result.current.addXP(250);
+      });
+
+      expect(result.current.character?.currentXP).toBe(250);
+      expect(result.current.character?.level).toBe(3);
+    });
+
+    test('should not add XP if character is null', () => {
+      const { result } = renderHook(() => useCharacterStore());
+      
+      // Reset character to null
+      act(() => {
+        result.current.resetCharacter();
+      });
+
+      act(() => {
+        result.current.addXP(100);
+      });
+
+      expect(result.current.character).toBeNull();
+    });
+
+    test('should handle updateCharacter with server data', () => {
+      const { result } = renderHook(() => useCharacterStore());
+      
+      // Simulate server sync with different XP
+      act(() => {
+        result.current.updateCharacter({
+          level: 2,
+          currentXP: 150,
+        });
+      });
+
+      expect(result.current.character?.level).toBe(2);
+      expect(result.current.character?.currentXP).toBe(150);
+    });
+  });
+
+  describe('Streak Management', () => {
     test('should update dailyQuestStreak value', () => {
       const { result } = renderHook(() => useCharacterStore());
 
@@ -76,26 +203,16 @@ describe('Character Store - Streak Management', () => {
       expect(result.current.dailyQuestStreak).toBe(3);
     });
 
-    test('should not affect other character store properties', () => {
+    test('should not affect character XP when updating streak', () => {
       const { result } = renderHook(() => useCharacterStore());
 
-      // Set some initial state
+      // Create character with some XP
       act(() => {
-        useCharacterStore.setState({
-          selectedCharacter: {
-            id: 'knight',
-            name: 'Knight',
-            title: 'The Brave',
-            backstory: 'A brave warrior',
-            xp: 100,
-            level: 2,
-            description: 'A knight',
-            profileImage: 'knight-profile.jpg',
-            fullImage: 'knight-full.jpg',
-          },
-          dailyQuestStreak: 5,
-        });
+        useCharacterStore.getState().createCharacter('druid', 'Test Druid');
+        result.current.addXP(100);
       });
+
+      const xpBefore = result.current.character?.currentXP;
 
       // Update streak
       act(() => {
@@ -104,8 +221,7 @@ describe('Character Store - Streak Management', () => {
 
       // Verify only streak changed
       expect(result.current.dailyQuestStreak).toBe(10);
-      expect(result.current.selectedCharacter?.xp).toBe(100);
-      expect(result.current.selectedCharacter?.level).toBe(2);
+      expect(result.current.character?.currentXP).toBe(xpBefore);
     });
   });
 

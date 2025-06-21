@@ -71,12 +71,18 @@ jest.mock('expo-notifications', () => ({
   },
 }));
 
-jest.mock('@/components/ui', () => ({
-  ...jest.requireActual('@/components/ui'),
-  FocusAwareStatusBar: function MockStatusBar() {
-    return null;
-  },
-}));
+jest.mock('@/components/ui', () => {
+  const actual = jest.requireActual('@/components/ui');
+  return {
+    ...actual,
+    FocusAwareStatusBar: function MockStatusBar() {
+      return null;
+    },
+    BottomSheetKeyboardAwareScrollView: function MockBottomSheetKeyboardAwareScrollView({ children }: any) {
+      return children;
+    },
+  };
+});
 
 jest.mock('react-native-bg-actions', () => ({
   start: jest.fn().mockResolvedValue(undefined),

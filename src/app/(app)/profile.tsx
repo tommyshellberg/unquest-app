@@ -129,10 +129,15 @@ export default function ProfileScreen() {
             );
 
             // Update with level and XP data
+            const level = (user as any).level || 1;
+            const calculateXPForLevel = (l: number): number => {
+              return Math.floor(100 * Math.pow(1.5, l - 1));
+            };
+            
             characterStore.updateCharacter({
-              level: (user as any).level || 1,
+              level: level,
               currentXP: (user as any).xp || 0,
-              xpToNextLevel: 100, // Default XP to next level
+              xpToNextLevel: calculateXPForLevel(level),
             });
 
             // Update streak if available

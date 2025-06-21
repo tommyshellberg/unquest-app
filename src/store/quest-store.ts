@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { queryClient } from '@/api/common';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import {
   cancelStreakWarningNotification,
@@ -124,6 +125,10 @@ export const useQuestStore = create<QuestState>()(
             }
 
             characterStore.addXP(completedQuest.reward.xp);
+
+            // Invalidate user details cache to force fresh data from server
+            // This ensures local XP/level syncs with server-calculated values
+            queryClient.invalidateQueries({ queryKey: ['user', 'details'] as const });
 
             // If this is the first quest completed today, cancel today's warning
             // and schedule tomorrow's warning
