@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { useModal } from '@/components/ui';
 import {
   acceptFriendInvitation,
   getUserFriends,
@@ -17,9 +16,14 @@ type InviteFormData = {
   email: string;
 };
 
-export function useFriendManagement(userEmail: string) {
+interface BulkInviteResult {
+  email: string;
+  success: boolean;
+  reason?: string;
+}
+
+export function useFriendManagement(userEmail: string, contactsModalRef?: React.RefObject<any>) {
   const [refreshing, setRefreshing] = useState(false);
-  const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [rescindModalVisible, setRescindModalVisible] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState(null);
@@ -241,19 +245,58 @@ export function useFriendManagement(userEmail: string) {
     [inviteMutation, userEmail]
   );
 
-  const handleInviteFriends = useCallback(() => {
-    setInviteModalVisible(true);
-  }, []);
+  // Bulk invite handler
+  const sendBulkInvites = useCallback(
+    async (emails: string[]): Promise<BulkInviteResult[]> => {
+      const results: BulkInviteResult[] = [];
 
-  const modal = useModal();
+      // Process each email
+      for (const email of emails) {
+        try {
+          // Check if trying to invite self
+          if (email.trim().toLowerCase() === userEmail.toLowerCase()) {
+            results.push({
+              email,
+              success: false,
+              reason: 'Cannot invite yourself',
+            });
+            continue;
+          }
+
+          // Send invite
+          await sendFriendInvite(email.trim());
+          results.push({
+            email,
+            success: true,
+          });
+        } catch (error: any) {
+          results.push({
+            email,
+            success: false,
+            reason:
+              error.response?.data?.message || 'Failed to send invitation',
+          });
+        }
+      }
+
+      // Invalidate queries after all invites are sent
+      await queryClient.invalidateQueries({ queryKey: ['invitations'] });
+
+      return results;
+    },
+    [userEmail, queryClient]
+  );
+
+  const handleInviteFriends = useCallback(() => {
+    contactsModalRef?.current?.present();
+  }, [contactsModalRef]);
 
   const handleCloseInviteModal = useCallback(() => {
-    setInviteModalVisible(false);
+    contactsModalRef?.current?.dismiss();
     setInviteError('');
     setInviteSuccess('');
     formMethods.reset();
-    modal.dismiss();
-  }, [formMethods, modal]);
+  }, [formMethods, contactsModalRef]);
 
   // Refresh handler
   const onRefresh = useCallback(async () => {
@@ -270,7 +313,6 @@ export function useFriendManagement(userEmail: string) {
     isLoadingInvitations,
     refreshing,
     onRefresh,
-    inviteModalVisible,
     deleteModalVisible,
     rescindModalVisible,
     friendToDelete,
@@ -294,5 +336,6 @@ export function useFriendManagement(userEmail: string) {
     rejectMutation,
     rescindMutation,
     inviteMutation,
+    sendBulkInvites,
   };
 }

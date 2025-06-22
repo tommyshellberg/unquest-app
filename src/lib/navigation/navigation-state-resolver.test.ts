@@ -200,7 +200,6 @@ describe('Navigation State Resolver', () => {
     });
   });
 
-
   it('redirects to onboarding when not complete and user has provisional data', () => {
     setAuthState({ status: 'signIn' });
     setOnboardingState({

@@ -127,7 +127,7 @@ describe('Settings Screen', () => {
 
   it('displays EAS Update version when available in production', async () => {
     const { getByText } = render(<Settings />);
-    
+
     await waitFor(() => {
       // Should display the shortened update ID
       expect(getByText('Update: abc123d')).toBeTruthy();
@@ -137,9 +137,9 @@ describe('Settings Screen', () => {
   it('does not display EAS Update version in development', async () => {
     // Set __DEV__ to true for this test
     global.__DEV__ = true;
-    
+
     const { queryByText } = render(<Settings />);
-    
+
     await waitFor(() => {
       // Should not display update ID in dev mode
       expect(queryByText(/Update:/)).toBeNull();
@@ -149,9 +149,9 @@ describe('Settings Screen', () => {
   it('does not display EAS Update version when updateId is null', async () => {
     // Set updateId to null for this test
     mockUpdateId = null;
-    
+
     const { queryByText } = render(<Settings />);
-    
+
     await waitFor(() => {
       // Should not display update section when updateId is null
       expect(queryByText(/Update:/)).toBeNull();

@@ -175,7 +175,6 @@ export default function AppIntroductionScreen() {
           </View>
         );
 
-
       default:
         return null;
     }

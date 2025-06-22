@@ -78,9 +78,10 @@ jest.mock('@/components/ui', () => {
     FocusAwareStatusBar: function MockStatusBar() {
       return null;
     },
-    BottomSheetKeyboardAwareScrollView: function MockBottomSheetKeyboardAwareScrollView({ children }: any) {
-      return children;
-    },
+    BottomSheetKeyboardAwareScrollView:
+      function MockBottomSheetKeyboardAwareScrollView({ children }: any) {
+        return children;
+      },
   };
 });
 

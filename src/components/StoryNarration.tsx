@@ -2,7 +2,13 @@ import { Feather } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
-import { AppState, type AppStateStatus, Platform, Pressable, View } from 'react-native';
+import {
+  AppState,
+  type AppStateStatus,
+  Platform,
+  Pressable,
+  View,
+} from 'react-native';
 
 import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
@@ -244,8 +250,8 @@ export function StoryNarration({ quest }: Props) {
       </View>
 
       <View className="mt-2 flex-row items-center justify-center">
-        <Pressable 
-          className="mx-4 p-2" 
+        <Pressable
+          className="mx-4 p-2"
           onPress={handleReplay}
           disabled={isLoading || !audioInitialized}
           style={{ opacity: isLoading || !audioInitialized ? 0.3 : 1 }}
@@ -254,7 +260,7 @@ export function StoryNarration({ quest }: Props) {
         </Pressable>
 
         {!isCompleted ? (
-          <Pressable 
+          <Pressable
             onPress={togglePlayback}
             disabled={isLoading || !audioInitialized}
           >

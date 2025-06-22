@@ -21,14 +21,8 @@ import {
   type LeaderboardEntry as ApiLeaderboardEntry,
   useLeaderboardStats,
 } from '@/api/stats';
-import { InviteFriendModal } from '@/components/profile/invite-friend-modal';
-import {
-  Button,
-  Card,
-  FocusAwareStatusBar,
-  Text,
-  useModal,
-} from '@/components/ui';
+import { ContactsImportModal, type ContactsImportModalRef } from '@/components/profile/contact-import';
+import { Button, Card, FocusAwareStatusBar, Text } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { useProfileData } from '@/lib/hooks/use-profile-data';
 import { getItem } from '@/lib/storage';
@@ -178,6 +172,7 @@ export default function LeaderboardScreen() {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState<LeaderboardType>('quests');
   const [scope, setScope] = useState<ScopeType>('global');
+  const contactsModalRef = React.useRef<ContactsImportModalRef>(null);
 
   // Get user's data
   const { userEmail } = useProfileData();
@@ -187,10 +182,12 @@ export default function LeaderboardScreen() {
     inviteError,
     inviteSuccess,
     formMethods,
+    handleInviteFriends: handleInviteFriendsFromHook,
     handleCloseInviteModal,
     handleSendFriendRequest,
     inviteMutation,
-  } = useFriendManagement(userEmail);
+    sendBulkInvites,
+  } = useFriendManagement(userEmail, contactsModalRef);
 
   // Get current user ID
   const currentUserId = getItem('userId');
@@ -202,18 +199,8 @@ export default function LeaderboardScreen() {
     error: statsError,
   } = useLeaderboardStats();
 
-  // Create the modal instance
-  const inviteModal = useModal();
-
-  // Handle invite friends
-  const handleInviteFriends = useCallback(() => {
-    inviteModal.present();
-  }, [inviteModal]);
-
-  // Handle close invite modal
-  const _handleCloseInviteModal = useCallback(() => {
-    handleCloseInviteModal();
-  }, [handleCloseInviteModal]);
+  // Use the handleInviteFriends from the hook
+  const handleInviteFriends = handleInviteFriendsFromHook;
 
   // Check if user actually has friends
   const hasFriends =
@@ -589,14 +576,11 @@ export default function LeaderboardScreen() {
       </ScrollView>
 
       {/* Invite Friend Modal */}
-      <InviteFriendModal
-        modalRef={inviteModal.ref}
-        onClose={_handleCloseInviteModal}
-        onSubmit={handleSendFriendRequest}
-        formMethods={formMethods}
-        error={inviteError}
-        success={inviteSuccess}
-        isPending={inviteMutation?.isPending}
+      <ContactsImportModal
+        ref={contactsModalRef}
+        sendBulkInvites={sendBulkInvites}
+        friends={friendsData?.friends || []}
+        userEmail={userEmail}
       />
     </View>
   );

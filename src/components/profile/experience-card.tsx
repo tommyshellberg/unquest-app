@@ -16,31 +16,32 @@ type ExperienceCardProps = {
 
 export function ExperienceCard({ character }: ExperienceCardProps) {
   // Get current and next level data from static file
-  const currentLevelData = levels.find(l => l.level === character.level);
-  const nextLevelData = levels.find(l => l.level === character.level + 1);
-  
+  const currentLevelData = levels.find((l) => l.level === character.level);
+  const nextLevelData = levels.find((l) => l.level === character.level + 1);
+
   // character.currentXP from server is TOTAL XP, not progress toward next level
   const totalXP = character.currentXP;
-  
+
   // Calculate current progress toward next level
-  const xpProgressTowardNext = totalXP - (currentLevelData?.totalXPRequired || 0);
-  
+  const xpProgressTowardNext =
+    totalXP - (currentLevelData?.totalXPRequired || 0);
+
   // Calculate XP needed for next level
-  const xpForNextLevel = nextLevelData 
-    ? nextLevelData.totalXPRequired - totalXP 
+  const xpForNextLevel = nextLevelData
+    ? nextLevelData.totalXPRequired - totalXP
     : 0;
-    
+
   // XP required from current level to next level
-  const xpRequiredForCurrentToNext = nextLevelData 
+  const xpRequiredForCurrentToNext = nextLevelData
     ? nextLevelData.totalXPRequired - (currentLevelData?.totalXPRequired || 0)
     : 100; // fallback
-    
+
   const progress = xpProgressTowardNext / xpRequiredForCurrentToNext;
   const nextLevel = character.level + 1;
-  
+
   // Animation for progress bar
   const animatedProgress = useSharedValue(0);
-  
+
   useEffect(() => {
     // Animate from 0 to current progress when component mounts or progress changes
     animatedProgress.value = 0;
@@ -49,7 +50,7 @@ export function ExperienceCard({ character }: ExperienceCardProps) {
       easing: Easing.out(Easing.exp),
     });
   }, [progress, animatedProgress]);
-  
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       width: `${animatedProgress.value * 100}%`,
@@ -72,10 +73,7 @@ export function ExperienceCard({ character }: ExperienceCardProps) {
       </View>
 
       <View className="mt-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-        <Animated.View
-          className="h-full bg-teal-700"
-          style={animatedStyle}
-        />
+        <Animated.View className="h-full bg-teal-700" style={animatedStyle} />
       </View>
 
       <View className="mt-2 flex-row justify-between">

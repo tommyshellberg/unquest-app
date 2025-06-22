@@ -64,7 +64,9 @@ export default function FirstQuestResultScreen() {
     );
     console.log(
       '[FirstQuestResult] Quest audioFile:',
-      completedQuestForDisplay.mode === 'story' ? completedQuestForDisplay.audioFile : 'N/A (custom quest)'
+      completedQuestForDisplay.mode === 'story'
+        ? completedQuestForDisplay.audioFile
+        : 'N/A (custom quest)'
     );
 
     return (

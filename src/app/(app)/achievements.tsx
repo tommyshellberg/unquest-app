@@ -360,7 +360,7 @@ const AchievementSection = ({
 
 export default function AchievementsScreen() {
   const router = useRouter();
-  
+
   // Get real user data
   const dailyQuestStreak = useCharacterStore((state) => state.dailyQuestStreak);
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());

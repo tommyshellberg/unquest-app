@@ -64,12 +64,8 @@ export function useNavigationTarget(): NavigationTarget {
     };
   }, []);
 
-  const {
-    pendingQuest,
-    recentCompletedQuest,
-    failedQuest,
-    completedQuests,
-  } = questState;
+  const { pendingQuest, recentCompletedQuest, failedQuest, completedQuests } =
+    questState;
 
   // Synchronize onboarding state when user is signed in but onboarding appears incomplete
   useEffect(() => {

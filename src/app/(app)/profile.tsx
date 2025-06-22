@@ -11,7 +11,7 @@ import Animated, {
 import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
 import { ExperienceCard } from '@/components/profile/experience-card';
 import { FriendsList } from '@/components/profile/friends-list';
-import { InviteFriendModal } from '@/components/profile/invite-friend-modal';
+import { ContactsImportModal, type ContactsImportModalRef } from '@/components/profile/contact-import';
 import { ProfileCard } from '@/components/profile/profile-card';
 // Import components
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
@@ -38,6 +38,7 @@ export default function ProfileScreen() {
   // Add a state to track if we need to redirect
   const [isRedirecting, setIsRedirecting] = React.useState(false);
   const streakCount = useCharacterStore((state) => state.dailyQuestStreak);
+  const contactsModalRef = React.useRef<ContactsImportModalRef>(null);
 
   // Animation value for header
   const headerOpacity = useSharedValue(0);
@@ -69,6 +70,7 @@ export default function ProfileScreen() {
     inviteError,
     inviteSuccess,
     formMethods,
+    handleInviteFriends,
     handleCloseInviteModal,
     handleDeleteFriend,
     handleConfirmDelete,
@@ -84,25 +86,10 @@ export default function ProfileScreen() {
     rejectMutation,
     rescindMutation,
     inviteMutation,
-  } = useFriendManagement(userEmail);
+    sendBulkInvites,
+  } = useFriendManagement(userEmail, contactsModalRef);
 
   // Create the modal instance at the parent level
-  const inviteModal = useModal();
-
-  // Update the handleInviteFriends to use modal.present
-  const handleInviteFriends = useCallback(() => {
-    inviteModal.present();
-  }, [inviteModal]);
-
-  // Update the handleCloseInviteModal to use modal.dismiss
-  const _handleCloseInviteModal = useCallback(() => {
-    handleCloseInviteModal();
-  }, [handleCloseInviteModal]);
-
-  // Handle cancel without resetting form
-  const _handleCancelInviteModal = useCallback(() => {
-    inviteModal.dismiss();
-  }, [inviteModal]);
 
   // Check if character exists and handle redirect
   useEffect(() => {
@@ -133,7 +120,7 @@ export default function ProfileScreen() {
             const calculateXPForLevel = (l: number): number => {
               return Math.floor(100 * Math.pow(1.5, l - 1));
             };
-            
+
             characterStore.updateCharacter({
               level: level,
               currentXP: (user as any).xp || 0,
@@ -276,15 +263,11 @@ export default function ProfileScreen() {
       </ScrollView>
 
       {/* Modals */}
-      <InviteFriendModal
-        modalRef={inviteModal.ref}
-        onClose={_handleCloseInviteModal}
-        onCancel={_handleCancelInviteModal}
-        onSubmit={handleSendFriendRequest}
-        formMethods={formMethods}
-        error={inviteError}
-        success={inviteSuccess}
-        isPending={inviteMutation?.isPending}
+      <ContactsImportModal
+        ref={contactsModalRef}
+        sendBulkInvites={sendBulkInvites}
+        friends={friendsData?.friends || []}
+        userEmail={userEmail}
       />
 
       <DeleteFriendModal

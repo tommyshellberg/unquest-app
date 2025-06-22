@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  
+
 jobs:
   stale:
     runs-on: ubuntu-latest

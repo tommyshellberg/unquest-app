@@ -128,7 +128,9 @@ export const useQuestStore = create<QuestState>()(
 
             // Invalidate user details cache to force fresh data from server
             // This ensures local XP/level syncs with server-calculated values
-            queryClient.invalidateQueries({ queryKey: ['user', 'details'] as const });
+            queryClient.invalidateQueries({
+              queryKey: ['user', 'details'] as const,
+            });
 
             // If this is the first quest completed today, cancel today's warning
             // and schedule tomorrow's warning

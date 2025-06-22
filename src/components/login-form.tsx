@@ -195,7 +195,9 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                   By signing in to this app you agree with our{' '}
                   <Text
                     className="text-charcoal-600 underline"
-                    onPress={() => Linking.openURL('https://unquestapp.com/terms')}
+                    onPress={() =>
+                      Linking.openURL('https://unquestapp.com/terms')
+                    }
                   >
                     Terms of Use and Privacy Policy
                   </Text>

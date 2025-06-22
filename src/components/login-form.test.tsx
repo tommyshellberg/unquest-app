@@ -174,7 +174,7 @@ describe('LoginForm Form ', () => {
       config: {},
       isAxiosError: true,
     });
-    
+
     mockedRequestMagicLink.mockRejectedValueOnce(axiosError);
 
     const { user } = setup(<LoginForm />);
@@ -195,7 +195,9 @@ describe('LoginForm Form ', () => {
     // Wait for the specific 409 error message
     await waitFor(() => {
       expect(
-        screen.getByText(/This email address is already associated with an account/i)
+        screen.getByText(
+          /This email address is already associated with an account/i
+        )
       ).toBeOnTheScreen();
     });
 
