@@ -10,6 +10,7 @@ import {
   removeFriend,
   rescindInvitation,
   sendFriendInvite,
+  sendBulkFriendInvites,
 } from '@/lib/services/user';
 
 type InviteFormData = {
@@ -248,41 +249,91 @@ export function useFriendManagement(userEmail: string, contactsModalRef?: React.
   // Bulk invite handler
   const sendBulkInvites = useCallback(
     async (emails: string[]): Promise<BulkInviteResult[]> => {
-      const results: BulkInviteResult[] = [];
+      try {
+        // Filter out user's own email before sending (safety check)
+        const emailsToSend = emails.filter(
+          email => email.trim().toLowerCase() !== userEmail.toLowerCase()
+        );
 
-      // Process each email
-      for (const email of emails) {
-        try {
-          // Check if trying to invite self
-          if (email.trim().toLowerCase() === userEmail.toLowerCase()) {
+        if (emailsToSend.length === 0) {
+          return [{
+            email: emails[0],
+            success: false,
+            reason: 'Cannot invite yourself',
+          }];
+        }
+
+        // Use the bulk endpoint
+        const response = await sendBulkFriendInvites(emailsToSend);
+
+        // Convert response to expected format
+        const results: BulkInviteResult[] = [];
+        const emailToResultMap = new Map<string, BulkInviteResult>();
+
+        // Add successful emails
+        if (response.successfulEmails && Array.isArray(response.successfulEmails)) {
+          response.successfulEmails.forEach(email => {
+            emailToResultMap.set(email.toLowerCase(), {
+              email,
+              success: true,
+            });
+          });
+        }
+
+        // Add failed emails
+        if (response.failedEmails && Array.isArray(response.failedEmails)) {
+          response.failedEmails.forEach((failedItem) => {
+            const email = failedItem.email || failedItem;
+            const reason = failedItem.reason || 'Failed to send invitation';
+            emailToResultMap.set(email.toLowerCase(), {
+              email,
+              success: false,
+              reason,
+            });
+          });
+        }
+
+        // Add invalid emails
+        if (response.invalidEmails && Array.isArray(response.invalidEmails)) {
+          response.invalidEmails.forEach((invalidItem) => {
+            const email = invalidItem.email || invalidItem;
+            const reason = invalidItem.reason || 'Invalid email address';
+            emailToResultMap.set(email.toLowerCase(), {
+              email,
+              success: false,
+              reason,
+            });
+          });
+        }
+
+        // Return results in the same order as input emails
+        emailsToSend.forEach(email => {
+          const result = emailToResultMap.get(email.toLowerCase());
+          if (result) {
+            results.push(result);
+          } else {
+            // If email is not in any response array, mark as failed
             results.push({
               email,
               success: false,
-              reason: 'Cannot invite yourself',
+              reason: 'No response from server',
             });
-            continue;
           }
+        });
 
-          // Send invite
-          await sendFriendInvite(email.trim());
-          results.push({
-            email,
-            success: true,
-          });
-        } catch (error: any) {
-          results.push({
-            email,
-            success: false,
-            reason:
-              error.response?.data?.message || 'Failed to send invitation',
-          });
-        }
+        // Invalidate queries after bulk invites are sent
+        await queryClient.invalidateQueries({ queryKey: ['invitations'] });
+
+        return results;
+      } catch (error: any) {
+        console.error('Bulk invite error:', error);
+        // If the bulk endpoint fails entirely, return all emails as failed
+        return emails.map(email => ({
+          email,
+          success: false,
+          reason: error.response?.data?.message || 'Failed to send invitations',
+        }));
       }
-
-      // Invalidate queries after all invites are sent
-      await queryClient.invalidateQueries({ queryKey: ['invitations'] });
-
-      return results;
     },
     [userEmail, queryClient]
   );

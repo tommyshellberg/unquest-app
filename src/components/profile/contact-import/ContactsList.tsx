@@ -12,6 +12,7 @@ interface ContactsListProps {
   onSearchChange: (query: string) => void;
   onContactSelect: (contact: Contacts.Contact) => void;
   onInvite: () => void;
+  onManualAdd: () => void;
   selectedCount: number;
 }
 
@@ -27,6 +28,7 @@ export const ContactsList: React.FC<ContactsListProps> = ({
   onSearchChange,
   onContactSelect,
   onInvite,
+  onManualAdd,
   selectedCount,
 }) => {
   const filteredAndGroupedContacts = useMemo(() => {
@@ -130,6 +132,12 @@ export const ContactsList: React.FC<ContactsListProps> = ({
           }
           onPress={onInvite}
           disabled={selectedCount === 0}
+          className="w-full mb-2"
+        />
+        <Button
+          label="ADD MANUAL CONTACT"
+          onPress={onManualAdd}
+          variant="ghost"
           className="w-full"
         />
       </View>

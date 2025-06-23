@@ -24,6 +24,7 @@ export const ContactItem: React.FC<ContactItemProps> = ({
     <TouchableOpacity
       onPress={onPress}
       disabled={isFriend}
+      testID={`contact-item-${contact.id}`}
       className={`flex-row items-center justify-between px-4 py-4 bg-background ${
         isFriend ? 'opacity-60' : ''
       }`}

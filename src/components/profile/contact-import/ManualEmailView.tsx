@@ -1,56 +1,81 @@
-import React from 'react';
-import { View } from 'react-native';
-import { ArrowLeft } from 'lucide-react-native';
-import { Button, Input, Text } from '@/components/ui';
+import { Mail } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { TextInput, View } from 'react-native';
+
+import { Button, Text } from '@/components/ui';
 
 interface ManualEmailViewProps {
   email: string;
   onEmailChange: (email: string) => void;
-  onSubmit: () => void;
+  onSubmit: (email: string) => void;
   onBack: () => void;
   isSubmitting: boolean;
 }
 
 export const ManualEmailView: React.FC<ManualEmailViewProps> = ({
-  email,
+  email: initialEmail,
   onEmailChange,
   onSubmit,
   onBack,
   isSubmitting,
 }) => {
+  // Use local state for smooth typing
+  const [localEmail, setLocalEmail] = useState(initialEmail);
+
+  // Update local state if parent email changes
+  useEffect(() => {
+    setLocalEmail(initialEmail);
+  }, [initialEmail]);
+
+  const handleSubmit = () => {
+    // Update parent state and submit with the email
+    onEmailChange(localEmail);
+    onSubmit(localEmail);
+  };
   return (
-    <View className="flex-1 p-4 bg-background">
-      <Button
-        label=""
-        onPress={onBack}
-        variant="ghost"
-        leftIcon={<ArrowLeft size={20} color="#9E8E7F" />}
-        className="mb-4 self-start"
-      />
+    <View className="flex-1 bg-background p-4">
+      <View className="mb-8 flex-row items-center">
+        <View className="mr-4 size-12 items-center justify-center rounded-full bg-primary-100">
+          <Mail size={24} color="#2E948D" />
+        </View>
+        <View className="flex-1">
+          <Text className="text-base text-neutral-600">
+            Enter a friend's email to invite them to unQuest.
+          </Text>
+        </View>
+      </View>
 
-      <Text className="text-lg font-semibold text-black mb-2">
-        Enter email address
+      <Text className="mb-2 text-sm font-medium text-neutral-700">
+        Email Address
       </Text>
 
-      <Text className="text-base text-neutral-500 mb-6">
-        Enter the email address of the friend you want to invite.
-      </Text>
-
-      <Input
-        value={email}
-        onChangeText={onEmailChange}
+      <TextInput
+        value={localEmail}
+        onChangeText={setLocalEmail}
         placeholder="friend@example.com"
+        placeholderTextColor="#9E8E7F"
         keyboardType="email-address"
         autoCapitalize="none"
+        autoComplete="off"
         autoCorrect={false}
-        autoFocus
-        className="mb-6"
+        autoFocus={true}
+        style={{
+          marginBottom: 24,
+          height: 48,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: '#C9BFAF',
+          backgroundColor: '#F5F5F0',
+          paddingHorizontal: 16,
+          fontSize: 16,
+          color: '#1f0f0c',
+        }}
       />
 
       <Button
         label="SEND INVITE"
-        onPress={onSubmit}
-        disabled={!email.trim() || isSubmitting}
+        onPress={handleSubmit}
+        disabled={!localEmail.trim() || isSubmitting}
         loading={isSubmitting}
         className="w-full"
       />

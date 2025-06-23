@@ -275,6 +275,27 @@ export async function rescindInvitation(inviteId: string): Promise<{
 }
 
 /**
+ * Send bulk friend invitations to multiple email addresses
+ * @param emails Array of email addresses to invite
+ * @returns Response with success/failure details for each email
+ */
+export async function sendBulkFriendInvites(emails: string[]): Promise<{
+  message: string;
+  totalSuccessful: number;
+  totalFailed: number;
+  successfulEmails: string[];
+  failedEmails: { email: string; reason: string }[];
+}> {
+  try {
+    const response = await apiClient.post('/users/invites/bulk', { emails });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending bulk friend invitations:', error);
+    throw error;
+  }
+}
+
+/**
  * Delete the current user's account
  * @returns Response with success message
  */

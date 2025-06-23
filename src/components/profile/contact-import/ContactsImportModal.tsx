@@ -107,7 +107,6 @@ export const ContactsImportModal = forwardRef<
   const checkPermissionsAndLoadContacts = async () => {
     try {
       const { status } = await Contacts.getPermissionsAsync();
-      console.log('Initial permission status:', status);
 
       if (status === 'granted') {
         setViewState('loading');
@@ -129,7 +128,6 @@ export const ContactsImportModal = forwardRef<
     try {
       setViewState('loading');
       const { status } = await Contacts.requestPermissionsAsync();
-      console.log('Permission status after request:', status);
 
       if (status === 'granted') {
         await loadContacts();
@@ -145,19 +143,23 @@ export const ContactsImportModal = forwardRef<
 
   const loadContacts = async () => {
     try {
-      console.log('Loading contacts...');
       const { data } = await Contacts.getContactsAsync({
         fields: [Contacts.Fields.Emails, Contacts.Fields.Name],
       });
 
-      console.log('Total contacts loaded:', data.length);
-
-      // Filter contacts with email addresses
+      // Filter contacts with email addresses and exclude user's own email
       const contactsWithEmail = data.filter(
-        (contact) => contact.emails && contact.emails.length > 0
+        (contact) => {
+          if (!contact.emails || contact.emails.length === 0) return false;
+          
+          // Check if any of the contact's emails match the user's email
+          const hasUserEmail = contact.emails.some(
+            (email) => email.email?.toLowerCase() === userEmail.toLowerCase()
+          );
+          
+          return !hasUserEmail;
+        }
       );
-
-      console.log('Contacts with email:', contactsWithEmail.length);
 
       if (contactsWithEmail.length > 0) {
         // Cross-reference with existing friends
@@ -173,9 +175,7 @@ export const ContactsImportModal = forwardRef<
 
         setContacts(processedContacts);
         setViewState('contacts');
-        console.log('View state set to contacts');
       } else {
-        console.log('No contacts with email addresses found');
         Alert.alert(
           'No Contacts Found',
           'No contacts with email addresses were found on your device.'
@@ -224,39 +224,65 @@ export const ContactsImportModal = forwardRef<
       const successful: InviteResults['successful'] = [];
       const failed: InviteResults['failed'] = [];
 
+      // Ensure results is an array
+      if (!Array.isArray(results)) {
+        console.error('Invalid response format:', results);
+        throw new Error('Invalid response from server');
+      }
+
       selectedEmails.forEach((contact, index) => {
         const result = results[index];
-        if (result.success) {
+        // Check if result exists and has the expected structure
+        if (!result || typeof result !== 'object') {
+          failed.push({
+            ...contact,
+            reason: 'Failed to send invitation',
+          });
+        } else if (result.success === true) {
           successful.push(contact);
         } else {
           failed.push({
             ...contact,
-            reason: result.reason || 'Unknown error',
+            reason: result.reason || 'Failed to send invitation',
           });
         }
       });
 
+      // Always show results, even if all failed
       setInviteResults({ successful, failed });
       setViewState('results');
     } catch (error) {
       console.error('Error sending invites:', error);
-      Alert.alert('Error', 'Failed to send invites');
-      setViewState('contacts');
+      // If we have some selected emails, show them all as failed
+      if (selectedEmails.length > 0) {
+        setInviteResults({
+          successful: [],
+          failed: selectedEmails.map(contact => ({
+            ...contact,
+            reason: 'Failed to send invitation',
+          })),
+        });
+        setViewState('results');
+      } else {
+        Alert.alert('Error', 'Failed to send invites. Please try again.');
+        setViewState('contacts');
+      }
     }
   };
 
-  const handleManualInvite = async () => {
-    if (!manualEmail.trim()) return;
+  const handleManualInvite = async (emailToInvite?: string) => {
+    const email = emailToInvite || manualEmail;
+    if (!email.trim()) return;
 
     setViewState('sending');
 
     try {
-      const results = await sendBulkInvites([manualEmail]);
+      const results = await sendBulkInvites([email]);
       const result = results[0];
 
       if (result.success) {
         setInviteResults({
-          successful: [{ email: manualEmail, name: manualEmail }],
+          successful: [{ email, name: email }],
           failed: [],
         });
       } else {
@@ -264,8 +290,8 @@ export const ContactsImportModal = forwardRef<
           successful: [],
           failed: [
             {
-              email: manualEmail,
-              name: manualEmail,
+              email,
+              name: email,
               reason: result.reason || 'Unknown error',
             },
           ],
@@ -318,6 +344,7 @@ export const ContactsImportModal = forwardRef<
             onSearchChange={setSearchQuery}
             onContactSelect={handleContactSelect}
             onInvite={handleSendInvites}
+            onManualAdd={() => setViewState('manual')}
             selectedCount={getSelectedCount()}
           />
         );
@@ -333,7 +360,7 @@ export const ContactsImportModal = forwardRef<
             email={manualEmail}
             onEmailChange={setManualEmail}
             onSubmit={handleManualInvite}
-            onBack={() => setViewState('empty')}
+            onBack={() => setViewState(contacts.length > 0 ? 'contacts' : 'empty')}
             isSubmitting={viewState === 'sending'}
           />
         );
@@ -363,11 +390,25 @@ export const ContactsImportModal = forwardRef<
     }
   };
 
+  // Dynamic snap points based on view state
+  const getSnapPoints = () => {
+    switch (viewState) {
+      case 'manual':
+        return ['50%'];
+      case 'empty':
+        return ['75%']; // Increased to accommodate benefits section
+      case 'permissions-denied':
+        return ['60%'];
+      default:
+        return ['90%'];
+    }
+  };
+
   return (
     <Modal
       ref={modal.ref}
       title={viewState === 'results' ? 'Invites Sent!' : 'Invite Friends'}
-      snapPoints={['90%']}
+      snapPoints={getSnapPoints()}
       backgroundStyle={{ backgroundColor: background }}
       handleIndicatorStyle={{ backgroundColor: '#9E8E7F' }}
     >

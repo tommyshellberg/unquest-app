@@ -35,7 +35,7 @@ const button = tv({
       },
       ghost: {
         container: 'bg-transparent',
-        label: 'text-white underline dark:text-black',
+        label: 'text-black underline dark:text-black',
         indicator: 'text-black dark:text-black',
       },
       link: {
@@ -62,9 +62,9 @@ const button = tv({
     },
     disabled: {
       true: {
-        container: 'bg-neutral-300 dark:bg-neutral-300',
-        label: 'text-neutral-500 dark:text-neutral-500',
-        indicator: 'text-neutral-200 dark:text-neutral-200',
+        container: 'opacity-50',
+        label: '',
+        indicator: '',
       },
     },
     fullWidth: {

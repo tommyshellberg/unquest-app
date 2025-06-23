@@ -72,11 +72,11 @@ export function InvitationItem({
           </View>
 
           <Pressable
-            className="size-8 items-center justify-center rounded-full bg-red-500"
+            className="size-6 items-center justify-center rounded-full bg-red-300"
             onPress={() => onRescind(invitation)}
             disabled={isProcessing}
           >
-            <Feather name="x" size={16} color="white" />
+            <Feather name="x" size={16} className="text-white" />
           </Pressable>
         </View>
       ) : (
