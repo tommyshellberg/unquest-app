@@ -11,9 +11,9 @@ jest.mock('@/app/data/maps', () => {
   const mockFogMasks = {};
   for (let i = 1; i <= 10; i++) {
     const key = i.toString().padStart(2, '0');
-    mockFogMasks[key] = `fog-${key}`;  // Use strings for easier testing
+    mockFogMasks[key] = `fog-${key}`; // Use strings for easier testing
   }
-  
+
   return {
     MAP_NAMES: {
       'map-1': 'Vaedros Kingdom',
@@ -27,10 +27,7 @@ jest.mock('@/app/data/maps', () => {
         { id: 'quest-2' },
         { id: 'quest-3' },
       ],
-      'map-2': [
-        { id: 'quest-4' },
-        { id: 'quest-5' },
-      ],
+      'map-2': [{ id: 'quest-4' }, { id: 'quest-5' }],
     },
     FOG_MASKS: mockFogMasks,
   };
@@ -91,7 +88,7 @@ describe('Map Utils', () => {
       // Should still extract the number part and subtract 1
       expect(getFogMaskForQuest('quest-2-special')).toBe('fog-02');
       expect(getFogMaskForQuest('quest-3abc')).toBe('fog-03');
-      
+
       // Should default when no valid number found
       expect(getFogMaskForQuest('not-a-quest')).toBe('fog-01');
     });

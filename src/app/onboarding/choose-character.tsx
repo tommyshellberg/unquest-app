@@ -45,10 +45,7 @@ interface CardProps {
 
 const CardComponent = ({ item, isSelected }: CardProps) => {
   return (
-    <View
-      className="items-center justify-center"
-      style={{ width: cardWidth }}
-    >
+    <View className="items-center justify-center" style={{ width: cardWidth }}>
       <Card
         className={`elevation-2 w-full overflow-hidden ${isSelected ? 'scale-100' : 'scale-90 opacity-60'}`}
         style={{ height: screenWidth * 1.2 }} // Fixed height instead of aspect ratio
@@ -106,7 +103,6 @@ export default function ChooseCharacterScreen() {
   const [currentStep, setCurrentStep] = useState<CharacterStep>(
     CharacterStep.INTRO_AND_NAME
   );
-
 
   // Initialize with the first character selected
   const [selectedCharacter, setSelectedCharacter] = useState<string>(
@@ -219,7 +215,10 @@ export default function ChooseCharacterScreen() {
               </Text>
             </Animated.View>
 
-            <Animated.View className="flex-1 -mx-6" entering={FadeIn.delay(1100)}>
+            <Animated.View
+              className="flex-1 -mx-6"
+              entering={FadeIn.delay(1100)}
+            >
               <FlatList
                 data={CHARACTERS}
                 horizontal
@@ -235,7 +234,8 @@ export default function ChooseCharacterScreen() {
                   index,
                 })}
                 contentContainerStyle={{
-                  paddingHorizontal: (screenWidth - cardWidth - cardSpacing) / 2,
+                  paddingHorizontal:
+                    (screenWidth - cardWidth - cardSpacing) / 2,
                 }}
                 ItemSeparatorComponent={() => (
                   <View style={{ width: cardSpacing }} />

@@ -159,13 +159,10 @@ const ModalHeader = React.memo(({ title, dismiss }: ModalHeaderProps) => {
   return (
     <>
       {title && (
-        <View className="flex-row px-2 py-4">
-          <View className="size-[24px]" />
-          <View className="flex-1">
-            <Text className="text-muted-500 dark:text-muted-500 text-center text-[16px] font-bold">
-              {title}
-            </Text>
-          </View>
+        <View className="px-2 py-4">
+          <Text className="text-muted-500 dark:text-muted-500 text-center text-[16px] font-bold">
+            {title}
+          </Text>
         </View>
       )}
       <CloseButton close={dismiss} />

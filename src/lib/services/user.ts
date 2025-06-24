@@ -18,6 +18,12 @@ export interface UserDetails {
     _id?: string;
   };
   dailyQuestStreak?: number;
+  totalQuestsCompleted?: number;
+  totalMinutesOffPhone?: number;
+  // Legacy fields for backward compatibility
+  type?: string;
+  level?: number;
+  xp?: number;
   // Add other user fields as needed
 }
 
@@ -270,6 +276,27 @@ export async function rescindInvitation(inviteId: string): Promise<{
     return response.data;
   } catch (error) {
     console.error('Error rescinding invitation:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send bulk friend invitations to multiple email addresses
+ * @param emails Array of email addresses to invite
+ * @returns Response with success/failure details for each email
+ */
+export async function sendBulkFriendInvites(emails: string[]): Promise<{
+  message: string;
+  totalSuccessful: number;
+  totalFailed: number;
+  successfulEmails: string[];
+  failedEmails: { email: string; reason: string }[];
+}> {
+  try {
+    const response = await apiClient.post('/users/invites/bulk', { emails });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending bulk friend invitations:', error);
     throw error;
   }
 }

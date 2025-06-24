@@ -128,7 +128,10 @@ export const verifyMagicLinkAndSignIn = async (
     // Step 3: Fetch and store user data
     try {
       const userResponse = await getUserDetails();
-      console.log('[Auth] User response from server:', JSON.stringify(userResponse, null, 2));
+      console.log(
+        '[Auth] User response from server:',
+        JSON.stringify(userResponse, null, 2)
+      );
 
       // Store user data in user store
       if (userResponse && userResponse.id && userResponse.email) {
@@ -140,10 +143,13 @@ export const verifyMagicLinkAndSignIn = async (
 
         // If user has character data from server, store it in character store
         // Check both nested character object and top-level properties
-        if (userResponse.character || ((userResponse as any).type && (userResponse as any).name)) {
+        if (
+          userResponse.character ||
+          ((userResponse as any).type && (userResponse as any).name)
+        ) {
           const { useCharacterStore } = await import('@/store/character-store');
           const characterStore = useCharacterStore.getState();
-          
+
           // Handle both formats: nested character object or top-level properties
           const characterData = userResponse.character || {
             type: (userResponse as any).type,
@@ -152,7 +158,7 @@ export const verifyMagicLinkAndSignIn = async (
             currentXP: (userResponse as any).xp || 0,
             xpToNextLevel: 100, // Default XP to next level
           };
-          
+
           // First create the character if it doesn't exist locally
           if (!characterStore.character) {
             characterStore.createCharacter(
@@ -160,9 +166,11 @@ export const verifyMagicLinkAndSignIn = async (
               characterData.name
             );
           }
-          
+
           // Then update with the server data
           characterStore.updateCharacter({
+            type: characterData.type || (userResponse as any).type,
+            name: characterData.name || (userResponse as any).name,
             level: characterData.level || (userResponse as any).level || 1,
             currentXP: characterData.currentXP || (userResponse as any).xp || 0,
             xpToNextLevel: characterData.xpToNextLevel || 100,

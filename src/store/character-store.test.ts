@@ -43,14 +43,14 @@ describe('Character Store', () => {
 
     test('should start at level 1 with 0 total XP', () => {
       const { result } = renderHook(() => useCharacterStore());
-      
+
       expect(result.current.character?.level).toBe(1);
       expect(result.current.character?.currentXP).toBe(0);
     });
 
     test('should add XP correctly without leveling up', () => {
       const { result } = renderHook(() => useCharacterStore());
-      
+
       act(() => {
         result.current.addXP(50);
       });
@@ -61,7 +61,7 @@ describe('Character Store', () => {
 
     test('should level up from 1 to 2 at 100 total XP', () => {
       const { result } = renderHook(() => useCharacterStore());
-      
+
       act(() => {
         result.current.addXP(100);
       });
@@ -72,7 +72,7 @@ describe('Character Store', () => {
 
     test('should handle multiple level ups correctly', () => {
       const { result } = renderHook(() => useCharacterStore());
-      
+
       // Add 300 XP at once (should go from level 1 to level 3)
       act(() => {
         result.current.addXP(300);
@@ -84,7 +84,7 @@ describe('Character Store', () => {
 
     test('should accumulate XP across multiple additions', () => {
       const { result } = renderHook(() => useCharacterStore());
-      
+
       act(() => {
         result.current.addXP(50);
       });
@@ -106,7 +106,7 @@ describe('Character Store', () => {
 
     test('should handle edge case at exact level threshold', () => {
       const { result } = renderHook(() => useCharacterStore());
-      
+
       // Exactly 250 XP should be level 3
       act(() => {
         result.current.addXP(250);
@@ -118,7 +118,7 @@ describe('Character Store', () => {
 
     test('should not add XP if character is null', () => {
       const { result } = renderHook(() => useCharacterStore());
-      
+
       // Reset character to null
       act(() => {
         result.current.resetCharacter();
@@ -133,7 +133,7 @@ describe('Character Store', () => {
 
     test('should handle updateCharacter with server data', () => {
       const { result } = renderHook(() => useCharacterStore());
-      
+
       // Simulate server sync with different XP
       act(() => {
         result.current.updateCharacter({

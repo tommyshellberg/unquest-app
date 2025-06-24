@@ -12,7 +12,9 @@ jest.mock('../auth');
 
 // We'll capture the interceptors when the module loads
 let requestInterceptor: {
-  onFulfilled: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
+  onFulfilled: (
+    config: InternalAxiosRequestConfig
+  ) => InternalAxiosRequestConfig;
   onRejected: (error: any) => Promise<any>;
 };
 let responseInterceptor: {
@@ -43,10 +45,14 @@ jest.mock('axios', () => ({
         headers: { 'Content-Type': 'application/json' },
       },
     };
-    
+
     // Make instance callable for retry logic
     return Object.assign(
-      jest.fn().mockImplementation((config) => Promise.resolve({ data: 'retry success', config })),
+      jest
+        .fn()
+        .mockImplementation((config) =>
+          Promise.resolve({ data: 'retry success', config })
+        ),
       instance
     );
   }),
@@ -74,7 +80,10 @@ describe('apiClient', () => {
 
   describe('request interceptor', () => {
     it('should add authorization header when token exists', () => {
-      const mockToken = { access: 'test-access-token', refresh: 'test-refresh-token' };
+      const mockToken = {
+        access: 'test-access-token',
+        refresh: 'test-refresh-token',
+      };
       (getToken as jest.Mock).mockReturnValue(mockToken);
 
       const config: InternalAxiosRequestConfig = {
@@ -104,7 +113,9 @@ describe('apiClient', () => {
 
     it('should handle request errors', async () => {
       const error = new Error('Request error');
-      await expect(requestInterceptor.onRejected(error)).rejects.toThrow('Request error');
+      await expect(requestInterceptor.onRejected(error)).rejects.toThrow(
+        'Request error'
+      );
     });
   });
 
@@ -117,7 +128,9 @@ describe('apiClient', () => {
 
     it('should handle errors without response', async () => {
       const error = new Error('Network error') as AxiosError;
-      await expect(responseInterceptor.onRejected(error)).rejects.toThrow('Network error');
+      await expect(responseInterceptor.onRejected(error)).rejects.toThrow(
+        'Network error'
+      );
       expect(console.error).toHaveBeenCalledWith(
         'Axios error without response or config:',
         error
@@ -128,7 +141,9 @@ describe('apiClient', () => {
       const error = {
         response: { status: 500, data: 'Server error' },
       } as AxiosError;
-      await expect(responseInterceptor.onRejected(error)).rejects.toEqual(error);
+      await expect(responseInterceptor.onRejected(error)).rejects.toEqual(
+        error
+      );
     });
 
     it('should pass through non-401 errors', async () => {
@@ -136,7 +151,9 @@ describe('apiClient', () => {
         response: { status: 400, data: 'Bad request' },
         config: { url: '/test' },
       } as AxiosError;
-      await expect(responseInterceptor.onRejected(error)).rejects.toEqual(error);
+      await expect(responseInterceptor.onRejected(error)).rejects.toEqual(
+        error
+      );
     });
 
     describe('401 error handling', () => {
@@ -160,9 +177,14 @@ describe('apiClient', () => {
         const result = await responseInterceptor.onRejected(error);
 
         expect(refreshAccessToken).toHaveBeenCalled();
-        expect(originalConfig.headers.Authorization).toBe('Bearer new-access-token');
+        expect(originalConfig.headers.Authorization).toBe(
+          'Bearer new-access-token'
+        );
         expect(originalConfig._retry).toBe(true);
-        expect(result).toEqual({ data: 'retry success', config: originalConfig });
+        expect(result).toEqual({
+          data: 'retry success',
+          config: originalConfig,
+        });
       });
 
       it('should not retry if request already has _retry flag', async () => {
@@ -177,12 +199,16 @@ describe('apiClient', () => {
           config: originalConfig,
         } as AxiosError;
 
-        await expect(responseInterceptor.onRejected(error)).rejects.toEqual(error);
+        await expect(responseInterceptor.onRejected(error)).rejects.toEqual(
+          error
+        );
         expect(refreshAccessToken).not.toHaveBeenCalled();
       });
 
       it('should sign out when refresh fails', async () => {
-        (refreshAccessToken as jest.Mock).mockRejectedValue(new Error('Refresh failed'));
+        (refreshAccessToken as jest.Mock).mockRejectedValue(
+          new Error('Refresh failed')
+        );
 
         const originalConfig = {
           url: '/test',
@@ -194,7 +220,9 @@ describe('apiClient', () => {
           config: originalConfig,
         } as AxiosError;
 
-        await expect(responseInterceptor.onRejected(error)).rejects.toThrow('Refresh failed');
+        await expect(responseInterceptor.onRejected(error)).rejects.toThrow(
+          'Refresh failed'
+        );
         expect(signOut).toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledWith(
           'Token refresh failed catastrophically:',
@@ -288,7 +316,7 @@ describe('apiClient', () => {
 
         // Both should succeed
         const [result1, result2] = await Promise.all([promise1, promise2]);
-        
+
         expect(config1.headers.Authorization).toBe('Bearer new-access-token');
         expect(config2.headers.Authorization).toBe('Bearer new-access-token');
         expect(result1).toBeDefined();
@@ -329,7 +357,9 @@ describe('apiClient', () => {
       expect(apiClient).toBeDefined();
       expect(apiClient.interceptors).toBeDefined();
       expect(apiClient.defaults.baseURL).toBe('https://api.test.com');
-      expect(apiClient.defaults.headers['Content-Type']).toBe('application/json');
+      expect(apiClient.defaults.headers['Content-Type']).toBe(
+        'application/json'
+      );
     });
   });
 });

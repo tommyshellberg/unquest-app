@@ -183,10 +183,10 @@ describe('MagicLinkVerifyScreen', () => {
       },
       isAxiosError: true,
     };
-    
+
     // Mock axios.isAxiosError to return true for our mock error
     (axios.isAxiosError as jest.Mock).mockReturnValue(true);
-    
+
     (verifyMagicLinkAndSignIn as jest.Mock).mockRejectedValue(axiosError);
 
     render(<MagicLinkVerifyScreen />);
@@ -201,14 +201,19 @@ describe('MagicLinkVerifyScreen', () => {
       expect(mockReplace).toHaveBeenCalledWith({
         pathname: '/login',
         params: {
-          error: 'This email address is already associated with an account. Please use a different email address.',
+          error:
+            'This email address is already associated with an account. Please use a different email address.',
         },
       });
     });
 
     // Wait for specific error message to be shown
     await waitFor(() => {
-      expect(screen.getByText(/This email address is already associated with an account/)).toBeTruthy();
+      expect(
+        screen.getByText(
+          /This email address is already associated with an account/
+        )
+      ).toBeTruthy();
     });
   });
 });

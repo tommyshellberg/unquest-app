@@ -53,28 +53,32 @@ jest.mock('@/store/quest-store', () => ({
   useQuestStore: jest.fn(),
 }));
 
-const mockUseCharacterStore = useCharacterStore as jest.MockedFunction<typeof useCharacterStore>;
-const mockUseQuestStore = useQuestStore as jest.MockedFunction<typeof useQuestStore>;
+const mockUseCharacterStore = useCharacterStore as jest.MockedFunction<
+  typeof useCharacterStore
+>;
+const mockUseQuestStore = useQuestStore as jest.MockedFunction<
+  typeof useQuestStore
+>;
 
 // Helper function to mock current day
 const mockCurrentDay = (dayOfWeek: number) => {
   const mockDate = new Date();
   mockDate.setDate(mockDate.getDate() - mockDate.getDay() + dayOfWeek);
-  
+
   // Mock both Date constructor and Date.now
   const realDate = Date;
   global.Date = jest.fn(() => mockDate) as any;
   global.Date.now = jest.fn(() => mockDate.getTime());
   global.Date.getDay = jest.fn(() => dayOfWeek);
-  
+
   // Copy other static methods from real Date
   Object.setPrototypeOf(global.Date, realDate);
-  Object.getOwnPropertyNames(realDate).forEach(name => {
+  Object.getOwnPropertyNames(realDate).forEach((name) => {
     if (name !== 'now' && name !== 'constructor') {
       (global.Date as any)[name] = (realDate as any)[name];
     }
   });
-  
+
   return mockDate;
 };
 
@@ -83,7 +87,7 @@ describe('StreakCelebrationScreen', () => {
     jest.clearAllMocks();
     // Reset mock functions
     mockCharacterStore.markStreakCelebrationShown.mockClear();
-    
+
     mockUseCharacterStore.mockImplementation((selector) =>
       selector(mockCharacterStore as any)
     );
@@ -99,7 +103,7 @@ describe('StreakCelebrationScreen', () => {
   describe('StreakCounter Integration', () => {
     it('should render StreakCounter with correct props', () => {
       const { getByTestId } = render(<StreakCelebrationScreen />);
-      
+
       const streakCounter = getByTestId('streak-counter');
       expect(streakCounter).toBeTruthy();
       expect(streakCounter.props.children).toBe('StreakCounter-animated-large');
@@ -107,7 +111,7 @@ describe('StreakCelebrationScreen', () => {
 
     it('should display "day streak!" text', () => {
       const { getByText } = render(<StreakCelebrationScreen />);
-      
+
       const streakText = getByText('day streak!');
       expect(streakText).toBeTruthy();
     });
@@ -122,14 +126,14 @@ describe('StreakCelebrationScreen', () => {
 
     it('should show Thursday as completed and 4 empty days after', () => {
       const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
-      
+
       // Check day names are displayed correctly
       expect(getByText('Th')).toBeTruthy(); // Thursday - first day
       expect(getByText('Fr')).toBeTruthy(); // Friday
-      expect(getByText('Sa')).toBeTruthy(); // Saturday  
+      expect(getByText('Sa')).toBeTruthy(); // Saturday
       expect(getByText('Su')).toBeTruthy(); // Sunday
       expect(getByText('Mo')).toBeTruthy(); // Monday
-      
+
       // Check that we have 5 day containers
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
@@ -138,21 +142,21 @@ describe('StreakCelebrationScreen', () => {
 
   describe('2-Day Streak (Wednesday)', () => {
     beforeEach(() => {
-      // Mock Wednesday (day 3 of week) 
+      // Mock Wednesday (day 3 of week)
       mockCurrentDay(3);
       mockCharacterStore.dailyQuestStreak = 2;
     });
 
     it('should show Tuesday and Wednesday as completed, 3 empty days after', () => {
       const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
-      
+
       // Check day names - should start with Tuesday (streak start)
       expect(getByText('Tu')).toBeTruthy(); // Tuesday - streak start
       expect(getByText('We')).toBeTruthy(); // Wednesday - today
       expect(getByText('Th')).toBeTruthy(); // Thursday - empty
       expect(getByText('Fr')).toBeTruthy(); // Friday - empty
       expect(getByText('Sa')).toBeTruthy(); // Saturday - empty
-      
+
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
     });
@@ -167,14 +171,14 @@ describe('StreakCelebrationScreen', () => {
 
     it('should show all 5 days as completed ending with today', () => {
       const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
-      
+
       // Should show Monday through Friday (5 consecutive days ending today)
       expect(getByText('Mo')).toBeTruthy(); // Monday
       expect(getByText('Tu')).toBeTruthy(); // Tuesday
       expect(getByText('We')).toBeTruthy(); // Wednesday
       expect(getByText('Th')).toBeTruthy(); // Thursday
       expect(getByText('Fr')).toBeTruthy(); // Friday - today
-      
+
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
     });
@@ -189,14 +193,14 @@ describe('StreakCelebrationScreen', () => {
 
     it('should show 5 most recent completed days ending with today', () => {
       const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
-      
+
       // Should show Wednesday through Sunday (5 days ending with today)
       expect(getByText('We')).toBeTruthy(); // Wednesday
       expect(getByText('Th')).toBeTruthy(); // Thursday
       expect(getByText('Fr')).toBeTruthy(); // Friday
       expect(getByText('Sa')).toBeTruthy(); // Saturday
       expect(getByText('Su')).toBeTruthy(); // Sunday - today
-      
+
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
     });
@@ -210,14 +214,14 @@ describe('StreakCelebrationScreen', () => {
 
     it('should show today and 4 empty days after', () => {
       const { getByText, getAllByTestId } = render(<StreakCelebrationScreen />);
-      
+
       // Should show Tuesday through Saturday
       expect(getByText('Tu')).toBeTruthy(); // Tuesday - today
       expect(getByText('We')).toBeTruthy(); // Wednesday
       expect(getByText('Th')).toBeTruthy(); // Thursday
       expect(getByText('Fr')).toBeTruthy(); // Friday
       expect(getByText('Sa')).toBeTruthy(); // Saturday
-      
+
       const flameContainers = getAllByTestId('flame-container');
       expect(flameContainers).toHaveLength(5);
     });
@@ -226,13 +230,15 @@ describe('StreakCelebrationScreen', () => {
   describe('UI Elements', () => {
     it('should display the streak reminder text', () => {
       const { getByText } = render(<StreakCelebrationScreen />);
-      
-      expect(getByText('Complete a quest each day so your streak won\'t reset!')).toBeTruthy();
+
+      expect(
+        getByText("Complete a quest each day so your streak won't reset!")
+      ).toBeTruthy();
     });
 
     it('should have Share and Continue buttons', () => {
       const { getByText } = render(<StreakCelebrationScreen />);
-      
+
       expect(getByText('Share')).toBeTruthy();
       expect(getByText('CONTINUE')).toBeTruthy();
     });
@@ -241,10 +247,10 @@ describe('StreakCelebrationScreen', () => {
   describe('Button Interactions', () => {
     it('should navigate to main app when Continue button is pressed', () => {
       const { getByText } = render(<StreakCelebrationScreen />);
-      
+
       const continueButton = getByText('CONTINUE');
       fireEvent.press(continueButton);
-      
+
       expect(router.push).toHaveBeenCalledWith('/(app)');
     });
   });
@@ -252,10 +258,9 @@ describe('StreakCelebrationScreen', () => {
   describe('Store Integration', () => {
     it('should call markStreakCelebrationShown when screen is accessed', () => {
       render(<StreakCelebrationScreen />);
-      
+
       // The useFocusEffect should trigger markStreakCelebrationShown
       expect(mockCharacterStore.markStreakCelebrationShown).toHaveBeenCalled();
     });
   });
-
 });

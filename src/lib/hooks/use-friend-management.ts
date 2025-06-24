@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { useModal } from '@/components/ui';
 import {
   acceptFriendInvitation,
   getUserFriends,
@@ -11,15 +10,21 @@ import {
   removeFriend,
   rescindInvitation,
   sendFriendInvite,
+  sendBulkFriendInvites,
 } from '@/lib/services/user';
 
 type InviteFormData = {
   email: string;
 };
 
-export function useFriendManagement(userEmail: string) {
+interface BulkInviteResult {
+  email: string;
+  success: boolean;
+  reason?: string;
+}
+
+export function useFriendManagement(userEmail: string, contactsModalRef?: React.RefObject<any>) {
   const [refreshing, setRefreshing] = useState(false);
-  const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [rescindModalVisible, setRescindModalVisible] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState(null);
@@ -241,19 +246,108 @@ export function useFriendManagement(userEmail: string) {
     [inviteMutation, userEmail]
   );
 
-  const handleInviteFriends = useCallback(() => {
-    setInviteModalVisible(true);
-  }, []);
+  // Bulk invite handler
+  const sendBulkInvites = useCallback(
+    async (emails: string[]): Promise<BulkInviteResult[]> => {
+      try {
+        // Filter out user's own email before sending (safety check)
+        const emailsToSend = emails.filter(
+          email => email.trim().toLowerCase() !== userEmail.toLowerCase()
+        );
 
-  const modal = useModal();
+        if (emailsToSend.length === 0) {
+          return [{
+            email: emails[0],
+            success: false,
+            reason: 'Cannot invite yourself',
+          }];
+        }
+
+        // Use the bulk endpoint
+        const response = await sendBulkFriendInvites(emailsToSend);
+
+        // Convert response to expected format
+        const results: BulkInviteResult[] = [];
+        const emailToResultMap = new Map<string, BulkInviteResult>();
+
+        // Add successful emails
+        if (response.successfulEmails && Array.isArray(response.successfulEmails)) {
+          response.successfulEmails.forEach(email => {
+            emailToResultMap.set(email.toLowerCase(), {
+              email,
+              success: true,
+            });
+          });
+        }
+
+        // Add failed emails
+        if (response.failedEmails && Array.isArray(response.failedEmails)) {
+          response.failedEmails.forEach((failedItem) => {
+            const email = failedItem.email || failedItem;
+            const reason = failedItem.reason || 'Failed to send invitation';
+            emailToResultMap.set(email.toLowerCase(), {
+              email,
+              success: false,
+              reason,
+            });
+          });
+        }
+
+        // Add invalid emails
+        if (response.invalidEmails && Array.isArray(response.invalidEmails)) {
+          response.invalidEmails.forEach((invalidItem) => {
+            const email = invalidItem.email || invalidItem;
+            const reason = invalidItem.reason || 'Invalid email address';
+            emailToResultMap.set(email.toLowerCase(), {
+              email,
+              success: false,
+              reason,
+            });
+          });
+        }
+
+        // Return results in the same order as input emails
+        emailsToSend.forEach(email => {
+          const result = emailToResultMap.get(email.toLowerCase());
+          if (result) {
+            results.push(result);
+          } else {
+            // If email is not in any response array, mark as failed
+            results.push({
+              email,
+              success: false,
+              reason: 'No response from server',
+            });
+          }
+        });
+
+        // Invalidate queries after bulk invites are sent
+        await queryClient.invalidateQueries({ queryKey: ['invitations'] });
+
+        return results;
+      } catch (error: any) {
+        console.error('Bulk invite error:', error);
+        // If the bulk endpoint fails entirely, return all emails as failed
+        return emails.map(email => ({
+          email,
+          success: false,
+          reason: error.response?.data?.message || 'Failed to send invitations',
+        }));
+      }
+    },
+    [userEmail, queryClient]
+  );
+
+  const handleInviteFriends = useCallback(() => {
+    contactsModalRef?.current?.present();
+  }, [contactsModalRef]);
 
   const handleCloseInviteModal = useCallback(() => {
-    setInviteModalVisible(false);
+    contactsModalRef?.current?.dismiss();
     setInviteError('');
     setInviteSuccess('');
     formMethods.reset();
-    modal.dismiss();
-  }, [formMethods, modal]);
+  }, [formMethods, contactsModalRef]);
 
   // Refresh handler
   const onRefresh = useCallback(async () => {
@@ -270,7 +364,6 @@ export function useFriendManagement(userEmail: string) {
     isLoadingInvitations,
     refreshing,
     onRefresh,
-    inviteModalVisible,
     deleteModalVisible,
     rescindModalVisible,
     friendToDelete,
@@ -294,5 +387,6 @@ export function useFriendManagement(userEmail: string) {
     rejectMutation,
     rescindMutation,
     inviteMutation,
+    sendBulkInvites,
   };
 }

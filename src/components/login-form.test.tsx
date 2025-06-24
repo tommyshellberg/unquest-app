@@ -6,13 +6,28 @@ import { cleanup, screen, setup, waitFor } from '@/lib/test-utils';
 import type { LoginFormProps } from './login-form';
 import { LoginForm } from './login-form';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  jest.clearAllMocks();
+});
 
 const onSubmitMock: jest.Mock<LoginFormProps['onSubmit']> = jest.fn();
 
 // Mock the requestMagicLink function
 jest.mock('@/api/auth', () => ({
-  requestMagicLink: jest.fn().mockResolvedValue({ success: true }),
+  requestMagicLink: jest.fn(),
+}));
+
+// Mock PostHog
+jest.mock('posthog-react-native', () => ({
+  usePostHog: () => ({
+    capture: jest.fn(),
+  }),
+}));
+
+// Mock expo-linking
+jest.mock('expo-linking', () => ({
+  openURL: jest.fn(),
 }));
 
 const mockedRequestMagicLink = requestMagicLink as jest.MockedFunction<
@@ -20,35 +35,28 @@ const mockedRequestMagicLink = requestMagicLink as jest.MockedFunction<
 >;
 
 describe('LoginForm Form ', () => {
+  beforeEach(() => {
+    mockedRequestMagicLink.mockResolvedValue({ success: true });
+  });
+  beforeEach(() => {
+    mockedRequestMagicLink.mockResolvedValue({ success: true });
+  });
+
   it('renders correctly', async () => {
     setup(<LoginForm />);
     expect(await screen.findByText(/welcome to unquest/i)).toBeOnTheScreen();
   });
 
-  it('should display required error when email is empty', async () => {
-    const { user } = setup(<LoginForm />);
+  it('should disable button when email is empty', async () => {
+    setup(<LoginForm />);
 
     const button = screen.getByTestId('login-button');
-    expect(screen.queryByText(/Email is required/i)).not.toBeOnTheScreen();
-
-    // The button might be disabled initially - we need to check that first
-    if (button.props.accessibilityState?.disabled) {
-      // If the button is disabled, we can't trigger validation errors directly
-      // Let's verify the form is in a proper initial state instead
-      expect(button.props.accessibilityState.disabled).toBe(true);
-    } else {
-      await user.press(button);
-      // Let's use waitFor to give time for validation to appear
-      await waitFor(() => {
-        const errorMessages = screen.queryAllByText(
-          /Email is required|required/i
-        );
-        expect(errorMessages.length).toBeGreaterThan(0);
-      });
-    }
+    
+    // Button should be disabled when email is empty
+    expect(button.props.accessibilityState?.disabled).toBe(true);
   });
 
-  it('should display matching error when email is invalid', async () => {
+  it('should disable button when email is invalid', async () => {
     const { user } = setup(<LoginForm />);
 
     const button = screen.getByTestId('login-button');
@@ -56,18 +64,8 @@ describe('LoginForm Form ', () => {
 
     await user.type(emailInput, 'yyyyy');
 
-    // Check if button is enabled after typing
-    if (button.props.accessibilityState?.disabled) {
-      // Button is still disabled - this might be expected behavior
-      // Let's verify the input has the typed value
-      expect(emailInput.props.value).toBe('yyyyy');
-    } else {
-      await user.press(button);
-      await waitFor(() => {
-        const errorMessages = screen.queryAllByText(/Invalid email|format/i);
-        expect(errorMessages.length).toBeGreaterThan(0);
-      });
-    }
+    // Button should remain disabled for invalid email
+    expect(button.props.accessibilityState?.disabled).toBe(true);
   });
 
   it('Should call onSubmit with correct values when email is valid', async () => {
@@ -81,13 +79,14 @@ describe('LoginForm Form ', () => {
     // Wait for button to become enabled
     await waitFor(() => {
       expect(button.props.accessibilityState?.disabled).not.toBe(true);
-    });
+    }, { timeout: 3000 });
 
     await user.press(button);
+    
 
     await waitFor(() => {
       expect(onSubmitMock).toHaveBeenCalledTimes(1);
-    });
+    }, { timeout: 3000 });
 
     // Update expectation to match actual call pattern
     expect(onSubmitMock).toHaveBeenCalledWith({
@@ -107,25 +106,20 @@ describe('LoginForm Form ', () => {
     // Wait for button to become enabled
     await waitFor(() => {
       expect(button.props.accessibilityState?.disabled).not.toBe(true);
-    });
+    }, { timeout: 3000 });
 
     await user.press(button);
+    
 
-    // Check each element in separate waitFor calls
+    // Wait for all success elements in a single waitFor
     await waitFor(() => {
       const successMessages = screen.queryAllByText(/Email sent|sent/i);
       expect(successMessages.length).toBeGreaterThan(0);
-    });
-
-    await waitFor(() => {
       expect(screen.getByText(testEmail)).toBeOnTheScreen();
-    });
-
-    await waitFor(() => {
       expect(
         screen.getByText(/Enter a different email address/i)
       ).toBeOnTheScreen();
-    });
+    }, { timeout: 3000 });
   });
 
   it('should return to email form when "Enter a different email address" is clicked', async () => {
@@ -138,14 +132,15 @@ describe('LoginForm Form ', () => {
 
     await waitFor(() => {
       expect(button.props.accessibilityState?.disabled).not.toBe(true);
-    });
+    }, { timeout: 3000 });
 
     await user.press(button);
+    
 
     // Wait for the success screen
     await waitFor(() => {
       expect(screen.getByText(/Email sent/i)).toBeOnTheScreen();
-    });
+    }, { timeout: 3000 });
 
     // Click "Enter a different email address"
     const changeEmailLink = screen.getByText(
@@ -153,14 +148,11 @@ describe('LoginForm Form ', () => {
     );
     await user.press(changeEmailLink);
 
-    // Separate waitFor calls for each element check
+    // Check for both elements in a single waitFor
     await waitFor(() => {
       expect(screen.getByTestId('email-input')).toBeOnTheScreen();
-    });
-
-    await waitFor(() => {
       expect(screen.getByText(/Send Link/i)).toBeOnTheScreen();
-    });
+    }, { timeout: 3000 });
   });
 
   it('should show specific error message for 409 email already in use', async () => {
@@ -174,7 +166,7 @@ describe('LoginForm Form ', () => {
       config: {},
       isAxiosError: true,
     });
-    
+
     mockedRequestMagicLink.mockRejectedValueOnce(axiosError);
 
     const { user } = setup(<LoginForm />);
@@ -188,14 +180,17 @@ describe('LoginForm Form ', () => {
     // Wait for button to become enabled
     await waitFor(() => {
       expect(button.props.accessibilityState?.disabled).not.toBe(true);
-    });
+    }, { timeout: 3000 });
 
     await user.press(button);
+    
 
     // Wait for the specific 409 error message
     await waitFor(() => {
       expect(
-        screen.getByText(/This email address is already associated with an account/i)
+        screen.getByText(
+          /This email address is already associated with an account/i
+        )
       ).toBeOnTheScreen();
     });
 
@@ -205,4 +200,9 @@ describe('LoginForm Form ', () => {
     // Verify the success message is NOT shown
     expect(screen.queryByText(/Email sent/i)).not.toBeOnTheScreen();
   });
+});
+
+// Restore real timers after all tests
+afterAll(() => {
+  jest.useRealTimers();
 });

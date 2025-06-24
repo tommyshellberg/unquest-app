@@ -41,13 +41,10 @@ export function RescindInvitationModal({
   }, [onConfirm]);
 
   return (
-    <Modal ref={ref} snapPoints={['40%']} title="Cancel Invite">
+    <Modal ref={ref} snapPoints={['40%']} title="Delete Invite">
       <View className="p-4">
-        <Text className="mb-2 text-center text-lg font-bold">
-          Cancel Invite
-        </Text>
         <Text className="mb-2 text-center">
-          Are you sure you want to cancel your invitation to{' '}
+          Are you sure you want to delete your invitation to{' '}
           {invitation?.recipientUser?.character?.name ||
             invitation?.recipient ||
             'this user'}
@@ -65,7 +62,7 @@ export function RescindInvitationModal({
             className="mr-2 flex-1"
           />
           <Button
-            label="Cancel"
+            label="Delete"
             onPress={handleConfirm}
             className="ml-2 flex-1 bg-red-500"
             loading={isPending}

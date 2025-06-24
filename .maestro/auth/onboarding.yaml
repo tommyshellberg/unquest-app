@@ -13,54 +13,54 @@ appId: com.vaedros.unquest.development
 # Handle development server selection (if it appears)
 - runFlow:
     when:
-      visible: "http://10.0.2.2:8081"
+      visible: 'http://10.0.2.2:8081'
     commands:
-      - assertVisible: "Development servers"
+      - assertVisible: 'Development servers'
       # Select the local development server (usually the first/default option)
-      - tapOn: "http://10.0.2.2:8081"
+      - tapOn: 'http://10.0.2.2:8081'
 
 - runFlow:
     when:
-      visible: "http://localhost:8081"
+      visible: 'http://localhost:8081'
     commands:
-      - assertVisible: "Development servers"
+      - assertVisible: 'Development servers'
       # Select the local development server (usually the first/default option)
-      - tapOn: "http://localhost:8081"
+      - tapOn: 'http://localhost:8081'
 
 # Handle Expo development onboarding/menu introduction (if it appears)
 - runFlow:
     when:
       visible:
-        text: ".*developer menu.*"
+        text: '.*developer menu.*'
     commands:
       # Go through the developer menu introduction
-      - tapOn: "Continue"
+      - tapOn: 'Continue'
 
 # Alternative approach: more specific regex for "This is the developer menu"
 - runFlow:
     when:
       visible:
-        text: ".*Runtime version.*"
+        text: '.*Runtime version.*'
     commands:
       # Tap continue to dismiss the developer menu
-      - tapOn: "Reload"
+      - tapOn: 'Reload'
 
 # Fallback: Look for any text containing "developer" (very permissive)
 - runFlow:
     when:
       visible:
-        text: ".*developer.*"
+        text: '.*developer.*'
     commands:
       # Try to continue through any developer-related screens
-      - tapOn: "Continue"
+      - tapOn: 'Continue'
 
 # Handle any additional development environment screens
 - runFlow:
     when:
-      visible: "Development Build"
+      visible: 'Development Build'
     commands:
       # If there are additional development-specific screens, handle them here
-      - tapOn: "Continue"
+      - tapOn: 'Continue'
 
 # Wait a moment for the app to fully load after development setup
 - waitForAnimationToEnd
@@ -76,137 +76,137 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 # WELCOME SCREEN - The starting point for new users
 # =============================================================================
-- assertVisible: "unQuest"
-- assertVisible: "Level Up By Logging Off"
-- assertVisible: "Begin New Journey"
-- assertVisible: ".*Log In.*"
+- assertVisible: 'unQuest'
+- assertVisible: 'Level Up By Logging Off'
+- assertVisible: 'Begin New Journey'
+- assertVisible: '.*Log In.*'
 
 # Start the onboarding journey
-- tapOn: "Begin New Journey"
+- tapOn: 'Begin New Journey'
 
 # =============================================================================
 # APP INTRODUCTION - WELCOME STEP
 # =============================================================================
-- assertVisible: "Welcome to unQuest"
-- assertVisible: ".*Each quest is a unique challenge.*"
-- assertVisible: "Got it"
+- assertVisible: 'Welcome to unQuest'
+- assertVisible: '.*Each quest is a unique challenge.*'
+- assertVisible: 'Got it'
 
 # Proceed to notifications step
-- tapOn: "Got it"
+- tapOn: 'Got it'
 
 # =============================================================================
-# APP INTRODUCTION - NOTIFICATIONS STEP  
+# APP INTRODUCTION - NOTIFICATIONS STEP
 # =============================================================================
-- assertVisible: "Notifications"
-- assertVisible: "Enable notifications"
-- assertVisible: ".*Not now.*"
+- assertVisible: 'Notifications'
+- assertVisible: 'Enable notifications'
+- assertVisible: '.*Not now.*'
 
 # Enable notifications (or skip if desired)
-- tapOn: "Enable notifications"
+- tapOn: 'Enable notifications'
 
 # Note: System notification permission alert may appear here
 # @todo: Handle system permission dialog if it shows up
 - runFlow:
     when:
-      visible: ".*Allow*.*"
+      visible: '.*Allow*.*'
     commands:
       # If there are additional development-specific screens, handle them here
-      - tapOn: "Allow"
+      - tapOn: 'Allow'
 
 # =============================================================================
 # APP INTRODUCTION - CHARACTER CREATION STEP
 # =============================================================================
-- assertVisible: "Your Character"
-- assertVisible: ".*Choose a character that reflects your personality.*"
+- assertVisible: 'Your Character'
+- assertVisible: '.*Choose a character that reflects your personality.*'
 
 # Proceed to character selection
-- tapOn: "Create character"
+- tapOn: 'Create character'
 
 # =============================================================================
 # CHOOSE CHARACTER SCREEN - Character creation and naming
 # =============================================================================
-- assertVisible: "Choose Your Character"
-- assertVisible: "Name Your Character"
-- assertVisible: "Next, choose a character type."
+- assertVisible: 'Choose Your Character'
+- assertVisible: 'Name Your Character'
+- assertVisible: 'Next, choose a character type.'
 
 # Verify continue button exists but should be disabled initially
 - assertVisible:
-    text: "Continue"
+    text: 'Continue'
 
 # Enter character name
-- tapOn: "Enter character name"
-- inputText: "MaestroHero"
+- tapOn: 'Enter character name'
+- inputText: 'MaestroHero'
 
 # Verify continue button is now enabled after entering name
 - assertVisible:
-    text: "Continue"
+    text: 'Continue'
     enabled: true
 
 # Test character selection carousel
-- assertVisible: "Alchemist"
-- assertVisible: ".*Transforms idle time.*"
+- assertVisible: 'Alchemist'
+- assertVisible: '.*Transforms idle time.*'
 
 # Swipe through characters to test the carousel
 - swipe:
     from:
-      text: "Alchemist"
+      text: 'Alchemist'
     direction: LEFT
 
 # Should now see Druid
-- assertVisible: "Druid"
-- assertVisible: ".*Grows stronger through harmony.*"
+- assertVisible: 'Druid'
+- assertVisible: '.*Grows stronger through harmony.*'
 
 # Swipe to final character
 - swipe:
     from:
-      text: "Druid"
+      text: 'Druid'
     direction: LEFT
 
 # Should now see Scout
-- assertVisible: "Scout"
-- assertVisible: ".*Resourceful and self-reliant.*"
+- assertVisible: 'Scout'
+- assertVisible: '.*Resourceful and self-reliant.*'
 
 # Swipe back to first character for consistency
 - swipe:
     from:
-      text: "Scout"
+      text: 'Scout'
     direction: RIGHT
 
 - swipe:
     from:
-      text: "Druid"
+      text: 'Druid'
     direction: RIGHT
 
 # Back to Alchemist - proceed with character creation
-- assertVisible: "Alchemist"
-- assertNotVisible: "Scout"
+- assertVisible: 'Alchemist'
+- assertNotVisible: 'Scout'
 
-- tapOn: "Continue"
+- tapOn: 'Continue'
 
 # =============================================================================
 # FIRST QUEST SCREEN - Quest introduction
 # =============================================================================
-- assertVisible: "Your Journey Begins"
-- assertVisible: "Wake up"
+- assertVisible: 'Your Journey Begins'
+- assertVisible: 'Wake up'
 
 # Start the first quest
-- tapOn: "Wake up"
+- tapOn: 'Wake up'
 
 # =============================================================================
 # PENDING QUEST SCREEN - Quest preparation
 # =============================================================================
-- assertVisible: "Quest Ready"
-- assertVisible: "Lock your phone to begin your quest"
-- assertVisible: "Cancel Quest"
+- assertVisible: 'Quest Ready'
+- assertVisible: 'Lock your phone to begin your quest'
+- assertVisible: 'Cancel Quest'
 
 # Test quest cancellation and restart to ensure robustness
-- tapOn: "Cancel Quest"
+- tapOn: 'Cancel Quest'
 
 # =============================================================================
 # BACK TO FIRST QUEST SCREEN - Test re-starting quest
 # =============================================================================
-- assertVisible: "Your Journey Begins"
-- assertVisible: "Wake up"
+- assertVisible: 'Your Journey Begins'
+- assertVisible: 'Wake up'
 
 # =============================================================================
 # ALTERNATIVE FLOW - EXISTING USER LOGIN PATH
@@ -220,51 +220,49 @@ appId: com.vaedros.unquest.development
 # Handle development environment screens again after clearState
 - runFlow:
     when:
-      visible: "Development servers"
+      visible: 'Development servers'
     commands:
-      - tapOn: "http://10.0.2.2:8081"
+      - tapOn: 'http://10.0.2.2:8081'
 
 - runFlow:
     when:
       visible:
-        text: ".*developer menu.*"
+        text: '.*developer menu.*'
     commands:
       # Tap the X button to close the modal
-      - tapOn: "Continue"
+      - tapOn: 'Continue'
 
 - runFlow:
     when:
       visible:
-        text: ".*This is the developer menu*"
+        text: '.*This is the developer menu*'
     commands:
       # Try to find and tap the close button/X
-      - tapOn: "×"
+      - tapOn: '×'
 
 - waitForAnimationToEnd
 
 # From welcome screen, test direct login path
-- assertVisible: "Level Up By Logging Off"
-- assertVisible: ".*Log In.*"
+- assertVisible: 'Level Up By Logging Off'
+- assertVisible: '.*Log In.*'
 
 # Test direct login for existing users
-- tapOn: ".*Log In.*"
+- tapOn: '.*Log In.*'
 
 # Should land on login screen
-- assertVisible: "Email"
+- assertVisible: 'Email'
 
 # Test login form interaction
-- tapOn: "Email"
-- inputText: "existing@example.com"
+- tapOn: 'Email'
+- inputText: 'existing@example.com'
 
-- assertVisible: "Send Link"
-- tapOn: "Send Link"
+- assertVisible: 'Send Link'
+- tapOn: 'Send Link'
 
 - waitForAnimationToEnd
 
-- assertVisible: "Email sent to existing@example.com"
-- assertVisible: "Send Again"
-
-
+- assertVisible: 'Email sent to existing@example.com'
+- assertVisible: 'Send Again'
 # =============================================================================
 # TEST SUMMARY
 # =============================================================================

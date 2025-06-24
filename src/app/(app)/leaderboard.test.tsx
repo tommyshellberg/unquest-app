@@ -27,9 +27,9 @@ jest.mock('@/components/ui', () => ({
   FocusAwareStatusBar: () => null,
 }));
 
-// Mock InviteFriendModal to avoid react-hook-form issues
-jest.mock('@/components/profile/invite-friend-modal', () => ({
-  InviteFriendModal: () => null,
+// Mock ContactsImportModal to avoid react-hook-form issues
+jest.mock('@/components/profile/contact-import', () => ({
+  ContactsImportModal: () => null,
 }));
 
 // Mock character images

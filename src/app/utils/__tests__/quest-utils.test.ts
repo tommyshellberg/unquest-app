@@ -7,37 +7,37 @@ describe('Quest Utilities', () => {
       expect(getQuestDuration(-1)).toBe(0);
       expect(getQuestDuration(61)).toBe(0);
     });
-    
+
     test('calculates quest durations for levels 1-5', () => {
       expect(getQuestDuration(1)).toBe(3); // 2 + 1 = 3
       expect(getQuestDuration(2)).toBe(4); // 2 + 2 = 4
       expect(getQuestDuration(3)).toBe(5); // 2 + 3 = 5
       expect(getQuestDuration(4)).toBe(6); // 2 + 4 = 6
     });
-    
+
     test('calculates quest durations for levels 6-56', () => {
       // Test beginning of range
       expect(getQuestDuration(6)).toBe(8); // start value
       expect(getQuestDuration(7)).toBe(10); // 8 + (7-6)*1.64 ≈ 9.64, rounds to 10
-      
+
       // Test middle of range
       expect(getQuestDuration(30)).toBe(47); // 8 + (30-6)*1.64 ≈ 47.36, rounds to 47
-      
+
       // Test end of range
       expect(getQuestDuration(55)).toBe(88); // 8 + (55-6)*1.64 ≈ 88.44, rounds to 88
       expect(getQuestDuration(56)).toBe(90); // end value
     });
-    
+
     test('calculates quest durations for plateau levels 57-59', () => {
       expect(getQuestDuration(57)).toBe(90);
       expect(getQuestDuration(58)).toBe(90);
       expect(getQuestDuration(59)).toBe(90);
     });
-    
+
     test('calculates quest duration for final level 60', () => {
       expect(getQuestDuration(60)).toBe(120);
     });
-    
+
     test('follows expected progression pattern', () => {
       // Verify that durations increase monotonically
       let prevDuration = 0;
@@ -48,17 +48,17 @@ describe('Quest Utilities', () => {
       }
     });
   });
-  
+
   describe('calculateRewardFromDuration', () => {
     test('calculates reward correctly', () => {
       expect(calculateRewardFromDuration(10)).toBe(30);
       expect(calculateRewardFromDuration(30)).toBe(90);
       expect(calculateRewardFromDuration(60)).toBe(180);
     });
-    
+
     test('handles zero and negative durations', () => {
       expect(calculateRewardFromDuration(0)).toBe(0);
       expect(calculateRewardFromDuration(-5)).toBe(-15); // May want to handle negatives differently
     });
   });
-}); 
+});

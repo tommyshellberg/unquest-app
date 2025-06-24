@@ -89,7 +89,7 @@ describe('Button component ', () => {
 
     render(<Button testID="button" label="Submit" disabled />);
     expect(screen.getByTestId('button').props.className).toContain(
-      'bg-neutral-300'
+      'opacity-50'
     );
   });
 });

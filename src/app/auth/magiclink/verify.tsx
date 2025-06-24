@@ -44,10 +44,12 @@ export default function VerifyMagicLinkScreen() {
         signOut();
 
         // Check if this is a 409 error indicating email already in use
-        let errorMessage = 'Magic link verification failed. The link may have expired. Please try again.';
-        
+        let errorMessage =
+          'Magic link verification failed. The link may have expired. Please try again.';
+
         if (axios.isAxiosError(error) && error.response?.status === 409) {
-          errorMessage = 'This email address is already associated with an account. Please use a different email address.';
+          errorMessage =
+            'This email address is already associated with an account. Please use a different email address.';
         }
 
         setError(errorMessage);

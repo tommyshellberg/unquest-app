@@ -74,7 +74,9 @@ describe('Auth Hydration - Streak Sync', () => {
   const mockGetToken = getToken as jest.MockedFunction<typeof getToken>;
   const mockSetUser = jest.fn();
   const mockClearUser = jest.fn();
-  const mockHydrateAuth = hydrateAuth as jest.MockedFunction<typeof hydrateAuth>;
+  const mockHydrateAuth = hydrateAuth as jest.MockedFunction<
+    typeof hydrateAuth
+  >;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -130,7 +132,7 @@ describe('Auth Hydration - Streak Sync', () => {
           try {
             const user = await mockGetUserDetails();
             mockSetUser(user);
-            
+
             // This is what the real hydration does
             if (user.character) {
               mockCreateCharacter(user.character.type, user.character.name);
@@ -140,11 +142,11 @@ describe('Auth Hydration - Streak Sync', () => {
                 xpToNextLevel: user.character.xpToNextLevel,
               });
             }
-            
+
             if (user.dailyQuestStreak !== undefined) {
               mockSetStreak(user.dailyQuestStreak);
             }
-            
+
             mockAuthStore.status = 'signIn';
             mockAuthStore.token = token;
           } catch (error) {
@@ -192,7 +194,7 @@ describe('Auth Hydration - Streak Sync', () => {
         if (token) {
           const user = await mockGetUserDetails();
           mockSetUser(user);
-          
+
           if (user.character) {
             mockCreateCharacter(user.character.type, user.character.name);
             mockUpdateCharacter({
@@ -201,7 +203,7 @@ describe('Auth Hydration - Streak Sync', () => {
               xpToNextLevel: user.character.xpToNextLevel,
             });
           }
-          
+
           // Only call setStreak if dailyQuestStreak is defined
           if (user.dailyQuestStreak !== undefined) {
             mockSetStreak(user.dailyQuestStreak);
@@ -240,7 +242,7 @@ describe('Auth Hydration - Streak Sync', () => {
         if (token) {
           const user = await mockGetUserDetails();
           mockSetUser(user);
-          
+
           if (user.dailyQuestStreak !== undefined) {
             mockSetStreak(user.dailyQuestStreak);
           }
@@ -334,7 +336,7 @@ describe('Auth Hydration - Streak Sync', () => {
         if (token) {
           const user = await mockGetUserDetails();
           mockSetUser(user);
-          
+
           if (user.character) {
             mockCreateCharacter(user.character.type, user.character.name);
             mockUpdateCharacter({
@@ -343,7 +345,7 @@ describe('Auth Hydration - Streak Sync', () => {
               xpToNextLevel: user.character.xpToNextLevel,
             });
           }
-          
+
           if (user.dailyQuestStreak !== undefined) {
             mockSetStreak(user.dailyQuestStreak);
           }
@@ -386,7 +388,7 @@ describe('Auth Hydration - Streak Sync', () => {
         if (token) {
           const user = await mockGetUserDetails();
           mockSetUser(user);
-          
+
           // Handle both formats: nested character object or top-level properties
           const characterData = user.character || {
             type: user.type,
@@ -395,7 +397,7 @@ describe('Auth Hydration - Streak Sync', () => {
             currentXP: user.xp || 0,
             xpToNextLevel: 100,
           };
-          
+
           if (user.type && user.name) {
             mockCreateCharacter(characterData.type, characterData.name);
             mockUpdateCharacter({
@@ -404,7 +406,7 @@ describe('Auth Hydration - Streak Sync', () => {
               xpToNextLevel: characterData.xpToNextLevel,
             });
           }
-          
+
           if (user.dailyQuestStreak !== undefined) {
             mockSetStreak(user.dailyQuestStreak);
           }
@@ -451,7 +453,7 @@ describe('Auth Hydration - Streak Sync', () => {
         if (token) {
           const user = await mockGetUserDetails();
           mockSetUser(user);
-          
+
           if (user.dailyQuestStreak !== undefined) {
             mockSetStreak(user.dailyQuestStreak);
           }
@@ -490,7 +492,7 @@ describe('Auth Hydration - Streak Sync', () => {
         if (token) {
           const user = await mockGetUserDetails();
           mockSetUser(user);
-          
+
           if (user.dailyQuestStreak !== undefined) {
             mockSetStreak(user.dailyQuestStreak);
           }
@@ -517,7 +519,7 @@ describe('Auth Hydration - Streak Sync', () => {
       };
 
       mockGetUserDetails.mockResolvedValue(mockUser);
-      
+
       // Mock useAuth to return our mock store
       (useAuth as jest.Mock).mockImplementation(() => mockAuthStore);
 

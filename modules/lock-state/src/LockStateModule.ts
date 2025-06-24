@@ -1,5 +1,5 @@
 // modules/lock-state/LockStateModule.ts
-import { requireNativeModule, EventEmitter } from "expo-modules-core";
+import { requireNativeModule, EventEmitter } from 'expo-modules-core';
 
 /**
  * Define the shape of our events.
@@ -24,7 +24,7 @@ export type EmitterSubscription = {
 };
 
 // Load our "LockState" native module by its name from the Kotlin code: Name("LockState")
-const LockState = requireNativeModule("LockState");
+const LockState = requireNativeModule('LockState');
 
 // Create a typed EventEmitter, associating our event names with possible payloads
 const lockStateEmitter = new EventEmitter<LockStateEventMap>(LockState);

@@ -2,7 +2,13 @@ import { type BottomSheetModal } from '@gorhom/bottom-sheet';
 import React from 'react';
 import { Controller } from 'react-hook-form';
 
-import { BottomSheetKeyboardAwareScrollView, Button, Input, Text, View } from '@/components/ui';
+import {
+  BottomSheetKeyboardAwareScrollView,
+  Button,
+  Input,
+  Text,
+  View,
+} from '@/components/ui';
 import { Modal } from '@/components/ui/modal';
 
 type InviteFriendModalProps = {
@@ -71,7 +77,7 @@ export function InviteFriendModal({
           <View className="mt-4 flex-row justify-between">
             <Button
               label={success ? 'Done' : 'Cancel'}
-              onPress={success ? onClose : (onCancel || onClose)}
+              onPress={success ? onClose : onCancel || onClose}
               variant="outline"
               className="mr-2 flex-1"
             />

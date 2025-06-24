@@ -11,7 +11,10 @@ import Animated, {
 import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
 import { ExperienceCard } from '@/components/profile/experience-card';
 import { FriendsList } from '@/components/profile/friends-list';
-import { InviteFriendModal } from '@/components/profile/invite-friend-modal';
+import {
+  ContactsImportModal,
+  type ContactsImportModalRef,
+} from '@/components/profile/contact-import';
 import { ProfileCard } from '@/components/profile/profile-card';
 // Import components
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
@@ -29,6 +32,7 @@ import { useProfileData } from '@/lib/hooks/use-profile-data';
 import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
+import { useUserStore } from '@/store/user-store';
 import { type CharacterType } from '@/store/types';
 
 export default function ProfileScreen() {
@@ -38,6 +42,7 @@ export default function ProfileScreen() {
   // Add a state to track if we need to redirect
   const [isRedirecting, setIsRedirecting] = React.useState(false);
   const streakCount = useCharacterStore((state) => state.dailyQuestStreak);
+  const contactsModalRef = React.useRef<ContactsImportModalRef>(null);
 
   // Animation value for header
   const headerOpacity = useSharedValue(0);
@@ -69,6 +74,7 @@ export default function ProfileScreen() {
     inviteError,
     inviteSuccess,
     formMethods,
+    handleInviteFriends,
     handleCloseInviteModal,
     handleDeleteFriend,
     handleConfirmDelete,
@@ -84,25 +90,10 @@ export default function ProfileScreen() {
     rejectMutation,
     rescindMutation,
     inviteMutation,
-  } = useFriendManagement(userEmail);
+    sendBulkInvites,
+  } = useFriendManagement(userEmail, contactsModalRef);
 
   // Create the modal instance at the parent level
-  const inviteModal = useModal();
-
-  // Update the handleInviteFriends to use modal.present
-  const handleInviteFriends = useCallback(() => {
-    inviteModal.present();
-  }, [inviteModal]);
-
-  // Update the handleCloseInviteModal to use modal.dismiss
-  const _handleCloseInviteModal = useCallback(() => {
-    handleCloseInviteModal();
-  }, [handleCloseInviteModal]);
-
-  // Handle cancel without resetting form
-  const _handleCancelInviteModal = useCallback(() => {
-    inviteModal.dismiss();
-  }, [inviteModal]);
 
   // Check if character exists and handle redirect
   useEffect(() => {
@@ -133,8 +124,10 @@ export default function ProfileScreen() {
             const calculateXPForLevel = (l: number): number => {
               return Math.floor(100 * Math.pow(1.5, l - 1));
             };
-            
+
             characterStore.updateCharacter({
+              type: (user as any).type,
+              name: (user as any).name,
               level: level,
               currentXP: (user as any).xp || 0,
               xpToNextLevel: calculateXPForLevel(level),
@@ -184,11 +177,17 @@ export default function ProfileScreen() {
     return null; // Return empty instead of a loading view
   }
 
+  // Get user from store for server stats
+  const user = useUserStore((state) => state.user);
+
   // Calculate total minutes from completed quests
-  const totalMinutesOffPhone = completedQuests.reduce(
-    (total, quest) => total + quest.durationMinutes,
-    0
-  );
+  // Use server stats if available, otherwise calculate from local data
+  const totalMinutesOffPhone =
+    user?.totalMinutesOffPhone ??
+    completedQuests.reduce((total, quest) => total + quest.durationMinutes, 0);
+
+  // Use server quest count if available
+  const questCount = user?.totalQuestsCompleted ?? completedQuests.length;
 
   return (
     <View className="flex-1 bg-background">
@@ -217,7 +216,7 @@ export default function ProfileScreen() {
 
         {/* Stats Card */}
         <StatsCard
-          questCount={completedQuests.length}
+          questCount={questCount}
           minutesSaved={totalMinutesOffPhone}
           streakCount={streakCount}
         />
@@ -276,15 +275,11 @@ export default function ProfileScreen() {
       </ScrollView>
 
       {/* Modals */}
-      <InviteFriendModal
-        modalRef={inviteModal.ref}
-        onClose={_handleCloseInviteModal}
-        onCancel={_handleCancelInviteModal}
-        onSubmit={handleSendFriendRequest}
-        formMethods={formMethods}
-        error={inviteError}
-        success={inviteSuccess}
-        isPending={inviteMutation?.isPending}
+      <ContactsImportModal
+        ref={contactsModalRef}
+        sendBulkInvites={sendBulkInvites}
+        friends={friendsData?.friends || []}
+        userEmail={userEmail}
       />
 
       <DeleteFriendModal

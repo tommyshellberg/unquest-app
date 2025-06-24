@@ -191,7 +191,9 @@ describe('OnboardingStore', () => {
       useOnboardingStore
         .getState()
         .setCurrentStep(OnboardingStep.STARTING_FIRST_QUEST);
-      expect(useOnboardingStore.getState().hasCompletedFirstQuest()).toBe(false);
+      expect(useOnboardingStore.getState().hasCompletedFirstQuest()).toBe(
+        false
+      );
 
       // Should have completed from VIEWING_SIGNUP_PROMPT onwards
       useOnboardingStore

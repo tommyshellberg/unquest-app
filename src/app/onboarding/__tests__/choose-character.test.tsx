@@ -1,6 +1,6 @@
-import React from "react";
-import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
-import ChooseCharacterScreen from "../choose-character";
+import React from 'react';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import ChooseCharacterScreen from '../choose-character';
 import { createProvisionalUser } from '@/lib/services/user';
 import { Dimensions } from 'react-native';
 import { useOnboardingStore, OnboardingStep } from '@/store/onboarding-store';
@@ -91,7 +91,7 @@ describe('ChooseCharacterScreen', () => {
     expect(getByText('Your Character')).toBeTruthy();
     expect(getByText('Your companion on this journey')).toBeTruthy();
     expect(getByText('Character Name')).toBeTruthy();
-    
+
     // Enter character name
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'Arthur');
@@ -252,7 +252,11 @@ describe('ChooseCharacterScreen', () => {
 
     // Should show error message
     await waitFor(() => {
-      expect(queryByText(/Network error. Please check your connection and try again./)).toBeTruthy();
+      expect(
+        queryByText(
+          /Network error. Please check your connection and try again./
+        )
+      ).toBeTruthy();
     });
   });
 
@@ -312,40 +316,38 @@ describe('ChooseCharacterScreen', () => {
 
     // Step 1: Should start with Continue button disabled
     const continueButton = getByText('Continue');
-    
+
     // Try to press without entering name - nothing should happen
     fireEvent.press(continueButton);
-    
+
     // Should still be on the same screen
     expect(getByText('Your Character')).toBeTruthy();
     expect(getByText('Character Name')).toBeTruthy();
-    
+
     // Now enter a name
     const input = getByPlaceholderText('Enter character name');
     fireEvent.changeText(input, 'A');
-    
+
     // Flush debounce
     act(() => {
       jest.advanceTimersByTime(500);
     });
-    
+
     // Now should be able to continue
     fireEvent.press(continueButton);
-    
+
     // Should be on character selection screen
     expect(getByText("Choose A's Character Type")).toBeTruthy();
   });
 
   it('should filter out special characters from name input', () => {
-    const { getByPlaceholderText } = render(
-      <ChooseCharacterScreen />
-    );
+    const { getByPlaceholderText } = render(<ChooseCharacterScreen />);
 
     const input = getByPlaceholderText('Enter character name');
-    
+
     // Try to enter special characters
     fireEvent.changeText(input, 'Test@Name#123!');
-    
+
     // Should only keep alphanumeric and spaces
     expect(input.props.value).toBe('TestName123');
   });

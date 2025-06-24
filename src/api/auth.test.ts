@@ -320,7 +320,9 @@ describe('auth.ts', () => {
 
   describe('isAuthenticated', () => {
     it('should return true when access token exists', () => {
-      (tokenService.getAccessToken as jest.Mock).mockReturnValue('access-token');
+      (tokenService.getAccessToken as jest.Mock).mockReturnValue(
+        'access-token'
+      );
       expect(isAuthenticated()).toBe(true);
     });
 

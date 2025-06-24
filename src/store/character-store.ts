@@ -76,10 +76,10 @@ export const useCharacterStore = create<CharacterState>()(
 
         // Import levels data for accurate level calculation
         const { levels } = require('@/app/data/level-progression');
-        
+
         // Add XP to total
         const newTotalXP = character.currentXP + amount;
-        
+
         // Find new level based on total XP
         let newLevel = 1;
         for (let i = levels.length - 1; i >= 0; i--) {

@@ -10,6 +10,8 @@ export interface User {
   name?: string;
   avatar?: string;
   createdAt?: string;
+  totalQuestsCompleted?: number;
+  totalMinutesOffPhone?: number;
 }
 
 interface UserState {

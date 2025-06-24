@@ -60,8 +60,14 @@ describe('token.ts', () => {
         access: 'access-token-123',
         refresh: 'refresh-token-456',
       });
-      expect(setItem).toHaveBeenCalledWith('access_token_expiry', '2025-01-01T00:00:00Z');
-      expect(setItem).toHaveBeenCalledWith('refresh_token_expiry', '2025-02-01T00:00:00Z');
+      expect(setItem).toHaveBeenCalledWith(
+        'access_token_expiry',
+        '2025-01-01T00:00:00Z'
+      );
+      expect(setItem).toHaveBeenCalledWith(
+        'refresh_token_expiry',
+        '2025-02-01T00:00:00Z'
+      );
     });
 
     it('should handle errors when storing tokens', () => {
@@ -82,7 +88,10 @@ describe('token.ts', () => {
       };
 
       expect(() => storeTokens(tokens)).toThrow('Storage error');
-      expect(console.error).toHaveBeenCalledWith('Error storing tokens:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error storing tokens:',
+        error
+      );
     });
 
     it('should handle errors when storing expiry dates', () => {
@@ -103,7 +112,10 @@ describe('token.ts', () => {
       };
 
       expect(() => storeTokens(tokens)).toThrow('Storage error');
-      expect(console.error).toHaveBeenCalledWith('Error storing tokens:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error storing tokens:',
+        error
+      );
     });
   });
 
@@ -147,7 +159,10 @@ describe('token.ts', () => {
       const result = getAccessToken();
 
       expect(result).toBeNull();
-      expect(console.error).toHaveBeenCalledWith('Error getting access token:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error getting access token:',
+        error
+      );
     });
   });
 
@@ -191,14 +206,19 @@ describe('token.ts', () => {
       const result = getRefreshToken();
 
       expect(result).toBeNull();
-      expect(console.error).toHaveBeenCalledWith('Error getting refresh token:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error getting refresh token:',
+        error
+      );
     });
   });
 
   describe('isTokenExpired', () => {
     beforeEach(() => {
       // Mock Date.now() to a fixed timestamp
-      jest.spyOn(Date, 'now').mockReturnValue(new Date('2024-12-01T00:00:00Z').getTime());
+      jest
+        .spyOn(Date, 'now')
+        .mockReturnValue(new Date('2024-12-01T00:00:00Z').getTime());
     });
 
     afterEach(() => {
@@ -268,7 +288,10 @@ describe('token.ts', () => {
       const result = isTokenExpired();
 
       expect(result).toBe(true);
-      expect(console.error).toHaveBeenCalledWith('Error checking token expiry:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error checking token expiry:',
+        error
+      );
     });
   });
 
@@ -291,7 +314,10 @@ describe('token.ts', () => {
       const result = removeTokens();
 
       expect(result).toBe(false);
-      expect(console.error).toHaveBeenCalledWith('Error removing tokens:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error removing tokens:',
+        error
+      );
     });
 
     it('should return false and log error when removeItem throws', () => {
@@ -303,7 +329,10 @@ describe('token.ts', () => {
       const result = removeTokens();
 
       expect(result).toBe(false);
-      expect(console.error).toHaveBeenCalledWith('Error removing tokens:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error removing tokens:',
+        error
+      );
     });
   });
 });

@@ -64,7 +64,7 @@ export function QuestComplete({
 
   // Determine if this is a story quest or custom quest - they need different card styling
   const isStoryQuest = quest.mode === 'story';
-  
+
   // Debug logging
   console.log('[QuestComplete] Quest mode:', quest.mode);
   console.log('[QuestComplete] isStoryQuest:', isStoryQuest);
