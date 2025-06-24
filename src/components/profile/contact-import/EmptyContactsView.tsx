@@ -25,11 +25,12 @@ export const EmptyContactsView: React.FC<EmptyContactsViewProps> = ({
             </View>
             <View className="flex-1">
               <Text className="text-base font-semibold text-neutral-800">
-                Complete quests together
+                Play cooperative quests together
               </Text>
               <Text className="text-sm text-neutral-500">
                 Motivate each other to stay focused
               </Text>
+              <Text className="text-sm text-neutral-500">(coming soon)</Text>
             </View>
           </View>
 
