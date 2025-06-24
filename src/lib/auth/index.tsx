@@ -108,6 +108,8 @@ const _useAuth = create<AuthState>((set, get) => ({
             };
 
             characterStore.updateCharacter({
+              type: characterData.type || (user as any).type,
+              name: characterData.name || (user as any).name,
               level: level,
               currentXP: characterData.currentXP || (user as any).xp || 0,
               xpToNextLevel:

@@ -169,6 +169,8 @@ export const verifyMagicLinkAndSignIn = async (
 
           // Then update with the server data
           characterStore.updateCharacter({
+            type: characterData.type || (userResponse as any).type,
+            name: characterData.name || (userResponse as any).name,
             level: characterData.level || (userResponse as any).level || 1,
             currentXP: characterData.currentXP || (userResponse as any).xp || 0,
             xpToNextLevel: characterData.xpToNextLevel || 100,

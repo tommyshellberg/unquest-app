@@ -21,11 +21,17 @@ import {
   type LeaderboardEntry as ApiLeaderboardEntry,
   useLeaderboardStats,
 } from '@/api/stats';
-import { ContactsImportModal, type ContactsImportModalRef } from '@/components/profile/contact-import';
+import {
+  ContactsImportModal,
+  type ContactsImportModalRef,
+} from '@/components/profile/contact-import';
 import { Button, Card, FocusAwareStatusBar, Text } from '@/components/ui';
+import colors from '@/components/ui/colors';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { useProfileData } from '@/lib/hooks/use-profile-data';
-import { getItem } from '@/lib/storage';
+import { useCharacterStore } from '@/store/character-store';
+import { useQuestStore } from '@/store/quest-store';
+import { useUserStore } from '@/store/user-store';
 
 import CHARACTERS from '../data/characters';
 
@@ -38,13 +44,14 @@ type CharacterType =
   | 'bard';
 
 type LeaderboardEntry = {
-  rank: number;
+  rank?: number;
   userId: string;
   username: string;
   characterType: CharacterType;
   metric: number;
   isCurrentUser?: boolean;
   isFriend?: boolean;
+  isSeparated?: boolean;
 };
 
 type LeaderboardType = 'quests' | 'minutes' | 'streak';
@@ -72,16 +79,17 @@ const LeaderboardItem = ({
 
   return (
     <View
-      className={`flex-row items-center px-4 py-3 ${
-        entry.isCurrentUser ? 'bg-primary-100' : ''
-      }`}
+      className="flex-row items-center px-4 py-3"
+      style={
+        entry.isCurrentUser ? { backgroundColor: colors.primary[100] } : {}
+      }
     >
       <Text
         className={`w-10 text-lg font-bold ${
-          entry.rank <= 3 ? 'text-primary-500' : 'text-gray-600'
+          entry.rank && entry.rank <= 3 ? 'text-primary-500' : 'text-gray-600'
         }`}
       >
-        {entry.rank}
+        {entry.rank || ''}
       </Text>
 
       <Image
@@ -189,8 +197,21 @@ export default function LeaderboardScreen() {
     sendBulkInvites,
   } = useFriendManagement(userEmail, contactsModalRef);
 
-  // Get current user ID
-  const currentUserId = getItem('userId');
+  // Get current user data from stores
+  const currentUserId = useUserStore((state) => state.user?.id);
+  const character = useCharacterStore((state) => state.character);
+  const completedQuests = useQuestStore((state) => state.completedQuests);
+  const dailyQuestStreak = useCharacterStore((state) => state.dailyQuestStreak);
+
+  // Calculate total minutes from completed quests
+  const totalMinutes = useMemo(() => {
+    return completedQuests.reduce((total, quest) => {
+      if (quest.startTime && quest.stopTime && quest.status === 'completed') {
+        return total + Math.round((quest.stopTime - quest.startTime) / 60000);
+      }
+      return total;
+    }, 0);
+  }, [completedQuests]);
 
   // Fetch leaderboard data
   const {
@@ -207,22 +228,26 @@ export default function LeaderboardScreen() {
     friendsData && friendsData.friends && friendsData.friends.length > 0;
 
   // Transform API data to UI format
-  const leaderboardData = useMemo(() => {
+  const leaderboardData = useMemo((): LeaderboardEntry[] => {
     if (!leaderboardStats) return [];
 
     let apiData: ApiLeaderboardEntry[] = [];
+    let allApiData: ApiLeaderboardEntry[] = [];
 
     if (scope === 'friends' && leaderboardStats.friends) {
       // Use friends data from API
       switch (selectedType) {
         case 'quests':
           apiData = leaderboardStats.friends.questsCompleted || [];
+          allApiData = leaderboardStats.friends.questsCompleted || [];
           break;
         case 'minutes':
           apiData = leaderboardStats.friends.questMinutes || [];
+          allApiData = leaderboardStats.friends.questMinutes || [];
           break;
         case 'streak':
           apiData = leaderboardStats.friends.longestStreak || [];
+          allApiData = leaderboardStats.friends.longestStreak || [];
           break;
       }
     } else {
@@ -230,18 +255,21 @@ export default function LeaderboardScreen() {
       switch (selectedType) {
         case 'quests':
           apiData = leaderboardStats.global.questsCompleted || [];
+          allApiData = leaderboardStats.global.questsCompleted || [];
           break;
         case 'minutes':
           apiData = leaderboardStats.global.questMinutes || [];
+          allApiData = leaderboardStats.global.questMinutes || [];
           break;
         case 'streak':
           apiData = leaderboardStats.global.longestStreak || [];
+          allApiData = leaderboardStats.global.longestStreak || [];
           break;
       }
     }
 
-    // Transform API data to UI format
-    return apiData.map((entry, index) => ({
+    // Transform API data to UI format for top 10
+    const top10 = apiData.slice(0, 10).map((entry, index) => ({
       rank: index + 1,
       userId: entry.userId,
       username: entry.characterName,
@@ -253,7 +281,58 @@ export default function LeaderboardScreen() {
         friendsData?.friends?.some((friend) => friend._id === entry.userId) ||
         false,
     }));
-  }, [leaderboardStats, selectedType, scope, currentUserId, friendsData]);
+
+    // Check if current user is in top 10
+    const userInTop10 = top10.some((entry) => entry.isCurrentUser);
+
+    // If user not in top 10, add them without rank from local data
+    if (!userInTop10 && currentUserId && character) {
+      // Get user's metric based on selected type
+      let userMetric = 0;
+      switch (selectedType) {
+        case 'quests':
+          userMetric = completedQuests.length;
+          break;
+        case 'minutes':
+          userMetric = totalMinutes;
+          break;
+        case 'streak':
+          userMetric = dailyQuestStreak;
+          break;
+      }
+
+      // Only add user if they have data for this metric
+      if (userMetric > 0) {
+        const userLeaderboardEntry: LeaderboardEntry = {
+          userId: currentUserId,
+          username: character.name,
+          characterType: character.type,
+          metric: userMetric,
+          isCurrentUser: true,
+          isFriend: scope === 'friends',
+          isSeparated: true,
+        };
+
+        // Add user entry without rank number
+        if (top10.length > 0) {
+          return [...top10, userLeaderboardEntry];
+        }
+        return [userLeaderboardEntry];
+      }
+    }
+
+    return top10;
+  }, [
+    leaderboardStats,
+    selectedType,
+    scope,
+    currentUserId,
+    friendsData,
+    character,
+    completedQuests.length,
+    totalMinutes,
+    dailyQuestStreak,
+  ]);
 
   const topUser = leaderboardData[0];
   const restOfUsers = leaderboardData.slice(1);
@@ -449,7 +528,7 @@ export default function LeaderboardScreen() {
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {scope === 'friends' && !leaderboardStats.friends ? (
+        {scope === 'friends' && !leaderboardStats?.friends ? (
           <Card className="mx-4 mt-8 p-6">
             <View className="items-center">
               <Users size={48} color="#C9BFAF" className="mb-3" />
@@ -503,10 +582,18 @@ export default function LeaderboardScreen() {
               <Card className="mx-4 mb-4">
                 {restOfUsers.map((entry, index) => (
                   <React.Fragment key={entry.userId}>
-                    <LeaderboardItem entry={entry} type={selectedType} />
-                    {index < restOfUsers.length - 1 && (
-                      <View className="ml-16 h-px bg-gray-200" />
+                    {entry.isSeparated && index > 0 && (
+                      <View className="my-2 px-4">
+                        <Text className="text-center text-sm text-gray-500">
+                          • • •
+                        </Text>
+                      </View>
                     )}
+                    <LeaderboardItem entry={entry} type={selectedType} />
+                    {index < restOfUsers.length - 1 &&
+                      !restOfUsers[index + 1]?.isSeparated && (
+                        <View className="ml-16 h-px bg-gray-200" />
+                      )}
                   </React.Fragment>
                 ))}
               </Card>
@@ -548,29 +635,24 @@ export default function LeaderboardScreen() {
               <Card className="mx-4 mb-4">
                 {restOfUsers.map((entry, index) => (
                   <React.Fragment key={entry.userId}>
-                    <LeaderboardItem entry={entry} type={selectedType} />
-                    {index < restOfUsers.length - 1 && (
-                      <View className="ml-16 h-px bg-gray-200" />
+                    {entry.isSeparated && index > 0 && (
+                      <View className="my-2 px-4">
+                        <Text className="text-center text-sm text-gray-500">
+                          • • •
+                        </Text>
+                      </View>
                     )}
+                    <LeaderboardItem entry={entry} type={selectedType} />
+                    {index < restOfUsers.length - 1 &&
+                      !restOfUsers[index + 1]?.isSeparated && (
+                        <View className="ml-16 h-px bg-gray-200" />
+                      )}
                   </React.Fragment>
                 ))}
               </Card>
             )}
 
-            {/* Your Position (if not in top 10) */}
-            {currentUserPosition &&
-              currentUserPosition > 10 &&
-              !leaderboardData.some((e) => e.isCurrentUser) && (
-                <Card className="mx-4 mb-4">
-                  <View className="items-center py-4">
-                    <Text className="text-gray-600">Your Position</Text>
-                    <Text className="text-primary-600 text-2xl font-bold">
-                      #{currentUserPosition}
-                    </Text>
-                    <Text className="text-sm text-gray-600">Keep going!</Text>
-                  </View>
-                </Card>
-              )}
+            {/* Removed separate position card since user is now always shown in the list */}
           </>
         )}
       </ScrollView>

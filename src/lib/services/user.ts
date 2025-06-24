@@ -18,6 +18,12 @@ export interface UserDetails {
     _id?: string;
   };
   dailyQuestStreak?: number;
+  totalQuestsCompleted?: number;
+  totalMinutesOffPhone?: number;
+  // Legacy fields for backward compatibility
+  type?: string;
+  level?: number;
+  xp?: number;
   // Add other user fields as needed
 }
 

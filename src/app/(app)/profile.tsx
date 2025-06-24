@@ -11,7 +11,10 @@ import Animated, {
 import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
 import { ExperienceCard } from '@/components/profile/experience-card';
 import { FriendsList } from '@/components/profile/friends-list';
-import { ContactsImportModal, type ContactsImportModalRef } from '@/components/profile/contact-import';
+import {
+  ContactsImportModal,
+  type ContactsImportModalRef,
+} from '@/components/profile/contact-import';
 import { ProfileCard } from '@/components/profile/profile-card';
 // Import components
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
@@ -29,6 +32,7 @@ import { useProfileData } from '@/lib/hooks/use-profile-data';
 import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
+import { useUserStore } from '@/store/user-store';
 import { type CharacterType } from '@/store/types';
 
 export default function ProfileScreen() {
@@ -122,6 +126,8 @@ export default function ProfileScreen() {
             };
 
             characterStore.updateCharacter({
+              type: (user as any).type,
+              name: (user as any).name,
               level: level,
               currentXP: (user as any).xp || 0,
               xpToNextLevel: calculateXPForLevel(level),
@@ -171,11 +177,17 @@ export default function ProfileScreen() {
     return null; // Return empty instead of a loading view
   }
 
+  // Get user from store for server stats
+  const user = useUserStore((state) => state.user);
+
   // Calculate total minutes from completed quests
-  const totalMinutesOffPhone = completedQuests.reduce(
-    (total, quest) => total + quest.durationMinutes,
-    0
-  );
+  // Use server stats if available, otherwise calculate from local data
+  const totalMinutesOffPhone =
+    user?.totalMinutesOffPhone ??
+    completedQuests.reduce((total, quest) => total + quest.durationMinutes, 0);
+
+  // Use server quest count if available
+  const questCount = user?.totalQuestsCompleted ?? completedQuests.length;
 
   return (
     <View className="flex-1 bg-background">
@@ -204,7 +216,7 @@ export default function ProfileScreen() {
 
         {/* Stats Card */}
         <StatsCard
-          questCount={completedQuests.length}
+          questCount={questCount}
           minutesSaved={totalMinutesOffPhone}
           streakCount={streakCount}
         />
