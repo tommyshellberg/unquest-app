@@ -81,7 +81,15 @@ export default function Home() {
 
   // Get next quest options based on the last completed story quest
   useEffect(() => {
-    if (activeQuest || pendingQuest) return; // Don't update if there's an active quest
+    console.log('🔄 Story options useEffect running');
+    console.log('🔄 activeQuest:', activeQuest);
+    console.log('🔄 pendingQuest:', pendingQuest);
+    console.log('🔄 completedQuests:', completedQuests);
+
+    if (activeQuest || pendingQuest) {
+      console.log('🔄 Returning early due to active/pending quest');
+      return; // Don't update if there's an active quest
+    }
     console.log('we are not returning early');
     // Get the last completed story quest
     const storyQuests = completedQuests.filter(
@@ -137,17 +145,22 @@ export default function Home() {
           if (nextQuests.length > 0) {
             console.log('➡️ nextQuests', nextQuests);
             // Use the options from the last completed quest
+            console.log('🔄 Setting story options:', questData.options);
             setStoryOptions(questData.options);
           } else {
+            console.log('🔄 No next quests found, setting empty options');
             setStoryOptions([]);
           }
         } else {
+          console.log('🔄 No valid next quest IDs, setting empty options');
           setStoryOptions([]);
         }
       } else {
+        console.log('🔄 Quest data missing options, setting empty options');
         setStoryOptions([]);
       }
     }
+    console.log('🔄 Final storyOptions set to:', storyOptions);
   }, [completedQuests, activeQuest, pendingQuest]);
 
   // Refresh available quests when there's no active quest
@@ -228,7 +241,9 @@ export default function Home() {
       title:
         availableQuests.length > 0
           ? availableQuests[0].title
-          : 'No quests available',
+          : storyOptions.length > 0
+            ? 'Choose Your Path'
+            : 'No quests available',
       recap: (() => {
         // Get the last completed story quest for the recap
         const storyQuests = completedQuests.filter(
@@ -250,8 +265,19 @@ export default function Home() {
       })(),
       subtitle: currentMapName,
       duration:
-        availableQuests.length > 0 ? availableQuests[0].durationMinutes : 0,
-      xp: availableQuests.length > 0 ? availableQuests[0].reward.xp : 0,
+        availableQuests.length > 0
+          ? availableQuests[0].durationMinutes
+          : storyOptions.length > 0 && storyOptions[0].nextQuestId
+            ? AVAILABLE_QUESTS.find((q) => q.id === storyOptions[0].nextQuestId)
+                ?.durationMinutes || 0
+            : 0,
+      xp:
+        availableQuests.length > 0
+          ? availableQuests[0].reward.xp
+          : storyOptions.length > 0 && storyOptions[0].nextQuestId
+            ? AVAILABLE_QUESTS.find((q) => q.id === storyOptions[0].nextQuestId)
+                ?.reward.xp || 0
+            : 0,
       progress: storyProgress,
     },
     {
@@ -287,6 +313,16 @@ export default function Home() {
   // Render story quest option buttons
   const renderStoryOptions = () => {
     if (activeIndex !== 0) return null; // Only show for story mode
+
+    // Debug logging
+    console.log('🎮 renderStoryOptions - storyOptions:', storyOptions);
+    console.log('🎮 renderStoryOptions - activeQuest:', activeQuest);
+    console.log('🎮 renderStoryOptions - pendingQuest:', pendingQuest);
+
+    if (storyOptions.length === 0) {
+      console.log('⚠️ No story options available');
+      return null;
+    }
 
     // Otherwise show buttons for each option in a row
     return (
@@ -393,7 +429,7 @@ export default function Home() {
         </View>
 
         {/* Footer area with buttons */}
-        {!activeQuest && (
+        {!activeQuest && !pendingQuest && (
           <View className="mt-auto items-center justify-center pb-8">
             {activeIndex === 0 ? (
               renderStoryOptions()
