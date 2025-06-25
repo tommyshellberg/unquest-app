@@ -130,7 +130,6 @@ export default function ProfileScreen() {
               name: (user as any).name,
               level: level,
               currentXP: (user as any).xp || 0,
-              xpToNextLevel: calculateXPForLevel(level),
             });
 
             // Update streak if available

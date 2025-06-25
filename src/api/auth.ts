@@ -156,7 +156,6 @@ export const verifyMagicLinkAndSignIn = async (
             name: (userResponse as any).name,
             level: (userResponse as any).level || 1,
             currentXP: (userResponse as any).xp || 0,
-            xpToNextLevel: 100, // Default XP to next level
           };
 
           // First create the character if it doesn't exist locally
@@ -173,7 +172,6 @@ export const verifyMagicLinkAndSignIn = async (
             name: characterData.name || (userResponse as any).name,
             level: characterData.level || (userResponse as any).level || 1,
             currentXP: characterData.currentXP || (userResponse as any).xp || 0,
-            xpToNextLevel: characterData.xpToNextLevel || 100,
           });
 
           // Also update streak if provided
