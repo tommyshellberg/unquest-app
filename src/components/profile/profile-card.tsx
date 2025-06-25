@@ -9,8 +9,6 @@ import {
   TextInput,
 } from 'react-native';
 import Animated, {
-  FadeIn,
-  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -52,8 +50,12 @@ export function ProfileCard({ character }: ProfileCardProps) {
 
     setIsLoading(true);
     try {
-      // Update on server
-      await updateUserCharacter({ ...character, name: editedName.trim() });
+      // Update on server - exclude xpToNextLevel which may exist in persisted data
+      const { xpToNextLevel, ...characterForServer } = character;
+      await updateUserCharacter({
+        ...characterForServer,
+        name: editedName.trim(),
+      });
 
       // Update local store
       updateCharacter({ name: editedName.trim() });
@@ -95,7 +97,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
           <View />
 
           {/* Bottom section with player info and blur */}
-          <BlurView intensity={80} tint="light" className="overflow-hidden p-5">
+          <BlurView intensity={50} tint="light" className="overflow-hidden p-5">
             <View>
               {/* Name row with edit icon */}
               <View className="flex-row items-center justify-between">
