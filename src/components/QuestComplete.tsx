@@ -14,7 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
-import { type Quest, type StoryQuestTemplate } from '@/store/types';
+import {
+  type Quest,
+  type StoryQuestTemplate,
+  type CooperativeQuestRun,
+} from '@/store/types';
+import { useCooperativeQuest } from '@/lib/hooks/use-cooperative-quest';
+import { scheduleCooperativeQuestCompleteNotification } from '@/lib/services/notifications';
 
 import { StoryNarration } from './StoryNarration';
 
@@ -39,6 +45,9 @@ export function QuestComplete({
     (state) => state.clearRecentCompletedQuest
   );
 
+  // Check if this was a cooperative quest
+  const { isCooperativeQuest, cooperativeQuestRun } = useCooperativeQuest();
+
   const headerOpacity = useSharedValue(0);
   const storyOpacity = useSharedValue(0);
   const rewardOpacity = useSharedValue(0);
@@ -60,7 +69,23 @@ export function QuestComplete({
     headerOpacity.value = withDelay(200, withTiming(1, { duration: 800 }));
     storyOpacity.value = withDelay(600, withTiming(1, { duration: 800 }));
     rewardOpacity.value = withDelay(1000, withTiming(1, { duration: 800 }));
-  }, [headerOpacity, storyOpacity, rewardOpacity]);
+
+    // Schedule cooperative quest notification if applicable
+    if (isCooperativeQuest && cooperativeQuestRun) {
+      const participantCount = cooperativeQuestRun.participants?.length || 1;
+      scheduleCooperativeQuestCompleteNotification(
+        quest.title,
+        participantCount
+      );
+    }
+  }, [
+    headerOpacity,
+    storyOpacity,
+    rewardOpacity,
+    isCooperativeQuest,
+    cooperativeQuestRun,
+    quest.title,
+  ]);
 
   // Determine if this is a story quest or custom quest - they need different card styling
   const isStoryQuest = quest.mode === 'story';
@@ -103,7 +128,9 @@ export function QuestComplete({
             Well done, {characterName}!
           </Text>
           <Text className="text-cream text-lg drop-shadow-md">
-            You've completed the quest!
+            {isCooperativeQuest && cooperativeQuestRun
+              ? `You and your friends completed the quest!`
+              : `You've completed the quest!`}
           </Text>
         </Animated.View>
 
@@ -140,6 +167,27 @@ export function QuestComplete({
             <Text className="text-lg font-bold">
               Reward: {quest.reward.xp} XP
             </Text>
+
+            {/* Show cooperative quest participants */}
+            {isCooperativeQuest &&
+              cooperativeQuestRun &&
+              cooperativeQuestRun.participants && (
+                <View className="mt-4">
+                  <Text className="text-sm font-medium mb-2">
+                    Quest Completed With:
+                  </Text>
+                  {cooperativeQuestRun.participants
+                    .filter((p) => p.status === 'completed')
+                    .map((participant) => (
+                      <Text
+                        key={participant.userId}
+                        className="text-sm text-gray-600"
+                      >
+                        {participant.userName || 'Friend'}
+                      </Text>
+                    ))}
+                </View>
+              )}
           </View>
 
           {showActionButton && (

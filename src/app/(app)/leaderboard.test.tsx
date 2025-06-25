@@ -7,12 +7,17 @@ import { useProfileData } from '@/lib/hooks/use-profile-data';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { useLeaderboardStats } from '@/api/stats';
 import { getItem } from '@/lib/storage';
+import { useUserStore } from '@/store/user-store';
+import { useQuestStore } from '@/store/quest-store';
+import { useCharacterStore } from '@/store/character-store';
 
 // Mock dependencies
 jest.mock('expo-router');
 jest.mock('@/lib/hooks/use-profile-data');
 jest.mock('@/lib/hooks/use-friend-management');
 jest.mock('@/store/character-store');
+jest.mock('@/store/user-store');
+jest.mock('@/store/quest-store');
 jest.mock('@/api/stats');
 jest.mock('@/lib/storage');
 
@@ -237,6 +242,25 @@ describe('LeaderboardScreen', () => {
       error: null,
     });
     (getItem as jest.Mock).mockReturnValue('current-user');
+    
+    // Mock the stores with Zustand pattern
+    (useUserStore as unknown as jest.Mock).mockImplementation((selector) => {
+      const state = { user: { id: 'current-user' } };
+      return selector ? selector(state) : state;
+    });
+    (useCharacterStore as unknown as jest.Mock).mockImplementation((selector) => {
+      const state = {
+        character: { name: 'test', type: 'bard' },
+        dailyQuestStreak: 0,
+      };
+      return selector ? selector(state) : state;
+    });
+    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) => {
+      const state = {
+        completedQuests: [],
+      };
+      return selector ? selector(state) : state;
+    });
   });
 
   it('renders leaderboard with global data by default', () => {
@@ -311,8 +335,8 @@ describe('LeaderboardScreen', () => {
   it('highlights current user in leaderboard', () => {
     const { getByText } = render(<LeaderboardScreen />);
 
-    // Current user should be marked
-    expect(getByText('test (You)')).toBeTruthy();
+    // Current user should be marked - look for the text that contains both "test" and "(You)"
+    expect(getByText(/test.*\(You\)/)).toBeTruthy();
   });
 
   it('shows crown icon for first place', () => {

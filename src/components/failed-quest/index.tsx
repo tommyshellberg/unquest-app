@@ -12,6 +12,7 @@ import type {
   Quest,
   StoryQuestTemplate,
 } from '@/store/types';
+import { useCooperativeQuest } from '@/lib/hooks/use-cooperative-quest';
 
 type FailedQuestProps = {
   quest: Quest | StoryQuestTemplate | CustomQuestTemplate;
@@ -19,6 +20,9 @@ type FailedQuestProps = {
 };
 
 export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
+  // Check if this was a cooperative quest
+  const { isCooperativeQuest, cooperativeQuestRun } = useCooperativeQuest();
+
   // Create animated values for header, message, and button animations
   const headerAnim = useSharedValue(0);
   const messageAnim = useSharedValue(0);
@@ -74,15 +78,30 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
           style={messageAnimatedStyle}
           className="my-6 flex-1 items-center px-6"
         >
-          <Text className="mb-4">
-            It's okay to fail – every setback teaches you a lesson.
-          </Text>
-          <Text className="mb-4 text-base">
-            Resist unlocking out of boredom.
-          </Text>
-          <Text className="text-base">
-            Using your phone less helps build focus and mindfulness.
-          </Text>
+          {isCooperativeQuest ? (
+            <>
+              <Text className="mb-4">The team quest was interrupted!</Text>
+              <Text className="mb-4 text-base">
+                When doing quests together, everyone needs to stay focused.
+              </Text>
+              <Text className="text-base">
+                Coordinate with your friends and try again when everyone is
+                ready.
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text className="mb-4">
+                It's okay to fail – every setback teaches you a lesson.
+              </Text>
+              <Text className="mb-4 text-base">
+                Resist unlocking out of boredom.
+              </Text>
+              <Text className="text-base">
+                Using your phone less helps build focus and mindfulness.
+              </Text>
+            </>
+          )}
         </Animated.View>
 
         {/* Button Section */}

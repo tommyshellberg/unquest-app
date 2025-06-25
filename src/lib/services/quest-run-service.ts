@@ -10,7 +10,7 @@ export type QuestRunStatus = 'pending' | 'active' | 'failed' | 'success';
 export interface QuestRunResponse {
   id: string;
   status: QuestRunStatus;
-  participants: string[];
+  participants: string[] | { userId: string; ready: boolean; status: string }[];
   quest: {
     title: string;
     durationMinutes: number;
@@ -21,14 +21,25 @@ export interface QuestRunResponse {
     };
     options: any[];
   };
+  invitationId?: string;
+  actualStartTime?: number;
+  scheduledEndTime?: number;
 }
 
 const generateQuestRunBodyCustom = (questTemplate: CustomQuestTemplate) => {
   // @TODO: For now, leave out the questTemplateId as the server doesn't have the template documents added yet.
   // return questTemplate with the id removed
-  const { id, ...rest } = questTemplate;
-  // @TODO: Add any additional users to the participants array, but it's not required for solo quests.
-  return { quest: rest };
+  const { inviteeIds, ...rest } = questTemplate;
+
+  // Build the request body
+  const body: any = { quest: rest };
+
+  // Add inviteeIds if this is a cooperative quest
+  if (inviteeIds && inviteeIds.length > 0) {
+    body.inviteeIds = inviteeIds;
+  }
+
+  return body;
 };
 
 const generateQuestRunBodyStory = (questTemplate: StoryQuestTemplate) => {
@@ -62,16 +73,26 @@ export async function createQuestRun(
 export async function updateQuestRunStatus(
   runId: string,
   status: QuestRunStatus,
-  liveActivityId?: string | null
+  liveActivityId?: string | null,
+  ready?: boolean
 ): Promise<QuestRunResponse> {
   try {
     console.log('Updating quest run status:', runId, status, liveActivityId);
-    const payload: { status: QuestRunStatus; liveActivityId?: string } = {
+    const payload: {
+      status: QuestRunStatus;
+      liveActivityId?: string;
+      ready?: boolean;
+    } = {
       status,
     };
 
     if (liveActivityId) {
       payload.liveActivityId = liveActivityId;
+    }
+
+    // For cooperative quests, include ready state when activating
+    if (ready !== undefined && status === 'active') {
+      payload.ready = ready;
     }
 
     // Check if we're using a provisional user
@@ -87,6 +108,24 @@ export async function updateQuestRunStatus(
     return response.data;
   } catch (error) {
     console.error(`Failed to update quest run ${runId} to ${status}:`, error);
+    throw error;
+  }
+}
+
+export async function getQuestRunStatus(
+  runId: string
+): Promise<QuestRunResponse> {
+  try {
+    // Check if we're using a provisional user
+    const hasProvisionalToken = !!getItem('provisionalAccessToken');
+
+    // Use the appropriate client
+    const client = hasProvisionalToken ? provisionalApiClient : apiClient;
+
+    const response = await client.get<QuestRunResponse>(`/quest-runs/${runId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to get quest run ${runId}:`, error);
     throw error;
   }
 }

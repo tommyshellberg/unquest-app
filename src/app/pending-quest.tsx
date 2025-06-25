@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
-import React, { useEffect } from 'react';
-import { Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, ActivityIndicator } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -12,11 +12,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { useQuestStore } from '@/store/quest-store';
+import {
+  useCooperativeQuest,
+  useParticipantReady,
+} from '@/lib/hooks/use-cooperative-quest';
+import QuestTimer from '@/lib/services/quest-timer';
 
 export default function PendingQuestScreen() {
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const insets = useSafeAreaInsets();
   const cancelQuest = useQuestStore((state) => state.cancelQuest);
+
+  // Cooperative quest hooks
+  const { isCooperativeQuest, cooperativeQuestRun } = useCooperativeQuest();
+  const { setReady, isUserReady, allParticipantsReady, participants } =
+    useParticipantReady(cooperativeQuestRun?.id);
+
+  const [isSettingReady, setIsSettingReady] = useState(false);
 
   // Get the quest to display (either pending or active)
   const displayQuest = pendingQuest;
@@ -71,6 +83,27 @@ export default function PendingQuestScreen() {
     // go back to previous screen
   };
 
+  const handleReadyClick = async () => {
+    if (isCooperativeQuest && !isUserReady && !isSettingReady) {
+      setIsSettingReady(true);
+      try {
+        // Update ready state in quest timer
+        await QuestTimer.updateReadyState(true);
+
+        // Then update via API
+        const questStarted = await setReady(true);
+        if (questStarted) {
+          // Quest has started with all participants
+          // The quest will auto-start via the background timer
+        }
+      } catch (error) {
+        console.error('Failed to set ready state:', error);
+      } finally {
+        setIsSettingReady(false);
+      }
+    }
+  };
+
   return (
     <View className="flex-1">
       {/* Full-screen Background Image */}
@@ -105,17 +138,79 @@ export default function PendingQuestScreen() {
 
             <View className="my-4 border-b border-[#3B7A57]" />
 
-            <Text className="mb-6 text-center text-lg font-medium text-[#3B7A57]">
-              Lock your phone to begin your quest
-            </Text>
+            {isCooperativeQuest && participants.length > 0 ? (
+              <>
+                <Text className="mb-4 text-center text-lg font-medium text-[#3B7A57]">
+                  Cooperative Quest
+                </Text>
 
-            <Text className="mb-6 text-center text-base leading-6">
-              Your character is ready to embark on their journey, but they need
-              you to put your phone away first.
-            </Text>
-            <Text className="mb-6 text-center text-base leading-6">
-              The quest will begin when your phone is locked.
-            </Text>
+                <View className="mb-4">
+                  <Text className="text-center text-sm mb-2">
+                    Participants Status:
+                  </Text>
+                  {participants.map((participant) => (
+                    <View
+                      key={participant.userId}
+                      className="flex-row items-center justify-between py-1"
+                    >
+                      <Text className="text-sm">
+                        {participant.userName || participant.userId}
+                      </Text>
+                      <View className="flex-row items-center">
+                        {participant.ready ? (
+                          <Text className="text-sm text-green-600">
+                            ✓ Ready
+                          </Text>
+                        ) : (
+                          <>
+                            <ActivityIndicator size="small" />
+                            <Text className="ml-2 text-sm text-gray-500">
+                              Waiting...
+                            </Text>
+                          </>
+                        )}
+                      </View>
+                    </View>
+                  ))}
+                </View>
+
+                {!isUserReady && (
+                  <Text className="mb-4 text-center text-base leading-6">
+                    Lock your phone to mark yourself as ready
+                  </Text>
+                )}
+
+                {isUserReady && !allParticipantsReady && (
+                  <View className="p-3 bg-blue-50 rounded-lg mb-4">
+                    <Text className="text-center text-sm text-blue-700">
+                      Waiting for all participants to be ready...
+                    </Text>
+                  </View>
+                )}
+
+                {allParticipantsReady && (
+                  <View className="p-3 bg-green-50 rounded-lg mb-4">
+                    <Text className="text-center text-sm text-green-700">
+                      All participants ready! Quest starting...
+                    </Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <>
+                <Text className="mb-6 text-center text-lg font-medium text-[#3B7A57]">
+                  Lock your phone to begin your quest
+                </Text>
+
+                <Text className="mb-6 text-center text-base leading-6">
+                  Your character is ready to embark on their journey, but they
+                  need you to put your phone away first.
+                </Text>
+                <Text className="mb-6 text-center text-base leading-6">
+                  The quest will begin when your phone is locked.
+                </Text>
+              </>
+            )}
 
             <View className="my-4 border-b border-[#3B7A57]" />
 
@@ -130,8 +225,25 @@ export default function PendingQuestScreen() {
 
         <Animated.View
           style={buttonAnimatedStyle}
-          className="mb-10" // Add bottom margin to keep away from navigation
+          className="mb-10 space-y-3" // Add bottom margin to keep away from navigation
         >
+          {isCooperativeQuest && !isUserReady && (
+            <Button
+              onPress={handleReadyClick}
+              variant="default"
+              disabled={isSettingReady}
+              className="items-center rounded-full"
+            >
+              {isSettingReady ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-base font-semibold text-white">
+                  I'm Ready
+                </Text>
+              )}
+            </Button>
+          )}
+
           <Button
             onPress={handleCancelQuest}
             variant="destructive"

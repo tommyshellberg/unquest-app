@@ -158,8 +158,17 @@ export default class QuestTimer {
       // Continue anyway as the quest can still work locally
     }
 
-    const pendingQuestTitle = 'Quest Ready';
-    const pendingTaskDesc = 'Lock your phone to begin your quest';
+    // For cooperative quests, we need to wait for all participants to be ready
+    const isCooperativeQuest =
+      'inviteeIds' in questTemplate &&
+      questTemplate.inviteeIds &&
+      questTemplate.inviteeIds.length > 0;
+    const pendingQuestTitle = isCooperativeQuest
+      ? 'Cooperative Quest Ready'
+      : 'Quest Ready';
+    const pendingTaskDesc = isCooperativeQuest
+      ? 'Waiting for all participants to be ready...'
+      : 'Lock your phone to begin your quest';
 
     if (Platform.OS === 'ios') {
       try {
@@ -509,5 +518,64 @@ export default class QuestTimer {
 
   static isRunning(): boolean {
     return BackgroundService.isRunning();
+  }
+
+  // Update ready state for cooperative quests
+  static async updateReadyState(ready: boolean) {
+    if (!this.questRunId) {
+      console.error('No quest run ID available to update ready state');
+      return;
+    }
+
+    try {
+      await updateQuestRunStatus(
+        this.questRunId,
+        'pending',
+        this.oneSignalActivityId,
+        ready
+      );
+      console.log(`Updated quest ready state to: ${ready}`);
+
+      // Update the live activity to show ready status
+      if (
+        Platform.OS === 'ios' &&
+        this.oneSignalActivityId &&
+        this.questTemplate
+      ) {
+        const attributes = {
+          title: ready ? 'Ready to Start!' : 'Cooperative Quest Ready',
+          description: ready
+            ? 'Waiting for other participants...'
+            : 'Tap "I\'m Ready" when you\'re prepared',
+        };
+        const content = {
+          durationMinutes: this.questTemplate.durationMinutes,
+          status: 'pending',
+        };
+        OneSignal.LiveActivities.startDefault(
+          this.oneSignalActivityId,
+          attributes,
+          content
+        );
+      }
+    } catch (error) {
+      console.error('Failed to update ready state:', error);
+      throw error;
+    }
+  }
+
+  // Check if this quest is cooperative
+  static isCooperativeQuest(): boolean {
+    return (
+      this.questTemplate !== null &&
+      'inviteeIds' in this.questTemplate &&
+      this.questTemplate.inviteeIds !== undefined &&
+      this.questTemplate.inviteeIds.length > 0
+    );
+  }
+
+  // Get the current quest run ID
+  static getQuestRunId(): string | null {
+    return this.questRunId;
   }
 }

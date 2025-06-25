@@ -23,7 +23,10 @@ interface BulkInviteResult {
   reason?: string;
 }
 
-export function useFriendManagement(userEmail: string, contactsModalRef?: React.RefObject<any>) {
+export function useFriendManagement(
+  userEmail: string,
+  contactsModalRef?: React.RefObject<any>
+) {
   const [refreshing, setRefreshing] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [rescindModalVisible, setRescindModalVisible] = useState(false);
@@ -252,15 +255,17 @@ export function useFriendManagement(userEmail: string, contactsModalRef?: React.
       try {
         // Filter out user's own email before sending (safety check)
         const emailsToSend = emails.filter(
-          email => email.trim().toLowerCase() !== userEmail.toLowerCase()
+          (email) => email.trim().toLowerCase() !== userEmail.toLowerCase()
         );
 
         if (emailsToSend.length === 0) {
-          return [{
-            email: emails[0],
-            success: false,
-            reason: 'Cannot invite yourself',
-          }];
+          return [
+            {
+              email: emails[0],
+              success: false,
+              reason: 'Cannot invite yourself',
+            },
+          ];
         }
 
         // Use the bulk endpoint
@@ -271,8 +276,11 @@ export function useFriendManagement(userEmail: string, contactsModalRef?: React.
         const emailToResultMap = new Map<string, BulkInviteResult>();
 
         // Add successful emails
-        if (response.successfulEmails && Array.isArray(response.successfulEmails)) {
-          response.successfulEmails.forEach(email => {
+        if (
+          response.successfulEmails &&
+          Array.isArray(response.successfulEmails)
+        ) {
+          response.successfulEmails.forEach((email) => {
             emailToResultMap.set(email.toLowerCase(), {
               email,
               success: true,
@@ -307,7 +315,7 @@ export function useFriendManagement(userEmail: string, contactsModalRef?: React.
         }
 
         // Return results in the same order as input emails
-        emailsToSend.forEach(email => {
+        emailsToSend.forEach((email) => {
           const result = emailToResultMap.get(email.toLowerCase());
           if (result) {
             results.push(result);
@@ -328,7 +336,7 @@ export function useFriendManagement(userEmail: string, contactsModalRef?: React.
       } catch (error: any) {
         console.error('Bulk invite error:', error);
         // If the bulk endpoint fails entirely, return all emails as failed
-        return emails.map(email => ({
+        return emails.map((email) => ({
           email,
           success: false,
           reason: error.response?.data?.message || 'Failed to send invitations',

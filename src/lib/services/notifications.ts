@@ -11,6 +11,7 @@ import { useSettingsStore } from '@/store/settings-store';
 
 // Channel IDs
 const QUEST_CHANNEL_ID = 'quest-notifications';
+const INVITATION_CHANNEL_ID = 'invitation-notifications';
 const NOTIFICATIONS_ENABLED_KEY = 'notificationsEnabled';
 const STREAK_WARNING_ID = 'streak-warning';
 
@@ -26,6 +27,17 @@ export async function setupNotificationChannels() {
     await ExpoNotifications.setNotificationChannelAsync(QUEST_CHANNEL_ID, {
       name: 'Quest Notifications',
       description: 'Notifications for quest completion and updates',
+      importance: ExpoNotifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: primary[300],
+      lockscreenVisibility:
+        ExpoNotifications.AndroidNotificationVisibility.PUBLIC,
+      sound: 'default',
+    });
+
+    await ExpoNotifications.setNotificationChannelAsync(INVITATION_CHANNEL_ID, {
+      name: 'Quest Invitations',
+      description: 'Notifications for cooperative quest invitations',
       importance: ExpoNotifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: primary[300],
@@ -101,8 +113,16 @@ export function setupNotifications() {
     // Setup notification handling
     OneSignal.Notifications.addEventListener('click', (event) => {
       console.log('OneSignal notification clicked:', event);
-      // Handle notification clicks here - go to home screen, will get redirected to quest-complete
-      router.navigate('/[id]');
+      // Handle notification clicks based on data
+      const data = event.notification.additionalData;
+      if (data?.screen === 'invitations') {
+        router.navigate('/invitations');
+      } else if (data?.screen === 'pending-quest') {
+        router.navigate('/pending-quest');
+      } else {
+        // Default: go to home screen, will get redirected to quest-complete
+        router.navigate('/[id]');
+      }
     });
   }
 
@@ -287,5 +307,110 @@ export const cancelStreakWarningNotification = async (): Promise<boolean> => {
   } catch (error) {
     console.error('Failed to cancel streak warning:', error);
     return false;
+  }
+};
+
+// Schedule a notification for quest invitation
+export const scheduleQuestInvitationNotification = async (
+  inviterName: string,
+  questTitle: string
+) => {
+  // Check if notifications are enabled before scheduling
+  const enabled = await areNotificationsEnabled();
+  if (!enabled) {
+    return;
+  }
+
+  try {
+    await ExpoNotifications.scheduleNotificationAsync({
+      content: {
+        title: '🎮 New Quest Invitation!',
+        body: `${inviterName} invited you to join "${questTitle}"`,
+        data: { screen: 'invitations' },
+        priority: ExpoNotifications.AndroidNotificationPriority.MAX,
+        sound: true,
+        vibrate: [0, 250, 250, 250],
+        color: primary[400],
+      },
+      trigger:
+        Platform.OS === 'android'
+          ? {
+              channelId: INVITATION_CHANNEL_ID,
+              seconds: 1, // Minimum delay required when specifying channelId
+            }
+          : null, // Show immediately on iOS
+    });
+  } catch (error) {
+    console.error('Failed to schedule invitation notification:', error);
+  }
+};
+
+// Schedule a notification when all participants are ready
+export const scheduleAllParticipantsReadyNotification = async (
+  questTitle: string
+) => {
+  const enabled = await areNotificationsEnabled();
+  if (!enabled) {
+    return;
+  }
+
+  try {
+    await ExpoNotifications.scheduleNotificationAsync({
+      content: {
+        title: '🚀 Quest Starting!',
+        body: `All participants are ready for "${questTitle}". Lock your phone to begin!`,
+        data: { screen: 'pending-quest' },
+        priority: ExpoNotifications.AndroidNotificationPriority.MAX,
+        sound: true,
+        vibrate: [0, 250, 250, 250],
+        color: primary[400],
+      },
+      trigger:
+        Platform.OS === 'android'
+          ? {
+              channelId: QUEST_CHANNEL_ID,
+              seconds: 1,
+            }
+          : null,
+    });
+  } catch (error) {
+    console.error('Failed to schedule ready notification:', error);
+  }
+};
+
+// Schedule notification when cooperative quest completes
+export const scheduleCooperativeQuestCompleteNotification = async (
+  questTitle: string,
+  participantCount: number
+) => {
+  const enabled = await areNotificationsEnabled();
+  if (!enabled) {
+    return;
+  }
+
+  try {
+    await ExpoNotifications.scheduleNotificationAsync({
+      content: {
+        title: '🎉 Team Quest Completed!',
+        body: `You and ${participantCount - 1} friend${participantCount > 2 ? 's' : ''} completed "${questTitle}" together!`,
+        data: { screen: 'quest-complete' },
+        priority: ExpoNotifications.AndroidNotificationPriority.MAX,
+        sound: true,
+        vibrate: [0, 250, 250, 250],
+        color: primary[400],
+      },
+      trigger:
+        Platform.OS === 'android'
+          ? {
+              channelId: QUEST_CHANNEL_ID,
+              seconds: 1,
+            }
+          : null,
+    });
+  } catch (error) {
+    console.error(
+      'Failed to schedule cooperative complete notification:',
+      error
+    );
   }
 };

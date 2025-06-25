@@ -13,8 +13,10 @@ import { usePOIStore } from '@/store/poi-store';
 
 import { useCharacterStore } from './character-store';
 import {
+  type CooperativeQuestRun,
   type CustomQuestTemplate,
   type Quest,
+  type QuestInvitation,
   type StoryQuestTemplate,
 } from './types';
 
@@ -28,6 +30,9 @@ interface QuestState {
   lastCompletedQuestTimestamp: number | null;
   currentLiveActivityId: string | null;
   failedQuests: Quest[];
+  // Cooperative quest state
+  currentInvitation: QuestInvitation | null;
+  cooperativeQuestRun: CooperativeQuestRun | null;
   cancelQuest: () => void;
   startQuest: (quest: Quest) => void;
   completeQuest: (ignoreDuration?: boolean) => Quest | null;
@@ -39,6 +44,10 @@ interface QuestState {
   getCompletedQuests: () => Quest[];
   prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => void;
   setLiveActivityId: (id: string | null) => void;
+  // Cooperative quest methods
+  setCurrentInvitation: (invitation: QuestInvitation | null) => void;
+  setCooperativeQuestRun: (run: CooperativeQuestRun | null) => void;
+  updateParticipantReady: (userId: string, ready: boolean) => void;
 }
 
 // Create type-safe functions for Zustand's storage
@@ -67,6 +76,8 @@ export const useQuestStore = create<QuestState>()(
       lastCompletedQuestTimestamp: null,
       currentLiveActivityId: null,
       failedQuests: [],
+      currentInvitation: null,
+      cooperativeQuestRun: null,
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
         set({ pendingQuest: quest, availableQuests: [] });
       },
@@ -117,6 +128,9 @@ export const useQuestStore = create<QuestState>()(
               completedQuests: [...state.completedQuests, completedQuest],
               // TODO: does this interfere with updating the live activity?
               currentLiveActivityId: null, // Clear activity ID on completion
+              // Clear cooperative quest state
+              currentInvitation: null,
+              cooperativeQuestRun: null,
             }));
 
             if (activeQuest.mode === 'story' && activeQuest.poiSlug) {
@@ -168,6 +182,9 @@ export const useQuestStore = create<QuestState>()(
             activeQuest: null,
             pendingQuest: null,
             currentLiveActivityId: null,
+            // Clear cooperative quest state
+            currentInvitation: null,
+            cooperativeQuestRun: null,
           });
         }
       },
@@ -198,6 +215,9 @@ export const useQuestStore = create<QuestState>()(
             activeQuest: null,
             pendingQuest: null,
             currentLiveActivityId: null,
+            // Clear cooperative quest state
+            currentInvitation: null,
+            cooperativeQuestRun: null,
           });
         }
       },
@@ -311,6 +331,32 @@ export const useQuestStore = create<QuestState>()(
         set({ currentLiveActivityId: id });
       },
 
+      setCurrentInvitation: (invitation: QuestInvitation | null) => {
+        set({ currentInvitation: invitation });
+      },
+
+      setCooperativeQuestRun: (run: CooperativeQuestRun | null) => {
+        set({ cooperativeQuestRun: run });
+      },
+
+      updateParticipantReady: (userId: string, ready: boolean) => {
+        const { cooperativeQuestRun } = get();
+        if (cooperativeQuestRun) {
+          const updatedParticipants = cooperativeQuestRun.participants.map(
+            (p) =>
+              p.userId === userId
+                ? { ...p, ready, readyAt: ready ? Date.now() : undefined }
+                : p
+          );
+          set({
+            cooperativeQuestRun: {
+              ...cooperativeQuestRun,
+              participants: updatedParticipants,
+            },
+          });
+        }
+      },
+
       reset: () => {
         set({
           activeQuest: null,
@@ -322,6 +368,8 @@ export const useQuestStore = create<QuestState>()(
           lastCompletedQuestTimestamp: null,
           currentLiveActivityId: null, // Reset activity ID
           failedQuests: [],
+          currentInvitation: null,
+          cooperativeQuestRun: null,
         });
         useCharacterStore.getState().resetStreak();
         // Need a way to signal QuestTimer to stop without direct import
