@@ -1,7 +1,10 @@
 appId: com.vaedros.unquest.development
 ---
 - clearState
-- launchApp
+# Unset notifications permission to ensure consistent test state
+- launchApp:
+    permissions:
+      notifications: unset
 
 # =============================================================================
 # DEVELOPMENT ENVIRONMENT SETUP
@@ -85,7 +88,77 @@ appId: com.vaedros.unquest.development
 - tapOn: 'Begin New Journey'
 
 # =============================================================================
-# APP INTRODUCTION - WELCOME STEP
+# CHARACTER NAME SCREEN - Enter character name
+# =============================================================================
+- assertVisible: 'Your Character'
+- assertVisible: 'Character Name'
+- assertVisible: '.*Choose a character that reflects your personality.*'
+
+# Verify continue button exists but should be disabled initially
+- assertVisible:
+    text: 'Continue'
+
+# Enter character name
+- tapOn: 'Enter character name'
+- inputText: 'MaestroHero'
+
+# Verify continue button is now enabled after entering name
+- assertVisible:
+    text: 'Continue'
+    enabled: true
+
+# Proceed to character type selection
+- tapOn: 'Continue'
+
+# =============================================================================
+# CHARACTER TYPE SELECTION SCREEN - Choose character type
+# =============================================================================
+- assertVisible: "Choose MaestroHero's Character Type"
+- assertVisible: 'Select the character that speaks to you'
+
+# Test character selection carousel
+- assertVisible: 'ALCHEMIST'
+- assertVisible: '.*Transforms idle time into powerful elixirs.*'
+
+# Swipe through characters to test the carousel
+- swipe:
+    start: "80%, 50%"
+    end: "20%, 50%"
+    duration: 500
+
+# Should now see Druid
+- assertVisible: 'DRUID'
+
+# Swipe to see Scout
+- swipe:
+    start: "80%, 50%"
+    end: "20%, 50%"
+    duration: 500
+
+# Should now see Scout
+- assertVisible: 'SCOUT'
+
+# Swipe back to Alchemist
+- swipe:
+    start: "20%, 50%"
+    end: "80%, 50%"
+    duration: 500
+
+- swipe:
+    start: "20%, 50%"
+    end: "80%, 50%"
+    duration: 500
+
+# Back to Alchemist - proceed with character creation
+- assertVisible: 'ALCHEMIST'
+
+- tapOn: 'Create Character'
+
+# Wait for navigation after character creation
+- waitForAnimationToEnd
+
+# =============================================================================
+# APP INTRODUCTION - WELCOME STEP (VIEWING_INTRO)
 # =============================================================================
 - assertVisible: 'Welcome to unQuest'
 - assertVisible: '.*Each quest is a unique challenge.*'
@@ -114,76 +187,6 @@ appId: com.vaedros.unquest.development
       - tapOn: 'Allow'
 
 # =============================================================================
-# APP INTRODUCTION - CHARACTER CREATION STEP
-# =============================================================================
-- assertVisible: 'Your Character'
-- assertVisible: '.*Choose a character that reflects your personality.*'
-
-# Proceed to character selection
-- tapOn: 'Create character'
-
-# =============================================================================
-# CHOOSE CHARACTER SCREEN - Character creation and naming
-# =============================================================================
-- assertVisible: 'Choose Your Character'
-- assertVisible: 'Name Your Character'
-- assertVisible: 'Next, choose a character type.'
-
-# Verify continue button exists but should be disabled initially
-- assertVisible:
-    text: 'Continue'
-
-# Enter character name
-- tapOn: 'Enter character name'
-- inputText: 'MaestroHero'
-
-# Verify continue button is now enabled after entering name
-- assertVisible:
-    text: 'Continue'
-    enabled: true
-
-# Test character selection carousel
-- assertVisible: 'Alchemist'
-- assertVisible: '.*Transforms idle time.*'
-
-# Swipe through characters to test the carousel
-- swipe:
-    from:
-      text: 'Alchemist'
-    direction: LEFT
-
-# Should now see Druid
-- assertVisible: 'Druid'
-- assertVisible: '.*Grows stronger through harmony.*'
-
-# Swipe to final character
-- swipe:
-    from:
-      text: 'Druid'
-    direction: LEFT
-
-# Should now see Scout
-- assertVisible: 'Scout'
-- assertVisible: '.*Resourceful and self-reliant.*'
-
-# Swipe back to first character for consistency
-- swipe:
-    from:
-      text: 'Scout'
-    direction: RIGHT
-
-- swipe:
-    from:
-      text: 'Druid'
-    direction: RIGHT
-
-# Back to Alchemist - proceed with character creation
-- assertVisible: 'Alchemist'
-- assertNotVisible: 'Scout'
-
-- tapOn: 'Continue'
-
-# =============================================================================
 # FIRST QUEST SCREEN - Quest introduction
 # =============================================================================
 - assertVisible: 'Your Journey Begins'
@@ -191,6 +194,9 @@ appId: com.vaedros.unquest.development
 
 # Start the first quest
 - tapOn: 'Wake up'
+
+# Wait for navigation to pending quest screen
+- waitForAnimationToEnd
 
 # =============================================================================
 # PENDING QUEST SCREEN - Quest preparation
@@ -207,6 +213,19 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 - assertVisible: 'Your Journey Begins'
 - assertVisible: 'Wake up'
+
+# Start quest again to prepare for phase 2 test
+- tapOn: 'Wake up'
+- assertVisible: 'Quest Ready'
+
+# =============================================================================
+# END OF PHASE 1 - Ready to lock phone for quest
+# =============================================================================
+# To complete quest testing:
+# 1. Run this test to get to the pending quest screen
+# 2. Manually lock phone or run: maestro test .maestro/app/lock-quest.yaml
+# 3. Wait 2 minutes for quest completion
+# 4. Run: maestro test .maestro/app/post-quest.yaml
 
 # =============================================================================
 # ALTERNATIVE FLOW - EXISTING USER LOGIN PATH
@@ -269,11 +288,13 @@ appId: com.vaedros.unquest.development
 # This comprehensive test covers:
 # ✅ Development environment setup (server selection, Expo onboarding)
 # ✅ Complete onboarding flow from welcome to quest setup
-# ✅ Character creation and carousel navigation
+# ✅ Character creation and carousel navigation (now happens first)
+# ✅ App introduction and notifications after character selection
 # ✅ Quest preparation and cancellation flows
 # ✅ Direct login path for existing users
 # ✅ Form interactions and user input
 #
-# Note: Quest completion → signup prompt → login flow would require
-# either background quest completion simulation or a separate test
-# that starts from a quest-completed state.
+# Note: Full quest completion testing requires running multiple test files:
+# - onboarding.yaml (this file) - gets to pending quest
+# - lock-quest.yaml - locks the phone to start quest
+# - post-quest.yaml - verifies completion and signup flow
