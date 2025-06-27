@@ -90,7 +90,6 @@ const _useAuth = create<AuthState>((set, get) => ({
               name: (user as any).name,
               level: (user as any).level || 1,
               currentXP: (user as any).xp || 0,
-              xpToNextLevel: 100, // Default XP to next level
             };
 
             // First create the character if it doesn't exist locally
@@ -112,8 +111,6 @@ const _useAuth = create<AuthState>((set, get) => ({
               name: characterData.name || (user as any).name,
               level: level,
               currentXP: characterData.currentXP || (user as any).xp || 0,
-              xpToNextLevel:
-                characterData.xpToNextLevel || calculateXPForLevel(level),
             });
 
             // Also update streak if provided

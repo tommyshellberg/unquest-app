@@ -22,7 +22,6 @@ interface CharacterState {
 const INITIAL_CHARACTER: Omit<Character, 'type' | 'name'> = {
   level: 1,
   currentXP: 0, // Total XP, not progress
-  xpToNextLevel: 100, // Keep for backward compatibility, but not used
 };
 
 const calculateXPForLevel = (level: number): number => {

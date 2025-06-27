@@ -389,7 +389,50 @@ export const useQuestStore = create<QuestState>()(
               'An error occurred during quest store hydration:',
               error
             );
-          } else {
+          } else if (state) {
+            // Check for data consistency issues that might occur after app reinstall
+            const hasCompletedQuests =
+              state.completedQuests && state.completedQuests.length > 0;
+            const hasActiveQuest = state.activeQuest !== null;
+
+            // If there's an active quest but no completed quests, this is likely stale data
+            // from a previous install (since you must complete quest-1 before getting quest-1a)
+            if (hasActiveQuest && !hasCompletedQuests) {
+              console.log(
+                '🧹 Detected inconsistent state - clearing stale quest data'
+              );
+              state.activeQuest = null;
+              state.pendingQuest = null;
+              state.currentLiveActivityId = null;
+              state.availableQuests = [];
+              return;
+            }
+
+            // Check if there's an active quest that should have completed/failed
+            if (state.activeQuest && state.activeQuest.startTime) {
+              const now = Date.now();
+              const questDuration =
+                state.activeQuest.durationMinutes * 60 * 1000;
+              const questEndTime = state.activeQuest.startTime + questDuration;
+
+              // If the quest should have ended by now
+              if (now > questEndTime) {
+                console.log(
+                  '🧹 Cleaning up stale active quest:',
+                  state.activeQuest.id
+                );
+                // Just clear the active quest without marking as failed
+                // This handles cases where the app was reinstalled or data is from a previous user
+                state.activeQuest = null;
+                state.currentLiveActivityId = null;
+
+                // Also clear any pending quest that might be stale
+                if (state.pendingQuest) {
+                  console.log('🧹 Also clearing stale pending quest');
+                  state.pendingQuest = null;
+                }
+              }
+            }
           }
         };
       },
