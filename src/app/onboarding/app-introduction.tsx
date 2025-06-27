@@ -221,6 +221,7 @@ export default function AppIntroductionScreen() {
               <Button
                 label="Not now"
                 variant="ghost"
+                textClassName="text-white"
                 onPress={handleSkipNotifications}
                 accessibilityLabel="Skip enabling notifications"
               />
