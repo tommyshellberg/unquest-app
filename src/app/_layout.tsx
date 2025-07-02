@@ -7,7 +7,7 @@ import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { PostHogProvider } from 'posthog-react-native';
+import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import React, { useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
@@ -17,6 +17,7 @@ import { LogLevel, OneSignal } from 'react-native-onesignal';
 
 import { APIProvider } from '@/api';
 import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
+import { PostHogNavigationTracker } from '@/components/providers/posthog-navigation-tracker';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
@@ -150,6 +151,7 @@ function RootLayout() {
   return (
     <Providers onLayout={onLayoutRootView}>
       <NavigationGate />
+      <PostHogNavigationTracker />
       <Stack>
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
@@ -188,7 +190,7 @@ function Providers({
       >
         <KeyboardProvider>
           <ThemeProvider value={theme}>
-            <PostHogProvider
+            <PostHogProviderWrapper
               apiKey={Env.POSTHOG_API_KEY}
               options={{
                 host: 'https://us.i.posthog.com',
@@ -201,7 +203,7 @@ function Providers({
                   <FlashMessage position="top" />
                 </BottomSheetModalProvider>
               </APIProvider>
-            </PostHogProvider>
+            </PostHogProviderWrapper>
           </ThemeProvider>
         </KeyboardProvider>
       </GestureHandlerRootView>
