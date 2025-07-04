@@ -18,6 +18,7 @@ import { LogLevel, OneSignal } from 'react-native-onesignal';
 import { APIProvider } from '@/api';
 import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
 import { PostHogNavigationTracker } from '@/components/providers/posthog-navigation-tracker';
+import { WebSocketProvider } from '@/components/providers/websocket-provider';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
@@ -197,11 +198,13 @@ function Providers({
               }}
             >
               <APIProvider>
-                <BottomSheetModalProvider>
-                  <UpdateNotificationBar />
-                  {children}
-                  <FlashMessage position="top" />
-                </BottomSheetModalProvider>
+                <WebSocketProvider>
+                  <BottomSheetModalProvider>
+                    <UpdateNotificationBar />
+                    {children}
+                    <FlashMessage position="top" />
+                  </BottomSheetModalProvider>
+                </WebSocketProvider>
               </APIProvider>
             </PostHogProviderWrapper>
           </ThemeProvider>

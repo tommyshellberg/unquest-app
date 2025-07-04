@@ -34,6 +34,7 @@ export interface StoryQuestTemplate extends BaseQuestTemplate {
 export interface CustomQuestTemplate extends BaseQuestTemplate {
   mode: 'custom';
   category: string;
+  inviteeIds?: string[]; // For cooperative quests
 }
 
 export type QuestStatus = 'active' | 'completed' | 'failed' | 'cancelled';
@@ -73,3 +74,45 @@ export type POI = {
   isRevealed: boolean;
   mapId: string;
 };
+
+// Cooperative Quest Types
+export interface QuestParticipant {
+  userId: string;
+  ready: boolean;
+  status:
+    | 'pending'
+    | 'accepted'
+    | 'declined'
+    | 'active'
+    | 'completed'
+    | 'failed';
+  userName?: string;
+  characterType?: CharacterType;
+}
+
+export interface CooperativeQuestRun {
+  id: string;
+  questId: string;
+  hostId: string;
+  participants: QuestParticipant[];
+  status: 'pending' | 'active' | 'completed' | 'failed';
+  invitationId?: string;
+  actualStartTime?: number;
+  scheduledEndTime?: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface QuestInvitation {
+  id: string;
+  questRunId: string;
+  questTitle: string;
+  questDuration: number;
+  hostId: string;
+  hostName: string;
+  inviteeId: string;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  expiresAt: number;
+  createdAt: number;
+  updatedAt: number;
+}

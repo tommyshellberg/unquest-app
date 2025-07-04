@@ -20,7 +20,38 @@ provisionalApiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${provisionalToken}`;
     }
 
+    // Log invitation-related requests
+    if (config.url?.includes('/invitations/')) {
+      console.log('========================================');
+      console.log('[Provisional API Client] Invitation Request');
+      console.log('Method:', config.method?.toUpperCase());
+      console.log('URL:', config.url);
+      console.log('Data:', config.data);
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('========================================');
+    }
+
     return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for logging
+provisionalApiClient.interceptors.response.use(
+  (response) => {
+    // Log invitation-related responses
+    if (response.config.url?.includes('/invitations/')) {
+      console.log('========================================');
+      console.log('[Provisional API Client] Invitation Response');
+      console.log('Status:', response.status);
+      console.log('URL:', response.config.url);
+      console.log('Response Data:', response.data);
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('========================================');
+    }
+    return response;
   },
   (error) => {
     return Promise.reject(error);

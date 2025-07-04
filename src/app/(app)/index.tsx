@@ -33,6 +33,7 @@ const snapInterval = cardWidth + cardSpacing; // adjust snap interval to include
 const MODES = [
   { id: 'story', name: 'Story Mode', color: 'rgba(194, 199, 171, 0.9)' },
   { id: 'custom', name: 'Free Play Mode', color: 'rgba(146, 185, 191, 0.9)' },
+  { id: 'join', name: 'Join Quest', color: 'rgba(171, 146, 191, 0.9)' },
 ];
 
 export default function Home() {
@@ -78,6 +79,21 @@ export default function Home() {
   useEffect(() => {
     console.log('Home screen is mounting');
   }, []);
+  
+  // Check for stuck cooperative quest and clean it up
+  useEffect(() => {
+    if (activeQuest && activeQuest.startTime) {
+      // If there's an active quest with a start time but QuestTimer isn't tracking it
+      QuestTimer.loadQuestData();
+      const isQuestTimerRunning = QuestTimer.isRunning();
+      
+      if (!isQuestTimerRunning) {
+        console.warn('Found stuck active quest, cleaning up...', activeQuest);
+        // This quest was likely a cooperative quest that started prematurely
+        useQuestStore.getState().failQuest();
+      }
+    }
+  }, [activeQuest]);
 
   // Get next quest options based on the last completed story quest
   useEffect(() => {
@@ -233,6 +249,15 @@ export default function Home() {
     }
   };
 
+  // Handle join quest button
+  const handleJoinQuest = () => {
+    try {
+      router.push('/quest-discovery');
+    } catch (error) {
+      console.error('Error navigating to quest discovery:', error);
+    }
+  };
+
   // Prepare carousel data
   const carouselData = [
     {
@@ -255,7 +280,7 @@ export default function Home() {
           const lastCompletedStoryQuest = [...storyQuests].sort(
             (a, b) => (b.stopTime || 0) - (a.stopTime || 0)
           )[0];
-          return lastCompletedStoryQuest?.recap || 'Continue your journey';
+          return (lastCompletedStoryQuest as any)?.recap || 'Continue your journey';
         }
 
         // Fallback if no story quests completed
@@ -290,14 +315,23 @@ export default function Home() {
       duration: 5,
       xp: 15,
     },
+    {
+      id: 'join',
+      mode: 'join',
+      title: 'Join a Quest',
+      subtitle: 'Cooperative Mode',
+      recap: 'Join friends on their quests and complete challenges together.',
+      duration: 0,
+      xp: 0,
+    },
   ];
 
   // Animated background style based on carousel progress
   const backgroundStyle = useAnimatedStyle(() => {
     const backgroundColor = interpolateColor(
       progress.value,
-      [0, 1],
-      [MODES[0].color, MODES[1].color]
+      [0, 1, 2],
+      [MODES[0].color, MODES[1].color, MODES[2].color]
     );
 
     return {
@@ -433,11 +467,20 @@ export default function Home() {
           <View className="mt-auto items-center justify-center pb-8">
             {activeIndex === 0 ? (
               renderStoryOptions()
-            ) : (
+            ) : activeIndex === 1 ? (
               // Show create custom quest button for custom mode
               <Button
                 label="Create Custom Quest"
                 onPress={handleStartCustomQuest}
+                className="mb-2 rounded-md bg-primary-400"
+                textClassName="text-white font-bold"
+                style={{ width: cardWidth }}
+              />
+            ) : (
+              // Show join quest button for join mode
+              <Button
+                label="Browse Available Quests"
+                onPress={handleJoinQuest}
                 className="mb-2 rounded-md bg-primary-400"
                 textClassName="text-white font-bold"
                 style={{ width: cardWidth }}

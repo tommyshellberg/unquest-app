@@ -13,9 +13,11 @@ import {
 import {
   createQuestRun,
   updateQuestRunStatus,
+  updatePhoneLockStatus,
 } from '@/lib/services/quest-run-service';
 import { getItem, removeItem, setItem } from '@/lib/storage';
 import { useQuestStore } from '@/store/quest-store';
+import { useUserStore } from '@/store/user-store';
 import {
   type CustomQuestTemplate,
   type StoryQuestTemplate,
@@ -153,6 +155,30 @@ export default class QuestTimer {
     try {
       const questRun = await createQuestRun(questTemplate);
       this.questRunId = questRun.id;
+      
+      // If this is a cooperative quest, store the cooperative quest run data
+      if (questRun.invitationId && questRun.participants) {
+        console.log('Setting cooperative quest run data:', questRun);
+        const user = useUserStore.getState().user;
+        useQuestStore.getState().setCooperativeQuestRun({
+          id: questRun.id,
+          questId: questRun.quest?.id || questTemplate.id,
+          hostId: user?.id || '',
+          status: 'pending',
+          participants: Array.isArray(questRun.participants) 
+            ? questRun.participants.map((p: any) => 
+                typeof p === 'string' 
+                  ? { userId: p, ready: false, status: 'pending' } 
+                  : p
+              )
+            : [],
+          invitationId: questRun.invitationId,
+          actualStartTime: questRun.actualStartTime,
+          scheduledEndTime: questRun.scheduledEndTime,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
     } catch (error) {
       console.error('Failed to create quest run:', error);
       // Continue anyway as the quest can still work locally
@@ -274,18 +300,54 @@ export default class QuestTimer {
         console.log('Live Activity updated with id:', activityId);
       }
 
-      // Update quest run status to active
+      // Check if this is a cooperative quest
+      const questStore = useQuestStore.getState();
+      const cooperativeQuestRun = questStore.cooperativeQuestRun;
+      const isCooperativeQuest = cooperativeQuestRun && cooperativeQuestRun.id === this.questRunId;
+
       if (this.questRunId) {
-        try {
-          await updateQuestRunStatus(
-            this.questRunId,
-            'active',
-            this.oneSignalActivityId
-          );
-          console.log('Updated quest run status to active');
-        } catch (error) {
-          console.error('Failed to update quest run status to active:', error);
-          // Continue anyway as the quest can still work locally
+        if (isCooperativeQuest) {
+          // For cooperative quests, send phone lock status instead of activating
+          let retryCount = 0;
+          const maxRetries = 3;
+          const retryDelay = 1000; // 1 second
+          
+          const sendPhoneLockStatus = async (): Promise<boolean> => {
+            try {
+              console.log(`Sending phone lock status (attempt ${retryCount + 1}/${maxRetries})...`);
+              await updatePhoneLockStatus(this.questRunId, true);
+              console.log('Phone lock status sent successfully');
+              return true;
+            } catch (error) {
+              console.error(`Failed to send phone lock status (attempt ${retryCount + 1}):`, error);
+              retryCount++;
+              
+              if (retryCount < maxRetries) {
+                console.log(`Retrying in ${retryDelay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                return sendPhoneLockStatus();
+              }
+              
+              console.error('Max retries reached, phone lock status update failed');
+              return false;
+            }
+          };
+          
+          await sendPhoneLockStatus();
+          // Don't activate quest locally yet - wait for server to activate it
+        } else {
+          // For single-player quests, activate immediately
+          try {
+            await updateQuestRunStatus(
+              this.questRunId,
+              'active',
+              this.oneSignalActivityId
+            );
+            console.log('Updated quest run status to active');
+          } catch (error) {
+            console.error('Failed to update quest run status to active:', error);
+            // Continue anyway as the quest can still work locally
+          }
         }
       }
 
@@ -298,11 +360,23 @@ export default class QuestTimer {
           const questStore = useQuestStore.getState();
           // Check if there's already an active quest to prevent double-starting
           if (!questStore.activeQuest && this.questTemplate) {
-            const startTime = this.questStartTime || Date.now(); // Ensure startTime is never null
-            questStore.startQuest({
-              ...this.questTemplate,
-              startTime,
-            });
+            // Check if this is a cooperative quest
+            const cooperativeQuestRun = questStore.cooperativeQuestRun;
+            if (cooperativeQuestRun && cooperativeQuestRun.id === this.questRunId) {
+              console.log('This is a cooperative quest, checking if quest is active...');
+              // For cooperative quests, only start if the server has activated the quest
+              if (cooperativeQuestRun.status !== 'active' || !cooperativeQuestRun.actualStartTime) {
+                console.log('Cooperative quest not activated by server yet, waiting...');
+                return;
+              }
+            } else {
+              // For single-player quests, start immediately
+              const startTime = this.questStartTime || Date.now(); // Ensure startTime is never null
+              questStore.startQuest({
+                ...this.questTemplate,
+                startTime,
+              });
+            }
           }
         }
       }, 500);
@@ -328,6 +402,24 @@ export default class QuestTimer {
     this.isPhoneLocked = false;
 
     await this.loadQuestData();
+
+    // Send phone unlock status for cooperative quests
+    if (this.questRunId) {
+      const questStore = useQuestStore.getState();
+      const cooperativeQuestRun = questStore.cooperativeQuestRun;
+      const isCooperativeQuest = cooperativeQuestRun && cooperativeQuestRun.id === this.questRunId;
+      
+      if (isCooperativeQuest) {
+        try {
+          console.log('Sending phone unlock status for cooperative quest...');
+          await updatePhoneLockStatus(this.questRunId, false);
+          console.log('Phone unlock status sent successfully');
+        } catch (error) {
+          console.error('Failed to send phone unlock status:', error);
+          // Continue with local handling even if server update fails
+        }
+      }
+    }
 
     if (this.questStartTime && this.questTemplate) {
       const elapsedTime = Date.now() - this.questStartTime;
