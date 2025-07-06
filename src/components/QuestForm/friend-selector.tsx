@@ -9,7 +9,7 @@ import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { useUserStore } from '@/store/user-store';
 
 interface FriendSelectorProps {
-  onSelectionChange: (selectedIds: string[]) => void;
+  onSelectionChange: (selectedIds: string[], selectedFriends?: any[]) => void;
   maxSelections?: number;
 }
 
@@ -54,8 +54,13 @@ export function FriendSelector({
     : filteredFriends.slice(0, 5);
 
   useEffect(() => {
-    onSelectionChange(Array.from(selectedFriends));
-  }, [selectedFriends, onSelectionChange]);
+    const selectedIds = Array.from(selectedFriends);
+    const selectedFriendData = friends.filter((friend) => {
+      const friendId = friend.userId || friend.id || friend._id || friend.email;
+      return selectedIds.includes(friendId);
+    });
+    onSelectionChange(selectedIds, selectedFriendData);
+  }, [selectedFriends, friends]); // Removed onSelectionChange from dependencies
 
   const toggleFriend = (friendId: string) => {
     const newSelection = new Set(selectedFriends);
@@ -139,7 +144,8 @@ export function FriendSelector({
             }
 
             // Use the userId field from the friend object, not _id
-            const friendId = friend.userId || friend.id || friend._id || friend.email;
+            const friendId =
+              friend.userId || friend.id || friend._id || friend.email;
             if (!friendId) {
               console.warn('Friend has no valid ID:', friend);
               return null;

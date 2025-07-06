@@ -128,6 +128,7 @@ export const useQuestStore = create<QuestState>()(
 
             set((state) => ({
               activeQuest: null, // Quest is no longer active
+              pendingQuest: null, // Clear any lingering pending quest
               recentCompletedQuest: completedQuest,
               lastCompletedQuestTimestamp: completionTime,
               completedQuests: [...state.completedQuests, completedQuest],
@@ -409,6 +410,62 @@ export const useQuestStore = create<QuestState>()(
               state.currentLiveActivityId = null;
               state.availableQuests = [];
               return;
+            }
+
+            // Check if pending quest is a completed cooperative quest
+            if (state.pendingQuest && state.completedQuests) {
+              const pendingQuestId = state.pendingQuest.id;
+              const isCompleted = state.completedQuests.some(
+                (q) => q.id === pendingQuestId
+              );
+
+              if (isCompleted) {
+                console.log(
+                  '🧹 Detected completed quest still in pending state:',
+                  pendingQuestId
+                );
+                state.pendingQuest = null;
+                state.cooperativeQuestRun = null;
+              }
+            }
+
+            // Check if there's a cooperative quest run that shows as completed
+            if (state.cooperativeQuestRun && state.pendingQuest) {
+              const cooperativeRun = state.cooperativeQuestRun;
+
+              // If the cooperative quest run shows as completed but quest is still pending
+              if (
+                (cooperativeRun.status as any) === 'success' ||
+                cooperativeRun.status === 'completed' ||
+                (cooperativeRun.scheduledEndTime &&
+                  Date.now() > cooperativeRun.scheduledEndTime)
+              ) {
+                console.log(
+                  '🧹 Found cooperative quest that completed but was not recorded:',
+                  state.pendingQuest.id
+                );
+
+                // Add it to completed quests
+                const completedQuest = {
+                  ...state.pendingQuest,
+                  startTime:
+                    cooperativeRun.actualStartTime ||
+                    Date.now() - state.pendingQuest.durationMinutes * 60 * 1000,
+                  stopTime: cooperativeRun.scheduledEndTime || Date.now(),
+                  status: 'completed' as const,
+                };
+
+                // Make sure it's not already in completed quests
+                const alreadyCompleted = state.completedQuests.some(
+                  (q) => q.id === completedQuest.id
+                );
+                if (!alreadyCompleted) {
+                  state.completedQuests.push(completedQuest);
+                }
+
+                state.pendingQuest = null;
+                state.cooperativeQuestRun = null;
+              }
             }
 
             // Check if there's an active quest that should have completed/failed

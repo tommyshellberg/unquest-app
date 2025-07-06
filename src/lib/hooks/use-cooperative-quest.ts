@@ -1,21 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useCallback, useEffect } from 'react';
 
-import { useQuestStore } from '@/store/quest-store';
-import { useUserStore } from '@/store/user-store';
 import {
-  getInvitationStatus,
   acceptInvitation,
   declineInvitation,
-  type InvitationStatusResponse,
+  getInvitationStatus,
 } from '@/lib/services/invitation-service';
 import {
   getQuestRunStatus,
   updateQuestRunStatus,
-  type QuestRunResponse,
 } from '@/lib/services/quest-run-service';
-import { type QuestInvitation, type CooperativeQuestRun } from '@/store/types';
+import { useQuestStore } from '@/store/quest-store';
+import { useUserStore } from '@/store/user-store';
 
 /**
  * Hook for managing invitation status polling
@@ -92,115 +89,80 @@ export function useInvitationActions() {
       }
 
       // Fetch the quest run details to get complete quest data
+      let questRun;
       try {
-        const questRun = await getQuestRunStatus(questRunId);
+        questRun = await getQuestRunStatus(questRunId);
         console.log('[acceptInvitation] Quest run details:', questRun);
-
-        // Create a complete quest object for the invitee
-        const completeQuest: any = {
-          id: questRun.quest?.id || `coop-${questRunId}`,
-          title: questRun.quest?.title || 'Cooperative Quest',
-          durationMinutes: questRun.quest?.durationMinutes || 30,
-          mode: questRun.quest?.mode || 'custom',
-          category: questRun.quest?.category || 'general',
-          reward: questRun.quest?.reward || {
-            xp: Math.round((questRun.quest?.durationMinutes || 30) * 3),
-          },
-          inviteeIds: [], // Empty for invitee
-        };
-
-        // Set as pending quest so the pending-quest screen can display it
-        useQuestStore.getState().prepareQuest(completeQuest);
-
-        // Also set the cooperative quest run data
-        if (questRun && questRun.participants) {
-          // Determine the host ID - it's the first participant or we need to get it from somewhere else
-          const hostId = questRun.participants?.[0]?.userId || '';
-
-          useQuestStore.getState().setCooperativeQuestRun({
-            id: questRun.id,
-            questId: completeQuest.id,
-            hostId: hostId,
-            status: 'pending',
-            participants: Array.isArray(questRun.participants)
-              ? questRun.participants.map((p: any) =>
-                  typeof p === 'string'
-                    ? { userId: p, ready: false, status: 'pending' }
-                    : p
-                )
-              : [],
-            invitationId: questRun.invitationId || response.invitation?.id,
-            actualStartTime: questRun.actualStartTime,
-            scheduledEndTime: questRun.scheduledEndTime,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          });
-
-          // Create an invitation object for the store
-          setCurrentInvitation({
-            id: response.invitation?.id || invitationId,
-            questRunId: questRunId,
-            questTitle: questRun.quest?.title || 'Cooperative Quest',
-            questDuration: questRun.quest?.durationMinutes || 30,
-            hostId: hostId,
-            hostName: 'Friend',
-            inviteeId: '',
-            status: 'accepted' as const,
-            expiresAt: Date.now() + 300000, // 5 minutes
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          });
-        } else {
-          // If we have quest run but no participants, still create the invitation object
-          setCurrentInvitation({
-            id: response.invitation?.id || invitationId,
-            questRunId: questRunId,
-            questTitle: questRun?.quest?.title || 'Cooperative Quest',
-            questDuration: questRun?.quest?.durationMinutes || 30,
-            hostId: '',
-            hostName: 'Friend',
-            inviteeId: '',
-            status: 'accepted' as const,
-            expiresAt: Date.now() + 300000, // 5 minutes
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          });
-        }
       } catch (error) {
         console.error(
           '[acceptInvitation] Failed to fetch quest run details:',
           error
         );
-        // Fall back to minimal quest data
-        const minimalQuest: any = {
-          id: `coop-${questRunId}`,
-          title: 'Cooperative Quest',
-          durationMinutes: 30,
-          mode: 'custom',
-          category: 'general',
-          reward: {
-            xp: 90,
-          },
-          inviteeIds: [], // Empty for invitee
-        };
+        throw error;
+      }
 
-        useQuestStore.getState().prepareQuest(minimalQuest);
+      // Create a complete quest object for the invitee
+      const completeQuest: any = {
+        id: questRun.quest?.id || `coop-${questRunId}`,
+        title: questRun.quest?.title || 'Cooperative Quest',
+        durationMinutes: questRun.quest?.durationMinutes || 30,
+        mode: questRun.quest?.mode || 'custom',
+        category: questRun.quest?.category || 'general',
+        reward: questRun.quest?.reward || {
+          xp: Math.round((questRun.quest?.durationMinutes || 30) * 3),
+        },
+        inviteeIds: [], // Empty for invitee
+      };
 
-        // Still need to create a minimal invitation object
-        setCurrentInvitation({
-          id: response.invitation?.id || invitationId,
-          questRunId: questRunId,
-          questTitle: 'Cooperative Quest',
-          questDuration: 30,
-          hostId: '',
-          hostName: 'Friend',
-          inviteeId: '',
-          status: 'accepted' as const,
-          expiresAt: Date.now() + 300000, // 5 minutes
+      // First set the cooperative quest run data
+      if (questRun && questRun.participants) {
+        // Determine the host ID - it's the first participant or we need to get it from somewhere else
+        const hostId = questRun.participants?.[0]?.userId || '';
+
+        useQuestStore.getState().setCooperativeQuestRun({
+          id: questRun.id,
+          questId: completeQuest.id,
+          hostId: hostId,
+          status: 'pending',
+          participants: Array.isArray(questRun.participants)
+            ? questRun.participants.map((p: any) =>
+                typeof p === 'string'
+                  ? { userId: p, ready: false, status: 'pending' }
+                  : p
+              )
+            : [],
+          invitationId: questRun.invitationId || response.invitation?.id,
+          actualStartTime: questRun.actualStartTime,
+          scheduledEndTime: questRun.scheduledEndTime,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         });
       }
+
+      // Set as pending quest so the pending-quest screen can display it
+      useQuestStore.getState().prepareQuest(completeQuest);
+
+      // Prepare the quest timer (this will use the existing cooperative quest run)
+      const QuestTimer = await import('@/lib/services/quest-timer').then(
+        (m) => m.default
+      );
+      await QuestTimer.prepareQuest(completeQuest);
+
+      // Create an invitation object for the store
+      const hostId = questRun?.participants?.[0]?.userId || '';
+      setCurrentInvitation({
+        id: response.invitation?.id || invitationId,
+        questRunId: questRunId,
+        questTitle: questRun.quest?.title || 'Cooperative Quest',
+        questDuration: questRun.quest?.durationMinutes || 30,
+        hostId: hostId,
+        hostName: 'Friend',
+        inviteeId: '',
+        status: 'accepted' as const,
+        expiresAt: Date.now() + 300000, // 5 minutes
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
 
       queryClient.invalidateQueries({ queryKey: ['invitation'] });
       queryClient.invalidateQueries({ queryKey: ['invitations', 'pending'] });
@@ -353,13 +315,11 @@ export function useCooperativeQuest() {
     pendingQuest.inviteeIds &&
     pendingQuest.inviteeIds.length > 0;
 
-  // Monitor quest status during cooperative quest (both pending and active)
+  // Monitor quest status during cooperative quest (only when pending)
   const questRunId = cooperativeQuestRun?.id;
   const { data: questRunStatus } = useQuestRunStatus(
     questRunId,
-    !!questRunId &&
-      (cooperativeQuestRun?.status === 'active' ||
-        cooperativeQuestRun?.status === 'pending')
+    !!questRunId && cooperativeQuestRun?.status === 'pending'
   );
 
   // Update local state when quest run status changes

@@ -148,18 +148,16 @@ export const ContactsImportModal = forwardRef<
       });
 
       // Filter contacts with email addresses and exclude user's own email
-      const contactsWithEmail = data.filter(
-        (contact) => {
-          if (!contact.emails || contact.emails.length === 0) return false;
-          
-          // Check if any of the contact's emails match the user's email
-          const hasUserEmail = contact.emails.some(
-            (email) => email.email?.toLowerCase() === userEmail.toLowerCase()
-          );
-          
-          return !hasUserEmail;
-        }
-      );
+      const contactsWithEmail = data.filter((contact) => {
+        if (!contact.emails || contact.emails.length === 0) return false;
+
+        // Check if any of the contact's emails match the user's email
+        const hasUserEmail = contact.emails.some(
+          (email) => email.email?.toLowerCase() === userEmail.toLowerCase()
+        );
+
+        return !hasUserEmail;
+      });
 
       if (contactsWithEmail.length > 0) {
         // Cross-reference with existing friends
@@ -257,7 +255,7 @@ export const ContactsImportModal = forwardRef<
       if (selectedEmails.length > 0) {
         setInviteResults({
           successful: [],
-          failed: selectedEmails.map(contact => ({
+          failed: selectedEmails.map((contact) => ({
             ...contact,
             reason: 'Failed to send invitation',
           })),
@@ -360,7 +358,9 @@ export const ContactsImportModal = forwardRef<
             email={manualEmail}
             onEmailChange={setManualEmail}
             onSubmit={handleManualInvite}
-            onBack={() => setViewState(contacts.length > 0 ? 'contacts' : 'empty')}
+            onBack={() =>
+              setViewState(contacts.length > 0 ? 'contacts' : 'empty')
+            }
             isSubmitting={viewState === 'sending'}
           />
         );

@@ -2,25 +2,10 @@ import { io, Socket } from 'socket.io-client';
 import { getItem } from '@/lib/storage';
 import { Env } from '@env';
 import { getToken } from '@/lib/auth/utils';
+import { TypedWebSocketEvents } from './websocket-events.types';
 
-export interface WebSocketEvents {
-  // Quest events
-  questInvitation: (data: any) => void;
-  questStarted: (data: any) => void;
-  questCompleted: (data: any) => void;
-  questFailed: (data: any) => void;
-
-  // Participant events
-  participantJoined: (data: any) => void;
-  participantLeft: (data: any) => void;
-  participantReady: (data: any) => void;
-  participantProgress: (data: any) => void;
-
-  // Invitation events
-  invitationAccepted: (data: any) => void;
-  invitationDeclined: (data: any) => void;
-  invitationExpired: (data: any) => void;
-}
+// Re-export the typed events for backward compatibility
+export type WebSocketEvents = TypedWebSocketEvents;
 
 class WebSocketService {
   private socket: Socket | null = null;
@@ -61,7 +46,7 @@ class WebSocketService {
 
     // Extract base URL from API_URL
     const baseUrl = Env.API_URL.replace('/v1', '');
-    
+
     console.log('[WebSocket] Connection details:', {
       apiUrl: Env.API_URL,
       baseUrl: baseUrl,
@@ -107,16 +92,23 @@ class WebSocketService {
         data: error.data,
         context: error.context,
       });
-      
+
       // Log more details about the error
       if (error.message.includes('xhr')) {
         console.error('[WebSocket] XHR/Polling error - possible CORS issue');
       } else if (error.message.includes('websocket')) {
-        console.error('[WebSocket] WebSocket error - check if server supports WebSocket');
-      } else if (error.message.includes('unauthorized') || error.message.includes('401')) {
-        console.error('[WebSocket] Authentication error - token might be invalid');
+        console.error(
+          '[WebSocket] WebSocket error - check if server supports WebSocket'
+        );
+      } else if (
+        error.message.includes('unauthorized') ||
+        error.message.includes('401')
+      ) {
+        console.error(
+          '[WebSocket] Authentication error - token might be invalid'
+        );
       }
-      
+
       this.reconnectAttempts++;
 
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
@@ -154,9 +146,9 @@ class WebSocketService {
     this.socket.emit(event, data);
   }
 
-  on<K extends keyof WebSocketEvents>(
+  on<K extends keyof TypedWebSocketEvents>(
     event: K,
-    handler: WebSocketEvents[K]
+    handler: TypedWebSocketEvents[K]
   ): void;
   on(event: string, handler: (...args: any[]) => void): void;
   on(event: string, handler: (...args: any[]) => void): void {
@@ -169,9 +161,9 @@ class WebSocketService {
     this.socket.on(event, handler);
   }
 
-  off<K extends keyof WebSocketEvents>(
+  off<K extends keyof TypedWebSocketEvents>(
     event: K,
-    handler?: WebSocketEvents[K]
+    handler?: TypedWebSocketEvents[K]
   ): void;
   off(event: string, handler?: (...args: any[]) => void): void;
   off(event: string, handler?: (...args: any[]) => void): void {

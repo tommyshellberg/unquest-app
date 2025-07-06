@@ -7,7 +7,7 @@ import { Chip } from '@/components/ui/chip';
 import type { ProgressBarRef } from '@/components/ui/progress-bar';
 
 interface QuestCardProps {
-  mode: 'story' | 'custom';
+  mode: 'story' | 'custom' | 'cooperative';
   title: string;
   subtitle: string;
   duration: number;
@@ -20,6 +20,7 @@ interface QuestCardProps {
 const imageMap = {
   story: require('@/../assets/images/characters/knight-full.jpg'),
   custom: require('@/../assets/images/characters/druid-full.jpg'),
+  cooperative: require('@/../assets/images/characters/wizard-full.jpg'),
 };
 
 export default function QuestCard({
@@ -53,6 +54,8 @@ export default function QuestCard({
           className={`absolute inset-0 opacity-90 ${
             mode === 'custom'
               ? 'bg-[rgba(47,129,142,0.9)]'
+              : mode === 'cooperative'
+              ? 'bg-[rgba(46,148,141,0.9)]'
               : 'bg-[rgba(151,158,121,0.9)]'
           }`}
         />

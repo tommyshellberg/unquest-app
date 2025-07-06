@@ -88,6 +88,8 @@ export interface QuestParticipant {
     | 'failed';
   userName?: string;
   characterType?: CharacterType;
+  phoneLocked?: boolean;
+  characterName?: string;
 }
 
 export interface CooperativeQuestRun {

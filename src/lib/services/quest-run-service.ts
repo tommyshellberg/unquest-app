@@ -36,16 +36,16 @@ const generateQuestRunBodyCustom = (questTemplate: CustomQuestTemplate) => {
   // @TODO: For now, leave out the questTemplateId as the server doesn't have the template documents added yet.
   // Remove both id and inviteeIds from the quest object
   const { id: _id, inviteeIds, ...rest } = questTemplate;
-  
+
   // Build the request body
   const body: any = { quest: rest };
-  
+
   // Add inviteeIds if this is a cooperative quest
   if (inviteeIds && inviteeIds.length > 0) {
     body.inviteeIds = inviteeIds;
     console.log('Creating cooperative quest with inviteeIds:', inviteeIds);
   }
-  
+
   console.log('Quest run request body:', body);
   return body;
 };
@@ -142,17 +142,25 @@ export async function getQuestRunStatus(
 
 export async function updatePhoneLockStatus(
   runId: string,
-  locked: boolean
+  locked: boolean,
+  liveActivityID?: string | null
 ): Promise<QuestRunResponse> {
   try {
     console.log(
       'Updating phone lock status:',
       runId,
       'locked:',
-      locked
+      locked,
+      'liveActivityID:',
+      liveActivityID
     );
 
-    const payload = { locked };
+    const payload: { locked: boolean; liveActivityID?: string } = { locked };
+
+    // Include liveActivityID if provided (iOS only)
+    if (liveActivityID) {
+      payload.liveActivityID = liveActivityID;
+    }
 
     // Check if we're using a provisional user
     const hasProvisionalToken = !!getItem('provisionalAccessToken');
@@ -166,7 +174,10 @@ export async function updatePhoneLockStatus(
     );
     return response.data;
   } catch (error) {
-    console.error(`Failed to update phone lock status for quest run ${runId}:`, error);
+    console.error(
+      `Failed to update phone lock status for quest run ${runId}:`,
+      error
+    );
     throw error;
   }
 }

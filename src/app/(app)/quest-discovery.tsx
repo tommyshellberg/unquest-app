@@ -3,17 +3,30 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 
-import { Button, FocusAwareStatusBar, Text, View, ScrollView, Pressable } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  Text,
+  View,
+  ScrollView,
+  Pressable,
+} from '@/components/ui';
 import { getPendingInvitations } from '@/lib/services/invitation-service';
 import { useInvitationActions } from '@/lib/hooks/use-cooperative-quest';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function QuestDiscoveryScreen() {
   const router = useRouter();
-  const { acceptInvitation, declineInvitation, isAccepting, isDeclining } = useInvitationActions();
+  const { acceptInvitation, declineInvitation, isAccepting, isDeclining } =
+    useInvitationActions();
 
   // Fetch pending invitations
-  const { data: invitations, isLoading, refetch, isRefetching } = useQuery({
+  const {
+    data: invitations,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ['invitations', 'pending'],
     queryFn: getPendingInvitations,
     refetchInterval: 10000, // Refresh every 10 seconds
@@ -28,26 +41,29 @@ export default function QuestDiscoveryScreen() {
   };
 
   const renderInvitation = (invitation: any) => {
-    const expiresIn = formatDistanceToNow(new Date(invitation.expiresAt), { addSuffix: true });
-    
+    const expiresIn = formatDistanceToNow(new Date(invitation.expiresAt), {
+      addSuffix: true,
+    });
+
     return (
-      <View key={invitation.id} className="mb-4 rounded-lg border border-gray-200 p-4">
+      <View
+        key={invitation.id}
+        className="mb-4 rounded-lg border border-gray-200 p-4"
+      >
         <View className="mb-2">
           <Text className="text-lg font-semibold">{invitation.questTitle}</Text>
           <Text className="text-sm text-gray-600">
             Invited by {invitation.hostName}
           </Text>
         </View>
-        
+
         <View className="mb-3">
           <Text className="text-sm text-gray-500">
             Duration: {invitation.questDuration} minutes
           </Text>
-          <Text className="text-sm text-gray-500">
-            Expires {expiresIn}
-          </Text>
+          <Text className="text-sm text-gray-500">Expires {expiresIn}</Text>
         </View>
-        
+
         <View className="flex-row space-x-2">
           <Button
             label="Accept"
@@ -72,7 +88,7 @@ export default function QuestDiscoveryScreen() {
   return (
     <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
-      
+
       {/* Header */}
       <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
         <Pressable onPress={() => router.back()}>
@@ -83,7 +99,7 @@ export default function QuestDiscoveryScreen() {
       </View>
 
       {/* Content */}
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
@@ -92,8 +108,10 @@ export default function QuestDiscoveryScreen() {
         <View className="p-5">
           {/* Pending Invitations Section */}
           <View className="mb-6">
-            <Text className="mb-3 text-lg font-semibold">Pending Invitations</Text>
-            
+            <Text className="mb-3 text-lg font-semibold">
+              Pending Invitations
+            </Text>
+
             {isLoading ? (
               <ActivityIndicator className="py-8" />
             ) : invitations && invitations.length > 0 ? (

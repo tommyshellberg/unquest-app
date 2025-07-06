@@ -4,6 +4,7 @@ import {
   webSocketService,
   WebSocketEvents,
 } from '@/lib/services/websocket-service';
+import { TypedWebSocketEvents } from '@/lib/services/websocket-events.types';
 import { useQuestStore } from '@/store/quest-store';
 import { queryClient } from '@/api/common';
 import { AppState, AppStateStatus } from 'react-native';
@@ -11,27 +12,39 @@ import { getItem } from '@/lib/storage';
 
 interface WebSocketContextValue {
   isConnected: boolean;
-  on: <K extends keyof WebSocketEvents>(
-    event: K,
-    handler: WebSocketEvents[K]
-  ) => void;
-  off: <K extends keyof WebSocketEvents>(
-    event: K,
-    handler?: WebSocketEvents[K]
-  ) => void;
+  on: {
+    <K extends keyof TypedWebSocketEvents>(
+      event: K,
+      handler: TypedWebSocketEvents[K]
+    ): void;
+    (event: string, handler: (...args: any[]) => void): void;
+  };
+  off: {
+    <K extends keyof TypedWebSocketEvents>(
+      event: K,
+      handler?: TypedWebSocketEvents[K]
+    ): void;
+    (event: string, handler?: (...args: any[]) => void): void;
+  };
   emit: (event: string, data?: any) => void;
   joinQuestRoom: (questRunId: string) => void;
   leaveQuestRoom: (questRunId: string) => void;
   forceReconnect: () => void;
   // Alias methods for compatibility
-  addListener: <K extends keyof WebSocketEvents>(
-    event: K,
-    handler: WebSocketEvents[K]
-  ) => void;
-  removeListener: <K extends keyof WebSocketEvents>(
-    event: K,
-    handler?: WebSocketEvents[K]
-  ) => void;
+  addListener: {
+    <K extends keyof TypedWebSocketEvents>(
+      event: K,
+      handler: TypedWebSocketEvents[K]
+    ): void;
+    (event: string, handler: (...args: any[]) => void): void;
+  };
+  removeListener: {
+    <K extends keyof TypedWebSocketEvents>(
+      event: K,
+      handler?: TypedWebSocketEvents[K]
+    ): void;
+    (event: string, handler?: (...args: any[]) => void): void;
+  };
 }
 
 const WebSocketContext = createContext<WebSocketContextValue | null>(null);
@@ -50,24 +63,33 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const setPendingInvitations = useQuestStore(
     (state) => state.setPendingInvitations
   );
-  
+
   // Check if provisional user has a token
   const [hasProvisionalToken, setHasProvisionalToken] = React.useState(false);
-  
+
   React.useEffect(() => {
     const provisionalToken = getItem('provisionalAccessToken');
     setHasProvisionalToken(!!provisionalToken);
   }, [authStatus]);
 
   useEffect(() => {
-    console.log('[WebSocketProvider] Auth status changed:', authStatus, 'Provisional token:', hasProvisionalToken);
-    
+    console.log(
+      '[WebSocketProvider] Auth status changed:',
+      authStatus,
+      'Provisional token:',
+      hasProvisionalToken
+    );
+
     // Connect when authenticated (either full auth or provisional)
     if (authStatus === 'signIn' || hasProvisionalToken) {
-      console.log('[WebSocketProvider] User authenticated, attempting WebSocket connection...');
+      console.log(
+        '[WebSocketProvider] User authenticated, attempting WebSocket connection...'
+      );
       webSocketService.connect();
     } else {
-      console.log('[WebSocketProvider] User not authenticated, disconnecting WebSocket...');
+      console.log(
+        '[WebSocketProvider] User not authenticated, disconnecting WebSocket...'
+      );
       webSocketService.disconnect();
     }
 
@@ -87,6 +109,10 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         // App has come to foreground, reconnect
         console.log('[WebSocket] App foregrounded, reconnecting...');
         webSocketService.connect();
+
+        // DO NOT check for quest activation here
+        // If the app is in foreground, the phone is unlocked
+        // Quests should only be active while the phone is locked
       } else if (
         appStateRef.current === 'active' &&
         nextAppState.match(/inactive|background/)
@@ -154,7 +180,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       console.log('[WebSocket] Quest started:', data);
       const questStore = useQuestStore.getState();
       const cooperativeQuestRun = questStore.cooperativeQuestRun;
-      
+
       if (cooperativeQuestRun?.id === data.questRunId) {
         // Update the cooperative quest run status
         questStore.setCooperativeQuestRun({
@@ -162,17 +188,12 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
           status: 'active',
           actualStartTime: data.actualStartTime,
         });
-        
-        // If we have a pending quest and phone is locked, start the quest locally
-        const pendingQuest = questStore.pendingQuest;
-        if (pendingQuest && !questStore.activeQuest) {
-          console.log('[WebSocket] Starting cooperative quest locally');
-          const startTime = data.actualStartTime || Date.now();
-          questStore.startQuest({
-            ...pendingQuest,
-            startTime,
-          });
-        }
+
+        // DO NOT start the quest here - the app is in foreground which means phone is unlocked
+        // The quest timer will handle starting the quest when appropriate (while phone is locked)
+        console.log(
+          '[WebSocket] Quest activated by server, quest timer will handle local activation'
+        );
       }
     };
 

@@ -13,7 +13,6 @@ appId: com.vaedros.unquest.development
 
 # Lock the device to start the quest
 - pressKey: Lock
-
 # =============================================================================
 # TEST COMPLETE
 # =============================================================================

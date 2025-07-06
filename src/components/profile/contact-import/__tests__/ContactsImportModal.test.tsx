@@ -2,7 +2,10 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import * as Contacts from 'expo-contacts';
-import { ContactsImportModal, ContactsImportModalRef } from '../ContactsImportModal';
+import {
+  ContactsImportModal,
+  ContactsImportModalRef,
+} from '../ContactsImportModal';
 
 // Mock Alert
 jest.spyOn(Alert, 'alert');
@@ -44,7 +47,9 @@ describe('ContactsImportModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (Contacts.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'undetermined' });
+    (Contacts.getPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: 'undetermined',
+    });
     mockSendBulkInvites.mockClear();
   });
 
@@ -68,8 +73,12 @@ describe('ContactsImportModal', () => {
     ];
 
     beforeEach(() => {
-      (Contacts.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
-      (Contacts.getContactsAsync as jest.Mock).mockResolvedValue({ data: mockContacts });
+      (Contacts.getPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
+      (Contacts.getContactsAsync as jest.Mock).mockResolvedValue({
+        data: mockContacts,
+      });
     });
 
     it('should handle multiple contacts, all successful', async () => {
@@ -103,7 +112,7 @@ describe('ContactsImportModal', () => {
 
       // Select all contacts
       const contactItems = getAllByTestId(/contact-item-/);
-      contactItems.forEach(item => fireEvent.press(item));
+      contactItems.forEach((item) => fireEvent.press(item));
 
       // Press invite button
       const inviteButton = getByText(/invite 3 contacts/i);
@@ -128,7 +137,11 @@ describe('ContactsImportModal', () => {
     it('should handle multiple contacts, mixed success/failure', async () => {
       mockSendBulkInvites.mockResolvedValueOnce([
         { email: 'john@example.com', success: true },
-        { email: 'jane@example.com', success: false, reason: 'Email already taken' },
+        {
+          email: 'jane@example.com',
+          success: false,
+          reason: 'Email already taken',
+        },
         { email: 'bob@example.com', success: true },
       ]);
 
@@ -152,7 +165,7 @@ describe('ContactsImportModal', () => {
 
       // Select all contacts
       const contactItems = getAllByTestId(/contact-item-/);
-      contactItems.forEach(item => fireEvent.press(item));
+      contactItems.forEach((item) => fireEvent.press(item));
 
       // Press invite button
       fireEvent.press(getByText(/invite 3 contacts/i));
@@ -170,8 +183,16 @@ describe('ContactsImportModal', () => {
 
     it('should handle multiple contacts, all unsuccessful', async () => {
       mockSendBulkInvites.mockResolvedValueOnce([
-        { email: 'john@example.com', success: false, reason: 'Email already taken' },
-        { email: 'jane@example.com', success: false, reason: 'Invalid email format' },
+        {
+          email: 'john@example.com',
+          success: false,
+          reason: 'Email already taken',
+        },
+        {
+          email: 'jane@example.com',
+          success: false,
+          reason: 'Invalid email format',
+        },
         { email: 'bob@example.com', success: false, reason: 'User blocked' },
       ]);
 
@@ -195,7 +216,7 @@ describe('ContactsImportModal', () => {
 
       // Select all contacts
       const contactItems = getAllByTestId(/contact-item-/);
-      contactItems.forEach(item => fireEvent.press(item));
+      contactItems.forEach((item) => fireEvent.press(item));
 
       // Press invite button
       fireEvent.press(getByText(/invite 3 contacts/i));
@@ -320,19 +341,28 @@ describe('ContactsImportModal', () => {
 
       // Verify the mock was called
       await waitFor(() => {
-        expect(mockSendBulkInvites).toHaveBeenCalledWith(['manual@example.com']);
+        expect(mockSendBulkInvites).toHaveBeenCalledWith([
+          'manual@example.com',
+        ]);
       });
 
       // Wait for results
-      await waitFor(() => {
-        expect(getByText(/all invitations sent successfully!/i)).toBeTruthy();
-        expect(getByText(/1 successful/i)).toBeTruthy();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(getByText(/all invitations sent successfully!/i)).toBeTruthy();
+          expect(getByText(/1 successful/i)).toBeTruthy();
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should handle manual email entry - unsuccessful', async () => {
       mockSendBulkInvites.mockResolvedValueOnce([
-        { email: 'invalid@example.com', success: false, reason: 'Invalid email domain' },
+        {
+          email: 'invalid@example.com',
+          success: false,
+          reason: 'Invalid email domain',
+        },
       ]);
 
       const ref = React.createRef<ContactsImportModalRef>();
@@ -361,14 +391,19 @@ describe('ContactsImportModal', () => {
 
       // Verify the mock was called
       await waitFor(() => {
-        expect(mockSendBulkInvites).toHaveBeenCalledWith(['invalid@example.com']);
+        expect(mockSendBulkInvites).toHaveBeenCalledWith([
+          'invalid@example.com',
+        ]);
       });
 
       // Wait for results
-      await waitFor(() => {
-        expect(getByText(/failed to send invitations/i)).toBeTruthy();
-        expect(getByText(/invalid email domain/i)).toBeTruthy();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(getByText(/failed to send invitations/i)).toBeTruthy();
+          expect(getByText(/invalid email domain/i)).toBeTruthy();
+        },
+        { timeout: 3000 }
+      );
     });
   });
 
@@ -387,8 +422,12 @@ describe('ContactsImportModal', () => {
         },
       ];
 
-      (Contacts.getContactsAsync as jest.Mock).mockResolvedValue({ data: contactsWithFriends });
-      (Contacts.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+      (Contacts.getContactsAsync as jest.Mock).mockResolvedValue({
+        data: contactsWithFriends,
+      });
+      (Contacts.requestPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
 
       const ref = React.createRef<ContactsImportModalRef>();
       const { getByText, queryByTestId } = render(
@@ -407,11 +446,14 @@ describe('ContactsImportModal', () => {
       // Click import contacts to trigger loading
       fireEvent.press(getByText(/import contacts/i));
 
-      await waitFor(() => {
-        expect(getByText(/friend one/i)).toBeTruthy();
-        expect(getByText(/already invited/i)).toBeTruthy();
-        expect(getByText(/new contact/i)).toBeTruthy();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(getByText(/friend one/i)).toBeTruthy();
+          expect(getByText(/already invited/i)).toBeTruthy();
+          expect(getByText(/new contact/i)).toBeTruthy();
+        },
+        { timeout: 3000 }
+      );
 
       // Already invited contact should not be selectable
       const contactItem = queryByTestId('contact-item-1');
@@ -420,7 +462,9 @@ describe('ContactsImportModal', () => {
 
     it('should handle empty contact list', async () => {
       (Contacts.getContactsAsync as jest.Mock).mockResolvedValue({ data: [] });
-      (Contacts.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+      (Contacts.requestPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
 
       const ref = React.createRef<ContactsImportModalRef>();
       const { getByText } = render(

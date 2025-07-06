@@ -33,7 +33,11 @@ const snapInterval = cardWidth + cardSpacing; // adjust snap interval to include
 const MODES = [
   { id: 'story', name: 'Story Mode', color: 'rgba(194, 199, 171, 0.9)' },
   { id: 'custom', name: 'Free Play Mode', color: 'rgba(146, 185, 191, 0.9)' },
-  { id: 'join', name: 'Join Quest', color: 'rgba(171, 146, 191, 0.9)' },
+  {
+    id: 'cooperative',
+    name: 'Cooperative Quest',
+    color: 'rgba(46, 148, 141, 0.9)',
+  },
 ];
 
 export default function Home() {
@@ -79,14 +83,14 @@ export default function Home() {
   useEffect(() => {
     console.log('Home screen is mounting');
   }, []);
-  
+
   // Check for stuck cooperative quest and clean it up
   useEffect(() => {
     if (activeQuest && activeQuest.startTime) {
       // If there's an active quest with a start time but QuestTimer isn't tracking it
       QuestTimer.loadQuestData();
       const isQuestTimerRunning = QuestTimer.isRunning();
-      
+
       if (!isQuestTimerRunning) {
         console.warn('Found stuck active quest, cleaning up...', activeQuest);
         // This quest was likely a cooperative quest that started prematurely
@@ -249,12 +253,12 @@ export default function Home() {
     }
   };
 
-  // Handle join quest button
-  const handleJoinQuest = () => {
+  // Handle cooperative quest button
+  const handleCooperativeQuest = () => {
     try {
-      router.push('/quest-discovery');
+      router.push('/cooperative-quest-menu');
     } catch (error) {
-      console.error('Error navigating to quest discovery:', error);
+      console.error('Error navigating to cooperative quest menu:', error);
     }
   };
 
@@ -280,7 +284,9 @@ export default function Home() {
           const lastCompletedStoryQuest = [...storyQuests].sort(
             (a, b) => (b.stopTime || 0) - (a.stopTime || 0)
           )[0];
-          return (lastCompletedStoryQuest as any)?.recap || 'Continue your journey';
+          return (
+            (lastCompletedStoryQuest as any)?.recap || 'Continue your journey'
+          );
         }
 
         // Fallback if no story quests completed
@@ -316,13 +322,13 @@ export default function Home() {
       xp: 15,
     },
     {
-      id: 'join',
-      mode: 'join',
-      title: 'Join a Quest',
-      subtitle: 'Cooperative Mode',
-      recap: 'Join friends on their quests and complete challenges together.',
-      duration: 0,
-      xp: 0,
+      id: 'cooperative',
+      mode: 'cooperative',
+      title: 'Cooperative Quest',
+      subtitle: 'Team Challenge',
+      recap: 'Join a friend to stay off your phone together',
+      duration: 5,
+      xp: 15,
     },
   ];
 
@@ -477,10 +483,10 @@ export default function Home() {
                 style={{ width: cardWidth }}
               />
             ) : (
-              // Show join quest button for join mode
+              // Show cooperative quest button for cooperative mode
               <Button
-                label="Browse Available Quests"
-                onPress={handleJoinQuest}
+                label="Cooperative Quests"
+                onPress={handleCooperativeQuest}
                 className="mb-2 rounded-md bg-primary-400"
                 textClassName="text-white font-bold"
                 style={{ width: cardWidth }}

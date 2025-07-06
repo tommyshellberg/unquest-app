@@ -5,7 +5,7 @@ import { Env } from '@env';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import React, { useCallback, useEffect } from 'react';
@@ -61,6 +61,7 @@ function RootLayout() {
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function prepare() {
@@ -86,6 +87,23 @@ function RootLayout() {
       if (Platform.OS === 'ios') {
         OneSignal.LiveActivities.setupDefault();
       }
+
+      // Handle notification opens for cooperative quest invitations
+      OneSignal.Notifications.addEventListener('click', (event) => {
+        console.log('Notification clicked:', event);
+
+        // Check if this is a cooperative quest invitation notification
+        const { notification } = event;
+        const additionalData = notification.additionalData as any;
+
+        if (additionalData?.type === 'cooperative_quest_invitation') {
+          // Navigate to the join cooperative quest screen
+          // This will happen after the app is ready and authenticated
+          setTimeout(() => {
+            router.push('/join-cooperative-quest');
+          }, 1000);
+        }
+      });
     }
   }, []);
 
@@ -168,6 +186,26 @@ function RootLayout() {
         />
         <Stack.Screen
           name="streak-celebration"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="cooperative-quest-menu"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="create-cooperative-quest"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="join-cooperative-quest"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="cooperative-quest-lobby/[lobbyId]"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="cooperative-quest-ready"
           options={{ headerShown: false }}
         />
       </Stack>

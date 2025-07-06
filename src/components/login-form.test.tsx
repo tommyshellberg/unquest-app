@@ -51,7 +51,7 @@ describe('LoginForm Form ', () => {
     setup(<LoginForm />);
 
     const button = screen.getByTestId('login-button');
-    
+
     // Button should be disabled when email is empty
     expect(button.props.accessibilityState?.disabled).toBe(true);
   });
@@ -77,16 +77,21 @@ describe('LoginForm Form ', () => {
     await user.type(emailInput, 'youssef@gmail.com');
 
     // Wait for button to become enabled
-    await waitFor(() => {
-      expect(button.props.accessibilityState?.disabled).not.toBe(true);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(button.props.accessibilityState?.disabled).not.toBe(true);
+      },
+      { timeout: 3000 }
+    );
 
     await user.press(button);
-    
 
-    await waitFor(() => {
-      expect(onSubmitMock).toHaveBeenCalledTimes(1);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(onSubmitMock).toHaveBeenCalledTimes(1);
+      },
+      { timeout: 3000 }
+    );
 
     // Update expectation to match actual call pattern
     expect(onSubmitMock).toHaveBeenCalledWith({
@@ -104,22 +109,27 @@ describe('LoginForm Form ', () => {
     await user.type(emailInput, testEmail);
 
     // Wait for button to become enabled
-    await waitFor(() => {
-      expect(button.props.accessibilityState?.disabled).not.toBe(true);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(button.props.accessibilityState?.disabled).not.toBe(true);
+      },
+      { timeout: 3000 }
+    );
 
     await user.press(button);
-    
 
     // Wait for all success elements in a single waitFor
-    await waitFor(() => {
-      const successMessages = screen.queryAllByText(/Email sent|sent/i);
-      expect(successMessages.length).toBeGreaterThan(0);
-      expect(screen.getByText(testEmail)).toBeOnTheScreen();
-      expect(
-        screen.getByText(/Enter a different email address/i)
-      ).toBeOnTheScreen();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        const successMessages = screen.queryAllByText(/Email sent|sent/i);
+        expect(successMessages.length).toBeGreaterThan(0);
+        expect(screen.getByText(testEmail)).toBeOnTheScreen();
+        expect(
+          screen.getByText(/Enter a different email address/i)
+        ).toBeOnTheScreen();
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should return to email form when "Enter a different email address" is clicked', async () => {
@@ -130,17 +140,22 @@ describe('LoginForm Form ', () => {
     const emailInput = screen.getByTestId('email-input');
     await user.type(emailInput, 'test@example.com');
 
-    await waitFor(() => {
-      expect(button.props.accessibilityState?.disabled).not.toBe(true);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(button.props.accessibilityState?.disabled).not.toBe(true);
+      },
+      { timeout: 3000 }
+    );
 
     await user.press(button);
-    
 
     // Wait for the success screen
-    await waitFor(() => {
-      expect(screen.getByText(/Email sent/i)).toBeOnTheScreen();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Email sent/i)).toBeOnTheScreen();
+      },
+      { timeout: 3000 }
+    );
 
     // Click "Enter a different email address"
     const changeEmailLink = screen.getByText(
@@ -149,10 +164,13 @@ describe('LoginForm Form ', () => {
     await user.press(changeEmailLink);
 
     // Check for both elements in a single waitFor
-    await waitFor(() => {
-      expect(screen.getByTestId('email-input')).toBeOnTheScreen();
-      expect(screen.getByText(/Send Link/i)).toBeOnTheScreen();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('email-input')).toBeOnTheScreen();
+        expect(screen.getByText(/Send Link/i)).toBeOnTheScreen();
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should show specific error message for 409 email already in use', async () => {
@@ -178,12 +196,14 @@ describe('LoginForm Form ', () => {
     await user.type(emailInput, testEmail);
 
     // Wait for button to become enabled
-    await waitFor(() => {
-      expect(button.props.accessibilityState?.disabled).not.toBe(true);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(button.props.accessibilityState?.disabled).not.toBe(true);
+      },
+      { timeout: 3000 }
+    );
 
     await user.press(button);
-    
 
     // Wait for the specific 409 error message
     await waitFor(() => {

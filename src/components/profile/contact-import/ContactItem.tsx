@@ -36,9 +36,7 @@ export const ContactItem: React.FC<ContactItemProps> = ({
           {displayName}
         </Text>
         {email && contact.name && (
-          <Text className="text-sm text-neutral-500 mt-1">
-            {email}
-          </Text>
+          <Text className="text-sm text-neutral-500 mt-1">{email}</Text>
         )}
       </View>
 

@@ -50,8 +50,16 @@ describe('InviteResultsSummary', () => {
           { name: 'Jane Smith', email: 'jane@example.com' },
         ],
         failed: [
-          { name: 'Bob Wilson', email: 'bob@example.com', reason: 'Email already taken' },
-          { name: 'Alice Brown', email: 'alice@example.com', reason: 'User blocked' },
+          {
+            name: 'Bob Wilson',
+            email: 'bob@example.com',
+            reason: 'Email already taken',
+          },
+          {
+            name: 'Alice Brown',
+            email: 'alice@example.com',
+            reason: 'User blocked',
+          },
         ],
       };
 
@@ -82,8 +90,16 @@ describe('InviteResultsSummary', () => {
       const results = {
         successful: [],
         failed: [
-          { name: 'John Doe', email: 'john@example.com', reason: 'Invalid email format' },
-          { name: 'Jane Smith', email: 'jane@example.com', reason: 'Server error' },
+          {
+            name: 'John Doe',
+            email: 'john@example.com',
+            reason: 'Invalid email format',
+          },
+          {
+            name: 'Jane Smith',
+            email: 'jane@example.com',
+            reason: 'Server error',
+          },
         ],
       };
 
@@ -126,7 +142,13 @@ describe('InviteResultsSummary', () => {
     it('should display single failed invite correctly', () => {
       const results = {
         successful: [],
-        failed: [{ name: 'John Doe', email: 'john@example.com', reason: 'User not found' }],
+        failed: [
+          {
+            name: 'John Doe',
+            email: 'john@example.com',
+            reason: 'User not found',
+          },
+        ],
       };
 
       const { getByText } = render(
@@ -149,7 +171,11 @@ describe('InviteResultsSummary', () => {
           { name: 'Contact Two', email: 'contact2@example.com' },
         ],
         failed: [
-          { name: 'Contact Three', email: 'contact3@example.com', reason: 'Invalid' },
+          {
+            name: 'Contact Three',
+            email: 'contact3@example.com',
+            reason: 'Invalid',
+          },
         ],
       };
 
@@ -184,11 +210,31 @@ describe('InviteResultsSummary', () => {
       const results = {
         successful: [],
         failed: [
-          { name: 'User 1', email: 'user1@example.com', reason: 'Email already taken' },
-          { name: 'User 2', email: 'user2@example.com', reason: 'Invalid email format' },
-          { name: 'User 3', email: 'user3@example.com', reason: 'User blocked' },
-          { name: 'User 4', email: 'user4@example.com', reason: 'Server error' },
-          { name: 'User 5', email: 'user5@example.com', reason: 'Unknown error' },
+          {
+            name: 'User 1',
+            email: 'user1@example.com',
+            reason: 'Email already taken',
+          },
+          {
+            name: 'User 2',
+            email: 'user2@example.com',
+            reason: 'Invalid email format',
+          },
+          {
+            name: 'User 3',
+            email: 'user3@example.com',
+            reason: 'User blocked',
+          },
+          {
+            name: 'User 4',
+            email: 'user4@example.com',
+            reason: 'Server error',
+          },
+          {
+            name: 'User 5',
+            email: 'user5@example.com',
+            reason: 'Unknown error',
+          },
         ],
       };
 
@@ -209,7 +255,9 @@ describe('InviteResultsSummary', () => {
     it('should show correct icons for success and failure', () => {
       const results = {
         successful: [{ name: 'Success', email: 'success@example.com' }],
-        failed: [{ name: 'Failed', email: 'failed@example.com', reason: 'Error' }],
+        failed: [
+          { name: 'Failed', email: 'failed@example.com', reason: 'Error' },
+        ],
       };
 
       const { getAllByTestId } = render(
