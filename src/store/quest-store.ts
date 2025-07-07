@@ -198,6 +198,12 @@ export const useQuestStore = create<QuestState>()(
 
           // Ensure all required fields for Quest are present
           const now = Date.now();
+          const cooperativeQuestRun = get().cooperativeQuestRun;
+          const questId =
+            failedQuestDetails.id ||
+            cooperativeQuestRun?.questId ||
+            `failed-${now}`;
+
           const failedQuestWithTime: Quest = {
             ...failedQuestDetails,
             startTime: activeQuest?.startTime || now,
@@ -206,7 +212,7 @@ export const useQuestStore = create<QuestState>()(
             reward: failedQuestDetails.reward ?? { xp: 0 },
             durationMinutes: failedQuestDetails.durationMinutes ?? 0,
             title: failedQuestDetails.title ?? 'Unknown Quest',
-            id: failedQuestDetails.id,
+            id: questId,
             // Add any other required fields here
           };
 

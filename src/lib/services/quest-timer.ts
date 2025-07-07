@@ -183,12 +183,20 @@ export default class QuestTimer {
         if (questRun.invitationId && questRun.participants) {
           console.log('Setting cooperative quest run data:', questRun);
           const user = useUserStore.getState().user;
+          const questId =
+            (questRun as any).questId ||
+            questRun.quest?.id ||
+            questTemplate.id ||
+            questRun.id ||
+            `quest-${questRun.id}`;
+          console.log(
+            '[QuestTimer] Setting cooperative quest run with questId:',
+            questId
+          );
+
           useQuestStore.getState().setCooperativeQuestRun({
             id: questRun.id,
-            questId:
-              questRun.quest?.id ||
-              questTemplate.id ||
-              `quest-${questRun.id}`,
+            questId: questId,
             hostId: user?.id || '',
             status: 'pending',
             participants: Array.isArray(questRun.participants)
@@ -362,7 +370,8 @@ export default class QuestTimer {
                 status: response.status,
                 participants: response.participants?.map((p: any) => ({
                   userId: typeof p === 'string' ? p : p.userId,
-                  phoneLocked: typeof p === 'object' ? p.phoneLocked : undefined,
+                  phoneLocked:
+                    typeof p === 'object' ? p.phoneLocked : undefined,
                   status: typeof p === 'object' ? p.status : 'unknown',
                 })),
               });
@@ -404,7 +413,7 @@ export default class QuestTimer {
                   participants: questRun.participants,
                 })
               );
-              
+
               if (questRun.status === 'active' && questRun.actualStartTime) {
                 console.log(
                   '[QuestTimer] Server activated cooperative quest, starting locally'
@@ -431,7 +440,10 @@ export default class QuestTimer {
                 }
 
                 // Update Android notification to show quest is active
-                if (Platform.OS === 'android' && BackgroundService.isRunning()) {
+                if (
+                  Platform.OS === 'android' &&
+                  BackgroundService.isRunning()
+                ) {
                   try {
                     await BackgroundService.updateNotification({
                       taskTitle: `Quest in progress: ${this.questTemplate.title}`,
@@ -443,11 +455,28 @@ export default class QuestTimer {
                       },
                     });
                   } catch (error) {
-                    console.error('[QuestTimer] Failed to update Android notification:', error);
+                    console.error(
+                      '[QuestTimer] Failed to update Android notification:',
+                      error
+                    );
                   }
                 }
 
                 return true; // Quest activated
+              } else if (questRun.status === 'failed') {
+                console.log(
+                  '[QuestTimer] Quest already failed by another participant'
+                );
+
+                // Update local state to failed
+                const questStore = useQuestStore.getState();
+                questStore.setCooperativeQuestRun({
+                  ...cooperativeQuestRun,
+                  status: 'failed',
+                });
+                questStore.failQuest();
+
+                return true; // Stop polling
               }
               return false; // Not activated yet
             } catch (error) {
@@ -666,7 +695,7 @@ export default class QuestTimer {
 
     // Load quest data initially - only once
     await this.loadQuestData();
-    
+
     console.log('[Background Task] Quest data loaded:', {
       hasQuestTemplate: !!this.questTemplate,
       questTemplateId: this.questTemplate?.id,
@@ -690,11 +719,13 @@ export default class QuestTimer {
         questRunId: this.questRunId,
         cooperativeQuestRunId: cooperativeQuestRun?.id,
         isCooperativeQuest,
-        cooperativeQuestRun: cooperativeQuestRun ? {
-          id: cooperativeQuestRun.id,
-          status: cooperativeQuestRun.status,
-          participants: cooperativeQuestRun.participants?.length,
-        } : null,
+        cooperativeQuestRun: cooperativeQuestRun
+          ? {
+              id: cooperativeQuestRun.id,
+              status: cooperativeQuestRun.status,
+              participants: cooperativeQuestRun.participants?.length,
+            }
+          : null,
       });
 
       if (isCooperativeQuest) {
@@ -725,7 +756,7 @@ export default class QuestTimer {
                 })),
               })
             );
-            
+
             if (questRun.status === 'active' && questRun.actualStartTime) {
               console.log(
                 '[Background Task] Cooperative quest activated by server'
@@ -763,9 +794,28 @@ export default class QuestTimer {
                     },
                   });
                 } catch (error) {
-                  console.error('[Background Task] Failed to update Android notification:', error);
+                  console.error(
+                    '[Background Task] Failed to update Android notification:',
+                    error
+                  );
                 }
               }
+
+              break; // Exit polling loop
+            } else if (questRun.status === 'failed') {
+              console.log(
+                '[Background Task] Quest already failed by another participant'
+              );
+
+              // Update local state to failed
+              questStore.setCooperativeQuestRun({
+                ...cooperativeQuestRun,
+                status: 'failed',
+              });
+              questStore.failQuest();
+
+              // Stop the background service
+              await this.stopQuest();
 
               break; // Exit polling loop
             }
@@ -779,9 +829,11 @@ export default class QuestTimer {
           checkCount++;
           await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
         }
-        
+
         if (checkCount >= 30) {
-          console.log('[Background Task] Max polling attempts reached without activation');
+          console.log(
+            '[Background Task] Max polling attempts reached without activation'
+          );
         }
       }
     }
@@ -807,7 +859,7 @@ export default class QuestTimer {
         if (elapsedTime >= questDuration) {
           console.log(
             'Quest completed in background task:',
-            this.questTemplate.id
+            this.questTemplate?.id || 'unknown'
           );
 
           // Update OneSignal Live Activity with status='completed'
@@ -832,11 +884,17 @@ export default class QuestTimer {
           // --- End Live Activity Update ---
 
           const questStoreState = useQuestStore.getState();
-          if (questStoreState.activeQuest?.id === this.questTemplate.id) {
+          const questId = this.questTemplate?.id;
+
+          console.log('[Background Task] Completing quest:', {
+            questTemplateId: questId,
+            activeQuestId: questStoreState.activeQuest?.id,
+            pendingQuestId: questStoreState.pendingQuest?.id,
+          });
+
+          if (questStoreState.activeQuest?.id === questId) {
             questStoreState.completeQuest(true); // Mark quest as complete in the store
-          } else if (
-            questStoreState.pendingQuest?.id === this.questTemplate.id
-          ) {
+          } else if (questStoreState.pendingQuest?.id === questId) {
             // For cooperative quests that might not have transitioned to active
             console.log(
               'Completing cooperative quest that was stuck in pending state'
@@ -847,6 +905,7 @@ export default class QuestTimer {
             // Manually transition to completed
             const completedQuest = {
               ...pendingQuest,
+              id: pendingQuest.id || questId || 'unknown', // Ensure ID is never undefined
               startTime:
                 cooperativeQuestRun?.actualStartTime ||
                 this.questStartTime ||
@@ -886,7 +945,8 @@ export default class QuestTimer {
           }
           // for now only schedule for Android
           if (Platform.OS === 'android') {
-            await scheduleQuestCompletionNotification(); // Schedule completion notification
+            const completedQuestId = this.questTemplate?.id || questId;
+            await scheduleQuestCompletionNotification(completedQuestId); // Schedule completion notification with quest ID
           }
           await this.stopQuest(); // Stop background service and clear data
           break; // Exit loop

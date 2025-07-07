@@ -155,6 +155,13 @@ export function useNavigationTarget(): NavigationTarget {
 
   if (failedQuest) {
     console.log('🧭 Found failed quest:', failedQuest.id);
+    // Don't navigate to quest details if the quest ID is undefined
+    if (!failedQuest.id || failedQuest.id === 'undefined') {
+      console.log('🧭 Failed quest has undefined ID, skipping navigation');
+      // Clear the failed quest to prevent this from happening again
+      useQuestStore.getState().resetFailedQuest();
+      return { type: 'app' };
+    }
     if (failedQuest.id === 'quest-1' && !isOnboardingComplete) {
       return { type: 'first-quest-result', outcome: 'failed' };
     }
@@ -163,6 +170,13 @@ export function useNavigationTarget(): NavigationTarget {
 
   if (recentCompletedQuest) {
     console.log('🧭 Found completed quest:', recentCompletedQuest.id);
+    // Don't navigate to quest details if the quest ID is undefined
+    if (!recentCompletedQuest.id || recentCompletedQuest.id === 'undefined') {
+      console.log('🧭 Completed quest has undefined ID, skipping navigation');
+      // Clear the completed quest to prevent this from happening again
+      useQuestStore.getState().clearRecentCompletedQuest();
+      return { type: 'app' };
+    }
     if (recentCompletedQuest.id === 'quest-1' && !isOnboardingComplete) {
       return { type: 'first-quest-result', outcome: 'completed' };
     }

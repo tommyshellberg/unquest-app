@@ -62,7 +62,7 @@ export const clearAllNotifications = async () => {
   }
 };
 
-export const scheduleQuestCompletionNotification = async () => {
+export const scheduleQuestCompletionNotification = async (questId?: string) => {
   // Check if notifications are enabled before scheduling
   const enabled = await areNotificationsEnabled();
   if (!enabled) {
@@ -74,7 +74,10 @@ export const scheduleQuestCompletionNotification = async () => {
       content: {
         title: 'Quest Completed!',
         body: 'Your quest has been completed successfully. Claim your reward!',
-        data: { screen: 'quest-complete' },
+        data: { 
+          screen: '/(app)',  // Navigate to home, will redirect to quest result
+          questId: questId 
+        },
         // These properties are valid in the content object
         priority: ExpoNotifications.AndroidNotificationPriority.MAX,
         sound: true,

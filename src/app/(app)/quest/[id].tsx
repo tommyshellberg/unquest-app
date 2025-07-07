@@ -47,19 +47,29 @@ export default function AppQuestDetailsScreen() {
   }, [id]);
 
   const handleBackNavigation = () => {
-    // Clear the recent completed quest if it matches this quest
-    if (recentCompletedQuest && recentCompletedQuest.id === id) {
+    // If quest ID is undefined, clear all quest states to prevent this from happening again
+    if (!id || id === 'undefined') {
       console.log(
-        '[QuestDetails] Clearing recent completed quest on navigation:',
-        id
+        '[QuestDetails] Quest ID is undefined, clearing all quest states'
       );
       clearRecentCompletedQuest();
+      resetFailedQuest();
+    } else {
+      // Clear the recent completed quest if it matches this quest
+      if (recentCompletedQuest && recentCompletedQuest.id === id) {
+        console.log(
+          '[QuestDetails] Clearing recent completed quest on navigation:',
+          id
+        );
+        clearRecentCompletedQuest();
+      }
+
+      // If we are viewing the globally stored failedQuest, clear it before navigating.
+      if (failedQuest && failedQuest.id === id) {
+        resetFailedQuest();
+      }
     }
 
-    // If we are viewing the globally stored failedQuest, clear it before navigating.
-    if (failedQuest && failedQuest.id === id) {
-      resetFailedQuest();
-    }
     console.log('[QuestDetails] Navigating to app home');
     router.replace('/(app)'); // Fallback to app home
   };

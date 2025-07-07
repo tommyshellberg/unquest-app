@@ -83,7 +83,7 @@ export function useInvitationActions() {
       );
 
       // Handle the response format from the server
-      const questRunId = response.questRunId || response.invitation?.questRunId;
+      const questRunId = response.questRunId || (response as any).invitation?.questRunId;
       if (!questRunId) {
         throw new Error('No questRunId in invitation acceptance response');
       }
@@ -102,8 +102,11 @@ export function useInvitationActions() {
       }
 
       // Create a complete quest object for the invitee
+      const questId = (questRun as any).questId || questRun.quest?.id || questRun.id || `coop-${questRunId}`;
+      console.log('[acceptInvitation] Creating quest with ID:', questId, 'from questRun:', questRun);
+      
       const completeQuest: any = {
-        id: questRun.quest?.id || `coop-${questRunId}`,
+        id: questId,
         title: questRun.quest?.title || 'Cooperative Quest',
         durationMinutes: questRun.quest?.durationMinutes || 30,
         mode: questRun.quest?.mode || 'custom',
@@ -121,7 +124,7 @@ export function useInvitationActions() {
 
         useQuestStore.getState().setCooperativeQuestRun({
           id: questRun.id,
-          questId: completeQuest.id,
+          questId: questId,
           hostId: hostId,
           status: 'pending',
           participants: Array.isArray(questRun.participants)
@@ -131,7 +134,7 @@ export function useInvitationActions() {
                   : p
               )
             : [],
-          invitationId: questRun.invitationId || response.invitation?.id,
+          invitationId: questRun.invitationId || (response as any).invitation?.id,
           actualStartTime: questRun.actualStartTime,
           scheduledEndTime: questRun.scheduledEndTime,
           createdAt: Date.now(),
@@ -151,7 +154,7 @@ export function useInvitationActions() {
       // Create an invitation object for the store
       const hostId = questRun?.participants?.[0]?.userId || '';
       setCurrentInvitation({
-        id: response.invitation?.id || invitationId,
+        id: (response as any).invitation?.id || '',
         questRunId: questRunId,
         questTitle: questRun.quest?.title || 'Cooperative Quest',
         questDuration: questRun.quest?.durationMinutes || 30,

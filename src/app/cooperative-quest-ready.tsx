@@ -203,8 +203,11 @@ export default function CooperativeQuestReady() {
       if (countdown === 0) {
         clearInterval(countdownInterval);
         // Transform questRun data to match CustomQuestTemplate format
+        const questId = questRun.questId || questRun._id || questRun.id || `coop-${Date.now()}`;
+        console.log('Creating quest template with ID:', questId, 'from questRun:', questRun);
+        
         const questTemplate: CustomQuestTemplate = {
-          id: questRun.questId || questRun._id,
+          id: questId,
           title: questRun.title || questRun.quest?.title || currentLobby.questTitle,
           durationMinutes: questRun.durationMinutes || questRun.quest?.durationMinutes || currentLobby.questDuration,
           reward: questRun.reward || questRun.quest?.reward || { xp: currentLobby.questDuration * 10 },
@@ -219,7 +222,10 @@ export default function CooperativeQuestReady() {
 
         // Store the full questRun data in the quest store for cooperative features
         const questStore = useQuestStore.getState();
-        questStore.setCooperativeQuestRun(questRun);
+        questStore.setCooperativeQuestRun({
+          ...questRun,
+          questId: questId, // Ensure quest ID is consistent
+        });
       }
     }, 1000);
   }, [currentLobby, updateLobbyStatus, setCountdown, prepareQuest]);
