@@ -3,16 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getItem, removeItem, setItem } from '@/lib/storage';
-
-export interface User {
-  id: string;
-  email: string;
-  name?: string;
-  avatar?: string;
-  createdAt?: string;
-  totalQuestsCompleted?: number;
-  totalMinutesOffPhone?: number;
-}
+import { type User } from '@/store/types';
 
 interface UserState {
   user: User | null;

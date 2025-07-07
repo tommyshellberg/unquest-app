@@ -18,6 +18,7 @@ import {
 } from '@/components/profile/contact-import';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { useAuth } from '@/lib';
+import { useUserStore } from '@/store/user-store';
 
 interface MenuOption {
   id: string;
@@ -60,6 +61,7 @@ export default function CooperativeQuestMenu() {
   const contactsModalRef = useRef<ContactsImportModalRef>(null);
   const currentUser = useAuth((state) => state.user);
   const userEmail = currentUser?.email || '';
+  const user = useUserStore((state) => state.user);
 
   // Check if user has friends
   const { data: friendsData, isLoading } = useQuery({
@@ -68,6 +70,7 @@ export default function CooperativeQuestMenu() {
   });
 
   const hasFriends = friendsData?.friends && friendsData.friends.length > 0;
+  const hasCoopFeature = user?.featureFlags?.includes('coop_mode') || false;
 
   // Friend management hook for bulk invites
   const { sendBulkInvites } = useFriendManagement(userEmail, contactsModalRef);
@@ -88,6 +91,101 @@ export default function CooperativeQuestMenu() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" />
           <Text className="mt-4 text-neutral-600">Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Check if user has the coop_mode feature flag
+  if (!hasCoopFeature) {
+    return (
+      <SafeAreaView className="flex-1 bg-neutral-100">
+        <FocusAwareStatusBar />
+        
+        <View className="flex-1 px-4">
+          {/* Header */}
+          <View className="mb-6 mt-4">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="mb-4 flex-row items-center"
+            >
+              <MaterialCommunityIcons
+                name="arrow-left"
+                size={24}
+                color="#333"
+              />
+              <Text className="ml-2 text-lg">Back</Text>
+            </TouchableOpacity>
+
+            <Text className="mb-2 text-3xl font-bold">Cooperative Quests</Text>
+            <Text className="text-neutral-600">
+              Team up with friends to complete quests together!
+            </Text>
+          </View>
+
+          {/* Premium Feature Message */}
+          <View className="flex-1 items-center justify-center px-4">
+            <View className="mb-6 rounded-full bg-primary-100 p-6">
+              <MaterialCommunityIcons
+                name="lock-outline"
+                size={64}
+                color="#77c5bf"
+              />
+            </View>
+            
+            <Text className="mb-4 text-center text-2xl font-bold">
+              Join the unQuest Circle
+            </Text>
+            
+            <Text className="mb-6 text-center text-neutral-600">
+              Cooperative quests are a premium feature available exclusively to unQuest Circle members.
+            </Text>
+            
+            <Card className="bg-primary-50 p-6">
+              <Text className="mb-4 text-center text-lg font-semibold">
+                What's included:
+              </Text>
+              <View className="gap-3">
+                <View className="flex-row items-start">
+                  <MaterialCommunityIcons
+                    name="check-circle"
+                    size={20}
+                    color="#77c5bf"
+                    style={{ marginTop: 2 }}
+                  />
+                  <Text className="ml-2 flex-1 text-neutral-700">
+                    Create and join unlimited cooperative quests
+                  </Text>
+                </View>
+                <View className="flex-row items-start">
+                  <MaterialCommunityIcons
+                    name="check-circle"
+                    size={20}
+                    color="#77c5bf"
+                    style={{ marginTop: 2 }}
+                  />
+                  <Text className="ml-2 flex-1 text-neutral-700">
+                    Quest with multiple friends simultaneously
+                  </Text>
+                </View>
+                <View className="flex-row items-start">
+                  <MaterialCommunityIcons
+                    name="check-circle"
+                    size={20}
+                    color="#77c5bf"
+                    style={{ marginTop: 2 }}
+                  />
+                  <Text className="ml-2 flex-1 text-neutral-700">
+                    Access to exclusive quest types and rewards
+                  </Text>
+                </View>
+              </View>
+            </Card>
+            
+            <Text className="mt-6 text-center text-sm text-neutral-500">
+              Premium subscription details coming soon!
+            </Text>
+          </View>
         </View>
       </SafeAreaView>
     );

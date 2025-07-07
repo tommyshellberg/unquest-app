@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 
 import {
   Button,
@@ -62,6 +62,7 @@ export default function CooperativeQuestReady() {
   const router = useRouter();
   const currentUser = useUserStore((state) => state.user);
   const currentLobby = useCooperativeLobbyStore((state) => state.currentLobby);
+  const leaveLobby = useCooperativeLobbyStore((state) => state.leaveLobby);
   const markUserReady = useCooperativeLobbyStore(
     (state) => state.markUserReady
   );
@@ -86,7 +87,7 @@ export default function CooperativeQuestReady() {
       router.replace('/');
       return;
     }
-    
+
     // Prevent multiple joins
     if (hasJoined) {
       return;
@@ -96,7 +97,7 @@ export default function CooperativeQuestReady() {
     console.log('Ready screen joining lobby:', currentLobby.lobbyId);
     emit('lobby:join', { lobbyId: currentLobby.lobbyId });
     setHasJoined(true);
-    
+
     // Listen for lobby joined event to get latest participant data
     const handleLobbyJoined = (data: any) => {
       console.log('Ready screen - lobby joined data:', data);
@@ -119,7 +120,7 @@ export default function CooperativeQuestReady() {
       console.log('Ready status update:', data);
       markUserReady(data.userId, data.isReady);
     };
-    
+
     // Listen for participant ready events (server sends these)
     const handleParticipantReady = (data: any) => {
       console.log('Participant ready event:', data);
@@ -127,7 +128,7 @@ export default function CooperativeQuestReady() {
         markUserReady(data.userId, data.participant.ready || false);
       }
     };
-    
+
     // Listen for all participants ready event
     const handleAllReady = (data: any) => {
       console.log('All participants ready:', data);
@@ -187,48 +188,67 @@ export default function CooperativeQuestReady() {
   );
   const allReady = acceptedParticipants.every((p) => p.isReady);
   const isCreator = currentParticipant?.isCreator || false;
-  
-  // Define the quest created handler
-  const handleQuestCreatedResponse = useCallback(async (questRun: any) => {
-    console.log('Quest created, starting countdown:', questRun);
-    // Start countdown
-    updateLobbyStatus('starting');
-    let countdown = 5;
-    setCountdown(countdown);
 
-    const countdownInterval = setInterval(() => {
-      countdown--;
+  // Define the quest created handler
+  const handleQuestCreatedResponse = useCallback(
+    async (questRun: any) => {
+      console.log('Quest created, starting countdown:', questRun);
+      // Start countdown
+      updateLobbyStatus('starting');
+      let countdown = 5;
       setCountdown(countdown);
 
-      if (countdown === 0) {
-        clearInterval(countdownInterval);
-        // Transform questRun data to match CustomQuestTemplate format
-        const questId = questRun.questId || questRun._id || questRun.id || `coop-${Date.now()}`;
-        console.log('Creating quest template with ID:', questId, 'from questRun:', questRun);
-        
-        const questTemplate: CustomQuestTemplate = {
-          id: questId,
-          title: questRun.title || questRun.quest?.title || currentLobby.questTitle,
-          durationMinutes: questRun.durationMinutes || questRun.quest?.durationMinutes || currentLobby.questDuration,
-          reward: questRun.reward || questRun.quest?.reward || { xp: currentLobby.questDuration * 10 },
-          mode: 'custom',
-          category: 'cooperative',
-          inviteeIds: questRun.participants?.map((p: any) => p.userId) || [],
-        };
+      const countdownInterval = setInterval(() => {
+        countdown--;
+        setCountdown(countdown);
 
-        // Prepare quest with transformed data
-        prepareQuest(questTemplate);
-        QuestTimer.prepareQuest(questTemplate);
+        if (countdown === 0) {
+          clearInterval(countdownInterval);
+          // Transform questRun data to match CustomQuestTemplate format
+          const questId =
+            questRun.questId ||
+            questRun._id ||
+            questRun.id ||
+            `coop-${Date.now()}`;
+          console.log(
+            'Creating quest template with ID:',
+            questId,
+            'from questRun:',
+            questRun
+          );
 
-        // Store the full questRun data in the quest store for cooperative features
-        const questStore = useQuestStore.getState();
-        questStore.setCooperativeQuestRun({
-          ...questRun,
-          questId: questId, // Ensure quest ID is consistent
-        });
-      }
-    }, 1000);
-  }, [currentLobby, updateLobbyStatus, setCountdown, prepareQuest]);
+          const questTemplate: CustomQuestTemplate = {
+            id: questId,
+            title:
+              questRun.title ||
+              questRun.quest?.title ||
+              currentLobby.questTitle,
+            durationMinutes:
+              questRun.durationMinutes ||
+              questRun.quest?.durationMinutes ||
+              currentLobby.questDuration,
+            reward: questRun.reward ||
+              questRun.quest?.reward || { xp: currentLobby.questDuration * 10 },
+            mode: 'custom',
+            category: 'cooperative',
+            inviteeIds: questRun.participants?.map((p: any) => p.userId) || [],
+          };
+
+          // Prepare quest with transformed data
+          prepareQuest(questTemplate);
+          QuestTimer.prepareQuest(questTemplate);
+
+          // Store the full questRun data in the quest store for cooperative features
+          const questStore = useQuestStore.getState();
+          questStore.setCooperativeQuestRun({
+            ...questRun,
+            questId: questId, // Ensure quest ID is consistent
+          });
+        }
+      }, 1000);
+    },
+    [currentLobby, updateLobbyStatus, setCountdown, prepareQuest]
+  );
 
   // When all are ready, creator should create the quest
   useEffect(() => {
@@ -239,12 +259,43 @@ export default function CooperativeQuestReady() {
         // Send WebSocket event to create quest, server will emit lobby:quest-created to all
         emit('lobby:create-quest', {
           lobbyId: currentLobby.lobbyId,
-          forceStart: false
+          forceStart: false,
         });
       }, 1000);
       return () => clearTimeout(timer);
     }
   }, [allReady, isCreator, currentLobby?.lobbyId, emit]);
+
+  const handleBackPress = useCallback(() => {
+    const handleLeave = () => {
+      // Emit leave event to notify other participants
+      if (currentLobby?.lobbyId && currentUser?.id) {
+        emit('lobby:leave', {
+          lobbyId: currentLobby.lobbyId,
+          userId: currentUser.id,
+        });
+      }
+
+      // Clear local lobby state
+      leaveLobby();
+
+      // Navigate back
+      router.back();
+    };
+
+    Alert.alert(
+      'Leave Quest?',
+      'Are you sure you want to leave? The quest will start soon!',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Leave',
+          style: 'destructive',
+          onPress: handleLeave,
+        },
+      ]
+    );
+  }, [currentLobby, currentUser, emit, leaveLobby, router]);
 
   const handleReadyToggle = () => {
     if (!currentUser || !currentLobby) return;
@@ -284,7 +335,7 @@ export default function CooperativeQuestReady() {
       {/* Header */}
       <View className="border-b border-neutral-200 bg-white px-5 py-4">
         <View className="flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={handleBackPress}>
             <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
           </TouchableOpacity>
           <Text className="text-lg font-semibold">Get Ready</Text>

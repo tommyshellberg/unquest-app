@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 
 import { invitationApi } from '@/api/invitation';
 import {
@@ -91,6 +91,7 @@ export default function CooperativeQuestLobby() {
     (state) => state.updateParticipant
   );
   const joinLobby = useCooperativeLobbyStore((state) => state.joinLobby);
+  const leaveLobby = useCooperativeLobbyStore((state) => state.leaveLobby);
 
   const { emit, on, off, joinQuestRoom, leaveQuestRoom } = useWebSocket();
   const [isLoading, setIsLoading] = useState(true);
@@ -110,7 +111,7 @@ export default function CooperativeQuestLobby() {
         console.log('Participants:', data.participants);
         console.log('Full data:', JSON.stringify(data, null, 2));
         console.log('=======================================');
-        
+
         if (data.lobbyId === lobbyId) {
           // For inviter, preserve existing participant data if we already have it
           const existingLobby =
@@ -125,28 +126,28 @@ export default function CooperativeQuestLobby() {
           } else {
             // For invitees, populate from server data
             // Check multiple possible locations for quest data
-            const questTitle = 
-              data.quest?.title || 
-              data.metadata?.questTitle || 
+            const questTitle =
+              data.quest?.title ||
+              data.metadata?.questTitle ||
               data.questData?.title ||
               data.title ||
               'Cooperative Quest';
-            
-            const questDuration = 
-              data.quest?.durationMinutes || 
+
+            const questDuration =
+              data.quest?.durationMinutes ||
               data.quest?.duration ||
-              data.metadata?.questDuration || 
+              data.metadata?.questDuration ||
               data.questData?.duration ||
               data.duration ||
               30;
-            
+
             const lobbyData: CooperativeLobby = {
               lobbyId: data.lobbyId,
               questTitle,
               questDuration,
               creatorId:
-                data.participants?.find((p: any) => p.isCreator)?.userId || 
-                data.creatorId || 
+                data.participants?.find((p: any) => p.isCreator)?.userId ||
+                data.creatorId ||
                 '',
               participants:
                 data.participants?.map((p: any) => ({
@@ -164,11 +165,11 @@ export default function CooperativeQuestLobby() {
             };
 
             console.log('Created lobby data:', lobbyData);
-            
+
             // Update the lobby store
             joinLobby(lobbyData);
             setIsLoading(false);
-            
+
             // Check if we should immediately transition to ready screen
             // This happens when invitee joins after all have responded
             const allResponded = lobbyData.participants.every(
@@ -177,11 +178,18 @@ export default function CooperativeQuestLobby() {
             const acceptedCount = lobbyData.participants.filter(
               (p) => p.invitationStatus === 'accepted'
             ).length;
-            
-            if (allResponded && acceptedCount > 1 && data.waitingForResponses === 0) {
-              console.log('All already responded on join - transitioning to ready screen');
+
+            if (
+              allResponded &&
+              acceptedCount > 1 &&
+              data.waitingForResponses === 0
+            ) {
+              console.log(
+                'All already responded on join - will transition to ready screen'
+              );
+              // Set a flag to transition after the component renders
               setTimeout(() => {
-                router.replace('/cooperative-quest-ready');
+                setHasTransitioned(true);
               }, 100);
             }
           }
@@ -339,23 +347,87 @@ export default function CooperativeQuestLobby() {
   const acceptedParticipants = currentLobby.participants.filter(
     (p) => p.invitationStatus === 'accepted'
   );
+  // Auto-transition to ready screen when all have responded
+  const [hasTransitioned, setHasTransitioned] = useState(false);
+
   const allReady =
     acceptedParticipants.length > 0 &&
     acceptedParticipants.every((p) => p.isReady);
 
-  // Auto-transition to ready screen when all have responded
-  const [hasTransitioned, setHasTransitioned] = useState(false);
+  useEffect(() => {
+    if (hasTransitioned && currentLobby) {
+      // Navigate after the flag is set
+      console.log('Transitioning to ready screen...');
+      const timer = setTimeout(() => {
+        router.replace('/cooperative-quest-ready');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [hasTransitioned, currentLobby, router]);
 
   useEffect(() => {
     if (allResponded && acceptedParticipants.length > 1 && !hasTransitioned) {
+      // Set the flag to trigger navigation
       setHasTransitioned(true);
-      // Give a short delay to show the "All players have responded" message
-      const timer = setTimeout(() => {
-        router.replace('/cooperative-quest-ready');
-      }, 2000);
-      return () => clearTimeout(timer);
     }
-  }, [allResponded, acceptedParticipants.length, hasTransitioned, router]);
+  }, [allResponded, acceptedParticipants.length, hasTransitioned]);
+
+  const handleBackPress = useCallback(() => {
+    const handleLeave = () => {
+      // Emit leave event to notify other participants
+      if (currentLobby?.lobbyId && currentUser?.id) {
+        emit('lobby:leave', {
+          lobbyId: currentLobby.lobbyId,
+          userId: currentUser.id,
+        });
+      }
+
+      // Clear local lobby state
+      leaveLobby();
+
+      // Navigate back
+      router.back();
+    };
+
+    if (isCreator) {
+      Alert.alert(
+        'Leave Quest Lobby?',
+        'As the quest creator, leaving will cancel the quest for all participants. Are you sure?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Leave',
+            style: 'destructive',
+            onPress: handleLeave,
+          },
+        ]
+      );
+    } else if (hasAccepted) {
+      Alert.alert(
+        'Leave Quest Lobby?',
+        "You've already accepted this quest invitation. Are you sure you want to leave?",
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Leave',
+            style: 'destructive',
+            onPress: handleLeave,
+          },
+        ]
+      );
+    } else {
+      // If they haven't accepted yet, just leave without confirmation
+      handleLeave();
+    }
+  }, [
+    currentLobby,
+    currentUser,
+    emit,
+    leaveLobby,
+    isCreator,
+    hasAccepted,
+    router,
+  ]);
 
   const handleAcceptDecline = async (accept: boolean) => {
     if (!invitationId) return;
@@ -371,6 +443,8 @@ export default function CooperativeQuestLobby() {
       );
 
       if (!accept) {
+        // Clear lobby state when declining
+        leaveLobby();
         router.back();
       }
     } catch (error) {
@@ -404,7 +478,7 @@ export default function CooperativeQuestLobby() {
       {/* Header */}
       <View className="border-b border-neutral-200 bg-white px-5 py-4">
         <View className="flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={handleBackPress}>
             <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
           </TouchableOpacity>
           <Text className="text-lg font-semibold">Quest Lobby</Text>

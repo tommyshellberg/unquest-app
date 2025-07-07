@@ -30,15 +30,31 @@ function InvitationCard({
   onDecline,
   isProcessing,
 }: InvitationCardProps) {
+  // Debug log the invitation structure
+  console.log(
+    'InvitationCard - Full invitation object:',
+    JSON.stringify(invitation, null, 2)
+  );
+
+  // Look for quest title in multiple possible locations
   const questTitle =
+    invitation.questTitle ||
+    invitation.title ||
     invitation.metadata?.questTitle ||
     invitation.questData?.title ||
     invitation.quest?.title ||
+    invitation.questRun?.title ||
     'Cooperative Quest';
+
+  // Look for quest duration in multiple possible locations
   const questDuration =
+    invitation.questDuration ||
+    invitation.duration ||
     invitation.metadata?.questDuration ||
     invitation.questData?.duration ||
     invitation.quest?.duration ||
+    invitation.questRun?.duration ||
+    invitation.questRun?.durationMinutes ||
     30;
 
   return (
@@ -116,7 +132,7 @@ export default function JoinCooperativeQuest() {
           quest: inv.quest,
           metadata: inv.metadata,
           questData: inv.questData,
-          fullObject: JSON.stringify(inv, null, 2)
+          fullObject: JSON.stringify(inv, null, 2),
         });
       });
       console.log('=======================================');

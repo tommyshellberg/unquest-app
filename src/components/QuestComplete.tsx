@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import React, { useEffect } from 'react';
+import LottieView from 'lottie-react-native';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -9,12 +10,14 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
 import { Image, Text, View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 import { type Quest, type StoryQuestTemplate } from '@/store/types';
+import { StreakCounter } from '@/components/StreakCounter';
 
 import { StoryNarration } from './StoryNarration';
 
@@ -38,6 +41,7 @@ export function QuestComplete({
   const clearRecentCompletedQuest = useQuestStore(
     (state) => state.clearRecentCompletedQuest
   );
+  const lottieRef = useRef<LottieView>(null);
 
   const headerOpacity = useSharedValue(0);
   const storyOpacity = useSharedValue(0);
@@ -60,10 +64,62 @@ export function QuestComplete({
     headerOpacity.value = withDelay(200, withTiming(1, { duration: 800 }));
     storyOpacity.value = withDelay(600, withTiming(1, { duration: 800 }));
     rewardOpacity.value = withDelay(1000, withTiming(1, { duration: 800 }));
+
+    // Play Lottie animation
+    if (lottieRef.current) {
+      setTimeout(() => {
+        lottieRef.current?.play();
+      }, 300);
+    }
   }, [headerOpacity, storyOpacity, rewardOpacity]);
 
   // Determine if this is a story quest or custom quest - they need different card styling
   const isStoryQuest = quest.mode === 'story';
+
+  // Get random custom quest story if it's a custom quest
+  const customQuestStory = useMemo(() => {
+    if (quest.mode === 'custom') {
+      let matchingStories: typeof AVAILABLE_CUSTOM_QUEST_STORIES = [];
+
+      // First, try to find stories matching the quest category
+      if ('category' in quest && quest.category) {
+        matchingStories = AVAILABLE_CUSTOM_QUEST_STORIES.filter(
+          (storyItem) =>
+            storyItem.category.toLowerCase() === quest.category?.toLowerCase()
+        );
+      }
+
+      // If no matching stories found (e.g., 'social' category), pick from a random category
+      if (matchingStories.length === 0) {
+        // Get all unique categories
+        const allCategories = [
+          ...new Set(AVAILABLE_CUSTOM_QUEST_STORIES.map((s) => s.category)),
+        ];
+        // Pick a random category using quest ID as seed
+        const categoryIndex =
+          quest.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0) %
+          allCategories.length;
+        const randomCategory = allCategories[categoryIndex];
+
+        matchingStories = AVAILABLE_CUSTOM_QUEST_STORIES.filter(
+          (storyItem) => storyItem.category === randomCategory
+        );
+      }
+
+      // If we have stories, pick one
+      if (matchingStories.length > 0) {
+        // Use quest ID to generate a consistent random index
+        const questIdHash =
+          quest.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0) %
+          matchingStories.length;
+        return matchingStories[questIdHash].story;
+      }
+    }
+    return null;
+  }, [quest]);
+
+  // Use custom story if available, otherwise use provided story
+  const displayStory = customQuestStory || story;
 
   // Debug logging
   console.log('[QuestComplete] Quest mode:', quest.mode);
@@ -105,6 +161,23 @@ export function QuestComplete({
           <Text className="text-cream text-lg drop-shadow-md">
             You've completed the quest!
           </Text>
+
+          {/* Streak Counter with Lottie Animation */}
+          <View className="relative mt-6 h-[120px] w-full items-center justify-center">
+            <LottieView
+              ref={lottieRef}
+              source={require('@/../assets/animations/congrats.json')}
+              autoPlay={false}
+              loop={false}
+              style={{
+                position: 'absolute',
+                width: '150%',
+                height: '150%',
+                opacity: 0.8,
+              }}
+            />
+            <StreakCounter animate={true} size="large" disablePress={true} />
+          </View>
         </Animated.View>
 
         <Animated.View
@@ -124,7 +197,7 @@ export function QuestComplete({
               }
             >
               <Text className="text-base leading-6 text-neutral-800">
-                {story || 'Congratulations on completing your quest!'}
+                {displayStory || 'Congratulations on completing your quest!'}
               </Text>
             </ScrollView>
           </Card>

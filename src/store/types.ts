@@ -66,6 +66,22 @@ export interface Account {
   lastActive: Timestamp;
 }
 
+export interface User {
+  id: string;
+  type: string;
+  name: string;
+  email: string;
+  level: number;
+  xp: number;
+  friends: string[];
+  pendingFriends: string[];
+  blockedUsers: string[];
+  inventory: any[];
+  completedQuests: string[];
+  dailyQuestStreak: number;
+  featureFlags: string[];
+}
+
 export type POI = {
   slug: string;
   name: string;

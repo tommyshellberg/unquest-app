@@ -21,6 +21,7 @@ import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { getUserDetails } from '@/lib/services/user';
 import { useQuestStore } from '@/store/quest-store';
+import { useUserStore } from '@/store/user-store';
 import { type QuestOption } from '@/store/types';
 
 // Define screen dimensions for the carousel
@@ -50,6 +51,7 @@ export default function Home() {
   const availableQuests = useQuestStore((state) => state.availableQuests);
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
   const prepareQuest = useQuestStore((state) => state.prepareQuest);
+  const user = useUserStore((state) => state.user);
   const posthog = usePostHog();
   // State for story choices
   const [storyOptions, setStoryOptions] = useState<QuestOption[]>([]);
@@ -88,7 +90,6 @@ export default function Home() {
   useEffect(() => {
     if (activeQuest && activeQuest.startTime) {
       // If there's an active quest with a start time but QuestTimer isn't tracking it
-      QuestTimer.loadQuestData();
       const isQuestTimerRunning = QuestTimer.isRunning();
 
       if (!isQuestTimerRunning) {
@@ -262,6 +263,9 @@ export default function Home() {
     }
   };
 
+  // Check if user has cooperative quest feature
+  const hasCoopFeature = user?.featureFlags?.includes('coop_mode') || false;
+
   // Prepare carousel data
   const carouselData = [
     {
@@ -321,7 +325,11 @@ export default function Home() {
       duration: 5,
       xp: 15,
     },
-    {
+  ];
+
+  // Only add cooperative quest card if user has the feature
+  if (hasCoopFeature) {
+    carouselData.push({
       id: 'cooperative',
       mode: 'cooperative',
       title: 'Cooperative Quest',
@@ -329,15 +337,20 @@ export default function Home() {
       recap: 'Join a friend to stay off your phone together',
       duration: 5,
       xp: 15,
-    },
-  ];
+    });
+  }
 
   // Animated background style based on carousel progress
   const backgroundStyle = useAnimatedStyle(() => {
+    const inputRange = hasCoopFeature ? [0, 1, 2] : [0, 1];
+    const outputRange = hasCoopFeature
+      ? [MODES[0].color, MODES[1].color, MODES[2].color]
+      : [MODES[0].color, MODES[1].color];
+
     const backgroundColor = interpolateColor(
       progress.value,
-      [0, 1, 2],
-      [MODES[0].color, MODES[1].color, MODES[2].color]
+      inputRange,
+      outputRange
     );
 
     return {
@@ -482,8 +495,8 @@ export default function Home() {
                 textClassName="text-white font-bold"
                 style={{ width: cardWidth }}
               />
-            ) : (
-              // Show cooperative quest button for cooperative mode
+            ) : activeIndex === 2 && hasCoopFeature ? (
+              // Show cooperative quest button for cooperative mode (only if user has feature)
               <Button
                 label="Cooperative Quests"
                 onPress={handleCooperativeQuest}
@@ -491,7 +504,7 @@ export default function Home() {
                 textClassName="text-white font-bold"
                 style={{ width: cardWidth }}
               />
-            )}
+            ) : null}
           </View>
         )}
       </View>
