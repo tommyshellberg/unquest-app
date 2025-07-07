@@ -83,9 +83,31 @@ export const useCooperativeLobbyStore = create<CooperativeLobbyState>()(
         const { currentLobby } = get();
         if (!currentLobby) return;
 
-        const updatedParticipants = currentLobby.participants.map((p) =>
-          p.id === userId ? { ...p, ...updates } : p
+        // Check if participant already exists
+        const existingParticipant = currentLobby.participants.find(
+          (p) => p.id === userId
         );
+
+        let updatedParticipants;
+        if (existingParticipant) {
+          // Update existing participant
+          updatedParticipants = currentLobby.participants.map((p) =>
+            p.id === userId ? { ...p, ...updates } : p
+          );
+        } else {
+          // Add new participant if they don't exist (for when invitee accepts)
+          updatedParticipants = [
+            ...currentLobby.participants,
+            {
+              id: userId,
+              username: updates.username || userId,
+              invitationStatus: updates.invitationStatus || 'accepted',
+              isReady: false,
+              isCreator: false,
+              ...updates,
+            },
+          ];
+        }
 
         set({
           currentLobby: {

@@ -27,10 +27,13 @@ export default function CreateCooperativeQuestScreen() {
   const [isCreating, setIsCreating] = useState(false);
   const posthog = usePostHog();
   const createLobby = useCooperativeLobbyStore((state) => state.createLobby);
+  const leaveLobby = useCooperativeLobbyStore((state) => state.leaveLobby);
   const currentUser = useUserStore((state) => state.user);
 
   useEffect(() => {
     posthog.capture('open_create_cooperative_quest_screen');
+    // Clear any existing lobby state when opening create screen
+    leaveLobby();
   }, [posthog]);
 
   const canCreate = questName.trim().length > 0 && selectedFriends.length > 0;
@@ -70,11 +73,15 @@ export default function CreateCooperativeQuestScreen() {
           },
           ...selectedFriends.map((friendId) => {
             const friendData = selectedFriendData.find(
-              (f) => f._id === friendId || f.userId === friendId || f.id === friendId
+              (f) =>
+                f._id === friendId || f.userId === friendId || f.id === friendId
             );
             return {
               id: friendId,
-              username: friendData?.character?.name || friendData?.displayName || 'Friend',
+              username:
+                friendData?.character?.name ||
+                friendData?.displayName ||
+                'Friend',
               invitationStatus: 'pending' as const,
               isReady: false,
               isCreator: false,
@@ -93,13 +100,12 @@ export default function CreateCooperativeQuestScreen() {
       };
 
       createLobby(lobby);
-      posthog.capture('success_create_cooperative_quest');
+      posthog.capture('cooperative_quest_invitation_created');
 
       // Navigate to the lobby
       router.replace(`/cooperative-quest-lobby/${response.lobbyId}`);
     } catch (error) {
       console.error('Error creating cooperative quest:', error);
-      posthog.capture('error_create_cooperative_quest');
       // TODO: Show error toast
     } finally {
       setIsCreating(false);

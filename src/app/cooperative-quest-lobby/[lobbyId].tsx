@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import { ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 
@@ -18,6 +19,7 @@ import {
   type CooperativeLobby,
 } from '@/store/cooperative-lobby-store';
 import { useUserStore } from '@/store/user-store';
+import { useQuestStore } from '@/store/quest-store';
 import type {
   LobbyParticipantJoinedPayload,
   LobbyParticipantUpdatedPayload,
@@ -79,6 +81,7 @@ function ParticipantRow({ participant, isCurrentUser }: ParticipantRowProps) {
 export default function CooperativeQuestLobby() {
   const { lobbyId } = useLocalSearchParams<{ lobbyId: string }>();
   const router = useRouter();
+  const posthog = usePostHog();
   const currentUser = useUserStore((state) => state.user);
   const currentLobby = useCooperativeLobbyStore((state) => state.currentLobby);
   const markUserReady = useCooperativeLobbyStore(
@@ -95,6 +98,7 @@ export default function CooperativeQuestLobby() {
 
   const { emit, on, off, joinQuestRoom, leaveQuestRoom } = useWebSocket();
   const [isLoading, setIsLoading] = useState(true);
+  const [hasTransitioned, setHasTransitioned] = useState(false);
   // For cooperative quests, the lobbyId IS the invitationId
   const invitationId = lobbyId;
 
@@ -113,85 +117,74 @@ export default function CooperativeQuestLobby() {
         console.log('=======================================');
 
         if (data.lobbyId === lobbyId) {
-          // For inviter, preserve existing participant data if we already have it
-          const existingLobby =
-            useCooperativeLobbyStore.getState().currentLobby;
-          const isInviter =
-            existingLobby && existingLobby.creatorId === currentUser?.id;
+          // Always use fresh data from the server to avoid stale state
+          console.log('Updating lobby with fresh server data');
+          // Check multiple possible locations for quest data
+          const questTitle =
+            data.quest?.title ||
+            data.metadata?.questTitle ||
+            data.questData?.title ||
+            data.title ||
+            'Cooperative Quest';
 
-          if (isInviter && existingLobby) {
-            // Inviter already has the full participant list, just update statuses
-            console.log('Inviter preserving existing participant list');
-            setIsLoading(false);
-          } else {
-            // For invitees, populate from server data
-            // Check multiple possible locations for quest data
-            const questTitle =
-              data.quest?.title ||
-              data.metadata?.questTitle ||
-              data.questData?.title ||
-              data.title ||
-              'Cooperative Quest';
+          const questDuration =
+            data.quest?.durationMinutes ||
+            data.quest?.duration ||
+            data.metadata?.questDuration ||
+            data.questData?.duration ||
+            data.duration ||
+            30;
 
-            const questDuration =
-              data.quest?.durationMinutes ||
-              data.quest?.duration ||
-              data.metadata?.questDuration ||
-              data.questData?.duration ||
-              data.duration ||
-              30;
+          const lobbyData: CooperativeLobby = {
+            lobbyId: data.lobbyId,
+            questTitle,
+            questDuration,
+            creatorId:
+              data.participants?.find((p: any) => p.isCreator)?.userId ||
+              data.creatorId ||
+              '',
+            participants:
+              data.participants?.map((p: any) => ({
+                id: p.userId,
+                username: p.characterName || p.username || p.userId,
+                invitationStatus: p.status || 'accepted',
+                isReady: p.isReady || false,
+                isCreator: p.isCreator || false,
+                joinedAt: p.joinedAt ? new Date(p.joinedAt) : undefined,
+              })) || [],
+            status: 'waiting',
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+            questData: data.quest || data.questData || data.metadata,
+          };
 
-            const lobbyData: CooperativeLobby = {
-              lobbyId: data.lobbyId,
-              questTitle,
-              questDuration,
-              creatorId:
-                data.participants?.find((p: any) => p.isCreator)?.userId ||
-                data.creatorId ||
-                '',
-              participants:
-                data.participants?.map((p: any) => ({
-                  id: p.userId,
-                  username: p.characterName || p.username || p.userId,
-                  invitationStatus: p.status || 'accepted',
-                  isReady: p.isReady || false,
-                  isCreator: p.isCreator || false,
-                  joinedAt: p.joinedAt ? new Date(p.joinedAt) : undefined,
-                })) || [],
-              status: 'waiting',
-              createdAt: new Date(),
-              expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-              questData: data.quest || data.questData || data.metadata,
-            };
+          console.log('Created lobby data:', lobbyData);
 
-            console.log('Created lobby data:', lobbyData);
+          // Update the lobby store
+          joinLobby(lobbyData);
+          setIsLoading(false);
 
-            // Update the lobby store
-            joinLobby(lobbyData);
-            setIsLoading(false);
+          // Check if we should immediately transition to ready screen
+          // This happens when invitee joins after all have responded
+          const allResponded = lobbyData.participants.every(
+            (p) => p.invitationStatus !== 'pending'
+          );
+          const acceptedCount = lobbyData.participants.filter(
+            (p) => p.invitationStatus === 'accepted'
+          ).length;
 
-            // Check if we should immediately transition to ready screen
-            // This happens when invitee joins after all have responded
-            const allResponded = lobbyData.participants.every(
-              (p) => p.invitationStatus !== 'pending'
+          if (
+            allResponded &&
+            acceptedCount > 1 &&
+            data.waitingForResponses === 0
+          ) {
+            console.log(
+              'All already responded on join - will transition to ready screen'
             );
-            const acceptedCount = lobbyData.participants.filter(
-              (p) => p.invitationStatus === 'accepted'
-            ).length;
-
-            if (
-              allResponded &&
-              acceptedCount > 1 &&
-              data.waitingForResponses === 0
-            ) {
-              console.log(
-                'All already responded on join - will transition to ready screen'
-              );
-              // Set a flag to transition after the component renders
-              setTimeout(() => {
-                setHasTransitioned(true);
-              }, 100);
-            }
+            // Set a flag to transition after the component renders
+            setTimeout(() => {
+              setHasTransitioned(true);
+            }, 100);
           }
         }
       };
@@ -209,7 +202,17 @@ export default function CooperativeQuestLobby() {
       // Listen for WebSocket events
       const handleParticipantJoined = (data: LobbyParticipantJoinedPayload) => {
         console.log('Participant joined:', data);
-        // Update local state
+        // Update local state with the new participant
+        if (data.participant && data.lobbyId === lobbyId) {
+          updateParticipant(data.participant.userId || data.userId, {
+            username:
+              data.participant.characterName ||
+              data.participant.username ||
+              data.participant.userId,
+            invitationStatus: 'accepted',
+            joinedAt: new Date(),
+          });
+        }
       };
 
       const handleParticipantUpdated = (
@@ -240,42 +243,40 @@ export default function CooperativeQuestLobby() {
 
         // If someone accepted, update their participant info with character name
         if (responseStatus === 'accepted') {
+          // For cooperative quests, we're already in the right lobby since we're subscribed to it
           updateParticipant(data.userId, {
             username: data.characterName || data.username || data.userId,
             invitationStatus: 'accepted',
             joinedAt: new Date(),
           });
 
-          // Force re-check of allResponded state
+          // Check if this was the last pending invitation
           setTimeout(() => {
             const updatedLobby =
               useCooperativeLobbyStore.getState().currentLobby;
             if (updatedLobby) {
-              console.log(
-                'Updated participants after response:',
-                updatedLobby.participants
-              );
-              const allResponded = updatedLobby.participants.every(
-                (p) => p.invitationStatus !== 'pending'
-              );
-              console.log(
-                'After invitation response - all responded?',
-                allResponded
-              );
-
-              // If all responded and we have multiple accepted participants, transition
+              const pendingCount = updatedLobby.participants.filter(
+                (p) => p.invitationStatus === 'pending'
+              ).length;
               const acceptedCount = updatedLobby.participants.filter(
                 (p) => p.invitationStatus === 'accepted'
               ).length;
 
-              if (allResponded && acceptedCount > 1) {
+              console.log(
+                `After invitation response - pending: ${pendingCount}, accepted: ${acceptedCount}`
+              );
+
+              // If no more pending and we have multiple accepted participants, transition
+              if (pendingCount === 0 && acceptedCount > 1) {
                 console.log(
                   'All responded with multiple participants - transitioning to ready screen'
                 );
-                router.replace('/cooperative-quest-ready');
+                setHasTransitioned(true);
               }
             }
           }, 100);
+        } else if (responseStatus === 'declined') {
+          updateInvitationResponse(data.userId, 'declined');
         }
       };
 
@@ -347,8 +348,6 @@ export default function CooperativeQuestLobby() {
   const acceptedParticipants = currentLobby.participants.filter(
     (p) => p.invitationStatus === 'accepted'
   );
-  // Auto-transition to ready screen when all have responded
-  const [hasTransitioned, setHasTransitioned] = useState(false);
 
   const allReady =
     acceptedParticipants.length > 0 &&
@@ -374,6 +373,9 @@ export default function CooperativeQuestLobby() {
 
   const handleBackPress = useCallback(() => {
     const handleLeave = () => {
+      // Track the quit event
+      posthog.capture('cooperative_quest_quit_before_start');
+
       // Emit leave event to notify other participants
       if (currentLobby?.lobbyId && currentUser?.id) {
         emit('lobby:leave', {
@@ -384,6 +386,10 @@ export default function CooperativeQuestLobby() {
 
       // Clear local lobby state
       leaveLobby();
+
+      // Clear any cooperative quest run data
+      const questStore = useQuestStore.getState();
+      questStore.setCooperativeQuestRun(null);
 
       // Navigate back
       router.back();
@@ -456,6 +462,13 @@ export default function CooperativeQuestLobby() {
     if (!currentUser) return;
 
     const newReadyState = !isReady;
+
+    posthog.capture(
+      newReadyState
+        ? 'cooperative_quest_ready_clicked'
+        : 'cooperative_quest_unready_clicked'
+    );
+
     emit(newReadyState ? 'lobby:ready' : 'lobby:unready', { lobbyId });
     markUserReady(currentUser.id, newReadyState);
   };

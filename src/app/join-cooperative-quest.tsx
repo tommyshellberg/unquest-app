@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -108,6 +109,7 @@ function InvitationCard({
 
 export default function JoinCooperativeQuest() {
   const router = useRouter();
+  const posthog = usePostHog();
   const [invitations, setInvitations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -153,6 +155,28 @@ export default function JoinCooperativeQuest() {
     try {
       setProcessingId(invitation.id);
 
+      // Get quest details for tracking
+      const questTitle =
+        invitation.questTitle ||
+        invitation.title ||
+        invitation.metadata?.questTitle ||
+        invitation.questData?.title ||
+        invitation.quest?.title ||
+        invitation.questRun?.title ||
+        'Cooperative Quest';
+
+      const questDuration =
+        invitation.questDuration ||
+        invitation.duration ||
+        invitation.metadata?.questDuration ||
+        invitation.questData?.duration ||
+        invitation.quest?.duration ||
+        invitation.questRun?.duration ||
+        invitation.questRun?.durationMinutes ||
+        30;
+
+      posthog.capture('cooperative_quest_invitation_accepted');
+
       // Accept the invitation
       const response = await invitationApi.respondToInvitation(
         invitation.id,
@@ -178,6 +202,28 @@ export default function JoinCooperativeQuest() {
   const handleDecline = async (invitation: any) => {
     try {
       setProcessingId(invitation.id);
+
+      // Get quest details for tracking
+      const questTitle =
+        invitation.questTitle ||
+        invitation.title ||
+        invitation.metadata?.questTitle ||
+        invitation.questData?.title ||
+        invitation.quest?.title ||
+        invitation.questRun?.title ||
+        'Cooperative Quest';
+
+      const questDuration =
+        invitation.questDuration ||
+        invitation.duration ||
+        invitation.metadata?.questDuration ||
+        invitation.questData?.duration ||
+        invitation.quest?.duration ||
+        invitation.questRun?.duration ||
+        invitation.questRun?.durationMinutes ||
+        30;
+
+      posthog.capture('cooperative_quest_invitation_declined');
 
       // Decline the invitation
       await invitationApi.respondToInvitation(invitation.id, 'declined');

@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { useRef } from 'react';
 import { TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -58,6 +59,7 @@ const menuOptions: MenuOption[] = [
 
 export default function CooperativeQuestMenu() {
   const router = useRouter();
+  const posthog = usePostHog();
   const contactsModalRef = useRef<ContactsImportModalRef>(null);
   const currentUser = useAuth((state) => state.user);
   const userEmail = currentUser?.email || '';
@@ -79,6 +81,11 @@ export default function CooperativeQuestMenu() {
     if (option.id === 'friends') {
       contactsModalRef.current?.present();
     } else if (option.route) {
+      if (option.id === 'create') {
+        posthog.capture('cooperative_quest_create_clicked');
+      } else if (option.id === 'join') {
+        posthog.capture('cooperative_quest_join_clicked');
+      }
       router.push(option.route as any);
     }
   };
@@ -101,7 +108,7 @@ export default function CooperativeQuestMenu() {
     return (
       <SafeAreaView className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
-        
+
         <View className="flex-1 px-4">
           {/* Header */}
           <View className="mb-6 mt-4">
@@ -132,15 +139,16 @@ export default function CooperativeQuestMenu() {
                 color="#77c5bf"
               />
             </View>
-            
+
             <Text className="mb-4 text-center text-2xl font-bold">
               Join the unQuest Circle
             </Text>
-            
+
             <Text className="mb-6 text-center text-neutral-600">
-              Cooperative quests are a premium feature available exclusively to unQuest Circle members.
+              Cooperative quests are a premium feature available exclusively to
+              unQuest Circle members.
             </Text>
-            
+
             <Card className="bg-primary-50 p-6">
               <Text className="mb-4 text-center text-lg font-semibold">
                 What's included:
@@ -181,7 +189,7 @@ export default function CooperativeQuestMenu() {
                 </View>
               </View>
             </Card>
-            
+
             <Text className="mt-6 text-center text-sm text-neutral-500">
               Premium subscription details coming soon!
             </Text>

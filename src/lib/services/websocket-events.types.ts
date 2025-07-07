@@ -34,6 +34,7 @@ export interface LobbyInvitationResponsePayload {
   username?: string;
   characterName?: string;
   invitationId?: string;
+  lobbyId?: string;
 }
 
 export interface LobbyReadyStatusPayload {
@@ -210,4 +211,3 @@ export interface TypedWebSocketEvents {
   invitationDeclined: (data: InvitationDeclinedPayload) => void;
   invitationExpired: (data: InvitationExpiredPayload) => void;
 }
-

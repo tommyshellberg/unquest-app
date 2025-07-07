@@ -257,6 +257,7 @@ export default function Home() {
   // Handle cooperative quest button
   const handleCooperativeQuest = () => {
     try {
+      posthog.capture('cooperative_quest_card_clicked');
       router.push('/cooperative-quest-menu');
     } catch (error) {
       console.error('Error navigating to cooperative quest menu:', error);

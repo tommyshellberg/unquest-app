@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 
@@ -60,6 +61,7 @@ function ParticipantReadyRow({
 
 export default function CooperativeQuestReady() {
   const router = useRouter();
+  const posthog = usePostHog();
   const currentUser = useUserStore((state) => state.user);
   const currentLobby = useCooperativeLobbyStore((state) => state.currentLobby);
   const leaveLobby = useCooperativeLobbyStore((state) => state.leaveLobby);
@@ -268,6 +270,8 @@ export default function CooperativeQuestReady() {
 
   const handleBackPress = useCallback(() => {
     const handleLeave = () => {
+      posthog.capture('cooperative_quest_quit_before_start');
+
       // Emit leave event to notify other participants
       if (currentLobby?.lobbyId && currentUser?.id) {
         emit('lobby:leave', {
@@ -278,6 +282,10 @@ export default function CooperativeQuestReady() {
 
       // Clear local lobby state
       leaveLobby();
+
+      // Clear any cooperative quest run data
+      const questStore = useQuestStore.getState();
+      questStore.setCooperativeQuestRun(null);
 
       // Navigate back
       router.back();
@@ -302,6 +310,13 @@ export default function CooperativeQuestReady() {
 
     setIsLoading(true);
     const newReadyState = !isReady;
+
+    posthog.capture(
+      newReadyState
+        ? 'cooperative_quest_ready_clicked'
+        : 'cooperative_quest_unready_clicked'
+    );
+
     emit(newReadyState ? 'lobby:ready' : 'lobby:unready', {
       lobbyId: currentLobby.lobbyId,
     });

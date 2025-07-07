@@ -109,6 +109,13 @@ export const useQuestStore = create<QuestState>()(
               status: 'completed' as const,
             };
 
+            // Track cooperative quest success
+            const cooperativeQuestRun = get().cooperativeQuestRun;
+            if (cooperativeQuestRun) {
+              // Note: PostHog tracking is handled in the UI components
+              // where we have access to the posthog instance
+            }
+
             // Check if this is the first quest completed today
             const isFirstQuestOfTheDay = (() => {
               if (!lastCompletedQuestTimestamp) return true;
@@ -203,6 +210,12 @@ export const useQuestStore = create<QuestState>()(
             failedQuestDetails.id ||
             cooperativeQuestRun?.questId ||
             `failed-${now}`;
+
+          // Track cooperative quest failure
+          if (cooperativeQuestRun) {
+            // Note: PostHog tracking is handled in the UI components
+            // where we have access to the posthog instance
+          }
 
           const failedQuestWithTime: Quest = {
             ...failedQuestDetails,
