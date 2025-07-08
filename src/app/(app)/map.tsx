@@ -1,16 +1,8 @@
 import MaskedView from '@react-native-masked-view/masked-view';
-import React, { useMemo } from 'react';
-import { Dimensions } from 'react-native';
-import {
-  GestureHandlerRootView,
-  PanGestureHandler,
-  type PanGestureHandlerGestureEvent,
-} from 'react-native-gesture-handler';
-import Animated, {
-  useAnimatedGestureHandler,
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
+import React, { useMemo, useRef } from 'react';
+import { Dimensions, Platform } from 'react-native';
+import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
+import type { ReactNativeZoomableViewProps } from '@openspacelabs/react-native-zoomable-view';
 
 import { MAP_IMAGES, type MapId } from '@/app/data/maps';
 import {
@@ -29,15 +21,7 @@ const IMAGE_HEIGHT = 1434;
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function MapScreen() {
-  // Position at bottom right corner
-  const translateX = useSharedValue(-(IMAGE_WIDTH - screenWidth)); // All the way right
-  const translateY = useSharedValue(-(IMAGE_HEIGHT - screenHeight)); // All the way down
-
-  // Calculate pan boundaries
-  const maxTranslateX = 0;
-  const minTranslateX = -(IMAGE_WIDTH - screenWidth);
-  const maxTranslateY = 0;
-  const minTranslateY = -(IMAGE_HEIGHT - screenHeight);
+  const zoomableViewRef = useRef<any>(null);
 
   // Get the last completed quest
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
@@ -55,83 +39,77 @@ export default function MapScreen() {
   // Get the appropriate fog mask based on quest progression
   const currentMask = getFogMaskForQuest(lastCompletedQuest?.id);
 
-  // Pan gesture handler
-  const panGestureHandler = useAnimatedGestureHandler<
-    PanGestureHandlerGestureEvent,
-    { startX: number; startY: number }
-  >({
-    onStart: (_, ctx) => {
-      ctx.startX = translateX.value;
-      ctx.startY = translateY.value;
-    },
-    onActive: (event, ctx) => {
-      // Calculate new translate values
-      const newTranslateX = ctx.startX + event.translationX;
-      const newTranslateY = ctx.startY + event.translationY;
+  // Calculate initial zoom to ensure the map covers the screen
+  const initialZoom = Math.max(
+    screenWidth / IMAGE_WIDTH,
+    screenHeight / IMAGE_HEIGHT
+  );
 
-      // Apply constraints to keep the map within bounds
-      translateX.value = Math.min(
-        Math.max(newTranslateX, minTranslateX),
-        maxTranslateX
-      );
-      translateY.value = Math.min(
-        Math.max(newTranslateY, minTranslateY),
-        maxTranslateY
-      );
-    },
-  });
-
-  // Animated style for map panning
-  const animatedMapStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-      ],
-    };
-  });
+  // Calculate initial offset to show bottom-right corner
+  const initialOffsetX = 0;
+  const initialOffsetY = 0;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <View className="flex-1 bg-[rgba(61,73,78,0.92)]">
-        <FocusAwareStatusBar />
+    <View className="flex-1 bg-[rgba(61,73,78,0.92)]">
+      <FocusAwareStatusBar />
 
-        {/* Map Title */}
-        <View className="absolute left-4 top-10 z-10 rounded-lg bg-white/10 px-3 py-1 backdrop-blur-sm">
-          <Text className="text-xl font-bold text-primary-400">
-            {getMapNameForQuest(lastCompletedQuest?.id || '')}
-          </Text>
-        </View>
+      {/* Map Title */}
+      <View className="absolute left-4 top-10 z-10 rounded-lg bg-white/10 px-3 py-1 backdrop-blur-sm">
+        <Text className="text-xl font-bold text-primary-400">
+          {getMapNameForQuest(lastCompletedQuest?.id || '')}
+        </Text>
+      </View>
 
-        {/* Map with mask and pan gesture */}
-        <PanGestureHandler onGestureEvent={panGestureHandler}>
-          <Animated.View style={{ flex: 1, overflow: 'hidden' }}>
+      {/* Zoomable Map with mask */}
+      <View style={{ flex: 1 }}>
+        <ReactNativeZoomableView
+          ref={zoomableViewRef}
+          maxZoom={2}
+          minZoom={initialZoom}
+          initialZoom={initialZoom}
+          initialOffsetX={initialOffsetX}
+          initialOffsetY={initialOffsetY}
+          bindToBorders={true}
+          contentWidth={IMAGE_WIDTH}
+          contentHeight={IMAGE_HEIGHT}
+          panBoundaryPadding={0}
+          style={{ flex: 1 }}
+          doubleTapDelay={300}
+          movementSensibility={3}
+          longPressDuration={700}
+        >
+          <View style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
             <MaskedView
-              style={{ flex: 1 }}
-              androidRenderingMode="software"
+              style={{ flex: 1, width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
+              androidRenderingMode={
+                Platform.OS === 'android' ? 'software' : undefined
+              }
               maskElement={
-                <Animated.View
-                  style={[{ backgroundColor: 'transparent' }, animatedMapStyle]}
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'transparent',
+                    width: IMAGE_WIDTH,
+                    height: IMAGE_HEIGHT,
+                  }}
                 >
                   <Image
                     source={currentMask}
                     style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
                     contentFit="cover"
                   />
-                </Animated.View>
+                </View>
               }
             >
-              <Animated.View style={[animatedMapStyle]}>
-                <Image
-                  source={mapImage}
-                  style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
-                  contentFit="cover"
-                />
-              </Animated.View>
+              <Image
+                source={mapImage}
+                style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
+                contentFit="cover"
+              />
             </MaskedView>
-          </Animated.View>
-        </PanGestureHandler>
+          </View>
+        </ReactNativeZoomableView>
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 }

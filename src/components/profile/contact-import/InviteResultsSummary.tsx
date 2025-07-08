@@ -27,8 +27,8 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
           {successful.length > 0 && failed.length > 0
             ? 'Invitations sent with some failures'
             : successful.length > 0
-            ? 'All invitations sent successfully!'
-            : 'Failed to send invitations'}
+              ? 'All invitations sent successfully!'
+              : 'Failed to send invitations'}
         </Text>
 
         {successful.length > 0 && (
@@ -59,7 +59,10 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
               SUCCESSFULLY INVITED
             </Text>
             {successful.map((contact, index) => (
-              <View key={`success-${index}`} className="flex-row items-center py-3">
+              <View
+                key={`success-${index}`}
+                className="flex-row items-center py-3"
+              >
                 <CheckCircle size={20} color="#2E948D" />
                 <View className="ml-3 flex-1">
                   <Text className="text-base text-black font-medium">
@@ -76,7 +79,9 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
 
         {failed.length > 0 && (
           <>
-            {successful.length > 0 && <View className="h-px bg-neutral-200 my-4" />}
+            {successful.length > 0 && (
+              <View className="h-px bg-neutral-200 my-4" />
+            )}
             <Text className="text-sm font-semibold text-neutral-500 mb-3">
               FAILED TO INVITE
             </Text>
@@ -85,7 +90,9 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
                 <View className="flex-row items-start">
                   <AlertCircle size={20} color="#E25A3B" />
                   <View className="ml-3 flex-1">
-                    <Text className="text-base text-black font-medium">{contact.name}</Text>
+                    <Text className="text-base text-black font-medium">
+                      {contact.name}
+                    </Text>
                     <Text className="text-sm text-neutral-500 mt-0.5">
                       {contact.email}
                     </Text>

@@ -1,4 +1,7 @@
-export { ContactsImportModal, type ContactsImportModalRef } from './ContactsImportModal';
+export {
+  ContactsImportModal,
+  type ContactsImportModalRef,
+} from './ContactsImportModal';
 export { EmptyContactsView } from './EmptyContactsView';
 export { PermissionDeniedView } from './PermissionDeniedView';
 export { ContactsList } from './ContactsList';

@@ -83,8 +83,9 @@ export default function TabLayout() {
           borderTopColor: '#E5E5E5',
           // Hide tab bar for quest screens and pending-quest
           display:
-            ['pending-quest'].includes(route.name) ||
-            route.name.startsWith('quest/')
+            ['pending-quest', 'quest-discovery', 'invitation-waiting'].includes(
+              route.name
+            ) || route.name.startsWith('quest/')
               ? 'none'
               : 'flex',
         },
@@ -179,6 +180,18 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="achievements"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="quest-discovery"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="invitation-waiting"
         options={{
           href: null,
         }}

@@ -1,5 +1,6 @@
 import { Env } from '@env';
 import axios from 'axios';
+import { OneSignal } from 'react-native-onesignal';
 
 import { signIn } from '@/lib/auth';
 import { getUserDetails } from '@/lib/services/user';
@@ -140,6 +141,35 @@ export const verifyMagicLinkAndSignIn = async (
           email: userResponse.email,
           name: userResponse.name,
         });
+
+        // Link OneSignal with the user's MongoDB ID
+        if ((global as any).isOneSignalInitialized) {
+          console.log(
+            '[Auth] Logging into OneSignal with user ID:',
+            userResponse.id
+          );
+          OneSignal.login(userResponse.id);
+
+          // Debug: Verify the login worked
+          setTimeout(async () => {
+            try {
+              const externalId = await OneSignal.User.getExternalId();
+              console.log(
+                '[OneSignal Debug] After verifyMagicLink - External ID:',
+                externalId
+              );
+              console.log('[OneSignal Debug] Expected:', userResponse.id);
+              console.log(
+                '[OneSignal Debug] Match:',
+                externalId === userResponse.id
+              );
+            } catch (error) {
+              console.error('[OneSignal Debug] Error verifying login:', error);
+            }
+          }, 1000);
+        } else {
+          console.log('[Auth] OneSignal not initialized yet, will login later');
+        }
 
         // If user has character data from server, store it in character store
         // Check both nested character object and top-level properties

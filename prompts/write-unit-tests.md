@@ -8,7 +8,6 @@ Follow the following steps one by one:
 
 1. Component Analysis:
    Before writing tests, analyze your component by answering these questions:
-
    - What is the primary purpose of this component?
    - What props does it accept?
    - What user interactions does it handle?
@@ -16,7 +15,6 @@ Follow the following steps one by one:
    - What external dependencies does it have?
 
 2. Extract and document all possible scenarios for testing while following the Testing Hierarchy:
-
    - Test basic rendering first
    - Test props and their effects
    - Test user interactions
@@ -25,7 +23,6 @@ Follow the following steps one by one:
    - Test edge cases
 
 3. Write the unit tests while following the guidelines of React Native testing library and Jest and make sure:
-
    - Test file should be named like `component-name.test.tsx`
    - Use meaningful test descriptions
    - Keep tests focused and isolated
@@ -39,7 +36,6 @@ Follow the following steps one by one:
 4. Run the tests for the file with test coverage: `pnpm test <component-name> -- --coverage --coverageReporters="text"`
 
 5. Check Tests Results and Coverage:
-
    - If the tests fail, analyze the issue and fix it.
    - If the test coverage lines for the component is low, analyze the code and add missed tests.
 

@@ -5,7 +5,7 @@ import { Env } from '@env';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import React, { useCallback, useEffect } from 'react';
@@ -18,6 +18,7 @@ import { LogLevel, OneSignal } from 'react-native-onesignal';
 import { APIProvider } from '@/api';
 import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
 import { PostHogNavigationTracker } from '@/components/providers/posthog-navigation-tracker';
+import { WebSocketProvider } from '@/components/providers/websocket-provider';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
@@ -60,6 +61,7 @@ function RootLayout() {
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function prepare() {
@@ -85,6 +87,68 @@ function RootLayout() {
       if (Platform.OS === 'ios') {
         OneSignal.LiveActivities.setupDefault();
       }
+
+      // Mark OneSignal as initialized globally
+      (global as any).isOneSignalInitialized = true;
+
+      // If we have a logged-in user, set their external ID now
+      const { useUserStore } = require('@/store/user-store');
+      const user = useUserStore.getState().user;
+      if (user?.id) {
+        console.log(
+          '[OneSignal] Setting external ID for existing user:',
+          user.id
+        );
+        OneSignal.login(user.id);
+      }
+
+      // Debug: Check current OneSignal user state
+      const debugCheckOneSignalUser = async () => {
+        try {
+          const onesignalId = await OneSignal.User.getOnesignalId();
+          const externalId = await OneSignal.User.getExternalId();
+
+          // Check push subscription status
+          const pushSubscription = OneSignal.User.pushSubscription;
+          const isOptedIn = await pushSubscription.getOptedInAsync();
+          const subscriptionId = await pushSubscription.getIdAsync();
+          const token = await pushSubscription.getTokenAsync();
+
+          console.log('========================================');
+          console.log('[OneSignal Debug] Current User State:');
+          console.log('OneSignal ID:', onesignalId);
+          console.log('External ID (MongoDB User ID):', externalId);
+          console.log('Push Subscription Status:');
+          console.log('  - Opted In:', isOptedIn);
+          console.log('  - Subscription ID:', subscriptionId || 'Not set');
+          console.log('  - Push Token:', token || 'Not set');
+          console.log('Platform:', Platform.OS);
+          console.log('========================================');
+        } catch (error) {
+          console.error('[OneSignal Debug] Error getting user info:', error);
+        }
+      };
+
+      // Check immediately and after a delay to catch any changes
+      debugCheckOneSignalUser();
+      setTimeout(debugCheckOneSignalUser, 5000);
+
+      // Handle notification opens for cooperative quest invitations
+      OneSignal.Notifications.addEventListener('click', (event) => {
+        console.log('Notification clicked:', event);
+
+        // Check if this is a cooperative quest invitation notification
+        const { notification } = event;
+        const additionalData = notification.additionalData as any;
+
+        if (additionalData?.type === 'cooperative_quest_invitation') {
+          // Navigate to the join cooperative quest screen
+          // This will happen after the app is ready and authenticated
+          setTimeout(() => {
+            router.push('/join-cooperative-quest');
+          }, 1000);
+        }
+      });
     }
   }, []);
 
@@ -169,6 +233,26 @@ function RootLayout() {
           name="streak-celebration"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="cooperative-quest-menu"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="create-cooperative-quest"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="join-cooperative-quest"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="cooperative-quest-lobby/[lobbyId]"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="cooperative-quest-ready"
+          options={{ headerShown: false }}
+        />
       </Stack>
     </Providers>
   );
@@ -197,11 +281,13 @@ function Providers({
               }}
             >
               <APIProvider>
-                <BottomSheetModalProvider>
-                  <UpdateNotificationBar />
-                  {children}
-                  <FlashMessage position="top" />
-                </BottomSheetModalProvider>
+                <WebSocketProvider>
+                  <BottomSheetModalProvider>
+                    <UpdateNotificationBar />
+                    {children}
+                    <FlashMessage position="top" />
+                  </BottomSheetModalProvider>
+                </WebSocketProvider>
               </APIProvider>
             </PostHogProviderWrapper>
           </ThemeProvider>

@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { create } from 'zustand';
+import { OneSignal } from 'react-native-onesignal';
 
 import { storeTokens } from '@/api/token';
 import { getUserDetails } from '@/lib/services/user';
@@ -44,6 +45,35 @@ const _useAuth = create<AuthState>((set, get) => ({
 
     // Clear user store
     useUserStore.getState().clearUser();
+
+    // Logout from OneSignal (only if initialized)
+    if ((global as any).isOneSignalInitialized) {
+      try {
+        console.log('[Auth] Logging out from OneSignal');
+        OneSignal.logout();
+
+        // Debug: Verify the logout worked
+        setTimeout(async () => {
+          try {
+            const externalId = await OneSignal.User.getExternalId();
+            console.log(
+              '[OneSignal Debug] After logout - External ID:',
+              externalId
+            );
+            console.log(
+              '[OneSignal Debug] Should be null/undefined:',
+              !externalId
+            );
+          } catch (error) {
+            console.error('[OneSignal Debug] Error verifying logout:', error);
+          }
+        }, 1000);
+      } catch (error) {
+        console.log('[Auth] OneSignal logout error:', error);
+      }
+    } else {
+      console.log('[Auth] Skipping OneSignal logout - not initialized yet');
+    }
   },
 
   hydrate: async () => {
@@ -75,6 +105,34 @@ const _useAuth = create<AuthState>((set, get) => ({
             JSON.stringify(user, null, 2)
           );
           useUserStore.getState().setUser(user);
+
+          // Link OneSignal with the user's MongoDB ID
+          if (user.id && (global as any).isOneSignalInitialized) {
+            console.log('[Auth] Logging into OneSignal with user ID:', user.id);
+            OneSignal.login(user.id);
+
+            // Debug: Verify the login worked
+            setTimeout(async () => {
+              try {
+                const externalId = await OneSignal.User.getExternalId();
+                console.log(
+                  '[OneSignal Debug] After login - External ID:',
+                  externalId
+                );
+                console.log('[OneSignal Debug] Expected:', user.id);
+                console.log('[OneSignal Debug] Match:', externalId === user.id);
+              } catch (error) {
+                console.error(
+                  '[OneSignal Debug] Error verifying login:',
+                  error
+                );
+              }
+            }, 1000);
+          } else if (user.id) {
+            console.log(
+              '[Auth] OneSignal not initialized yet, will login later'
+            );
+          }
 
           // Sync character data if available
           // Check both nested character object and top-level properties

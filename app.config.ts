@@ -106,6 +106,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         organization: 'vaedros-software-llc',
       },
     ],
+    [
+      'onesignal-expo-plugin',
+      {
+        mode: Env.APP_ENV === 'development' ? 'development' : 'production',
+      },
+    ],
   ],
   extra: {
     ...ClientEnv,

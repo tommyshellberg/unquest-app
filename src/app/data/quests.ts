@@ -1030,4 +1030,39 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
       "A masked duelist stood in the town square, offering a prize to any who could best him. You accepted, blades clashing under the watchful eyes of a growing crowd. Though his skill far outmatched yours, he pulled back at the last moment, nodding in approval. 'One day,' he said, sheathing his sword. 'You'll win.'",
     category: 'Fitness',
   },
+  {
+    id: 'S3X7VPQLM9NT',
+    title: 'United in Purpose',
+    story:
+      'You and your companion stood side by side, the challenge before you seeming less daunting with an ally at your shoulder. As the minutes passed in focused silence, you felt the strength that comes from shared purpose. When it was done, you exchanged knowing glances—some victories are sweeter when shared.',
+    category: 'Social',
+  },
+  {
+    id: 'S9V7XPQLM3NT',
+    title: 'The Pact of Focus',
+    story:
+      'Together, you and your friend made a silent pact, setting aside the distractions of the world. The challenge tested not just your individual resolve, but your trust in one another. When the final moment arrived, you both emerged stronger, bound by the shared experience of mutual discipline.',
+    category: 'Social',
+  },
+  {
+    id: 'S7X9VPQLM3NT',
+    title: 'Stronger Together',
+    story:
+      "What began as a simple challenge became a testament to friendship. Through moments of doubt, you drew strength from knowing someone else was facing the same trial. In the end, the real reward wasn't completing the quest—it was proving that together, you could overcome anything.",
+    category: 'Social',
+  },
+  {
+    id: 'S3X9VPLQM7NT',
+    title: 'The Silent Alliance',
+    story:
+      "No words were needed between you and your companion. The quest demanded focus, and you both delivered, each drawing motivation from the other's determination. As the challenge concluded, you realized that some bonds are forged not through conversation, but through shared trials.",
+    category: 'Social',
+  },
+  {
+    id: 'S9X7VLPQM3NT',
+    title: 'Bonds of Discipline',
+    story:
+      'The quest tested more than just willpower—it tested trust. You and your ally held each other accountable, neither willing to be the one who faltered. When success finally came, it tasted sweeter for having been earned together. True friendship, you learned, means lifting each other to greater heights.',
+    category: 'Social',
+  },
 ];

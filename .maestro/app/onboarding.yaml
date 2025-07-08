@@ -122,8 +122,8 @@ appId: com.vaedros.unquest.development
 
 # Swipe through characters to test the carousel
 - swipe:
-    start: "80%, 50%"
-    end: "20%, 50%"
+    start: '80%, 50%'
+    end: '20%, 50%'
     duration: 500
 
 # Should now see Druid
@@ -131,8 +131,8 @@ appId: com.vaedros.unquest.development
 
 # Swipe to see Scout
 - swipe:
-    start: "80%, 50%"
-    end: "20%, 50%"
+    start: '80%, 50%'
+    end: '20%, 50%'
     duration: 500
 
 # Should now see Scout
@@ -140,13 +140,13 @@ appId: com.vaedros.unquest.development
 
 # Swipe back to Alchemist
 - swipe:
-    start: "20%, 50%"
-    end: "80%, 50%"
+    start: '20%, 50%'
+    end: '80%, 50%'
     duration: 500
 
 - swipe:
-    start: "20%, 50%"
-    end: "80%, 50%"
+    start: '20%, 50%'
+    end: '80%, 50%'
     duration: 500
 
 # Back to Alchemist - proceed with character creation

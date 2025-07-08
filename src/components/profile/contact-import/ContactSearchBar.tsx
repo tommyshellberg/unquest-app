@@ -23,7 +23,7 @@ export const ContactSearchBar: React.FC<ContactSearchBarProps> = ({
           autoCapitalize="none"
           autoCorrect={false}
           className="flex-1 text-base text-black ml-3"
-          style={{ 
+          style={{
             fontSize: 16,
             color: '#1f0f0c',
             paddingVertical: 0,

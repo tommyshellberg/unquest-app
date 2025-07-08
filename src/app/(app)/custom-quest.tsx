@@ -33,12 +33,7 @@ export default function CustomQuestScreen() {
   const posthog = usePostHog();
 
   // Initialize react-hook-form just for the category
-  const {
-    control,
-    handleSubmit,
-    formState: {},
-    watch,
-  } = useForm<FormData>({
+  const { control, handleSubmit, watch, reset } = useForm<FormData>({
     defaultValues: {
       questCategory: 'fitness',
     },
@@ -60,9 +55,20 @@ export default function CustomQuestScreen() {
     setQuestDuration(duration);
   };
 
+  const handleCancel = () => {
+    // Reset all form values to defaults
+    setQuestName('');
+    setQuestDuration(30);
+    reset({ questCategory: 'fitness' });
+
+    // Navigate back
+    router.back();
+  };
+
   useEffect(() => {
     posthog.capture('open_custom_quest_screen');
   }, [posthog]);
+
 
   const onSubmit = async (data: FormData) => {
     posthog.capture('trigger_start_custom_quest');
@@ -87,6 +93,9 @@ export default function CustomQuestScreen() {
       // Then prepare the quest in the background task
       await QuestTimer.prepareQuest(customQuest);
       posthog.capture('sucess_start_custom_quest');
+
+      // Go to regular pending quest
+      router.push('/pending-quest');
     } catch (error) {
       console.error('Error preparing quest:', error);
     }
@@ -96,7 +105,7 @@ export default function CustomQuestScreen() {
     <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
       <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={handleCancel}>
           <Text className="text-base text-[#333]">Cancel</Text>
         </Pressable>
         <Text className="text-lg font-semibold">Custom quest</Text>
@@ -121,6 +130,7 @@ export default function CustomQuestScreen() {
 
           {/* Category Dropdown */}
           <CategorySelector control={control} questCategory={questCategory} />
+
 
           {/* Continue Button (Large, Full-Width) */}
           <Button

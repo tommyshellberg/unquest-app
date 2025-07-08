@@ -7,14 +7,12 @@ The component should be a functional component and should be styled with Nativew
 Follow the following steps:
 
 1. Layout Analysis:
-
    - Describe the main layout structure you observe in the image
    - Identify key UI components (buttons, cards, lists, etc.)
    - Identify components from `@/components/ui` we can use to build the layout if needed
    - Note any specific spacing, alignment, or positioning patterns
 
 2. Component Implementation:
-
    - Use Nativewind for styling
    - Use shared components from `@/components/ui` in case you need them
    - Component should be accessible and follow the accessibility best practices

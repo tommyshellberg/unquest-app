@@ -49,6 +49,18 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${accessToken}`;
     } else {
     }
+
+    // Log invitation-related requests
+    if (config.url?.includes('/invitations/')) {
+      console.log('========================================');
+      console.log('[API Client] Invitation Request');
+      console.log('Method:', config.method?.toUpperCase());
+      console.log('URL:', config.url);
+      console.log('Data:', config.data);
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('========================================');
+    }
+
     return config;
   },
   (error) => {
@@ -58,7 +70,19 @@ apiClient.interceptors.request.use(
 
 // Response Interceptor: Handles 401 and token refresh
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log invitation-related responses
+    if (response.config.url?.includes('/invitations/')) {
+      console.log('========================================');
+      console.log('[API Client] Invitation Response');
+      console.log('Status:', response.status);
+      console.log('URL:', response.config.url);
+      console.log('Response Data:', response.data);
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('========================================');
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as CustomInternalAxiosRequestConfig;
 

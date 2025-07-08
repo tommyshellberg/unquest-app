@@ -10,7 +10,9 @@ jest.mock('@/lib/services/user');
 describe('useFriendManagement - Bulk Invites', () => {
   let queryClient: QueryClient;
   const mockUserEmail = 'user@example.com';
-  const mockContactsModalRef = { current: { present: jest.fn(), dismiss: jest.fn() } };
+  const mockContactsModalRef = {
+    current: { present: jest.fn(), dismiss: jest.fn() },
+  };
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -26,8 +28,12 @@ describe('useFriendManagement - Bulk Invites', () => {
     jest.clearAllMocks();
 
     // Mock default responses
-    (userService.getUserFriends as jest.Mock).mockResolvedValue({ friends: [] });
-    (userService.getUserInvitations as jest.Mock).mockResolvedValue({ results: [] });
+    (userService.getUserFriends as jest.Mock).mockResolvedValue({
+      friends: [],
+    });
+    (userService.getUserInvitations as jest.Mock).mockResolvedValue({
+      results: [],
+    });
   });
 
   describe('sendBulkInvites', () => {
@@ -36,19 +42,29 @@ describe('useFriendManagement - Bulk Invites', () => {
         message: 'Successfully sent 3 invitations',
         totalSuccessful: 3,
         totalFailed: 0,
-        successfulEmails: ['john@example.com', 'jane@example.com', 'bob@example.com'],
+        successfulEmails: [
+          'john@example.com',
+          'jane@example.com',
+          'bob@example.com',
+        ],
         failedEmails: [],
       };
 
-      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(mockResponse);
+      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(
+        mockResponse
+      );
 
       const { result } = renderHook(
         () => useFriendManagement(mockUserEmail, mockContactsModalRef),
         { wrapper }
       );
 
-      const emails = ['john@example.com', 'jane@example.com', 'bob@example.com'];
-      
+      const emails = [
+        'john@example.com',
+        'jane@example.com',
+        'bob@example.com',
+      ];
+
       let bulkResults: any;
       await act(async () => {
         bulkResults = await result.current.sendBulkInvites(emails);
@@ -75,15 +91,22 @@ describe('useFriendManagement - Bulk Invites', () => {
         ],
       };
 
-      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(mockResponse);
+      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(
+        mockResponse
+      );
 
       const { result } = renderHook(
         () => useFriendManagement(mockUserEmail, mockContactsModalRef),
         { wrapper }
       );
 
-      const emails = ['john@example.com', 'jane@example.com', 'bob@example.com', 'alice@example.com'];
-      
+      const emails = [
+        'john@example.com',
+        'jane@example.com',
+        'bob@example.com',
+        'alice@example.com',
+      ];
+
       let bulkResults: any;
       await act(async () => {
         bulkResults = await result.current.sendBulkInvites(emails);
@@ -92,8 +115,16 @@ describe('useFriendManagement - Bulk Invites', () => {
       expect(bulkResults).toEqual([
         { email: 'john@example.com', success: true },
         { email: 'jane@example.com', success: true },
-        { email: 'bob@example.com', success: false, reason: 'Email already taken' },
-        { email: 'alice@example.com', success: false, reason: 'Invalid email format' },
+        {
+          email: 'bob@example.com',
+          success: false,
+          reason: 'Email already taken',
+        },
+        {
+          email: 'alice@example.com',
+          success: false,
+          reason: 'Invalid email format',
+        },
       ]);
     });
 
@@ -110,15 +141,21 @@ describe('useFriendManagement - Bulk Invites', () => {
         ],
       };
 
-      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(mockResponse);
+      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(
+        mockResponse
+      );
 
       const { result } = renderHook(
         () => useFriendManagement(mockUserEmail, mockContactsModalRef),
         { wrapper }
       );
 
-      const emails = ['john@example.com', 'jane@example.com', 'bob@example.com'];
-      
+      const emails = [
+        'john@example.com',
+        'jane@example.com',
+        'bob@example.com',
+      ];
+
       let bulkResults: any;
       await act(async () => {
         bulkResults = await result.current.sendBulkInvites(emails);
@@ -126,7 +163,11 @@ describe('useFriendManagement - Bulk Invites', () => {
 
       expect(bulkResults).toEqual([
         { email: 'john@example.com', success: false, reason: 'User blocked' },
-        { email: 'jane@example.com', success: false, reason: 'Email already taken' },
+        {
+          email: 'jane@example.com',
+          success: false,
+          reason: 'Email already taken',
+        },
         { email: 'bob@example.com', success: false, reason: 'Server error' },
       ]);
     });
@@ -140,7 +181,9 @@ describe('useFriendManagement - Bulk Invites', () => {
         failedEmails: [],
       };
 
-      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(mockResponse);
+      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(
+        mockResponse
+      );
 
       const { result } = renderHook(
         () => useFriendManagement(mockUserEmail, mockContactsModalRef),
@@ -148,7 +191,7 @@ describe('useFriendManagement - Bulk Invites', () => {
       );
 
       const emails = ['john@example.com'];
-      
+
       let bulkResults: any;
       await act(async () => {
         bulkResults = await result.current.sendBulkInvites(emails);
@@ -165,12 +208,12 @@ describe('useFriendManagement - Bulk Invites', () => {
         totalSuccessful: 0,
         totalFailed: 1,
         successfulEmails: [],
-        failedEmails: [
-          { email: 'john@example.com', reason: 'User not found' },
-        ],
+        failedEmails: [{ email: 'john@example.com', reason: 'User not found' }],
       };
 
-      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(mockResponse);
+      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(
+        mockResponse
+      );
 
       const { result } = renderHook(
         () => useFriendManagement(mockUserEmail, mockContactsModalRef),
@@ -178,7 +221,7 @@ describe('useFriendManagement - Bulk Invites', () => {
       );
 
       const emails = ['john@example.com'];
-      
+
       let bulkResults: any;
       await act(async () => {
         bulkResults = await result.current.sendBulkInvites(emails);
@@ -189,21 +232,25 @@ describe('useFriendManagement - Bulk Invites', () => {
       ]);
     });
 
-    it('should filter out user\'s own email', async () => {
+    it("should filter out user's own email", async () => {
       const { result } = renderHook(
         () => useFriendManagement(mockUserEmail, mockContactsModalRef),
         { wrapper }
       );
 
       const emails = [mockUserEmail];
-      
+
       let bulkResults: any;
       await act(async () => {
         bulkResults = await result.current.sendBulkInvites(emails);
       });
 
       expect(bulkResults).toEqual([
-        { email: mockUserEmail, success: false, reason: 'Cannot invite yourself' },
+        {
+          email: mockUserEmail,
+          success: false,
+          reason: 'Cannot invite yourself',
+        },
       ]);
 
       expect(userService.sendBulkFriendInvites).not.toHaveBeenCalled();
@@ -220,7 +267,7 @@ describe('useFriendManagement - Bulk Invites', () => {
       );
 
       const emails = ['john@example.com', 'jane@example.com'];
-      
+
       let bulkResults: any;
       await act(async () => {
         bulkResults = await result.current.sendBulkInvites(emails);
@@ -241,7 +288,9 @@ describe('useFriendManagement - Bulk Invites', () => {
         failedEmails: [],
       };
 
-      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(mockResponse);
+      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(
+        mockResponse
+      );
 
       const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
@@ -254,7 +303,9 @@ describe('useFriendManagement - Bulk Invites', () => {
         await result.current.sendBulkInvites(['john@example.com']);
       });
 
-      expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['invitations'] });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+        queryKey: ['invitations'],
+      });
     });
 
     it('should handle duplicate emails in the input', async () => {
@@ -266,15 +317,21 @@ describe('useFriendManagement - Bulk Invites', () => {
         failedEmails: [],
       };
 
-      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(mockResponse);
+      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(
+        mockResponse
+      );
 
       const { result } = renderHook(
         () => useFriendManagement(mockUserEmail, mockContactsModalRef),
         { wrapper }
       );
 
-      const emails = ['john@example.com', 'john@example.com', 'john@example.com'];
-      
+      const emails = [
+        'john@example.com',
+        'john@example.com',
+        'john@example.com',
+      ];
+
       await act(async () => {
         await result.current.sendBulkInvites(emails);
       });
@@ -298,15 +355,23 @@ describe('useFriendManagement - Bulk Invites', () => {
         ],
       };
 
-      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(mockResponse);
+      (userService.sendBulkFriendInvites as jest.Mock).mockResolvedValueOnce(
+        mockResponse
+      );
 
       const { result } = renderHook(
         () => useFriendManagement(mockUserEmail, mockContactsModalRef),
         { wrapper }
       );
 
-      const emails = ['test1@example.com', 'test2@example.com', 'test3@example.com', 'test4@example.com', 'test5@example.com'];
-      
+      const emails = [
+        'test1@example.com',
+        'test2@example.com',
+        'test3@example.com',
+        'test4@example.com',
+        'test5@example.com',
+      ];
+
       let bulkResults: any;
       await act(async () => {
         bulkResults = await result.current.sendBulkInvites(emails);

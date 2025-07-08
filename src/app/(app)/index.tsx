@@ -22,17 +22,23 @@ import QuestTimer from '@/lib/services/quest-timer';
 import { getUserDetails } from '@/lib/services/user';
 import { useQuestStore } from '@/store/quest-store';
 import { type QuestOption } from '@/store/types';
+import { useUserStore } from '@/store/user-store';
 
 // Define screen dimensions for the carousel
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
 const cardSpacing = 24; // spacing between cards
-const snapInterval = cardWidth + cardSpacing; // adjust snap interval to include spacing
+const snapInterval = cardWidth + cardSpacing; // adjust snap to include spacing
 
 // Define our modes
 const MODES = [
   { id: 'story', name: 'Story Mode', color: 'rgba(194, 199, 171, 0.9)' },
   { id: 'custom', name: 'Free Play Mode', color: 'rgba(146, 185, 191, 0.9)' },
+  {
+    id: 'cooperative',
+    name: 'Cooperative Quest',
+    color: 'rgba(106, 177, 185, 0.9)',
+  },
 ];
 
 export default function Home() {
@@ -45,6 +51,7 @@ export default function Home() {
   const availableQuests = useQuestStore((state) => state.availableQuests);
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
   const prepareQuest = useQuestStore((state) => state.prepareQuest);
+  const user = useUserStore((state) => state.user);
   const posthog = usePostHog();
   // State for story choices
   const [storyOptions, setStoryOptions] = useState<QuestOption[]>([]);
@@ -78,6 +85,20 @@ export default function Home() {
   useEffect(() => {
     console.log('Home screen is mounting');
   }, []);
+
+  // Check for stuck cooperative quest and clean it up
+  useEffect(() => {
+    if (activeQuest && activeQuest.startTime) {
+      // If there's an active quest with a start time but QuestTimer isn't tracking it
+      const isQuestTimerRunning = QuestTimer.isRunning();
+
+      if (!isQuestTimerRunning) {
+        console.warn('Found stuck active quest, cleaning up...', activeQuest);
+        // This quest was likely a cooperative quest that started prematurely
+        useQuestStore.getState().failQuest();
+      }
+    }
+  }, [activeQuest]);
 
   // Get next quest options based on the last completed story quest
   useEffect(() => {
@@ -233,6 +254,19 @@ export default function Home() {
     }
   };
 
+  // Handle cooperative quest button
+  const handleCooperativeQuest = () => {
+    try {
+      posthog.capture('cooperative_quest_card_clicked');
+      router.push('/cooperative-quest-menu');
+    } catch (error) {
+      console.error('Error navigating to cooperative quest menu:', error);
+    }
+  };
+
+  // Check if user has cooperative quest feature
+  const hasCoopFeature = user?.featureFlags?.includes('coop_mode') || false;
+
   // Prepare carousel data
   const carouselData = [
     {
@@ -255,7 +289,9 @@ export default function Home() {
           const lastCompletedStoryQuest = [...storyQuests].sort(
             (a, b) => (b.stopTime || 0) - (a.stopTime || 0)
           )[0];
-          return lastCompletedStoryQuest?.recap || 'Continue your journey';
+          return (
+            (lastCompletedStoryQuest as any)?.recap || 'Continue your journey'
+          );
         }
 
         // Fallback if no story quests completed
@@ -292,12 +328,31 @@ export default function Home() {
     },
   ];
 
+  // Only add cooperative quest card if user has the feature
+  if (hasCoopFeature) {
+    carouselData.push({
+      id: 'cooperative',
+      mode: 'cooperative',
+      title: 'Cooperative Quest',
+      subtitle: 'Team Challenge',
+      recap:
+        'Invite a friend on a quest or join a quest and stay off your phone together',
+      duration: 5,
+      xp: 15,
+    });
+  }
+
   // Animated background style based on carousel progress
   const backgroundStyle = useAnimatedStyle(() => {
+    const inputRange = hasCoopFeature ? [0, 1, 2] : [0, 1];
+    const outputRange = hasCoopFeature
+      ? [MODES[0].color, MODES[1].color, MODES[2].color]
+      : [MODES[0].color, MODES[1].color];
+
     const backgroundColor = interpolateColor(
       progress.value,
-      [0, 1],
-      [MODES[0].color, MODES[1].color]
+      inputRange,
+      outputRange
     );
 
     return {
@@ -433,7 +488,7 @@ export default function Home() {
           <View className="mt-auto items-center justify-center pb-8">
             {activeIndex === 0 ? (
               renderStoryOptions()
-            ) : (
+            ) : activeIndex === 1 ? (
               // Show create custom quest button for custom mode
               <Button
                 label="Create Custom Quest"
@@ -442,7 +497,16 @@ export default function Home() {
                 textClassName="text-white font-bold"
                 style={{ width: cardWidth }}
               />
-            )}
+            ) : activeIndex === 2 && hasCoopFeature ? (
+              // Show cooperative quest button for cooperative mode (only if user has feature)
+              <Button
+                label="Cooperative Quests"
+                onPress={handleCooperativeQuest}
+                className="mb-2 rounded-md bg-primary-400"
+                textClassName="text-white font-bold"
+                style={{ width: cardWidth }}
+              />
+            ) : null}
           </View>
         )}
       </View>

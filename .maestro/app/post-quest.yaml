@@ -46,7 +46,6 @@ appId: com.vaedros.unquest.development
 # Should see email verification screen
 - assertVisible: 'Check your email'
 - assertVisible: 'testquester@example.com'
-
 # =============================================================================
 # TEST SUMMARY
 # =============================================================================

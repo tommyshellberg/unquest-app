@@ -1,6 +1,6 @@
 {
   "name": "unquest/unquest",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -48,6 +48,7 @@
     "@expo/vector-icons": "^14.0.4",
     "@gorhom/bottom-sheet": "^5.0.5",
     "@hookform/resolvers": "^3.9.0",
+    "@openspacelabs/react-native-zoomable-view": "^2.4.2",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-community/slider": "4.5.5",
     "@react-native-masked-view/masked-view": "0.3.2",
@@ -84,6 +85,7 @@
     "lucide-react-native": "^0.510.0",
     "moti": "^0.29.0",
     "nativewind": "^4.1.21",
+    "onesignal-expo-plugin": "^2.0.3",
     "posthog-react-native": "^4.1.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -107,6 +109,7 @@
     "react-native-svg": "~15.8.0",
     "react-native-web": "~0.19.13",
     "react-query-kit": "^3.3.0",
+    "socket.io-client": "^4.8.1",
     "tailwind-variants": "^0.2.1",
     "uuid": "^11.1.0",
     "zod": "^3.23.8",
