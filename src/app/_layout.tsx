@@ -88,6 +88,51 @@ function RootLayout() {
         OneSignal.LiveActivities.setupDefault();
       }
 
+      // Mark OneSignal as initialized globally
+      (global as any).isOneSignalInitialized = true;
+
+      // If we have a logged-in user, set their external ID now
+      const { useUserStore } = require('@/store/user-store');
+      const user = useUserStore.getState().user;
+      if (user?.id) {
+        console.log(
+          '[OneSignal] Setting external ID for existing user:',
+          user.id
+        );
+        OneSignal.login(user.id);
+      }
+
+      // Debug: Check current OneSignal user state
+      const debugCheckOneSignalUser = async () => {
+        try {
+          const onesignalId = await OneSignal.User.getOnesignalId();
+          const externalId = await OneSignal.User.getExternalId();
+
+          // Check push subscription status
+          const pushSubscription = OneSignal.User.pushSubscription;
+          const isOptedIn = await pushSubscription.getOptedInAsync();
+          const subscriptionId = await pushSubscription.getIdAsync();
+          const token = await pushSubscription.getTokenAsync();
+
+          console.log('========================================');
+          console.log('[OneSignal Debug] Current User State:');
+          console.log('OneSignal ID:', onesignalId);
+          console.log('External ID (MongoDB User ID):', externalId);
+          console.log('Push Subscription Status:');
+          console.log('  - Opted In:', isOptedIn);
+          console.log('  - Subscription ID:', subscriptionId || 'Not set');
+          console.log('  - Push Token:', token || 'Not set');
+          console.log('Platform:', Platform.OS);
+          console.log('========================================');
+        } catch (error) {
+          console.error('[OneSignal Debug] Error getting user info:', error);
+        }
+      };
+
+      // Check immediately and after a delay to catch any changes
+      debugCheckOneSignalUser();
+      setTimeout(debugCheckOneSignalUser, 5000);
+
       // Handle notification opens for cooperative quest invitations
       OneSignal.Notifications.addEventListener('click', (event) => {
         console.log('Notification clicked:', event);

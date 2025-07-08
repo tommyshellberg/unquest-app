@@ -41,10 +41,24 @@ export const areNotificationsEnabled = async (): Promise<boolean> => {
   try {
     // Check user preference
     const userPreference = getItem<string>(NOTIFICATIONS_ENABLED_KEY);
+    console.log(
+      '[OneSignal Debug] User preference for notifications:',
+      userPreference
+    );
     if (userPreference === 'false') return false;
 
     // Check system permission - using OneSignal to check
     const permissionStatus = await OneSignal.Notifications.getPermissionAsync();
+    console.log(
+      '[OneSignal Debug] System permission status:',
+      permissionStatus
+    );
+
+    // Also check push subscription status
+    const pushSubscription = OneSignal.User.pushSubscription;
+    const isOptedIn = await pushSubscription.getOptedInAsync();
+    console.log('[OneSignal Debug] Push subscription opted in:', isOptedIn);
+
     return permissionStatus;
   } catch (error) {
     console.error('Error checking notification status:', error);
@@ -74,9 +88,9 @@ export const scheduleQuestCompletionNotification = async (questId?: string) => {
       content: {
         title: 'Quest Completed!',
         body: 'Your quest has been completed successfully. Claim your reward!',
-        data: { 
-          screen: '/(app)',  // Navigate to home, will redirect to quest result
-          questId: questId 
+        data: {
+          screen: '/(app)', // Navigate to home, will redirect to quest result
+          questId: questId,
         },
         // These properties are valid in the content object
         priority: ExpoNotifications.AndroidNotificationPriority.MAX,
@@ -126,15 +140,81 @@ export function setupNotifications() {
 // Request notification permissions - use OneSignal for iOS to enable Live Activities
 export const requestNotificationPermissions = async (): Promise<boolean> => {
   try {
+    console.log('========================================');
+    console.log('[OneSignal Debug] Requesting notification permissions...');
+
+    // Check current permission status before requesting
+    const currentPermission =
+      await OneSignal.Notifications.getPermissionAsync();
+    console.log(
+      '[OneSignal Debug] Current permission status:',
+      currentPermission
+    );
+
+    // Check if OneSignal push subscription is enabled
+    const pushSubscription = OneSignal.User.pushSubscription;
+    const isOptedIn = await pushSubscription.getOptedInAsync();
+    const subscriptionId = await pushSubscription.getIdAsync();
+    const token = await pushSubscription.getTokenAsync();
+
+    console.log('[OneSignal Debug] Push subscription info:');
+    console.log('  - Opted In:', isOptedIn);
+    console.log('  - Subscription ID:', subscriptionId || 'Not set');
+    console.log('  - Push Token:', token || 'Not set');
+
     // Use OneSignal to request permissions
+    console.log('[OneSignal Debug] Calling requestPermission(true)...');
     const granted = await OneSignal.Notifications.requestPermission(true);
+    console.log('[OneSignal Debug] Permission request result:', granted);
+
+    // After permission, check subscription again
+    const newIsOptedIn = await pushSubscription.getOptedInAsync();
+    const newSubscriptionId = await pushSubscription.getIdAsync();
+    const newToken = await pushSubscription.getTokenAsync();
+
+    console.log('[OneSignal Debug] After permission - Push subscription info:');
+    console.log('  - Opted In:', newIsOptedIn);
+    console.log('  - Subscription ID:', newSubscriptionId || 'Not set');
+    console.log('  - Push Token:', newToken || 'Not set');
+
+    // If permission granted but not opted in, manually opt in
+    if (granted && !newIsOptedIn) {
+      console.log(
+        '[OneSignal Debug] Permission granted but not opted in, manually opting in...'
+      );
+      await pushSubscription.optIn();
+
+      // Check again after opt-in
+      const finalIsOptedIn = await pushSubscription.getOptedInAsync();
+      const finalSubscriptionId = await pushSubscription.getIdAsync();
+      console.log('[OneSignal Debug] After manual opt-in:');
+      console.log('  - Opted In:', finalIsOptedIn);
+      console.log('  - Subscription ID:', finalSubscriptionId || 'Not set');
+    }
+
+    // Check user details
+    const onesignalId = await OneSignal.User.getOnesignalId();
+    const externalId = await OneSignal.User.getExternalId();
+    console.log('[OneSignal Debug] User info:');
+    console.log('  - OneSignal ID:', onesignalId || 'Not set');
+    console.log('  - External ID:', externalId || 'Not set');
+
+    console.log('[OneSignal Debug] Final permission status:', granted);
+    console.log('========================================');
 
     // Store the setting in our local storage
     setItem(NOTIFICATIONS_ENABLED_KEY, granted ? 'true' : 'false');
 
     return granted;
   } catch (error) {
-    console.error('Error requesting notification permissions:', error);
+    console.error(
+      '[OneSignal Debug] Error requesting notification permissions:',
+      error
+    );
+    console.error(
+      '[OneSignal Debug] Error details:',
+      JSON.stringify(error, null, 2)
+    );
     return false;
   }
 };

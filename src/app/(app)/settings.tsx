@@ -13,6 +13,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { OneSignal } from 'react-native-onesignal';
 
 import { FocusAwareStatusBar, ScrollView, Text, View } from '@/components/ui';
 import { useAuth } from '@/lib';
@@ -626,6 +627,110 @@ export default function Settings() {
               </Text>
             </View>
           </View>
+
+          {/* Debug Section - Only in dev mode */}
+          {__DEV__ && (
+            <>
+              <View className="mb-4">
+                <Text className="mb-2 text-base uppercase text-neutral-500">
+                  DEBUG
+                </Text>
+              </View>
+
+              <Pressable
+                className="mb-4 flex-row items-center justify-between"
+                onPress={async () => {
+                  try {
+                    const onesignalId = await OneSignal.User.getOnesignalId();
+                    const externalId = await OneSignal.User.getExternalId();
+                    const mongodbUserId = user?.id || 'Not logged in';
+
+                    Alert.alert(
+                      'OneSignal Debug Info',
+                      `OneSignal ID: ${onesignalId || 'Not set'}\n\n` +
+                        `External ID: ${externalId || 'Not set'}\n\n` +
+                        `MongoDB User ID: ${mongodbUserId}\n\n` +
+                        `Match: ${externalId === mongodbUserId ? '✅ Yes' : '❌ No'}`,
+                      [{ text: 'OK' }]
+                    );
+                  } catch (error) {
+                    Alert.alert(
+                      'Error',
+                      'Failed to get OneSignal info: ' + error.message
+                    );
+                  }
+                }}
+              >
+                <View className="flex-row items-center">
+                  <View
+                    className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+                  >
+                    <Feather name="code" size={24} color={iconColor} />
+                  </View>
+                  <View>
+                    <Text className="text-xl font-medium">
+                      Check OneSignal ID
+                    </Text>
+                    <Text className="text-neutral-600">
+                      Verify user ID mapping
+                    </Text>
+                  </View>
+                </View>
+                <Feather name="chevron-right" size={20} color="#888" />
+              </Pressable>
+
+              <Pressable
+                className="mb-4 flex-row items-center justify-between"
+                onPress={async () => {
+                  try {
+                    // Get all notification status info
+                    const permissionStatus =
+                      await OneSignal.Notifications.getPermissionAsync();
+                    const pushSubscription = OneSignal.User.pushSubscription;
+                    const isOptedIn = await pushSubscription.getOptedInAsync();
+                    const subscriptionId = await pushSubscription.getIdAsync();
+                    const token = await pushSubscription.getTokenAsync();
+
+                    // Get notification settings
+                    const userPreference = getItem(NOTIFICATIONS_ENABLED_KEY);
+
+                    Alert.alert(
+                      'OneSignal Notification Status',
+                      `System Permission: ${permissionStatus ? '✅ Granted' : '❌ Denied'}\n\n` +
+                        `Push Subscription:\n` +
+                        `  - Opted In: ${isOptedIn ? '✅ Yes' : '❌ No'}\n` +
+                        `  - Subscription ID: ${subscriptionId ? '✅ ' + subscriptionId.substring(0, 20) + '...' : '❌ Not set'}\n` +
+                        `  - Push Token: ${token ? '✅ ' + token.substring(0, 20) + '...' : '❌ Not set'}\n\n` +
+                        `User Preference: ${userPreference === 'true' ? '✅ Enabled' : userPreference === 'false' ? '❌ Disabled' : '⚠️ Not set'}`,
+                      [{ text: 'OK' }]
+                    );
+                  } catch (error) {
+                    Alert.alert(
+                      'Error',
+                      'Failed to get notification status: ' + error.message
+                    );
+                  }
+                }}
+              >
+                <View className="flex-row items-center">
+                  <View
+                    className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+                  >
+                    <Feather name="bell" size={24} color={iconColor} />
+                  </View>
+                  <View>
+                    <Text className="text-xl font-medium">
+                      Check Notification Status
+                    </Text>
+                    <Text className="text-neutral-600">
+                      Debug push subscription
+                    </Text>
+                  </View>
+                </View>
+                <Feather name="chevron-right" size={20} color="#888" />
+              </Pressable>
+            </>
+          )}
 
           {/* Version Info */}
           <View className="mb-6 mt-8">
