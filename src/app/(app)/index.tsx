@@ -21,14 +21,14 @@ import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { getUserDetails } from '@/lib/services/user';
 import { useQuestStore } from '@/store/quest-store';
-import { useUserStore } from '@/store/user-store';
 import { type QuestOption } from '@/store/types';
+import { useUserStore } from '@/store/user-store';
 
 // Define screen dimensions for the carousel
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
 const cardSpacing = 24; // spacing between cards
-const snapInterval = cardWidth + cardSpacing; // adjust snap interval to include spacing
+const snapInterval = cardWidth + cardSpacing; // adjust snap to include spacing
 
 // Define our modes
 const MODES = [
@@ -37,7 +37,7 @@ const MODES = [
   {
     id: 'cooperative',
     name: 'Cooperative Quest',
-    color: 'rgba(46, 148, 141, 0.9)',
+    color: 'rgba(106, 177, 185, 0.9)',
   },
 ];
 
@@ -335,7 +335,8 @@ export default function Home() {
       mode: 'cooperative',
       title: 'Cooperative Quest',
       subtitle: 'Team Challenge',
-      recap: 'Join a friend to stay off your phone together',
+      recap:
+        'Invite a friend on a quest or join a quest and stay off your phone together',
       duration: 5,
       xp: 15,
     });
