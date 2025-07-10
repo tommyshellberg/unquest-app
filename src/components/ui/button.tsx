@@ -90,6 +90,7 @@ interface Props extends ButtonVariants, Omit<PressableProps, 'disabled'> {
   loading?: boolean;
   className?: string;
   textClassName?: string;
+  textStyle?: any;
 }
 
 export const Button = React.forwardRef<View, Props>(
@@ -103,6 +104,7 @@ export const Button = React.forwardRef<View, Props>(
       className = '',
       testID,
       textClassName = '',
+      textStyle,
       ...props
     },
     ref
@@ -134,6 +136,7 @@ export const Button = React.forwardRef<View, Props>(
               <Text
                 testID={testID ? `${testID}-label` : undefined}
                 className={styles.label({ className: textClassName })}
+                style={textStyle}
               >
                 {text}
               </Text>

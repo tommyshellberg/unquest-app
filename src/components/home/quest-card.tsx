@@ -87,18 +87,18 @@ export default function QuestCard({
         {/* Add progress bar at the bottom */}
         {showProgress && (
           <View className="absolute inset-x-4 bottom-4">
-            <View className="mb-1 flex-row items-center">
-              <Text className="mr-auto text-xs text-amber-100">
+            <View className="mb-2 flex-row items-center">
+              <Text className="mr-auto text-sm font-semibold text-amber-100" style={{ fontWeight: '600' }}>
                 Story Progress
               </Text>
-              <Text className="text-xs text-amber-100">
+              <Text className="text-sm font-semibold text-amber-100" style={{ fontWeight: '600' }}>
                 {Math.round(progress * 100)}%
               </Text>
             </View>
             <ProgressBar
               ref={progressBarRef}
               initialProgress={progress * 100}
-              className="h-2 rounded-full bg-white/20"
+              className="h-3 rounded-full bg-white/20"
             />
           </View>
         )}

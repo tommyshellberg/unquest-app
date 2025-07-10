@@ -4,6 +4,8 @@ import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image } from 'react-native';
 import Animated, {
+  FadeIn,
+  FadeInDown,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
@@ -29,6 +31,10 @@ const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
 const cardSpacing = 24; // spacing between cards
 const snapInterval = cardWidth + cardSpacing; // adjust snap to include spacing
+
+// Pre-require animations to avoid dynamic require
+const curvedLeftAnimation = require('@/../assets/animations/curved-left.json');
+const curvedRightAnimation = require('@/../assets/animations/curved-right.json');
 
 // Define our modes
 const MODES = [
@@ -379,20 +385,80 @@ export default function Home() {
       return null;
     }
 
-    // Otherwise show buttons for each option in a row
+    // Single option gets same treatment as multi-option
+    if (storyOptions.length === 1) {
+      return (
+        <Animated.View
+          entering={FadeIn.duration(600).delay(200)}
+          className="w-full items-center px-4"
+        >
+          <Animated.View
+            entering={FadeInDown.duration(600).delay(400)}
+            style={{
+              width: cardWidth,
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+              shadowOpacity: 0.12,
+              shadowRadius: 4,
+              elevation: 6,
+            }}
+          >
+            <Button
+              label={storyOptions[0].text}
+              onPress={() =>
+                handleQuestOptionSelect(storyOptions[0].nextQuestId)
+              }
+              className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
+              textClassName="text-sm text-white text-center leading-tight"
+              textStyle={{ fontWeight: '700' }}
+              disabled={!storyOptions[0].nextQuestId}
+            />
+          </Animated.View>
+        </Animated.View>
+      );
+    }
+
+    // Multiple options with arrow animations
     return (
-      <View className="w-full flex-row justify-between gap-2 px-2">
-        {storyOptions.map((option: QuestOption, index: number) => (
-          <Button
-            key={option.id}
-            label={option.text}
-            onPress={() => handleQuestOptionSelect(option.nextQuestId)}
-            className={`flex-1 justify-center rounded-xl ${index === 0 ? 'mr-1 bg-primary-400' : 'ml-1 bg-neutral-400'}`}
-            textClassName="text-sm text-white text-center leading-tight"
-            disabled={!option.nextQuestId} // Disable if nextQuestId is null
-          />
-        ))}
-      </View>
+      <Animated.View
+        entering={FadeIn.duration(600).delay(200)}
+        className="w-full items-center px-4"
+      >
+        {/* Decision buttons */}
+        <View className="w-full flex-row justify-between gap-3">
+          {storyOptions.map((option: QuestOption, index: number) => (
+            <Animated.View
+              key={option.id}
+              entering={FadeInDown.duration(600).delay(400 + index * 100)}
+              className="flex-1"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: 3,
+                },
+                shadowOpacity: 0.12,
+                shadowRadius: 4,
+                elevation: 6,
+              }}
+            >
+              <Button
+                label={option.text}
+                onPress={() => handleQuestOptionSelect(option.nextQuestId)}
+                className={`min-h-[48px] justify-center rounded-xl p-3 ${
+                  index === 0 ? 'bg-neutral-300' : 'bg-primary-300'
+                }`}
+                textClassName="text-sm text-white text-center leading-tight"
+                textStyle={{ fontWeight: '700' }}
+                disabled={!option.nextQuestId} // Disable if nextQuestId is null
+              />
+            </Animated.View>
+          ))}
+        </View>
+      </Animated.View>
     );
   };
 
@@ -485,27 +551,70 @@ export default function Home() {
 
         {/* Footer area with buttons */}
         {!activeQuest && !pendingQuest && (
-          <View className="mt-auto items-center justify-center pb-8">
+          <View
+            className="mt-auto items-center justify-center pb-8"
+            style={{ minHeight: 140 }}
+          >
             {activeIndex === 0 ? (
               renderStoryOptions()
             ) : activeIndex === 1 ? (
               // Show create custom quest button for custom mode
-              <Button
-                label="Create Custom Quest"
-                onPress={handleStartCustomQuest}
-                className="mb-2 rounded-md bg-primary-400"
-                textClassName="text-white font-bold"
-                style={{ width: cardWidth }}
-              />
+              <Animated.View
+                entering={FadeIn.duration(600).delay(200)}
+                className="w-full items-center px-4"
+              >
+                <Animated.View
+                  entering={FadeInDown.duration(600).delay(400)}
+                  style={{
+                    width: cardWidth,
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 3,
+                    },
+                    shadowOpacity: 0.12,
+                    shadowRadius: 4,
+                    elevation: 6,
+                  }}
+                >
+                  <Button
+                    label="Create Custom Quest"
+                    onPress={handleStartCustomQuest}
+                    className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
+                    textClassName="text-sm text-white text-center leading-tight"
+                    textStyle={{ fontWeight: '700' }}
+                  />
+                </Animated.View>
+              </Animated.View>
             ) : activeIndex === 2 && hasCoopFeature ? (
               // Show cooperative quest button for cooperative mode (only if user has feature)
-              <Button
-                label="Cooperative Quests"
-                onPress={handleCooperativeQuest}
-                className="mb-2 rounded-md bg-primary-400"
-                textClassName="text-white font-bold"
-                style={{ width: cardWidth }}
-              />
+              <Animated.View
+                entering={FadeIn.duration(600).delay(200)}
+                className="w-full items-center px-4"
+              >
+                <Animated.View
+                  entering={FadeInDown.duration(600).delay(400)}
+                  style={{
+                    width: cardWidth,
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 3,
+                    },
+                    shadowOpacity: 0.12,
+                    shadowRadius: 4,
+                    elevation: 6,
+                  }}
+                >
+                  <Button
+                    label="Cooperative Quests"
+                    onPress={handleCooperativeQuest}
+                    className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
+                    textClassName="text-sm text-white text-center leading-tight"
+                    textStyle={{ fontWeight: '700' }}
+                  />
+                </Animated.View>
+              </Animated.View>
             ) : null}
           </View>
         )}

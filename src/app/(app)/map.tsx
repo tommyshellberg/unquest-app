@@ -1,5 +1,5 @@
 import MaskedView from '@react-native-masked-view/masked-view';
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Dimensions, Platform } from 'react-native';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import type { ReactNativeZoomableViewProps } from '@openspacelabs/react-native-zoomable-view';
@@ -22,6 +22,8 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function MapScreen() {
   const zoomableViewRef = useRef<any>(null);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isMaskLoaded, setIsMaskLoaded] = useState(false);
 
   // Get the last completed quest
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
@@ -48,6 +50,26 @@ export default function MapScreen() {
   // Calculate initial offset to show bottom-right corner
   const initialOffsetX = 0;
   const initialOffsetY = 0;
+
+  // Android-specific: Force reload images
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      // Reset load states to force re-render
+      setIsImageLoaded(false);
+      setIsMaskLoaded(false);
+      
+      // Small delay to ensure proper loading
+      const timer = setTimeout(() => {
+        setIsImageLoaded(true);
+        setIsMaskLoaded(true);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setIsImageLoaded(true);
+      setIsMaskLoaded(true);
+    }
+  }, [mapImage, currentMask]);
 
   return (
     <View className="flex-1 bg-[rgba(61,73,78,0.92)]">
@@ -79,34 +101,91 @@ export default function MapScreen() {
           longPressDuration={700}
         >
           <View style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
-            <MaskedView
-              style={{ flex: 1, width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
-              androidRenderingMode={
-                Platform.OS === 'android' ? 'software' : undefined
-              }
-              maskElement={
+            {Platform.OS === 'android' ? (
+              // Android: Use inverted mask approach for better compatibility
+              <View style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
+                {/* Fog/unexplored area as base layer */}
                 <View
                   style={{
-                    flex: 1,
-                    backgroundColor: 'transparent',
+                    position: 'absolute',
                     width: IMAGE_WIDTH,
                     height: IMAGE_HEIGHT,
+                    backgroundColor: '#1a1a1a', // Dark fog color
+                    top: 0,
+                    left: 0,
                   }}
+                />
+                {/* Map visible through mask areas */}
+                <MaskedView
+                  style={{ 
+                    position: 'absolute',
+                    width: IMAGE_WIDTH, 
+                    height: IMAGE_HEIGHT,
+                    top: 0,
+                    left: 0,
+                  }}
+                  maskElement={
+                    <View
+                      style={{
+                        backgroundColor: 'transparent',
+                        width: IMAGE_WIDTH,
+                        height: IMAGE_HEIGHT,
+                      }}
+                    >
+                      <Image
+                        source={currentMask}
+                        style={{ 
+                          width: IMAGE_WIDTH, 
+                          height: IMAGE_HEIGHT,
+                          tintColor: 'white', // Ensure mask is treated as alpha channel
+                        }}
+                        contentFit="cover"
+                        onLoad={() => setIsMaskLoaded(true)}
+                        cachePolicy="memory-disk"
+                      />
+                    </View>
+                  }
                 >
                   <Image
-                    source={currentMask}
-                    style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
+                    source={mapImage}
+                    style={{ 
+                      width: IMAGE_WIDTH, 
+                      height: IMAGE_HEIGHT,
+                    }}
                     contentFit="cover"
+                    onLoad={() => setIsImageLoaded(true)}
+                    cachePolicy="memory-disk"
                   />
-                </View>
-              }
-            >
-              <Image
-                source={mapImage}
-                style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
-                contentFit="cover"
-              />
-            </MaskedView>
+                </MaskedView>
+              </View>
+            ) : (
+              // iOS: Use MaskedView for better fog effect
+              <MaskedView
+                style={{ flex: 1, width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
+                maskElement={
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: 'transparent',
+                      width: IMAGE_WIDTH,
+                      height: IMAGE_HEIGHT,
+                    }}
+                  >
+                    <Image
+                      source={currentMask}
+                      style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
+                      contentFit="cover"
+                    />
+                  </View>
+                }
+              >
+                <Image
+                  source={mapImage}
+                  style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
+                  contentFit="cover"
+                />
+              </MaskedView>
+            )}
           </View>
         </ReactNativeZoomableView>
       </View>
