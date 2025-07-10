@@ -254,4 +254,177 @@ describe('QuestStore - refreshAvailableQuests', () => {
     // If the next quest isn't in our fixture, we should get empty array
     expect(state.availableQuests.length).toBe(0);
   });
+
+  describe('Cooperative Quest Management', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      // Reset the store to initial state
+      useQuestStore.setState({
+        pendingQuest: null,
+        activeQuest: null,
+        completedQuests: [],
+        failedQuests: [],
+        cooperativeQuestRun: null,
+        currentInvitation: null,
+      });
+    });
+
+    test('should set cooperative quest run', () => {
+      // Arrange
+      const cooperativeQuestRun = {
+        id: 'coop-quest-123',
+        questId: 'quest-1',
+        hostId: 'user-456',
+        status: 'pending' as const,
+        participants: [
+          { userId: 'user-456', ready: true, status: 'pending' },
+          { userId: 'user-789', ready: false, status: 'pending' },
+        ],
+        invitationId: 'inv-123',
+        actualStartTime: null,
+        scheduledEndTime: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      // Act
+      useQuestStore.getState().setCooperativeQuestRun(cooperativeQuestRun);
+
+      // Assert
+      const state = useQuestStore.getState();
+      expect(state.cooperativeQuestRun).toEqual(cooperativeQuestRun);
+    });
+
+    test('should fail cooperative quest and clear cooperative quest run', () => {
+      // Arrange
+      const cooperativeQuestRun = {
+        id: 'coop-quest-123',
+        questId: 'quest-1',
+        hostId: 'user-456',
+        status: 'active' as const,
+        participants: [],
+        invitationId: 'inv-123',
+        actualStartTime: Date.now(),
+        scheduledEndTime: Date.now() + 600000,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      const activeQuest = {
+        id: 'quest-1',
+        mode: 'story' as const,
+        title: 'Test Quest',
+        durationMinutes: 10,
+        reward: { xp: 100 },
+        startTime: Date.now(),
+        status: 'active' as const,
+      };
+
+      useQuestStore.setState({
+        cooperativeQuestRun,
+        activeQuest,
+        pendingQuest: null,
+      });
+
+      // Act
+      useQuestStore.getState().failQuest();
+
+      // Assert
+      const state = useQuestStore.getState();
+      expect(state.activeQuest).toBeNull();
+      expect(state.pendingQuest).toBeNull();
+      expect(state.cooperativeQuestRun).toBeNull();
+      expect(state.failedQuests).toContainEqual(
+        expect.objectContaining({
+          ...activeQuest,
+          status: 'failed',
+          stopTime: expect.any(Number),
+        })
+      );
+    });
+
+    test('should update participant ready status', () => {
+      // Arrange
+      const cooperativeQuestRun = {
+        id: 'coop-quest-123',
+        questId: 'quest-1',
+        hostId: 'user-456',
+        status: 'pending' as const,
+        participants: [
+          { userId: 'user-456', ready: false, status: 'pending' },
+          { userId: 'user-789', ready: false, status: 'pending' },
+        ],
+        invitationId: 'inv-123',
+        actualStartTime: null,
+        scheduledEndTime: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      useQuestStore.setState({ cooperativeQuestRun });
+
+      // Act
+      useQuestStore.getState().updateParticipantReady('user-456', true);
+
+      // Assert
+      const state = useQuestStore.getState();
+      const participant = state.cooperativeQuestRun?.participants.find(
+        (p) => p.userId === 'user-456'
+      );
+      expect(participant?.ready).toBe(true);
+    });
+
+    test('should handle quest failure for single-player quest', () => {
+      // Arrange
+      const activeQuest = {
+        id: 'quest-1',
+        mode: 'story' as const,
+        title: 'Test Quest',
+        durationMinutes: 10,
+        reward: { xp: 100 },
+        startTime: Date.now(),
+        status: 'active' as const,
+      };
+
+      useQuestStore.setState({
+        activeQuest,
+        cooperativeQuestRun: null,
+        pendingQuest: null,
+      });
+
+      // Act
+      useQuestStore.getState().failQuest();
+
+      // Assert
+      const state = useQuestStore.getState();
+      expect(state.activeQuest).toBeNull();
+      expect(state.pendingQuest).toBeNull();
+      expect(state.failedQuests.length).toBe(1);
+      expect(state.failedQuests[0]).toEqual(
+        expect.objectContaining({
+          ...activeQuest,
+          status: 'failed',
+          stopTime: expect.any(Number),
+        })
+      );
+    });
+
+    test('should not fail quest if no active quest', () => {
+      // Arrange
+      useQuestStore.setState({
+        activeQuest: null,
+        pendingQuest: null,
+        cooperativeQuestRun: null,
+        failedQuests: [],
+      });
+
+      // Act
+      useQuestStore.getState().failQuest();
+
+      // Assert
+      const state = useQuestStore.getState();
+      expect(state.failedQuests.length).toBe(0);
+      expect(state.activeQuest).toBeNull();
+    });
+  });
 });

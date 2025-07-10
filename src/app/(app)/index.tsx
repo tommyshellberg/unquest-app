@@ -447,8 +447,8 @@ export default function Home() {
             Choose Your Adventure
           </Text>
           <Text>
-            Continue your epic story or embark on a new challenge in free play
-            mode.
+            Continue your epic story, create a quest of your own design, or play
+            a cooperative quest with a friend.
           </Text>
         </Animated.View>
 

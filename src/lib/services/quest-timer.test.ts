@@ -9,9 +9,13 @@ import { OneSignal } from 'react-native-onesignal';
 import {
   createQuestRun,
   updateQuestRunStatus,
+  updatePhoneLockStatus,
+  getQuestRunStatus,
 } from '@/lib/services/quest-run-service';
 // Import types
 import type { StoryQuestTemplate } from '@/store/types';
+// Import the store for assertions
+import { useQuestStore } from '@/store/quest-store';
 
 import QuestTimer from './quest-timer';
 
@@ -19,6 +23,17 @@ import QuestTimer from './quest-timer';
 jest.mock('@/lib/services/quest-run-service', () => ({
   createQuestRun: jest.fn().mockResolvedValue({ id: 'mock-quest-run-id' }),
   updateQuestRunStatus: jest.fn().mockResolvedValue({}),
+  updatePhoneLockStatus: jest.fn().mockResolvedValue({ 
+    id: 'mock-quest-run-id', 
+    status: 'active',
+    participants: []
+  }),
+  getQuestRunStatus: jest.fn().mockResolvedValue({
+    id: 'mock-quest-run-id',
+    status: 'active',
+    actualStartTime: Date.now(),
+    scheduledEndTime: Date.now() + 900000,
+  }),
 }));
 
 jest.mock('@/lib/services/notifications', () => ({
@@ -185,10 +200,10 @@ describe('QuestTimer', () => {
       // Act
       await QuestTimer.onPhoneLocked();
 
-      // Assert
-      expect(updateQuestRunStatus).toHaveBeenCalledWith(
+      // Assert - now we expect updatePhoneLockStatus to be called
+      expect(updatePhoneLockStatus).toHaveBeenCalledWith(
         'mock-quest-run-id',
-        'active',
+        true,
         expect.any(String)
       );
 
@@ -206,7 +221,7 @@ describe('QuestTimer', () => {
   });
 
   describe('onPhoneUnlocked', () => {
-    it('updates quest run status to failed when phone is unlocked during quest', async () => {
+    it('marks quest as failed locally when phone is unlocked during quest', async () => {
       // Arrange - set up with a quest that's in progress (shorter duration to ensure it fails)
       const mockQuestTemplate: StoryQuestTemplate = {
         id: 'test-quest-id',
@@ -241,11 +256,15 @@ describe('QuestTimer', () => {
       // Act - unlock the phone before quest duration is complete
       await QuestTimer.onPhoneUnlocked();
 
-      // Assert
-      expect(updateQuestRunStatus).toHaveBeenCalledWith(
+      // Assert - verify unlock status was sent to server
+      expect(updatePhoneLockStatus).toHaveBeenCalledWith(
         'mock-quest-run-id',
-        'failed'
+        false
       );
+
+      // Verify quest was failed locally
+      const questStore = useQuestStore.getState();
+      expect(questStore.failQuest).toHaveBeenCalled();
 
       // Verify LiveActivity was updated with failed status
       expect(OneSignal.LiveActivities.startDefault).toHaveBeenCalledWith(
@@ -258,6 +277,70 @@ describe('QuestTimer', () => {
           status: 'failed',
         })
       );
+    });
+
+    it('handles cooperative quest unlock differently than single-player', async () => {
+      // Arrange - set up cooperative quest
+      const mockQuestTemplate: StoryQuestTemplate = {
+        id: 'test-quest-id',
+        title: 'Cooperative Quest',
+        durationMinutes: 5,
+        mode: 'story',
+        recap: 'Test cooperative quest',
+        poiSlug: 'test-poi',
+        story: 'Test story content',
+        audioFile: 'test-audio.mp3',
+        options: [],
+        reward: { xp: 100 },
+      };
+
+      // Mock cooperative quest run in store
+      const mockCooperativeQuestRun = {
+        id: 'mock-quest-run-id',
+        questId: 'test-quest-id',
+        status: 'active',
+        participants: []
+      };
+      
+      (useQuestStore.getState as jest.Mock).mockReturnValue({
+        ...useQuestStore.getState(),
+        cooperativeQuestRun: mockCooperativeQuestRun,
+        failQuest: jest.fn(),
+        activeQuest: {
+          id: 'test-quest-id',
+          startTime: 0,
+        }
+      });
+
+      // Set up quest timer state
+      // @ts-ignore - accessing private static properties for testing
+      QuestTimer.questTemplate = mockQuestTemplate;
+      // @ts-ignore - accessing private static properties for testing
+      QuestTimer.questRunId = 'mock-quest-run-id';
+      // @ts-ignore - accessing private static properties for testing
+      QuestTimer.questStartTime = Date.now() - 10000; // Started 10 seconds ago
+      // @ts-ignore - accessing private static properties for testing
+      QuestTimer.isPhoneLocked = true;
+      // @ts-ignore - accessing private static properties for testing
+      QuestTimer.oneSignalActivityId = 'mock-activity-id';
+
+      // Mock the store to have cooperative quest
+      jest.spyOn(QuestTimer, 'loadQuestData').mockImplementation(async () => {
+        // Don't need to do anything as we've already set the state manually
+      });
+
+      // Act - unlock the phone
+      await QuestTimer.onPhoneUnlocked();
+
+      // Assert - verify it's treated as cooperative quest
+      expect(updatePhoneLockStatus).toHaveBeenCalledWith(
+        'mock-quest-run-id',
+        false
+      );
+
+      // Verify the log shows cooperative quest
+      const questStore = useQuestStore.getState();
+      expect(questStore.failQuest).toHaveBeenCalled();
     });
   });
 });

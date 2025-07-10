@@ -194,62 +194,53 @@ export default function CooperativeQuestReady() {
   // Define the quest created handler
   const handleQuestCreatedResponse = useCallback(
     async (questRun: any) => {
-      console.log('Quest created, starting countdown:', questRun);
-      // Start countdown
-      updateLobbyStatus('starting');
-      let countdown = 5;
-      setCountdown(countdown);
+      console.log('Quest created, preparing quest:', questRun);
+      
+      // Transform questRun data to match CustomQuestTemplate format
+      const questId =
+        questRun.questId ||
+        questRun._id ||
+        questRun.id ||
+        `coop-${Date.now()}`;
+      console.log(
+        'Creating quest template with ID:',
+        questId,
+        'from questRun:',
+        questRun
+      );
 
-      const countdownInterval = setInterval(() => {
-        countdown--;
-        setCountdown(countdown);
+      const questTemplate: CustomQuestTemplate = {
+        id: questId,
+        title:
+          questRun.title ||
+          questRun.quest?.title ||
+          currentLobby.questTitle,
+        durationMinutes:
+          questRun.durationMinutes ||
+          questRun.quest?.durationMinutes ||
+          currentLobby.questDuration,
+        reward: questRun.reward ||
+          questRun.quest?.reward || { xp: currentLobby.questDuration * 10 },
+        mode: 'custom',
+        category: 'cooperative',
+        inviteeIds: questRun.participants?.map((p: any) => p.userId) || [],
+      };
 
-        if (countdown === 0) {
-          clearInterval(countdownInterval);
-          // Transform questRun data to match CustomQuestTemplate format
-          const questId =
-            questRun.questId ||
-            questRun._id ||
-            questRun.id ||
-            `coop-${Date.now()}`;
-          console.log(
-            'Creating quest template with ID:',
-            questId,
-            'from questRun:',
-            questRun
-          );
-
-          const questTemplate: CustomQuestTemplate = {
-            id: questId,
-            title:
-              questRun.title ||
-              questRun.quest?.title ||
-              currentLobby.questTitle,
-            durationMinutes:
-              questRun.durationMinutes ||
-              questRun.quest?.durationMinutes ||
-              currentLobby.questDuration,
-            reward: questRun.reward ||
-              questRun.quest?.reward || { xp: currentLobby.questDuration * 10 },
-            mode: 'custom',
-            category: 'cooperative',
-            inviteeIds: questRun.participants?.map((p: any) => p.userId) || [],
-          };
-
-          // Prepare quest with transformed data
-          prepareQuest(questTemplate);
-          QuestTimer.prepareQuest(questTemplate);
-
-          // Store the full questRun data in the quest store for cooperative features
-          const questStore = useQuestStore.getState();
-          questStore.setCooperativeQuestRun({
-            ...questRun,
-            questId: questId, // Ensure quest ID is consistent
-          });
-        }
-      }, 1000);
+      // Store the full questRun data in the quest store for cooperative features
+      const questStore = useQuestStore.getState();
+      questStore.setCooperativeQuestRun({
+        ...questRun,
+        questId: questId, // Ensure quest ID is consistent
+      });
+      
+      // Prepare quest with transformed data
+      prepareQuest(questTemplate);
+      QuestTimer.prepareQuest(questTemplate);
+      
+      // Navigate to pending quest which will show the countdown
+      router.replace('/pending-quest');
     },
-    [currentLobby, updateLobbyStatus, setCountdown, prepareQuest]
+    [currentLobby, prepareQuest, router]
   );
 
   // When all are ready, creator should create the quest
@@ -324,24 +315,6 @@ export default function CooperativeQuestReady() {
     setIsLoading(false);
   };
 
-  // Show countdown screen
-  if (currentLobby.status === 'starting' && countdownSeconds !== null) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-primary-400">
-        <FocusAwareStatusBar />
-        <Text className="mb-4 text-3xl font-bold text-white">Get Ready!</Text>
-        <Text className="mb-8 text-xl text-white">Lock your phone in...</Text>
-        <View className="mb-8 size-32 items-center justify-center rounded-full bg-white">
-          <Text className="text-6xl font-bold text-primary-400">
-            {countdownSeconds}
-          </Text>
-        </View>
-        <Text className="text-lg text-white">
-          All players must lock their phones to start
-        </Text>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-100">

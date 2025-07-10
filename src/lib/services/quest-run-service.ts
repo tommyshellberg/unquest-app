@@ -145,6 +145,11 @@ export async function updatePhoneLockStatus(
   locked: boolean,
   liveActivityID?: string | null
 ): Promise<QuestRunResponse> {
+  // Validate runId before making request
+  if (!runId || runId === 'null' || runId === 'undefined') {
+    throw new Error('Invalid quest run ID for phone lock status update');
+  }
+  
   try {
     console.log(
       'Updating phone lock status:',

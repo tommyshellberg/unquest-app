@@ -30,6 +30,10 @@ export default function PendingQuestScreen() {
 
   // Check if this is a cooperative quest
   const isCooperativeQuest = !!cooperativeQuestRun;
+  
+  // Countdown state for cooperative quests
+  const [showCountdown, setShowCountdown] = React.useState(isCooperativeQuest);
+  const [countdownSeconds, setCountdownSeconds] = React.useState(5);
 
   // Use the cooperative quest hook to ensure quest run status is being polled
   const { questRunStatus } = useCooperativeQuest();
@@ -128,7 +132,7 @@ export default function PendingQuestScreen() {
 
   // Run animations when component mounts
   useEffect(() => {
-    if (pendingQuest) {
+    if (pendingQuest && !showCountdown) {
       // Simple animation sequence
       headerOpacity.value = withTiming(1, { duration: 500 });
       headerScale.value = withTiming(1, { duration: 500 });
@@ -139,6 +143,7 @@ export default function PendingQuestScreen() {
     }
   }, [
     pendingQuest,
+    showCountdown,
     buttonOpacity,
     buttonScale,
     cardOpacity,
@@ -146,6 +151,26 @@ export default function PendingQuestScreen() {
     headerOpacity,
     headerScale,
   ]);
+  
+  // Handle countdown for cooperative quests
+  useEffect(() => {
+    if (showCountdown && isCooperativeQuest) {
+      const countdownInterval = setInterval(() => {
+        setCountdownSeconds((prev) => {
+          const newCount = prev - 1;
+          if (newCount === 0) {
+            clearInterval(countdownInterval);
+            setTimeout(() => {
+              setShowCountdown(false);
+            }, 500); // Show 0 for half a second before transitioning
+          }
+          return newCount;
+        });
+      }, 1000);
+      
+      return () => clearInterval(countdownInterval);
+    }
+  }, [showCountdown, isCooperativeQuest]);
 
   const handleCancelQuest = () => {
     cancelQuest();
@@ -157,6 +182,24 @@ export default function PendingQuestScreen() {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator />
+      </View>
+    );
+  }
+  
+  // Show countdown screen for cooperative quests
+  if (showCountdown && isCooperativeQuest) {
+    return (
+      <View className="flex-1 items-center justify-center bg-primary-400">
+        <Text className="mb-4 text-3xl font-bold text-white">Get Ready!</Text>
+        <Text className="mb-8 text-xl text-white">Lock your phone in...</Text>
+        <View className="mb-8 size-32 items-center justify-center rounded-full bg-white">
+          <Text className="text-6xl font-bold text-primary-400">
+            {countdownSeconds}
+          </Text>
+        </View>
+        <Text className="text-lg text-white">
+          All players must lock their phones to start
+        </Text>
       </View>
     );
   }

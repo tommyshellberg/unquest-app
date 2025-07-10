@@ -399,120 +399,84 @@ export default class QuestTimer {
           await sendPhoneLockStatus();
           // Don't activate quest locally yet - wait for server to activate it
 
-          // Start polling for quest activation while phone is locked
-          const checkActivation = async () => {
-            try {
-              const questRun = await getQuestRunStatus(this.questRunId!);
-              console.log(
-                '[QuestTimer] Quest run status from server:',
-                JSON.stringify({
-                  id: questRun.id,
-                  status: questRun.status,
-                  actualStartTime: questRun.actualStartTime,
-                  scheduledEndTime: questRun.scheduledEndTime,
-                  participants: questRun.participants,
-                })
-              );
-
-              if (questRun.status === 'active' && questRun.actualStartTime) {
-                console.log(
-                  '[QuestTimer] Server activated cooperative quest, starting locally'
-                );
-
-                // Update the cooperative quest run in store
-                const questStore = useQuestStore.getState();
-                questStore.setCooperativeQuestRun({
-                  ...cooperativeQuestRun,
-                  status: 'active',
-                  actualStartTime: questRun.actualStartTime,
-                  scheduledEndTime: questRun.scheduledEndTime,
-                });
-
-                // Start the quest locally
-                if (this.questTemplate && !questStore.activeQuest) {
-                  const startTime = questRun.actualStartTime || Date.now();
-                  const quest: Quest = {
-                    ...this.questTemplate,
-                    startTime,
-                    status: 'active' as const,
-                  };
-                  questStore.startQuest(quest);
-                }
-
-                // Update Android notification to show quest is active
-                if (
-                  Platform.OS === 'android' &&
-                  BackgroundService.isRunning()
-                ) {
-                  try {
-                    await BackgroundService.updateNotification({
-                      taskTitle: `Quest in progress: ${this.questTemplate.title}`,
-                      taskDesc: `Keep your phone locked for ${this.questTemplate.durationMinutes} minutes to complete the quest`,
-                      progressBar: {
-                        max: 100,
-                        value: 0,
-                        indeterminate: false,
-                      },
-                    });
-                  } catch (error) {
-                    console.error(
-                      '[QuestTimer] Failed to update Android notification:',
-                      error
-                    );
-                  }
-                }
-
-                return true; // Quest activated
-              } else if (questRun.status === 'failed') {
-                console.log(
-                  '[QuestTimer] Quest already failed by another participant'
-                );
-
-                // Update local state to failed
-                const questStore = useQuestStore.getState();
-                questStore.setCooperativeQuestRun({
-                  ...cooperativeQuestRun,
-                  status: 'failed',
-                });
-                questStore.failQuest();
-
-                return true; // Stop polling
-              }
-              return false; // Not activated yet
-            } catch (error) {
-              console.error('Failed to check quest activation:', error);
-              return false;
-            }
-          };
-
-          // Poll every 2 seconds for up to 30 seconds
-          let attempts = 0;
-          const maxAttempts = 15;
-          const pollInterval = setInterval(async () => {
-            attempts++;
+          // Single check for quest activation (no polling)
+          console.log('[QuestTimer] Checking quest activation status once...');
+          try {
+            const questRun = await getQuestRunStatus(this.questRunId!);
             console.log(
-              `[QuestTimer] Polling for activation - attempt ${attempts}/${maxAttempts}`
+              '[QuestTimer] Initial quest run status:',
+              JSON.stringify({
+                id: questRun.id,
+                status: questRun.status,
+                actualStartTime: questRun.actualStartTime,
+                scheduledEndTime: questRun.scheduledEndTime,
+              })
             );
 
-            // Stop polling if phone unlocked or max attempts reached
-            if (!this.isPhoneLocked || attempts >= maxAttempts) {
-              clearInterval(pollInterval);
-              if (!this.isPhoneLocked) {
-                console.log(
-                  '[QuestTimer] Phone unlocked, stopping activation polling'
-                );
-              } else {
-                console.log('[QuestTimer] Max activation attempts reached');
-              }
-              return;
-            }
+            if (questRun.status === 'active' && questRun.actualStartTime) {
+              console.log(
+                '[QuestTimer] Server already activated cooperative quest, starting locally'
+              );
 
-            const activated = await checkActivation();
-            if (activated) {
-              clearInterval(pollInterval);
-              console.log('[QuestTimer] Quest activated successfully!');
+              // Update the cooperative quest run in store
+              const questStore = useQuestStore.getState();
+              questStore.setCooperativeQuestRun({
+                ...cooperativeQuestRun,
+                status: 'active',
+                actualStartTime: questRun.actualStartTime,
+                scheduledEndTime: questRun.scheduledEndTime,
+              });
+
+              // Start the quest locally
+              if (this.questTemplate && !questStore.activeQuest) {
+                const startTime = questRun.actualStartTime || Date.now();
+                const quest: Quest = {
+                  ...this.questTemplate,
+                  startTime,
+                  status: 'active' as const,
+                };
+                questStore.startQuest(quest);
+              }
+
+              // Update Android notification to show quest is active
+              if (Platform.OS === 'android' && BackgroundService.isRunning()) {
+                try {
+                  await BackgroundService.updateNotification({
+                    taskTitle: `Quest in progress: ${this.questTemplate.title}`,
+                    taskDesc: `Keep your phone locked for ${this.questTemplate.durationMinutes} minutes to complete the quest`,
+                    progressBar: {
+                      max: 100,
+                      value: 0,
+                      indeterminate: false,
+                    },
+                  });
+                } catch (error) {
+                  console.error(
+                    '[QuestTimer] Failed to update Android notification:',
+                    error
+                  );
+                }
+              }
+            } else if (questRun.status === 'failed') {
+              console.log(
+                '[QuestTimer] Quest already failed by another participant'
+              );
+
+              // Update local state to failed
+              const questStore = useQuestStore.getState();
+              questStore.setCooperativeQuestRun({
+                ...cooperativeQuestRun,
+                status: 'failed',
+              });
+              questStore.failQuest();
+            } else {
+              console.log(
+                '[QuestTimer] Quest not yet active, waiting for other participants...'
+              );
             }
-          }, 2000);
+          } catch (error) {
+            console.error('[QuestTimer] Failed to check quest activation:', error);
+          }
         } else {
           // For single-player quests, also use phone lock status endpoint
           try {
@@ -583,22 +547,27 @@ export default class QuestTimer {
 
     await this.loadQuestData();
 
-    // Send phone unlock status for cooperative quests
-    if (this.questRunId) {
-      const questStore = useQuestStore.getState();
-      const cooperativeQuestRun = questStore.cooperativeQuestRun;
-      const isCooperativeQuest =
-        cooperativeQuestRun && cooperativeQuestRun.id === this.questRunId;
+    // Early return if no quest is running
+    if (!this.questRunId || !this.questStartTime || !this.questTemplate) {
+      console.log('No active quest found on unlock.');
+      return;
+    }
 
-      if (isCooperativeQuest) {
-        try {
-          console.log('Sending phone unlock status for cooperative quest...');
-          await updatePhoneLockStatus(this.questRunId!, false);
-          console.log('Phone unlock status sent successfully');
-        } catch (error) {
-          console.error('Failed to send phone unlock status:', error);
-          // Continue with local handling even if server update fails
-        }
+    // Determine if this is a cooperative quest ONCE
+    const questStore = useQuestStore.getState();
+    const cooperativeQuestRun = questStore.cooperativeQuestRun;
+    const isCooperativeQuest =
+      cooperativeQuestRun && cooperativeQuestRun.id === this.questRunId;
+
+    // Send phone unlock status to server
+    if (this.questRunId) {
+      try {
+        console.log(`Sending phone unlock status for ${isCooperativeQuest ? 'cooperative' : 'single-player'} quest...`);
+        await updatePhoneLockStatus(this.questRunId, false);
+        console.log('Phone unlock status sent successfully');
+      } catch (error) {
+        console.error('Failed to send phone unlock status:', error);
+        // Continue with local handling even if server update fails
       }
     }
 
@@ -608,11 +577,6 @@ export default class QuestTimer {
 
       if (elapsedTime < questDurationMs) {
         console.log('Quest interrupted due to phone unlock during progress.');
-
-        const questStore = useQuestStore.getState();
-        const cooperativeQuestRun = questStore.cooperativeQuestRun;
-        const isCooperativeQuest =
-          cooperativeQuestRun && cooperativeQuestRun.id === this.questRunId;
 
         if (!isCooperativeQuest) {
           // For single-player quests, handle failure locally
@@ -646,21 +610,38 @@ export default class QuestTimer {
             }
           }
 
-          // For single-player quests, the server will handle failure when we send unlock status
-          console.log(
-            'Server will handle quest failure on unlock status update'
-          );
+          // Update Android notification to show quest failed
+          if (Platform.OS === 'android' && BackgroundService.isRunning()) {
+            try {
+              await BackgroundService.updateNotification({
+                taskTitle: 'Quest Failed',
+                taskDesc: 'You unlocked your phone. Try again next time!',
+                progressBar: {
+                  max: 100,
+                  value: 0,
+                  indeterminate: false,
+                },
+              });
+            } catch (error) {
+              console.error(
+                '[QuestTimer] Failed to update Android notification:',
+                error
+              );
+            }
+          }
+
+          // For single-player quests, we already sent the unlock status above
 
           const questStoreState = useQuestStore.getState();
           questStoreState.failQuest();
           await this.stopQuest(); // stopQuest also calls clearQuestData
         } else {
-          // For cooperative quests, the server already failed the quest when we sent unlock status
+          // For cooperative quests, the server will handle the failure
           console.log(
-            'Cooperative quest already failed by server, updating local state'
+            'Cooperative quest failure - server will handle failure, updating local state'
           );
 
-          // Just update local state and clean up
+          // Update local state and clean up
           const questStoreState = useQuestStore.getState();
           questStoreState.failQuest();
           await this.stopQuest();
@@ -730,109 +711,88 @@ export default class QuestTimer {
 
       if (isCooperativeQuest) {
         console.log(
-          '[Background Task] Checking for cooperative quest activation...'
+          '[Background Task] Cooperative quest - waiting for activation (no polling)'
         );
 
-        // Poll for activation
-        let checkCount = 0;
-        while (
-          BackgroundService.isRunning() &&
-          this.isPhoneLocked &&
-          !this.questStartTime &&
-          checkCount < 30
-        ) {
-          try {
-            const questRun = await getQuestRunStatus(this.questRunId!);
+        // Single check for quest status
+        try {
+          const questRun = await getQuestRunStatus(this.questRunId!);
+          console.log(
+            '[Background Task] Initial quest run status:',
+            JSON.stringify({
+              id: questRun.id,
+              status: questRun.status,
+              actualStartTime: questRun.actualStartTime,
+            })
+          );
+
+          if (questRun.status === 'active' && questRun.actualStartTime) {
             console.log(
-              `[Background Task] Poll ${checkCount + 1}/30 - Quest run status:`,
-              JSON.stringify({
-                id: questRun.id,
-                status: questRun.status,
-                actualStartTime: questRun.actualStartTime,
-                participants: questRun.participants?.map((p: any) => ({
-                  userId: typeof p === 'string' ? p : p.userId,
-                  ready: typeof p === 'object' ? p.ready : false,
-                  status: typeof p === 'object' ? p.status : 'unknown',
-                })),
-              })
+              '[Background Task] Cooperative quest already activated by server'
             );
 
-            if (questRun.status === 'active' && questRun.actualStartTime) {
-              console.log(
-                '[Background Task] Cooperative quest activated by server'
-              );
+            // Update the store
+            questStore.setCooperativeQuestRun({
+              ...cooperativeQuestRun,
+              status: 'active',
+              actualStartTime: questRun.actualStartTime,
+              scheduledEndTime: questRun.scheduledEndTime,
+            });
 
-              // Update the store
-              questStore.setCooperativeQuestRun({
-                ...cooperativeQuestRun,
-                status: 'active',
-                actualStartTime: questRun.actualStartTime,
-                scheduledEndTime: questRun.scheduledEndTime,
-              });
-
-              // Start the quest
-              this.questStartTime = questRun.actualStartTime;
-              if (this.questTemplate && !questStore.activeQuest) {
-                const quest: Quest = {
-                  ...this.questTemplate,
-                  startTime: this.questStartTime,
-                  status: 'active' as const,
-                };
-                questStore.startQuest(quest);
-              }
-
-              // Update Android notification to show quest is active
-              if (Platform.OS === 'android' && BackgroundService.isRunning()) {
-                try {
-                  await BackgroundService.updateNotification({
-                    taskTitle: `Quest Active: ${taskData.questTitle}`,
-                    taskDesc: `Keep locked for ${questDuration / (60 * 1000)} minutes`,
-                    progressBar: {
-                      max: 100,
-                      value: 0,
-                      indeterminate: false,
-                    },
-                  });
-                } catch (error) {
-                  console.error(
-                    '[Background Task] Failed to update Android notification:',
-                    error
-                  );
-                }
-              }
-
-              break; // Exit polling loop
-            } else if (questRun.status === 'failed') {
-              console.log(
-                '[Background Task] Quest already failed by another participant'
-              );
-
-              // Update local state to failed
-              questStore.setCooperativeQuestRun({
-                ...cooperativeQuestRun,
-                status: 'failed',
-              });
-              questStore.failQuest();
-
-              // Stop the background service
-              await this.stopQuest();
-
-              break; // Exit polling loop
+            // Start the quest
+            this.questStartTime = questRun.actualStartTime;
+            if (this.questTemplate && !questStore.activeQuest) {
+              const quest: Quest = {
+                ...this.questTemplate,
+                startTime: this.questStartTime,
+                status: 'active' as const,
+              };
+              questStore.startQuest(quest);
             }
-          } catch (error) {
-            console.error(
-              '[Background Task] Failed to check quest activation:',
-              error
+
+            // Update Android notification to show quest is active
+            if (Platform.OS === 'android' && BackgroundService.isRunning()) {
+              try {
+                await BackgroundService.updateNotification({
+                  taskTitle: `Quest Active: ${taskData.questTitle}`,
+                  taskDesc: `Keep locked for ${questDuration / (60 * 1000)} minutes`,
+                  progressBar: {
+                    max: 100,
+                    value: 0,
+                    indeterminate: false,
+                  },
+                });
+              } catch (error) {
+                console.error(
+                  '[Background Task] Failed to update Android notification:',
+                  error
+                );
+              }
+            }
+          } else if (questRun.status === 'failed') {
+            console.log(
+              '[Background Task] Quest already failed by another participant'
+            );
+
+            // Update local state to failed
+            questStore.setCooperativeQuestRun({
+              ...cooperativeQuestRun,
+              status: 'failed',
+            });
+            questStore.failQuest();
+
+            // Stop the background service
+            await this.stopQuest();
+            return; // Exit background task
+          } else {
+            console.log(
+              '[Background Task] Quest not yet active, continuing to wait...'
             );
           }
-
-          checkCount++;
-          await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
-        }
-
-        if (checkCount >= 30) {
-          console.log(
-            '[Background Task] Max polling attempts reached without activation'
+        } catch (error) {
+          console.error(
+            '[Background Task] Failed to check quest activation:',
+            error
           );
         }
       }

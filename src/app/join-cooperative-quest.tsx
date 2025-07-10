@@ -53,6 +53,7 @@ function InvitationCard({
     invitation.duration ||
     invitation.metadata?.questDuration ||
     invitation.questData?.duration ||
+    invitation.quest?.durationMinutes ||
     invitation.quest?.duration ||
     invitation.questRun?.duration ||
     invitation.questRun?.durationMinutes ||
@@ -170,6 +171,7 @@ export default function JoinCooperativeQuest() {
         invitation.duration ||
         invitation.metadata?.questDuration ||
         invitation.questData?.duration ||
+        invitation.quest?.durationMinutes ||
         invitation.quest?.duration ||
         invitation.questRun?.duration ||
         invitation.questRun?.durationMinutes ||
@@ -218,6 +220,7 @@ export default function JoinCooperativeQuest() {
         invitation.duration ||
         invitation.metadata?.questDuration ||
         invitation.questData?.duration ||
+        invitation.quest?.durationMinutes ||
         invitation.quest?.duration ||
         invitation.questRun?.duration ||
         invitation.questRun?.durationMinutes ||

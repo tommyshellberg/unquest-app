@@ -314,54 +314,43 @@ export default function CooperativeQuestLobby() {
     updateParticipant,
   ]);
 
-  // Show loading only during initial load
-  if (isLoading && !currentLobby) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-        <Text className="mt-4">Loading lobby...</Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (!currentLobby || !currentUser) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center">
-        <Text>Error: Lobby not found</Text>
-      </SafeAreaView>
-    );
-  }
-
-  console.log('Current lobby participants:', currentLobby.participants);
-
-  const currentParticipant = currentLobby.participants.find(
-    (p) => p.id === currentUser.id
+  // Calculate derived state before any conditional returns
+  const currentParticipant = currentLobby?.participants.find(
+    (p) => p.id === currentUser?.id
   );
   const isCreator = currentParticipant?.isCreator || false;
   const hasAccepted = currentParticipant?.invitationStatus === 'accepted';
   const isReady = currentParticipant?.isReady || false;
 
   // Check if all invited have responded
-  const allResponded = currentLobby.participants.every(
+  const allResponded = currentLobby?.participants.every(
     (p) => p.invitationStatus !== 'pending'
-  );
-  const acceptedParticipants = currentLobby.participants.filter(
+  ) || false;
+  const acceptedParticipants = currentLobby?.participants.filter(
     (p) => p.invitationStatus === 'accepted'
-  );
+  ) || [];
 
   const allReady =
     acceptedParticipants.length > 0 &&
     acceptedParticipants.every((p) => p.isReady);
 
+  // All hooks must be called before any conditional returns
   useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    
     if (hasTransitioned && currentLobby) {
       // Navigate after the flag is set
       console.log('Transitioning to ready screen...');
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         router.replace('/cooperative-quest-ready');
       }, 1500);
-      return () => clearTimeout(timer);
     }
+    
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
   }, [hasTransitioned, currentLobby, router]);
 
   useEffect(() => {
@@ -371,6 +360,7 @@ export default function CooperativeQuestLobby() {
     }
   }, [allResponded, acceptedParticipants.length, hasTransitioned]);
 
+  // Define callbacks - ensure all are properly memoized
   const handleBackPress = useCallback(() => {
     const handleLeave = () => {
       // Track the quit event
@@ -435,16 +425,17 @@ export default function CooperativeQuestLobby() {
     router,
   ]);
 
-  const handleAcceptDecline = async (accept: boolean) => {
-    if (!invitationId) return;
+  const handleAcceptDecline = useCallback(
+    async (accept: boolean) => {
+      if (!invitationId || !currentUser) return;
 
-    try {
+      try {
       await invitationApi.respondToInvitation(
         invitationId,
         accept ? 'accepted' : 'declined'
       );
       updateInvitationResponse(
-        currentUser.id,
+        currentUser!.id,
         accept ? 'accepted' : 'declined'
       );
 
@@ -453,13 +444,15 @@ export default function CooperativeQuestLobby() {
         leaveLobby();
         router.back();
       }
-    } catch (error) {
-      console.error('Error responding to invitation:', error);
-    }
-  };
+      } catch (error) {
+        console.error('Error responding to invitation:', error);
+      }
+    },
+    [invitationId, currentUser, updateInvitationResponse, leaveLobby, router]
+  );
 
-  const handleReadyToggle = () => {
-    if (!currentUser) return;
+  const handleReadyToggle = useCallback(() => {
+    if (!currentUser || !currentLobby) return;
 
     const newReadyState = !isReady;
 
@@ -471,9 +464,9 @@ export default function CooperativeQuestLobby() {
 
     emit(newReadyState ? 'lobby:ready' : 'lobby:unready', { lobbyId });
     markUserReady(currentUser.id, newReadyState);
-  };
+  }, [currentUser, currentLobby, isReady, emit, lobbyId, markUserReady, posthog]);
 
-  const handleStartNow = async () => {
+  const handleStartNow = useCallback(async () => {
     if (!isCreator) return;
 
     try {
@@ -482,7 +475,27 @@ export default function CooperativeQuestLobby() {
     } catch (error) {
       console.error('Error starting quest:', error);
     }
-  };
+  }, [isCreator, router]);
+
+  // Show loading only during initial load
+  if (isLoading && !currentLobby) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" />
+        <Text className="mt-4">Loading lobby...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!currentLobby || !currentUser) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <Text>Error: Lobby not found</Text>
+      </SafeAreaView>
+    );
+  }
+
+  console.log('Current lobby participants:', currentLobby.participants);
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-100">

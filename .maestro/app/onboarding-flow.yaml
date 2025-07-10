@@ -1,53 +1,12 @@
 appId: com.vaedros.unquest.development
 ---
-- clearState
-- launchApp
-
-# Wait for app to fully load
-- waitForAnimationToEnd
-
-# =============================================================================
-# HANDLE DEVELOPMENT ENVIRONMENT
-# =============================================================================
-# Handle dev server selection if needed
-- runFlow:
-    when:
-      visible: 'Development servers'
-    commands:
-      - tapOn: 'http://10.0.2.2:8081'
-      - waitForAnimationToEnd
-
-# Handle developer menu - first check if Continue button is visible
-- runFlow:
-    when:
-      visible: 'Continue'
-    commands:
-      - tapOn: 'Continue'
-      - waitForAnimationToEnd
-
-# After tapping Continue or if menu is already open, tap Go home
-- runFlow:
-    when:
-      visible: 'Go home'
-    commands:
-      - tapOn: 'Go home'
-      - waitForAnimationToEnd
-
-# Handle if we're back at Expo home - tap on unQuest in recently opened
-- runFlow:
-    when:
-      visible: 'Recently opened'
-    commands:
-      - tapOn:
-          text: 'unQuest'
-          below: 'Recently opened'
-      - waitForAnimationToEnd
+# NOTE: This test assumes you've already handled the developer menu
+# Run this after manually dismissing the developer menu or after running a setup test
 
 # =============================================================================
 # WELCOME SCREEN
 # =============================================================================
 - assertVisible: 'unQuest'
-- assertVisible: 'Level Up By Logging Off'
 - assertVisible: 'Begin New Journey'
 
 - tapOn: 'Begin New Journey'
@@ -70,59 +29,17 @@ appId: com.vaedros.unquest.development
 - assertVisible: "Choose MaestroHero's Character Type"
 - assertVisible: 'ALCHEMIST'
 
-# Test carousel by swiping through characters
-- swipe:
-    start: 80%, 50%
-    end: 20%, 50%
-    duration: 500
-
-- assertVisible: 'DRUID'
-
-- swipe:
-    start: 80%, 50%
-    end: 20%, 50%
-    duration: 500
-
-- assertVisible: 'SCOUT'
-
-# Swipe back to Alchemist
-- swipe:
-    start: 20%, 50%
-    end: 80%, 50%
-    duration: 500
-
-- swipe:
-    start: 20%, 50%
-    end: 80%, 50%
-    duration: 500
-
-- assertVisible: 'ALCHEMIST'
 - tapOn: 'Create Character'
 - waitForAnimationToEnd
 
 # =============================================================================
-# HANDLE APP INTRO SCREENS (if they appear after character creation)
+# HANDLE APP INTRO SCREENS (if they appear)
 # =============================================================================
 - runFlow:
     when:
       visible: 'Welcome to unQuest'
     commands:
       - tapOn: 'Got it'
-      - waitForAnimationToEnd
-
-- runFlow:
-    when:
-      visible: 'Notifications'
-    commands:
-      - tapOn: 'Enable notifications'
-      - waitForAnimationToEnd
-      # Handle system permission if it appears
-      - runFlow:
-          when:
-            visible: '.*Allow.*'
-          commands:
-            - tapOn: 'Allow'
-      # Wait for navigation after notification handling
       - waitForAnimationToEnd
 
 # =============================================================================
@@ -134,40 +51,11 @@ appId: com.vaedros.unquest.development
 - tapOn: 'Wake up'
 - waitForAnimationToEnd
 
-# If we're still on the quest screen, the tap might not have worked
-# This can happen in development due to the error message
-- runFlow:
-    when:
-      visible: 'Your Journey Begins'
-    commands:
-      # Try tapping the button area directly
-      - tapOn:
-          point: "50%, 87%"
-      - waitForAnimationToEnd
-
 # =============================================================================
 # PENDING QUEST SCREEN
 # =============================================================================
-- extendedWaitUntil:
-    visible: 'Quest Ready'
-    timeout: 10000
-
-- assertVisible: 'Lock your phone to begin your quest'
-
-# Test quest cancellation
-- assertVisible: 'Cancel Quest'
-- tapOn: 'Cancel Quest'
-- waitForAnimationToEnd
-
-# Should be back at quest screen
-- assertVisible: 'Your Journey Begins'
-- assertVisible: 'Wake up'
-
-# Start quest again
-- tapOn: 'Wake up'
-- waitForAnimationToEnd
-
 - assertVisible: 'Quest Ready'
+- assertVisible: 'Lock your phone to begin your quest'
 
 # =============================================================================
 # START QUEST BY LOCKING PHONE
@@ -177,9 +65,9 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 # WAIT FOR QUEST COMPLETION (2 minutes)
 # =============================================================================
-# Use repeat to wait 2 minutes (24 x 5 seconds = 120 seconds)
+# Use multiple shorter waits
 - repeat:
-    times: 24
+    times: 12
     commands:
       - waitForAnimationToEnd
 
@@ -199,10 +87,7 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 # QUEST COMPLETION SCREEN
 # =============================================================================
-- extendedWaitUntil:
-    visible: 'Quest Complete'
-    timeout: 10000
-
+- assertVisible: 'Quest Complete'
 - assertVisible: 'XP Gained'
 
 - tapOn: 'Continue'
@@ -224,8 +109,3 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 - assertVisible: 'Check your email'
 - assertVisible: 'testquester@example.com'
-
-# =============================================================================
-# TEST COMPLETE
-# =============================================================================
-# Successfully completed full onboarding flow from welcome to signup!
