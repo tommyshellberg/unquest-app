@@ -17,7 +17,11 @@ export function PostHogProviderWrapper({
   return (
     <PostHogProvider
       apiKey={apiKey}
-      options={options}
+      options={{
+        ...options,
+        // Disable PostHog in development to prevent annoying error messages
+        disabled: __DEV__,
+      }}
       // Disable autocapture to prevent navigation errors
       autocapture={false}
     >

@@ -1,4 +1,5 @@
 import { BlurView } from 'expo-blur';
+import { router } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Image } from 'react-native';
@@ -11,14 +12,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
+import { useWebSocket } from '@/components/providers/websocket-provider';
 import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import colors from '@/components/ui/colors';
-import { useQuestStore } from '@/store/quest-store';
 import { useCooperativeQuest } from '@/lib/hooks/use-cooperative-quest';
-import { useWebSocket } from '@/components/providers/websocket-provider';
+import { useQuestStore } from '@/store/quest-store';
 import { useUserStore } from '@/store/user-store';
 
 export default function PendingQuestScreen() {
@@ -34,10 +34,17 @@ export default function PendingQuestScreen() {
 
   // Check if this is a cooperative quest
   const isCooperativeQuest = !!cooperativeQuestRun;
-  
-  // Countdown state for cooperative quests
-  const [showCountdown, setShowCountdown] = React.useState(isCooperativeQuest);
+
+  // Countdown state for cooperative quests ONLY
+  const [showCountdown, setShowCountdown] = React.useState(false);
   const [countdownSeconds, setCountdownSeconds] = React.useState(5);
+
+  // Initialize countdown only for cooperative quests after component mounts
+  useEffect(() => {
+    if (isCooperativeQuest) {
+      setShowCountdown(true);
+    }
+  }, [isCooperativeQuest]);
 
   // Use the cooperative quest hook to ensure quest run status is being polled
   const { questRunStatus } = useCooperativeQuest();
@@ -54,11 +61,7 @@ export default function PendingQuestScreen() {
         userId: user?.id,
       });
     }
-  }, [
-    isCooperativeQuest,
-    cooperativeQuestRun,
-    user?.id,
-  ]);
+  }, [isCooperativeQuest, cooperativeQuestRun, user?.id]);
 
   // Header animation using react-native-reanimated
   const headerOpacity = useSharedValue(0);
@@ -155,7 +158,7 @@ export default function PendingQuestScreen() {
     headerOpacity,
     headerScale,
   ]);
-  
+
   // Handle countdown for cooperative quests
   useEffect(() => {
     if (showCountdown && isCooperativeQuest) {
@@ -171,7 +174,7 @@ export default function PendingQuestScreen() {
           return newCount;
         });
       }, 1000);
-      
+
       return () => clearInterval(countdownInterval);
     }
   }, [showCountdown, isCooperativeQuest]);
@@ -181,7 +184,6 @@ export default function PendingQuestScreen() {
     router.back();
   };
 
-
   if (!pendingQuest || (isCooperativeQuest && !cooperativeQuestRun)) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -189,36 +191,42 @@ export default function PendingQuestScreen() {
       </View>
     );
   }
-  
+
   // Show countdown screen for cooperative quests
   if (showCountdown && isCooperativeQuest) {
     return (
-      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.primary[400] }}>
-        <Animated.Text 
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: colors.primary[400] }}
+      >
+        <Animated.Text
           entering={FadeIn.duration(500)}
-          className="mb-4 text-3xl font-bold text-white" 
+          className="mb-4 text-3xl font-bold text-white"
           style={{ fontWeight: '700' }}
         >
           Get Ready!
         </Animated.Text>
-        <Animated.Text 
+        <Animated.Text
           entering={FadeIn.delay(200).duration(500)}
           className="mb-8 text-xl text-white"
         >
           Lock your phone in...
         </Animated.Text>
-        <Animated.View 
+        <Animated.View
           entering={FadeIn.delay(400).duration(500)}
-          className="mb-8 size-32 items-center justify-center rounded-full" 
+          className="mb-8 size-32 items-center justify-center rounded-full"
           style={{ backgroundColor: colors.white }}
         >
-          <Text className="text-6xl font-bold" style={{ color: colors.primary[400], fontWeight: '700' }}>
+          <Text
+            className="text-6xl font-bold"
+            style={{ color: colors.primary[400], fontWeight: '700' }}
+          >
             {countdownSeconds}
           </Text>
         </Animated.View>
-        <Animated.Text 
+        <Animated.Text
           entering={FadeIn.delay(600).duration(500)}
-          className="text-lg text-white px-8 text-center"
+          className="px-8 text-center text-lg text-white"
         >
           All companions must lock together
         </Animated.Text>
@@ -247,20 +255,27 @@ export default function PendingQuestScreen() {
           style={headerAnimatedStyle}
         >
           <Text className="text-2xl font-bold" style={{ fontWeight: '700' }}>
-            {isCooperativeQuest ? 'Cooperative Quest' : 'Quest Ready'}
+            {isCooperativeQuest
+              ? 'Cooperative Quest'
+              : displayQuest?.mode === 'custom'
+                ? 'Custom Quest'
+                : 'Quest Ready'}
           </Text>
         </Animated.View>
 
         <Animated.View className="flex-0" style={cardAnimatedStyle}>
-          <Card className="rounded-xl p-6" style={{ backgroundColor: colors.cardBackground }}>
-            <Animated.Text 
+          <Card
+            className="rounded-xl p-6"
+            style={{ backgroundColor: colors.cardBackground }}
+          >
+            <Animated.Text
               entering={FadeInDown.delay(300).duration(800)}
-              className="mb-2 text-center text-xl font-semibold" 
+              className="mb-2 text-center text-xl font-semibold"
               style={{ fontWeight: '700' }}
             >
               {displayQuest?.title}
             </Animated.Text>
-            <Animated.Text 
+            <Animated.Text
               entering={FadeInDown.delay(400).duration(800)}
               className="mb-4 text-center text-base"
               style={{ color: colors.neutral[500] }}
@@ -271,7 +286,7 @@ export default function PendingQuestScreen() {
             {isCooperativeQuest ? (
               <>
                 {/* Compass Animation */}
-                <Animated.View 
+                <Animated.View
                   entering={FadeIn.delay(300).duration(800)}
                   className="items-center"
                 >
@@ -284,41 +299,49 @@ export default function PendingQuestScreen() {
                 </Animated.View>
 
                 {/* Motivational Header */}
-                <Animated.Text 
+                <Animated.Text
                   entering={FadeInDown.delay(600).duration(800)}
                   className="mb-2 text-center text-lg font-bold"
                   style={{ color: colors.primary[500], fontWeight: '700' }}
                 >
                   Stronger Together
                 </Animated.Text>
-                
+
                 {/* Concise Quest Info */}
-                <Animated.Text 
+                <Animated.Text
                   entering={FadeInDown.delay(900).duration(800)}
                   className="mb-6 text-center text-base"
                   style={{ color: colors.neutral[500] }}
                 >
-                  {cooperativeQuestRun?.participants?.length || 2} companions embarking on this journey
+                  {cooperativeQuestRun?.participants?.length || 2} companions
+                  embarking on this journey
                 </Animated.Text>
 
                 {/* Companions List */}
-                <Animated.View 
+                <Animated.View
                   entering={FadeInDown.delay(1200).duration(800)}
                   className="mb-6"
                 >
-                  {cooperativeQuestRun?.participants?.map((participant: any, index: number) => (
-                    <Animated.View
-                      key={participant.userId}
-                      entering={FadeInDown.delay(1200 + (index * 100)).duration(600)}
-                      className="mb-2 flex-row items-center justify-center"
-                    >
-                      <Text className="text-base" style={{ fontWeight: '600' }}>
-                        {participant.userId === user?.id
-                          ? '✨ You'
-                          : `⚔️ ${participant.userName || participant.characterName || 'Quest Companion'}`}
-                      </Text>
-                    </Animated.View>
-                  )) || (
+                  {cooperativeQuestRun?.participants?.map(
+                    (participant: any, index: number) => (
+                      <Animated.View
+                        key={participant.userId}
+                        entering={FadeInDown.delay(1200 + index * 100).duration(
+                          600
+                        )}
+                        className="mb-2 flex-row items-center justify-center"
+                      >
+                        <Text
+                          className="text-base"
+                          style={{ fontWeight: '600' }}
+                        >
+                          {participant.userId === user?.id
+                            ? '✨ You'
+                            : `⚔️ ${participant.userName || participant.characterName || 'Quest Companion'}`}
+                        </Text>
+                      </Animated.View>
+                    )
+                  ) || (
                     <Text className="text-center text-base">
                       You and your quest companion
                     </Text>
@@ -326,25 +349,31 @@ export default function PendingQuestScreen() {
                 </Animated.View>
 
                 {/* Lock Instructions */}
-                <Animated.View 
+                <Animated.View
                   entering={FadeInDown.delay(1500).duration(800)}
                   className="rounded-lg p-4"
                   style={{ backgroundColor: colors.primary[100] }}
                 >
-                  <Text className="text-center text-base font-semibold" style={{ color: colors.primary[500], fontWeight: '700' }}>
+                  <Text
+                    className="text-center text-base font-semibold"
+                    style={{ color: colors.primary[500], fontWeight: '700' }}
+                  >
                     🔒 Lock phones to begin
                   </Text>
-                  <Text className="mt-2 text-center text-sm" style={{ color: colors.primary[400] }}>
+                  <Text
+                    className="mt-2 text-center text-sm"
+                    style={{ color: colors.primary[400] }}
+                  >
                     All companions must lock together
                   </Text>
                 </Animated.View>
               </>
             ) : (
               <>
-                {/* Single Quest Animation */}
-                <Animated.View 
+                {/* Single Quest Compass Animation */}
+                <Animated.View
                   entering={FadeIn.delay(300).duration(800)}
-                  className="items-center mb-4"
+                  className="mb-4 items-center"
                 >
                   <LottieView
                     source={require('@/../assets/animations/compass.json')}
@@ -353,27 +382,54 @@ export default function PendingQuestScreen() {
                     style={{ width: 100, height: 100 }}
                   />
                 </Animated.View>
-                
-                <Animated.Text 
+
+                {/* Single Quest Hero Message */}
+                <Animated.Text
                   entering={FadeInDown.delay(600).duration(800)}
-                  className="mb-6 text-center text-lg font-medium"
+                  className="mb-2 text-center text-lg font-bold"
                   style={{ color: colors.primary[500], fontWeight: '700' }}
                 >
-                  Your adventure awaits
+                  Your Journey Begins
                 </Animated.Text>
 
-                <Animated.View 
-                  entering={FadeInDown.delay(900).duration(800)}
+                <Animated.Text
+                  entering={FadeInDown.delay(800).duration(800)}
+                  className="mb-6 text-center text-base"
+                  style={{ color: colors.neutral[500] }}
+                >
+                  {displayQuest?.mode === 'custom'
+                    ? 'Time to focus on what matters most'
+                    : 'Your character is ready for their quest'}
+                </Animated.Text>
+
+                {/* Lock Instructions */}
+                <Animated.View
+                  entering={FadeInDown.delay(1000).duration(800)}
                   className="rounded-lg p-4"
                   style={{ backgroundColor: colors.primary[100] }}
                 >
-                  <Text className="text-center text-base font-semibold" style={{ color: colors.primary[500], fontWeight: '700' }}>
+                  <Text
+                    className="text-center text-base font-semibold"
+                    style={{ color: colors.primary[500], fontWeight: '700' }}
+                  >
                     🔒 Lock your phone to begin
                   </Text>
-                  <Text className="mt-2 text-center text-sm" style={{ color: colors.primary[400] }}>
-                    Unlock early = Quest failed
+                  <Text
+                    className="mt-2 text-center text-sm"
+                    style={{ color: colors.primary[400] }}
+                  >
+                    Stay focused • Complete your quest • Earn rewards
                   </Text>
                 </Animated.View>
+
+                {/* Motivational Quote for Single Player */}
+                <Animated.Text
+                  entering={FadeInDown.delay(1200).duration(800)}
+                  className="mt-4 text-center text-sm italic"
+                  style={{ color: colors.neutral[400] }}
+                >
+                  "The journey of a thousand miles begins with a single step"
+                </Animated.Text>
               </>
             )}
           </Card>
@@ -390,7 +446,12 @@ export default function PendingQuestScreen() {
             variant="destructive"
             className="items-center rounded-full"
           >
-            <Text className="text-base font-semibold" style={{ fontWeight: '700' }}>Cancel Quest</Text>
+            <Text
+              className="text-base font-semibold"
+              style={{ fontWeight: '700' }}
+            >
+              Cancel Quest
+            </Text>
           </Button>
         </Animated.View>
       </View>

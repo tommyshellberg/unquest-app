@@ -9,7 +9,7 @@ import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import React, { useCallback, useEffect } from 'react';
-import { Platform, AppState, AppStateStatus } from 'react-native';
+import { Platform, AppState, AppStateStatus, View } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -343,33 +343,35 @@ function Providers({
 }) {
   const theme = useThemeConfig();
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background">
-      <GestureHandlerRootView
-        className={theme.dark ? `dark flex-1` : undefined}
-        onLayout={onLayout}
-      >
-        <KeyboardProvider>
-          <ThemeProvider value={theme}>
-            <PostHogProviderWrapper
-              apiKey={Env.POSTHOG_API_KEY}
-              options={{
-                host: 'https://us.i.posthog.com',
-              }}
-            >
-              <APIProvider>
-                <WebSocketProvider>
-                  <BottomSheetModalProvider>
-                    <UpdateNotificationBar />
-                    {children}
-                    <FlashMessage position="top" />
-                  </BottomSheetModalProvider>
-                </WebSocketProvider>
-              </APIProvider>
-            </PostHogProviderWrapper>
-          </ThemeProvider>
-        </KeyboardProvider>
-      </GestureHandlerRootView>
-    </SafeAreaView>
+    <View className="flex-1 bg-white dark:bg-background">
+      <SafeAreaView className="flex-1 bg-background dark:bg-background" edges={['top', 'left', 'right']}>
+        <GestureHandlerRootView
+          className={theme.dark ? `dark flex-1` : undefined}
+          onLayout={onLayout}
+        >
+          <KeyboardProvider>
+            <ThemeProvider value={theme}>
+              <PostHogProviderWrapper
+                apiKey={Env.POSTHOG_API_KEY}
+                options={{
+                  host: 'https://us.i.posthog.com',
+                }}
+              >
+                <APIProvider>
+                  <WebSocketProvider>
+                    <BottomSheetModalProvider>
+                      <UpdateNotificationBar />
+                      {children}
+                      <FlashMessage position="top" />
+                    </BottomSheetModalProvider>
+                  </WebSocketProvider>
+                </APIProvider>
+              </PostHogProviderWrapper>
+            </ThemeProvider>
+          </KeyboardProvider>
+        </GestureHandlerRootView>
+      </SafeAreaView>
+    </View>
   );
 }
 export default Sentry.wrap(RootLayout);

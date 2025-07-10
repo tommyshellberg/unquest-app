@@ -84,7 +84,13 @@ export const useQuestStore = create<QuestState>()(
       cooperativeQuestRun: null,
       pendingInvitations: [],
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
-        set({ pendingQuest: quest, availableQuests: [] });
+        // Clear cooperative quest data when preparing a single-player quest
+        set({ 
+          pendingQuest: quest, 
+          availableQuests: [],
+          cooperativeQuestRun: null,
+          currentInvitation: null
+        });
       },
 
       startQuest: (quest: Quest) => {

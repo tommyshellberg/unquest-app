@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Redirect, Tabs, useRootNavigationState } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { white } from '@/components/ui/colors';
 import { useAuth } from '@/lib/auth';
@@ -51,6 +52,7 @@ function CenterButton({
 
 export default function TabLayout() {
   const navigationState = useRootNavigationState();
+  const insets = useSafeAreaInsets();
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
@@ -76,11 +78,11 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#334738', // Forest color
         tabBarInactiveTintColor: '#666666',
         tabBarStyle: {
-          height: 68,
-          paddingBottom: 6,
           backgroundColor: white,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
+          height: 88,
+          paddingBottom: 20,
           // Hide tab bar for quest screens and pending-quest
           display:
             ['pending-quest', 'quest-discovery', 'invitation-waiting'].includes(
