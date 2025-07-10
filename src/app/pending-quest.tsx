@@ -1,7 +1,10 @@
 import { BlurView } from 'expo-blur';
+import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Image } from 'react-native';
 import Animated, {
+  FadeIn,
+  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -12,6 +15,7 @@ import { router } from 'expo-router';
 
 import { Button, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
+import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
 import { useCooperativeQuest } from '@/lib/hooks/use-cooperative-quest';
 import { useWebSocket } from '@/components/providers/websocket-provider';
@@ -189,17 +193,35 @@ export default function PendingQuestScreen() {
   // Show countdown screen for cooperative quests
   if (showCountdown && isCooperativeQuest) {
     return (
-      <View className="flex-1 items-center justify-center bg-primary-400">
-        <Text className="mb-4 text-3xl font-bold text-white">Get Ready!</Text>
-        <Text className="mb-8 text-xl text-white">Lock your phone in...</Text>
-        <View className="mb-8 size-32 items-center justify-center rounded-full bg-white">
-          <Text className="text-6xl font-bold text-primary-400">
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.primary[400] }}>
+        <Animated.Text 
+          entering={FadeIn.duration(500)}
+          className="mb-4 text-3xl font-bold text-white" 
+          style={{ fontWeight: '700' }}
+        >
+          Get Ready!
+        </Animated.Text>
+        <Animated.Text 
+          entering={FadeIn.delay(200).duration(500)}
+          className="mb-8 text-xl text-white"
+        >
+          Lock your phone in...
+        </Animated.Text>
+        <Animated.View 
+          entering={FadeIn.delay(400).duration(500)}
+          className="mb-8 size-32 items-center justify-center rounded-full" 
+          style={{ backgroundColor: colors.white }}
+        >
+          <Text className="text-6xl font-bold" style={{ color: colors.primary[400], fontWeight: '700' }}>
             {countdownSeconds}
           </Text>
-        </View>
-        <Text className="text-lg text-white">
-          All players must lock their phones to start
-        </Text>
+        </Animated.View>
+        <Animated.Text 
+          entering={FadeIn.delay(600).duration(500)}
+          className="text-lg text-white px-8 text-center"
+        >
+          All companions must lock together
+        </Animated.Text>
       </View>
     );
   }
@@ -224,93 +246,134 @@ export default function PendingQuestScreen() {
           className="mb-8 items-center"
           style={headerAnimatedStyle}
         >
-          <Text className="text-2xl font-bold">
+          <Text className="text-2xl font-bold" style={{ fontWeight: '700' }}>
             {isCooperativeQuest ? 'Cooperative Quest' : 'Quest Ready'}
           </Text>
         </Animated.View>
 
         <Animated.View className="flex-0" style={cardAnimatedStyle}>
-          <Card className="rounded-xl bg-white p-6">
-            <Text className="mb-4 text-center text-xl font-semibold">
+          <Card className="rounded-xl p-6" style={{ backgroundColor: colors.cardBackground }}>
+            <Animated.Text 
+              entering={FadeInDown.delay(300).duration(800)}
+              className="mb-2 text-center text-xl font-semibold" 
+              style={{ fontWeight: '700' }}
+            >
               {displayQuest?.title}
-            </Text>
-            <Text className="text-center text-base">
-              {`Duration: ${displayQuest?.durationMinutes} minutes`}
-            </Text>
-
-            <View className="my-4 border-b border-[#3B7A57]" />
+            </Animated.Text>
+            <Animated.Text 
+              entering={FadeInDown.delay(400).duration(800)}
+              className="mb-4 text-center text-base"
+              style={{ color: colors.neutral[500] }}
+            >
+              {`${displayQuest?.durationMinutes} minutes`}
+            </Animated.Text>
 
             {isCooperativeQuest ? (
               <>
-                <Text className="mb-4 text-center text-lg font-medium text-[#3B7A57]">
-                  You're not alone on this journey!
-                </Text>
+                {/* Compass Animation */}
+                <Animated.View 
+                  entering={FadeIn.delay(300).duration(800)}
+                  className="items-center"
+                >
+                  <LottieView
+                    source={require('@/../assets/animations/compass.json')}
+                    autoPlay
+                    loop
+                    style={{ width: 120, height: 120 }}
+                  />
+                </Animated.View>
+
+                {/* Motivational Header */}
+                <Animated.Text 
+                  entering={FadeInDown.delay(600).duration(800)}
+                  className="mb-2 text-center text-lg font-bold"
+                  style={{ color: colors.primary[500], fontWeight: '700' }}
+                >
+                  Stronger Together
+                </Animated.Text>
                 
-                <Text className="mb-4 text-center text-base leading-6">
-                  Together with your quest companion{cooperativeQuestRun?.participants?.length > 2 ? 's' : ''}, 
-                  you'll embark on an adventure where your combined willpower 
-                  creates something greater than the sum of its parts.
-                </Text>
+                {/* Concise Quest Info */}
+                <Animated.Text 
+                  entering={FadeInDown.delay(900).duration(800)}
+                  className="mb-6 text-center text-base"
+                  style={{ color: colors.neutral[500] }}
+                >
+                  {cooperativeQuestRun?.participants?.length || 2} companions embarking on this journey
+                </Animated.Text>
 
-                <View className="my-4 border-b border-[#3B7A57]" />
-
-                <Text className="mb-4 text-center text-lg font-medium">
-                  Quest Companions
-                </Text>
-
-                {cooperativeQuestRun?.participants?.map((participant: any) => (
-                  <View
-                    key={participant.userId}
-                    className="mb-2 flex-row items-center justify-center"
-                  >
-                    <Text className="text-base font-medium">
-                      {participant.userId === user?.id
-                        ? '✨ You'
-                        : `🗡️ ${participant.userName || participant.characterName || 'Quest Companion'}`}
+                {/* Companions List */}
+                <Animated.View 
+                  entering={FadeInDown.delay(1200).duration(800)}
+                  className="mb-6"
+                >
+                  {cooperativeQuestRun?.participants?.map((participant: any, index: number) => (
+                    <Animated.View
+                      key={participant.userId}
+                      entering={FadeInDown.delay(1200 + (index * 100)).duration(600)}
+                      className="mb-2 flex-row items-center justify-center"
+                    >
+                      <Text className="text-base" style={{ fontWeight: '600' }}>
+                        {participant.userId === user?.id
+                          ? '✨ You'
+                          : `⚔️ ${participant.userName || participant.characterName || 'Quest Companion'}`}
+                      </Text>
+                    </Animated.View>
+                  )) || (
+                    <Text className="text-center text-base">
+                      You and your quest companion
                     </Text>
-                  </View>
-                )) || (
-                  <Text className="text-center text-base">
-                    You and your quest companion
+                  )}
+                </Animated.View>
+
+                {/* Lock Instructions */}
+                <Animated.View 
+                  entering={FadeInDown.delay(1500).duration(800)}
+                  className="rounded-lg p-4"
+                  style={{ backgroundColor: colors.primary[100] }}
+                >
+                  <Text className="text-center text-base font-semibold" style={{ color: colors.primary[500], fontWeight: '700' }}>
+                    🔒 Lock phones to begin
                   </Text>
-                )}
-
-                <View className="my-4 border-b border-[#3B7A57]" />
-
-                <Text className="mb-4 text-center text-base font-medium">
-                  🔒 Lock your phones together to begin
-                </Text>
-                
-                <Text className="mb-6 text-center text-base leading-6">
-                  When all companions lock their phones, your shared quest begins. 
-                  Stay strong together - if one falls, all fall. But when you 
-                  succeed, you'll share in the glory!
-                </Text>
-
-                <Text className="text-center text-sm italic text-neutral-600">
-                  "In unity there is strength"
-                </Text>
+                  <Text className="mt-2 text-center text-sm" style={{ color: colors.primary[400] }}>
+                    All companions must lock together
+                  </Text>
+                </Animated.View>
               </>
             ) : (
               <>
-                <Text className="mb-6 text-center text-lg font-medium text-[#3B7A57]">
-                  Lock your phone to begin your quest
-                </Text>
+                {/* Single Quest Animation */}
+                <Animated.View 
+                  entering={FadeIn.delay(300).duration(800)}
+                  className="items-center mb-4"
+                >
+                  <LottieView
+                    source={require('@/../assets/animations/compass.json')}
+                    autoPlay
+                    loop
+                    style={{ width: 100, height: 100 }}
+                  />
+                </Animated.View>
+                
+                <Animated.Text 
+                  entering={FadeInDown.delay(600).duration(800)}
+                  className="mb-6 text-center text-lg font-medium"
+                  style={{ color: colors.primary[500], fontWeight: '700' }}
+                >
+                  Your adventure awaits
+                </Animated.Text>
 
-                <Text className="mb-6 text-center text-base leading-6">
-                  Your character is ready to embark on their journey, but they
-                  need you to put your phone away first.
-                </Text>
-                <Text className="mb-6 text-center text-base leading-6">
-                  The quest will begin when your phone is locked.
-                </Text>
-
-                <View className="my-4 border-b border-[#3B7A57]" />
-
-                <Text className="text-center text-base italic">
-                  Remember, unlocking your phone before the quest is complete
-                  will result in failure.
-                </Text>
+                <Animated.View 
+                  entering={FadeInDown.delay(900).duration(800)}
+                  className="rounded-lg p-4"
+                  style={{ backgroundColor: colors.primary[100] }}
+                >
+                  <Text className="text-center text-base font-semibold" style={{ color: colors.primary[500], fontWeight: '700' }}>
+                    🔒 Lock your phone to begin
+                  </Text>
+                  <Text className="mt-2 text-center text-sm" style={{ color: colors.primary[400] }}>
+                    Unlock early = Quest failed
+                  </Text>
+                </Animated.View>
               </>
             )}
           </Card>
@@ -327,7 +390,7 @@ export default function PendingQuestScreen() {
             variant="destructive"
             className="items-center rounded-full"
           >
-            <Text className="text-base font-semibold">Cancel Quest</Text>
+            <Text className="text-base font-semibold" style={{ fontWeight: '700' }}>Cancel Quest</Text>
           </Button>
         </Animated.View>
       </View>

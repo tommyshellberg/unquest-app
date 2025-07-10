@@ -1,39 +1,21 @@
-import { Feather } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
 import React from 'react';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { View } from '@/components/ui';
 
 export const PaperPlanes = () => {
   return (
-    <View className="relative h-[60px] items-center justify-center">
-      <Feather
-        name="bell-off"
-        size={30}
-        color="#555"
-        style={{ transform: [{ rotate: '30deg' }] }}
+    <Animated.View 
+      entering={FadeIn.duration(800)}
+      className="h-[100px] items-center justify-center"
+    >
+      <LottieView
+        source={require('@/../assets/animations/edit.json')}
+        autoPlay
+        loop
+        style={{ width: 100, height: 100 }}
       />
-      <Feather
-        name="phone-off"
-        size={16}
-        color="#777"
-        style={{
-          position: 'absolute',
-          transform: [{ rotate: '30deg' }],
-          top: 10,
-          right: 60,
-        }}
-      />
-      <Feather
-        name="cloud-off"
-        size={12}
-        color="#999"
-        style={{
-          position: 'absolute',
-          transform: [{ rotate: '30deg' }],
-          top: 20,
-          left: 60,
-        }}
-      />
-    </View>
+    </Animated.View>
   );
 };

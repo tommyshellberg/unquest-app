@@ -1,5 +1,5 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ArrowLeft, Check, Circle, Clock, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import { ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
@@ -13,6 +13,8 @@ import {
   Text,
   View,
 } from '@/components/ui';
+import colors from '@/components/ui/colors';
+import { InfoCard } from '@/components/ui/info-card';
 import { useWebSocket } from '@/components/providers/websocket-provider';
 import {
   useCooperativeLobbyStore,
@@ -35,34 +37,26 @@ interface ParticipantRowProps {
 function ParticipantRow({ participant, isCurrentUser }: ParticipantRowProps) {
   const getStatusIcon = () => {
     if (participant.invitationStatus === 'pending') {
-      return (
-        <MaterialCommunityIcons name="clock-outline" size={20} color="#666" />
-      );
+      return <Clock size={20} color={colors.neutral[400]} />;
     }
     if (participant.invitationStatus === 'declined') {
-      return (
-        <MaterialCommunityIcons name="close-circle" size={20} color="#EF4444" />
-      );
+      return <X size={20} color={colors.red[400]} />;
     }
     if (participant.isReady) {
-      return (
-        <MaterialCommunityIcons name="check-circle" size={20} color="#10B981" />
-      );
+      return <Check size={20} color={colors.primary[400]} />;
     }
-    return (
-      <MaterialCommunityIcons name="circle-outline" size={20} color="#666" />
-    );
+    return <Circle size={20} color={colors.neutral[400]} />;
   };
 
   return (
-    <View className="mb-3 flex-row items-center rounded-lg bg-white p-4">
+    <View className="mb-3 flex-row items-center rounded-lg p-4" style={{ backgroundColor: colors.cardBackground }}>
       <View className="mr-3">{getStatusIcon()}</View>
       <View className="flex-1">
-        <Text className="font-semibold">
+        <Text className="font-semibold" style={{ fontWeight: '700' }}>
           {participant.username} {isCurrentUser && '(You)'}{' '}
           {participant.isCreator && '👑'}
         </Text>
-        <Text className="text-sm text-neutral-600">
+        <Text className="text-sm" style={{ color: colors.neutral[500] }}>
           {participant.invitationStatus === 'pending' &&
             'Waiting for response...'}
           {participant.invitationStatus === 'declined' && 'Declined invitation'}
@@ -498,16 +492,16 @@ export default function CooperativeQuestLobby() {
   console.log('Current lobby participants:', currentLobby.participants);
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <FocusAwareStatusBar />
 
       {/* Header */}
-      <View className="border-b border-neutral-200 bg-white px-5 py-4">
+      <View className="border-b px-5 pb-4" style={{ borderBottomColor: colors.neutral[200] }}>
         <View className="flex-row items-center justify-between">
           <TouchableOpacity onPress={handleBackPress}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
+            <ArrowLeft size={24} color={colors.black} />
           </TouchableOpacity>
-          <Text className="text-lg font-semibold">Quest Lobby</Text>
+          <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>Quest Lobby</Text>
           <View className="w-6" />
         </View>
       </View>
@@ -515,24 +509,20 @@ export default function CooperativeQuestLobby() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="p-5">
           {/* Quest Info */}
-          <View className="mb-6 rounded-lg bg-white p-4">
-            <Text className="mb-2 text-xl font-bold">
+          <View className="mb-6 rounded-lg p-4" style={{ backgroundColor: colors.cardBackground }}>
+            <Text className="mb-2 text-xl font-bold" style={{ fontWeight: '700' }}>
               {currentLobby.questTitle}
             </Text>
             <View className="flex-row items-center">
-              <MaterialCommunityIcons
-                name="clock-outline"
-                size={16}
-                color="#666"
-              />
-              <Text className="ml-1 text-sm text-neutral-600">
+              <Clock size={16} color={colors.neutral[400]} />
+              <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
                 {currentLobby.questDuration} minutes
               </Text>
             </View>
           </View>
 
           {/* Participants */}
-          <Text className="mb-3 text-lg font-semibold">Participants</Text>
+          <Text className="mb-3 text-lg font-semibold" style={{ fontWeight: '700' }}>Participants</Text>
           {currentLobby.participants.map((participant) => (
             <ParticipantRow
               key={participant.id}
@@ -543,28 +533,24 @@ export default function CooperativeQuestLobby() {
 
           {/* Status Messages */}
           {!allResponded && (
-            <View className="mt-4 rounded-lg bg-amber-100 p-4">
-              <Text className="text-sm text-amber-800">
+            <View className="mt-4 rounded-lg p-4" style={{ backgroundColor: colors.secondary[100] }}>
+              <Text className="text-sm" style={{ color: colors.secondary[500] }}>
                 Waiting for all invitations to be responded to...
               </Text>
             </View>
           )}
 
           {allResponded && !allReady && acceptedParticipants.length > 0 && (
-            <View className="mt-4 rounded-lg bg-blue-100 p-4">
-              <Text className="mb-2 text-base font-semibold text-blue-800">
-                How Cooperative Quests Work
-              </Text>
-              <Text className="text-sm text-blue-800">
-                All participants must keep their phones locked for the entire
-                duration. If anyone unlocks early, everyone fails together!
-              </Text>
-            </View>
+            <InfoCard
+              title="How Cooperative Quests Work"
+              description="All participants must keep their phones locked for the entire duration. If anyone unlocks early, everyone fails together!"
+              variant="solid"
+            />
           )}
 
           {allReady && (
-            <View className="mt-4 rounded-lg bg-green-100 p-4">
-              <Text className="text-base font-semibold text-green-800">
+            <View className="mt-4 rounded-lg p-4" style={{ backgroundColor: colors.primary[100] }}>
+              <Text className="text-base font-semibold" style={{ color: colors.primary[500], fontWeight: '700' }}>
                 All players ready! Quest will start soon...
               </Text>
             </View>
@@ -573,7 +559,7 @@ export default function CooperativeQuestLobby() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View className="border-t border-neutral-200 bg-white p-5">
+      <View className="border-t p-5" style={{ borderTopColor: colors.neutral[200] }}>
         {!hasAccepted && currentParticipant?.invitationStatus === 'pending' && (
           <View className="flex-row gap-3">
             <Button
@@ -601,8 +587,8 @@ export default function CooperativeQuestLobby() {
         )}
 
         {allResponded && acceptedParticipants.length > 1 && (
-          <View className="rounded-lg bg-green-100 p-4">
-            <Text className="text-center text-base font-semibold text-green-800">
+          <View className="rounded-lg p-4" style={{ backgroundColor: colors.primary[100] }}>
+            <Text className="text-center text-base font-semibold" style={{ color: colors.primary[500], fontWeight: '700' }}>
               All players have responded! Preparing to start quest...
             </Text>
           </View>

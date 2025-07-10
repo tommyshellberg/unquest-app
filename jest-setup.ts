@@ -135,3 +135,68 @@ jest.mock('expo-blur', () => ({
     return props.children;
   },
 }));
+
+// Mock @gorhom/bottom-sheet
+jest.mock('@gorhom/bottom-sheet', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    BottomSheetModal: jest.fn(({ children }) => children),
+    BottomSheetModalProvider: jest.fn(({ children }) => children),
+    BottomSheetBackdrop: jest.fn(() => null),
+    BottomSheetScrollView: jest.fn(({ children }) => children),
+    BottomSheetFlatList: jest.fn((props) => 
+      React.createElement(RN.FlatList, props)
+    ),
+    createBottomSheetScrollableComponent: jest.fn(() => 
+      jest.fn(({ children }) => children)
+    ),
+    SCROLLABLE_TYPE: {
+      FLATLIST: 'FlatList',
+      SCROLLVIEW: 'ScrollView',
+      SECTIONLIST: 'SectionList',
+      VIRTUALIZED_LIST: 'VirtualizedList',
+    },
+  };
+});
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+  const inset = { top: 0, right: 0, bottom: 0, left: 0 };
+  return {
+    SafeAreaProvider: jest.fn(({ children }) => children),
+    SafeAreaConsumer: jest.fn(({ children }) => children(inset)),
+    SafeAreaView: jest.fn(({ children }) => children),
+    useSafeAreaInsets: jest.fn(() => inset),
+  };
+});
+
+// Mock @shopify/flash-list
+jest.mock('@shopify/flash-list', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    FlashList: jest.fn((props) => 
+      React.createElement(RN.FlatList, props)
+    ),
+  };
+});
+
+// Mock react-native-keyboard-controller
+jest.mock('react-native-keyboard-controller', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    KeyboardAwareScrollView: jest.fn((props) => 
+      React.createElement(RN.ScrollView, props)
+    ),
+    KeyboardProvider: jest.fn(({ children }) => children),
+    useKeyboardController: jest.fn(() => ({
+      setEnabled: jest.fn(),
+      setInputMode: jest.fn(),
+    })),
+  };
+});
