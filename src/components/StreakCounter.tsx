@@ -53,7 +53,7 @@ export function StreakCounter({
   // Wrapper with position styling
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     if (position === 'topRight') {
-      return <View className="absolute right-4 top-2 z-10">{children}</View>;
+      return <View className="absolute right-4 top-6 z-10">{children}</View>;
     }
     return <>{children}</>;
   };

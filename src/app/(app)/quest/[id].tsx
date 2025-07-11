@@ -193,7 +193,7 @@ export default function AppQuestDetailsScreen() {
                 color={colors.neutral[500]}
               />
             </TouchableOpacity>
-            <Text className="text-xl font-bold">Quest Details</Text>
+            <Text className="mt-6 text-xl font-bold">Quest Details</Text>
           </View>
         </Animated.View>
         <FailedQuest

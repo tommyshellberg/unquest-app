@@ -87,7 +87,7 @@ export default function JournalScreen() {
       <StreakCounter size="small" position="topRight" />
       {/* Header - with animation */}
       <Animated.View style={headerStyle} className="mb-4 px-4">
-        <Text className="mb-3 mt-2 text-xl font-bold">Journal</Text>
+        <Text className="mb-3 mt-6 text-xl font-bold">Journal</Text>
         <Text>Your quest history and achievements</Text>
       </Animated.View>
 

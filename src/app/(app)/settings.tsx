@@ -8,12 +8,12 @@ import * as Updates from 'expo-updates';
 import { Flame } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, Switch } from 'react-native';
+import { OneSignal } from 'react-native-onesignal';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { OneSignal } from 'react-native-onesignal';
 
 import { FocusAwareStatusBar, ScrollView, Text, View } from '@/components/ui';
 import { useAuth } from '@/lib';
@@ -26,7 +26,7 @@ import {
   scheduleStreakWarningNotification,
 } from '@/lib/services/notifications';
 import { deleteUserAccount, getUserDetails } from '@/lib/services/user';
-import { setItem } from '@/lib/storage';
+import { getItem, setItem } from '@/lib/storage';
 import { useSettingsStore } from '@/store/settings-store';
 import { useUserStore } from '@/store/user-store';
 
@@ -349,7 +349,7 @@ export default function Settings() {
 
       {/* Header */}
       <Animated.View style={headerStyle} className="mb-4 px-4">
-        <Text className="mb-3 mt-2 text-xl font-bold">Settings</Text>
+        <Text className="mb-3 mt-6 text-xl font-bold">Settings</Text>
         <Text>Manage your account, preferences, and app settings.</Text>
       </Animated.View>
 

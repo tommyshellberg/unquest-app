@@ -81,7 +81,7 @@ export default function TabLayout() {
           backgroundColor: white,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
-          height: 88,
+          height: 100,
           paddingBottom: 20,
           // Hide tab bar for quest screens and pending-quest
           display:

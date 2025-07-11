@@ -152,7 +152,8 @@ export default class QuestTimer {
 
   // Single entry point - prepare the quest and wait for phone lock
   static async prepareQuest(
-    questTemplate: CustomQuestTemplate | StoryQuestTemplate
+    questTemplate: CustomQuestTemplate | StoryQuestTemplate,
+    cooperativeQuestRunId?: string
   ) {
     const notificationsEnabled = await areNotificationsEnabled();
     if (notificationsEnabled) {
@@ -162,20 +163,26 @@ export default class QuestTimer {
     this.questTemplate = questTemplate;
     this.questStartTime = null;
 
-    // Check if this is a cooperative quest that already has a quest run
-    const questStore = useQuestStore.getState();
-    const cooperativeQuestRun = questStore.cooperativeQuestRun;
-
-    if (cooperativeQuestRun && cooperativeQuestRun.id) {
-      // For invitees in cooperative quests, use the existing quest run ID
+    // Use the provided cooperative quest run ID if available
+    if (cooperativeQuestRunId) {
       console.log(
-        'Using existing cooperative quest run:',
-        cooperativeQuestRun.id
+        '[QuestTimer] Using provided cooperative quest run ID:',
+        cooperativeQuestRunId
       );
-      this.questRunId = cooperativeQuestRun.id;
+      this.questRunId = cooperativeQuestRunId;
+    } else if (questTemplate.category === 'cooperative') {
+      // This is a cooperative quest but no quest run ID was provided
+      // This should not happen - cooperative quests should always have a quest run
+      // from the server before reaching this point
+      console.error(
+        '[QuestTimer] ERROR: Cooperative quest without quest run ID!',
+        questTemplate
+      );
+      throw new Error('Cooperative quest must have an existing quest run ID from server');
     } else {
-      // Create a quest run on the server (for solo quests or coop quest hosts)
+      // Create a quest run on the server (only for solo quests)
       try {
+        console.log('[QuestTimer] Creating quest run for solo quest');
         const questRun = await createQuestRun(questTemplate);
         this.questRunId = questRun.id;
 

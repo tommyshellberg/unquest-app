@@ -84,12 +84,19 @@ export const useQuestStore = create<QuestState>()(
       cooperativeQuestRun: null,
       pendingInvitations: [],
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
-        // Clear cooperative quest data when preparing a single-player quest
-        set({ 
-          pendingQuest: quest, 
+        const currentCooperativeQuestRun = get().cooperativeQuestRun;
+        // Only clear cooperative quest data when preparing a non-cooperative quest
+        const shouldClearCooperativeData = quest.category !== 'cooperative';
+
+        set({
+          pendingQuest: quest,
           availableQuests: [],
-          cooperativeQuestRun: null,
-          currentInvitation: null
+          cooperativeQuestRun: shouldClearCooperativeData
+            ? null
+            : currentCooperativeQuestRun,
+          currentInvitation: shouldClearCooperativeData
+            ? null
+            : get().currentInvitation,
         });
       },
 
@@ -191,7 +198,7 @@ export const useQuestStore = create<QuestState>()(
       },
 
       cancelQuest: () => {
-        const { activeQuest, pendingQuest } = get();
+        const { activeQuest, pendingQuest, cooperativeQuestRun } = get();
         if (activeQuest || pendingQuest) {
           // End any active live activity when quest is canceled
           QuestTimer.stopQuest();
@@ -199,6 +206,12 @@ export const useQuestStore = create<QuestState>()(
             activeQuest: null,
             pendingQuest: null,
             currentLiveActivityId: null,
+            // Clear cooperative quest run if this was a cooperative quest
+            cooperativeQuestRun:
+              pendingQuest?.category === 'cooperative' ||
+              activeQuest?.category === 'cooperative'
+                ? null
+                : cooperativeQuestRun,
           });
         }
       },

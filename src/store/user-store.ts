@@ -44,6 +44,10 @@ export const useUserStore = create<UserState>()(
         setItem: setItemForStorage,
         removeItem: removeItemForStorage,
       })),
+      onRehydrateStorage: () => (state) => {
+        console.log('[UserStore] Rehydrated with user:', state?.user?.id);
+        console.log('[UserStore] Feature flags:', state?.user?.featureFlags);
+      },
     }
   )
 );

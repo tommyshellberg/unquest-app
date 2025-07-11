@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Award, TrendingUp } from 'lucide-react-native';
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, RefreshControl, ScrollView } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -8,32 +8,26 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
-import { ExperienceCard } from '@/components/profile/experience-card';
-import { FriendsList } from '@/components/profile/friends-list';
 import {
   ContactsImportModal,
   type ContactsImportModalRef,
 } from '@/components/profile/contact-import';
+import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
+import { ExperienceCard } from '@/components/profile/experience-card';
+import { FriendsList } from '@/components/profile/friends-list';
 import { ProfileCard } from '@/components/profile/profile-card';
 // Import components
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
 import { StatsCard } from '@/components/profile/stats-card';
-import {
-  Card,
-  FocusAwareStatusBar,
-  Text,
-  useModal,
-  View,
-} from '@/components/ui';
+import { Card, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 // Import hooks
 import { useProfileData } from '@/lib/hooks/use-profile-data';
 import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
-import { useUserStore } from '@/store/user-store';
 import { type CharacterType } from '@/store/types';
+import { useUserStore } from '@/store/user-store';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -194,7 +188,7 @@ export default function ProfileScreen() {
 
       {/* Header */}
       <Animated.View style={headerStyle} className="mb-4 px-4">
-        <Text className="mb-3 mt-2 text-xl font-bold">Profile</Text>
+        <Text className="mb-3 mt-6 text-xl font-bold">Profile</Text>
         <Text>Track your journey, stats, and connect with friends.</Text>
       </Animated.View>
 

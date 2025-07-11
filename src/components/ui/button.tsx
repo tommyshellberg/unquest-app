@@ -29,7 +29,7 @@ const button = tv({
         indicator: 'text-black dark:text-black',
       },
       destructive: {
-        container: 'bg-red-200',
+        container: 'bg-red-300',
         label: 'text-white',
         indicator: 'text-white',
       },

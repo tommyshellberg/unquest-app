@@ -198,22 +198,8 @@ export default function Home() {
     }
   }, [activeQuest, pendingQuest, refreshAvailableQuests]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const refreshToken = getRefreshToken();
-        if (!refreshToken) {
-          return;
-        }
-
-        await getUserDetails();
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  // User data should already be loaded from auth hydration
+  // The component will re-render when user data changes
 
   // Initialize animations
   useEffect(() => {
@@ -272,6 +258,13 @@ export default function Home() {
 
   // Check if user has cooperative quest feature
   const hasCoopFeature = user?.featureFlags?.includes('coop_mode') || false;
+
+  // Debug log to understand timing
+  useEffect(() => {
+    console.log('[Home] User state:', user ? 'loaded' : 'not loaded');
+    console.log('[Home] Feature flags:', user?.featureFlags);
+    console.log('[Home] Has coop feature:', hasCoopFeature);
+  }, [user, hasCoopFeature]);
 
   // Prepare carousel data
   const carouselData = [
@@ -509,7 +502,7 @@ export default function Home() {
       <View className="flex-1 flex-col">
         {/* Header */}
         <Animated.View style={headerStyle} className="mb-4 px-4">
-          <Text className="mb-3 mt-2 text-xl font-bold">
+          <Text className="mb-3 mt-6 text-xl font-bold">
             Choose Your Adventure
           </Text>
           <Text>

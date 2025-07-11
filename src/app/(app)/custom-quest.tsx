@@ -1,7 +1,9 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { TouchableOpacity } from 'react-native';
 
 import { CategorySelector } from '@/components/QuestForm/category-selector';
 // Import our new components with appropriate paths
@@ -12,7 +14,7 @@ import { StreakCounter } from '@/components/StreakCounter';
 import {
   Button,
   FocusAwareStatusBar,
-  Pressable,
+  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -102,21 +104,31 @@ export default function CustomQuestScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
-      <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
-        <Pressable onPress={handleCancel}>
-          <Text className="text-base text-[#333]">Cancel</Text>
-        </Pressable>
-        <Text className="text-lg font-semibold">Custom quest</Text>
-        <StreakCounter size="small" position="topRight" />
-        <View className="w-14" />
-      </View>
+      
+      <View className="flex-1 px-4">
+        {/* Header */}
+        <View className="mb-6 mt-2">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mb-4 flex-row items-center"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
+            <Text className="ml-2 text-lg">Back</Text>
+          </TouchableOpacity>
+          
+          <Text className="mb-2 text-3xl font-bold">Custom Quest</Text>
+          <Text className="text-neutral-600">
+            Create your own quest with a personalized name and duration
+          </Text>
+        </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="p-5">
-          {/* Paper planes illustration */}
-          <PaperPlanes />
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <View className="mb-6">
+            {/* Paper planes illustration */}
+            <PaperPlanes />
+          </View>
 
           {/* Quest Input with improved slider handling */}
           <CombinedQuestInput
@@ -126,7 +138,7 @@ export default function CustomQuestScreen() {
             onDurationChange={handleDurationChange}
           />
 
-          <View className="my-1.5 h-px bg-[#EEEEEE]" />
+          <View className="my-4 h-px bg-[#EEEEEE]" />
 
           {/* Category Dropdown */}
           <CategorySelector control={control} questCategory={questCategory} />
@@ -139,13 +151,13 @@ export default function CustomQuestScreen() {
             size="lg"
             disabled={!canContinue}
             onPress={handleSubmit(onSubmit)}
-            className={`mt-5 rounded-md bg-primary-400 py-2.5 ${
+            className={`mt-6 rounded-md bg-primary-400 py-3 ${
               canContinue ? 'opacity-100' : 'opacity-50'
             }`}
             textClassName="text-lg font-semibold text-white"
           />
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }

@@ -33,7 +33,9 @@ export default function PendingQuestScreen() {
     useWebSocket();
 
   // Check if this is a cooperative quest
-  const isCooperativeQuest = !!cooperativeQuestRun;
+  // Check both cooperativeQuestRun and the quest category
+  const isCooperativeQuest =
+    !!cooperativeQuestRun || pendingQuest?.category === 'cooperative';
 
   // Countdown state for cooperative quests ONLY
   const [showCountdown, setShowCountdown] = React.useState(false);
@@ -59,9 +61,16 @@ export default function PendingQuestScreen() {
         questRunId: cooperativeQuestRun?.id,
         participants: cooperativeQuestRun?.participants,
         userId: user?.id,
+        questCategory: pendingQuest?.category,
+        hasCooperativeQuestRun: !!cooperativeQuestRun,
       });
     }
-  }, [isCooperativeQuest, cooperativeQuestRun, user?.id]);
+  }, [
+    isCooperativeQuest,
+    cooperativeQuestRun,
+    user?.id,
+    pendingQuest?.category,
+  ]);
 
   // Header animation using react-native-reanimated
   const headerOpacity = useSharedValue(0);
@@ -183,6 +192,15 @@ export default function PendingQuestScreen() {
     cancelQuest();
     router.back();
   };
+
+  // Log cooperative quest state for debugging
+  useEffect(() => {
+    if (pendingQuest && isCooperativeQuest && !cooperativeQuestRun) {
+      console.warn(
+        '[PendingQuest] Cooperative quest without quest run data yet, waiting...'
+      );
+    }
+  }, [pendingQuest, isCooperativeQuest, cooperativeQuestRun]);
 
   if (!pendingQuest || (isCooperativeQuest && !cooperativeQuestRun)) {
     return (

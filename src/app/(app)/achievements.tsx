@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import {
   ArrowLeft,
@@ -15,7 +16,7 @@ import {
   Watch,
 } from 'lucide-react-native';
 import React, { useRef } from 'react';
-import { Dimensions, Pressable, ScrollView, View } from 'react-native';
+import { Dimensions, Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedScrollHandler,
@@ -23,7 +24,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 
-import { Card, FocusAwareStatusBar, ProgressBar, Text } from '@/components/ui';
+import { Card, FocusAwareStatusBar, ProgressBar, SafeAreaView, Text } from '@/components/ui';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -491,32 +492,31 @@ export default function AchievementsScreen() {
   const unlockedAchievements = achievements.filter((a) => a.isUnlocked).length;
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
 
-      {/* Header */}
-      <View className="px-4 pb-4 pt-2">
-        <View className="flex-row items-center justify-between">
-          <Pressable onPress={() => router.push('/profile')} className="p-2">
-            <ArrowLeft size={24} color="#1f0f0c" />
-          </Pressable>
-
-          <View className="items-center">
-            <Text className="text-xl font-bold">Achievements</Text>
-            <Text className="text-xs text-gray-600">
-              {unlockedAchievements}/{totalAchievements} Unlocked
-            </Text>
-          </View>
-
-          <View className="w-10" />
+      <View className="flex-1 px-4">
+        {/* Header */}
+        <View className="mb-6 mt-2">
+          <TouchableOpacity
+            onPress={() => router.push('/profile')}
+            className="mb-4 flex-row items-center"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
+            <Text className="ml-2 text-lg">Back</Text>
+          </TouchableOpacity>
+          
+          <Text className="mb-2 text-3xl font-bold">Achievements</Text>
+          <Text className="text-neutral-600">
+            Track your progress • {unlockedAchievements}/{totalAchievements} Unlocked
+          </Text>
         </View>
-      </View>
 
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 20 }}
-      >
+        <ScrollView
+          className="flex-1 -mx-4"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingTop: 20 }}
+        >
         {/* Achievement Sections */}
         <AchievementSection
           category="streak"
@@ -531,8 +531,9 @@ export default function AchievementsScreen() {
           achievements={minutesAchievements}
         />
 
-        <View className="h-8" />
-      </ScrollView>
-    </View>
+          <View className="h-8" />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }

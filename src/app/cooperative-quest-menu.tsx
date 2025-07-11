@@ -1,10 +1,14 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useRef } from 'react';
-import { TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { ActivityIndicator, TouchableOpacity } from 'react-native';
 
+import {
+  ContactsImportModal,
+  type ContactsImportModalRef,
+} from '@/components/profile/contact-import';
 import {
   Card,
   FocusAwareStatusBar,
@@ -12,13 +16,9 @@ import {
   Text,
   View,
 } from '@/components/ui';
-import { getUserFriends } from '@/lib/services/user';
-import {
-  ContactsImportModal,
-  type ContactsImportModalRef,
-} from '@/components/profile/contact-import';
-import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { useAuth } from '@/lib';
+import { useFriendManagement } from '@/lib/hooks/use-friend-management';
+import { getUserFriends } from '@/lib/services/user';
 import { useUserStore } from '@/store/user-store';
 
 interface MenuOption {
@@ -111,7 +111,7 @@ export default function CooperativeQuestMenu() {
 
         <View className="flex-1 px-4">
           {/* Header */}
-          <View className="mb-6 mt-4">
+          <View className="mb-6">
             <TouchableOpacity
               onPress={() => router.back()}
               className="mb-4 flex-row items-center"
@@ -207,7 +207,7 @@ export default function CooperativeQuestMenu() {
 
         <View className="flex-1 px-4">
           {/* Header */}
-          <View className="mb-6 mt-4">
+          <View className="mb-6 mt-2">
             <TouchableOpacity
               onPress={() => router.back()}
               className="mb-4 flex-row items-center"
