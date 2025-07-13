@@ -44,7 +44,7 @@ export default function QuestCard({
   }, [progress]);
 
   return (
-    <Card className="elevation-0 aspect-[0.75] h-[400px]">
+    <Card className="elevation-0 w-full aspect-[3/4]">
       <ImageBackground
         source={imageMap[mode]}
         className="size-full"
@@ -55,43 +55,51 @@ export default function QuestCard({
             mode === 'custom'
               ? 'bg-[rgba(47,129,142,0.9)]'
               : mode === 'cooperative'
-              ? 'bg-[rgba(46,148,141,0.9)]'
-              : 'bg-[rgba(151,158,121,0.9)]'
+                ? 'bg-[rgba(46,148,141,0.9)]'
+                : 'bg-[rgba(151,158,121,0.9)]'
           }`}
         />
-        <View className="justify-start p-4">
-          {/* Mode Pill */}
-          <Chip className="mb-4 bg-white/20" textClassName="text-amber-100">
-            {subtitle}
-          </Chip>
+        <View className="flex-1 p-4">
+          <View>
+            {/* Mode Pill */}
+            <Chip className="mb-4 bg-white/20" textClassName="text-amber-100">
+              {subtitle}
+            </Chip>
 
-          {/* Quest Title */}
-          <Text className="max-w-[90%] text-xl font-bold text-amber-100">
-            {title}
-          </Text>
-
-          {/* Quest Info */}
-          <View className="mb-4 mt-2">
-            <Text className="text-base font-bold text-amber-100 opacity-90">
-              {duration} mins • {xp} XP
+            {/* Quest Title */}
+            <Text className="max-w-[90%] text-xl font-bold text-amber-100">
+              {title}
             </Text>
+
+            {/* Quest Info */}
+            <View className="mb-4 mt-2">
+              <Text className="text-base font-bold text-amber-100 opacity-90">
+                {duration} mins • {xp} XP
+              </Text>
+            </View>
+
+            {description !== '' && (
+              <Text className="text-base text-amber-100 opacity-90">
+                {description}
+              </Text>
+            )}
           </View>
-
-          {description !== '' && (
-            <Text className="text-base text-amber-100 opacity-90">
-              {description}
-            </Text>
-          )}
         </View>
 
         {/* Add progress bar at the bottom */}
         {showProgress && (
           <View className="absolute inset-x-4 bottom-4">
             <View className="mb-2 flex-row items-center">
-              <Text className="mr-auto text-sm font-semibold text-amber-100" style={{ fontWeight: '600' }}>
+              <Text
+                className="mr-auto text-sm font-semibold text-amber-100"
+                style={{ fontWeight: '600' }}
+              >
                 Story Progress
               </Text>
-              <Text className="text-sm font-semibold text-amber-100" style={{ fontWeight: '600' }}>
+              <Text
+                className="text-sm font-semibold text-amber-100"
+                style={{ fontWeight: '600' }}
+              >
                 {Math.round(progress * 100)}%
               </Text>
             </View>

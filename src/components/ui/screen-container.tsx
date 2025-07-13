@@ -15,12 +15,12 @@ interface ScreenContainerProps extends ViewProps {
  * content doesn't go too close to the bottom of the screen
  *
  * Standard padding:
- * - Bottom: 24px above safe area (accounts for tab bar)
+ * - Bottom: 8px above safe area (accounts for tab bar)
  * - Horizontal: 16px (4 in Tailwind = 16px)
  */
 export function ScreenContainer({
   children,
-  bottomPadding = 0, // Default 24px padding above safe area
+  bottomPadding = 8, // Default 8px padding above safe area
   noPadding = false,
   noHorizontalPadding = false,
   style,

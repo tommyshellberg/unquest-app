@@ -14,14 +14,18 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { getRefreshToken } from '@/api/token';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { getMapNameForQuest } from '@/app/utils/map-utils';
 import QuestCard from '@/components/home/quest-card';
 import { StreakCounter } from '@/components/StreakCounter';
-import { Button, FocusAwareStatusBar, Text, View, ScreenContainer, ScreenHeader } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  ScreenContainer,
+  ScreenHeader,
+  View,
+} from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
-import { getUserDetails } from '@/lib/services/user';
 import { useQuestStore } from '@/store/quest-store';
 import { type QuestOption } from '@/store/types';
 import { useUserStore } from '@/store/user-store';
@@ -29,8 +33,9 @@ import { useUserStore } from '@/store/user-store';
 // Define screen dimensions for the carousel
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
-const cardSpacing = 24; // spacing between cards
+const cardSpacing = 16; // spacing between cards
 const snapInterval = cardWidth + cardSpacing; // adjust snap to include spacing
+const cardHeight = cardWidth * (4 / 3); // Height based on 3:4 aspect ratio
 
 // Pre-require animations to avoid dynamic require
 const curvedLeftAnimation = require('@/../assets/animations/curved-left.json');
@@ -458,7 +463,7 @@ export default function Home() {
   // Render item for the carousel
   const renderCarouselItem = ({ item }: { item: any }) => {
     return (
-      <View className="w-full" style={{ width: cardWidth }}>
+      <View style={{ width: cardWidth }}>
         <QuestCard
           mode={item.mode}
           title={item.title}
@@ -508,7 +513,9 @@ export default function Home() {
 
         {/* Main content area */}
         <View className="flex-1 justify-center">
-          <Animated.View style={[animatedScrollStyle]} className="mb-4">
+          <Animated.View
+            style={[animatedScrollStyle, { height: cardHeight + 20 }]}
+          >
             <FlashList
               data={carouselData}
               horizontal
@@ -518,8 +525,8 @@ export default function Home() {
               keyExtractor={(item) => item.id}
               initialScrollIndex={0} // Start at the first item
               contentContainerStyle={{
-                paddingHorizontal: (screenWidth - cardWidth) / 2,
-                paddingBottom: 24, // Add some bottom padding
+                paddingHorizontal: (screenWidth - cardWidth) / 2 - cardSpacing,
+                paddingVertical: 10,
               }}
               ItemSeparatorComponent={() => (
                 <View style={{ width: cardSpacing }} />
@@ -540,7 +547,7 @@ export default function Home() {
         {/* Footer area with buttons */}
         {!activeQuest && !pendingQuest && (
           <View
-            className="mt-auto items-center justify-center"
+            className="items-center justify-center"
             style={{ minHeight: 140 }}
           >
             {activeIndex === 0 ? (
