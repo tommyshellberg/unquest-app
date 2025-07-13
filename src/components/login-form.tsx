@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import * as Linking from 'expo-linking';
+import { router } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { TextInput } from 'react-native';
+import { TextInput, TouchableOpacity } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import * as z from 'zod';
 
@@ -175,8 +176,8 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
             ) : (
               <View className="p-6">
                 {/* Email input with label on left */}
-                <View className="mb-6 flex-row items-center border-b border-neutral-300 pb-2 dark:border-neutral-300">
-                  <Text className="w-28 font-medium text-neutral-500 dark:text-neutral-500">
+                <View className="mb-6 flex-row items-center border-b border-neutral-300 pb-2">
+                  <Text className="w-28 font-medium text-neutral-500">
                     EMAIL
                   </Text>
                   <TextInput
@@ -186,7 +187,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                     autoCapitalize="none"
                     value={email}
                     onChangeText={setEmail}
-                    className="flex-1 py-2 text-primary-500 placeholder:text-muted-200 dark:text-primary-500 dark:placeholder:text-muted-200"
+                    className="flex-1 py-2 text-primary-500 placeholder:text-muted-200"
                   />
                 </View>
 
@@ -214,12 +215,22 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                   loading={isLoading}
                   onPress={handleMagicLinkRequest}
                   disabled={isLoading || !isValidEmail(email)}
-                  className={`rounded-xl bg-primary-500 dark:bg-primary-500 ${!isValidEmail(email) ? 'opacity-50' : ''}`}
-                  textClassName="text-white dark:text-white font-bold"
+                  className={`rounded-xl bg-primary-500 ${!isValidEmail(email) ? 'opacity-50' : ''}`}
+                  textClassName="text-white font-bold"
                 />
               </View>
             )}
           </View>
+          
+          {/* Link to go back to welcome screen */}
+          <TouchableOpacity
+            onPress={() => router.replace('/onboarding/welcome')}
+            className="mt-4 items-center"
+          >
+            <Text className="font-semibold text-white underline">
+              Create Account
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </KeyboardAvoidingView>

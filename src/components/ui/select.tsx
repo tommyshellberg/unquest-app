@@ -25,23 +25,23 @@ import { Text } from './text';
 const selectTv = tv({
   slots: {
     container: 'mb-4',
-    label: 'text-muted-400 dark:text-muted-400 mb-1 text-lg',
+    label: 'text-muted-400 mb-1 text-lg',
     input:
-      'mt-0 flex-row items-center justify-center rounded-xl border-[0.5px] border-neutral-300 p-3 dark:border-neutral-300',
-    inputValue: 'text-neutral-400 dark:text-neutral-400',
+      'mt-0 flex-row items-center justify-center rounded-xl border-[0.5px] border-neutral-300 p-3',
+    inputValue: 'text-neutral-400',
   },
 
   variants: {
     focused: {
       true: {
-        input: 'border-neutral-400 dark:border-neutral-400',
+        input: 'border-neutral-400',
       },
     },
     error: {
       true: {
         input: 'border-red-300',
-        label: 'text-red-300 dark:text-red-300',
-        inputValue: 'text-red-300 dark:text-red-300',
+        label: 'text-red-300',
+        inputValue: 'text-red-300',
       },
     },
     disabled: {
@@ -123,10 +123,10 @@ const Option = React.memo(
   }) => {
     return (
       <Pressable
-        className="flex-row items-center border-b border-neutral-300 bg-white px-3 py-2 dark:border-neutral-300 dark:bg-white"
+        className="flex-row items-center border-b border-neutral-300 bg-white px-3 py-2"
         {...props}
       >
-        <Text className="flex-1 text-neutral-400 dark:text-neutral-400">
+        <Text className="flex-1 text-neutral-400">
           {label}
         </Text>
         {selected && <Check />}
@@ -212,7 +212,7 @@ export const Select = (props: SelectProps) => {
         {error && (
           <Text
             testID={`${testID}-error`}
-            className="text-sm text-red-300 dark:text-red-300"
+            className="text-sm text-red-300"
           >
             {error}
           </Text>
@@ -259,7 +259,7 @@ const Check = ({ ...props }: SvgProps) => (
     fill="none"
     viewBox="0 0 25 24"
     {...props}
-    className="stroke-muted-500 dark:stroke-muted-500"
+    className="stroke-muted-500"
   >
     <Path
       d="m20.256 6.75-10.5 10.5L4.506 12"
