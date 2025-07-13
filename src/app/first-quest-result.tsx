@@ -82,6 +82,7 @@ export default function FirstQuestResultScreen() {
           onContinue={handleCompletedContinue}
           continueText="Continue Your Journey"
           showActionButton={true} // Always show for this screen
+          disableEnteringAnimations={true} // Prevent animation conflicts with next screen
         />
       </View>
     );

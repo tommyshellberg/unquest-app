@@ -12,10 +12,13 @@ import { StreakCounter } from '@/components/StreakCounter';
 import {
   Button,
   FocusAwareStatusBar,
-  Pressable,
+  SafeAreaView,
   ScrollView,
   Text,
   View,
+  ScreenContainer,
+  ScreenHeader,
+  TouchableOpacity,
 } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
@@ -102,21 +105,22 @@ export default function CustomQuestScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
-      <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
-        <Pressable onPress={handleCancel}>
-          <Text className="text-base text-[#333]">Cancel</Text>
-        </Pressable>
-        <Text className="text-lg font-semibold">Custom quest</Text>
-        <StreakCounter size="small" position="topRight" />
-        <View className="w-14" />
-      </View>
+      
+      <ScreenContainer>
+        {/* Header */}
+        <ScreenHeader
+          title="Custom Quest"
+          subtitle="Create your own quest with a personalized name and duration"
+          showBackButton
+        />
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="p-5">
-          {/* Paper planes illustration */}
-          <PaperPlanes />
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <View className="mb-6">
+            {/* Paper planes illustration */}
+            <PaperPlanes />
+          </View>
 
           {/* Quest Input with improved slider handling */}
           <CombinedQuestInput
@@ -126,7 +130,7 @@ export default function CustomQuestScreen() {
             onDurationChange={handleDurationChange}
           />
 
-          <View className="my-1.5 h-px bg-[#EEEEEE]" />
+          <View className="my-4 h-px bg-[#EEEEEE]" />
 
           {/* Category Dropdown */}
           <CategorySelector control={control} questCategory={questCategory} />
@@ -139,13 +143,13 @@ export default function CustomQuestScreen() {
             size="lg"
             disabled={!canContinue}
             onPress={handleSubmit(onSubmit)}
-            className={`mt-5 rounded-md bg-primary-400 py-2.5 ${
+            className={`mt-6 rounded-md bg-primary-400 py-3 ${
               canContinue ? 'opacity-100' : 'opacity-50'
             }`}
             textClassName="text-lg font-semibold text-white"
           />
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </ScreenContainer>
+    </SafeAreaView>
   );
 }

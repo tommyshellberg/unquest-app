@@ -21,20 +21,20 @@ module.exports = {
   },
 
   red: {
-    100: '#FFE9E5',
-    200: '#FEBFB5',
-    300: '#FD7859',
-    400: '#E25A3B',
-    500: '#C03D23',
+    100: '#E9CBC8',
+    200: '#D8A6A1',
+    300: '#B9726A',
+    400: '#974238',
+    500: '#813327',
   },
 
   neutral: {
     50: '#FFF1DC', // App background
     100: '#F3EADF',
     200: '#E4DACF',
-    300: '#C9BFAF',
+    300: '#A08C76',
     400: '#B2A495',
-    500: '#9E8E7F', // for muted buttons, dividers, soft text
+    500: '#817164', // for muted buttons, dividers, soft text
   },
 
   muted: {
@@ -43,5 +43,10 @@ module.exports = {
     300: '#A9BEB7',
     400: '#7A8E89',
     500: '#49645F',
+  },
+
+  blue: {
+    100: '#94B9C7',
+    500: '#2D5679',
   },
 };

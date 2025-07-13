@@ -99,11 +99,12 @@ export default function InvitationWaitingScreen() {
           '[InvitationWaiting] All responded or expired, navigating...'
         );
         if (invitationStatus.acceptedCount > 0) {
-          // At least one person accepted, navigate to pending quest
-          // The pending quest screen will handle showing the cooperative UI
-          console.log('[InvitationWaiting] Navigating to pending quest...');
+          // At least one person accepted, navigate to cooperative pending quest
+          console.log(
+            '[InvitationWaiting] Navigating to cooperative pending quest...'
+          );
           // Use replace so they can't go back to the waiting screen
-          router.replace('/pending-quest');
+          router.replace('/cooperative-pending-quest');
         } else {
           // All declined or expired, go back home
           router.replace('/(app)');

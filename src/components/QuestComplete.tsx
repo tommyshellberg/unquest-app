@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
-import { Image, Text, View } from '@/components/ui';
+import { Image, Text, View, ScreenContainer } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
@@ -27,6 +27,7 @@ type QuestCompleteProps = {
   onContinue?: () => void;
   continueText?: string;
   showActionButton?: boolean;
+  disableEnteringAnimations?: boolean;
 };
 
 export function QuestComplete({
@@ -35,6 +36,7 @@ export function QuestComplete({
   onContinue,
   continueText = 'Continue',
   showActionButton = true,
+  disableEnteringAnimations = false,
 }: QuestCompleteProps) {
   const character = useCharacterStore((state) => state.character);
   const characterName = character?.name || 'Adventurer';
@@ -153,7 +155,7 @@ export function QuestComplete({
       <View className="bg-background-light/80 absolute inset-0" />
 
       {/* Content */}
-      <View className="flex-1 items-center justify-between p-6">
+      <ScreenContainer className="items-center justify-between px-6">
         <Animated.View className="mb-4 mt-6 items-center" style={headerStyle}>
           <Text className="text-cream text-center text-2xl font-bold drop-shadow-md">
             Well done, {characterName}!
@@ -181,7 +183,7 @@ export function QuestComplete({
         </Animated.View>
 
         <Animated.View
-          entering={FadeInDown.delay(200).duration(600)}
+          entering={disableEnteringAnimations ? undefined : FadeInDown.delay(200).duration(600)}
           className="my-4 w-full"
           style={[storyStyle, isStoryQuest ? { flex: 1 } : {}]}
         >
@@ -208,7 +210,7 @@ export function QuestComplete({
           )}
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(400).duration(600)}>
+        <Animated.View entering={disableEnteringAnimations ? undefined : FadeInDown.delay(400).duration(600)}>
           <View className="mb-6 items-center">
             <Text className="text-lg font-bold">
               Reward: {quest.reward.xp} XP
@@ -223,7 +225,7 @@ export function QuestComplete({
             />
           )}
         </Animated.View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

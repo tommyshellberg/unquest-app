@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Redirect, Tabs, useRootNavigationState } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { white } from '@/components/ui/colors';
 import { useAuth } from '@/lib/auth';
@@ -76,11 +77,11 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#334738', // Forest color
         tabBarInactiveTintColor: '#666666',
         tabBarStyle: {
-          height: 68,
-          paddingBottom: 6,
           backgroundColor: white,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
+          height: 120,
+          paddingBottom: 20,
           // Hide tab bar for quest screens and pending-quest
           display:
             ['pending-quest', 'quest-discovery', 'invitation-waiting'].includes(

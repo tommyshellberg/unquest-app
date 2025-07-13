@@ -87,7 +87,7 @@ export const Modal = React.forwardRef(
     const renderHandleComponent = React.useCallback(
       () => (
         <>
-          <View className="mb-8 mt-2 h-1 w-12 self-center rounded-lg bg-neutral-400 dark:bg-neutral-400" />
+          <View className="mb-8 mt-2 h-1 w-12 self-center rounded-lg bg-neutral-400" />
           <ModalHeader title={title} dismiss={modal.dismiss} />
         </>
       ),
@@ -160,7 +160,7 @@ const ModalHeader = React.memo(({ title, dismiss }: ModalHeaderProps) => {
     <>
       {title && (
         <View className="px-2 py-4">
-          <Text className="text-muted-500 dark:text-muted-500 text-center text-[16px] font-bold">
+          <Text className="text-muted-500 text-center text-[16px] font-bold">
             {title}
           </Text>
         </View>
@@ -181,7 +181,7 @@ const CloseButton = ({ close }: { close: () => void }) => {
       accessibilityHint="closes the modal"
     >
       <Svg
-        className="fill-neutral-300 dark:fill-neutral-300"
+        className="fill-neutral-300"
         width={24}
         height={24}
         fill="none"

@@ -1,9 +1,10 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { ArrowLeft, Check, Circle, Clock } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 
+import { useWebSocket } from '@/components/providers/websocket-provider';
 import {
   Button,
   FocusAwareStatusBar,
@@ -12,17 +13,14 @@ import {
   Text,
   View,
 } from '@/components/ui';
-import { useWebSocket } from '@/components/providers/websocket-provider';
+import colors from '@/components/ui/colors';
+import { InfoCard } from '@/components/ui/info-card';
+import QuestTimer from '@/lib/services/quest-timer';
+import type { LobbyReadyStatusPayload } from '@/lib/services/websocket-events.types';
 import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
 import { useQuestStore } from '@/store/quest-store';
-import { useUserStore } from '@/store/user-store';
-import QuestTimer from '@/lib/services/quest-timer';
-import { cooperativeQuestApi } from '@/api/cooperative-quest';
-import type {
-  LobbyReadyStatusPayload,
-  LobbyQuestCreatedPayload,
-} from '@/lib/services/websocket-events.types';
 import type { CustomQuestTemplate } from '@/store/types';
+import { useUserStore } from '@/store/user-store';
 
 interface ParticipantReadyRowProps {
   participant: any;
@@ -35,23 +33,22 @@ function ParticipantReadyRow({
 }: ParticipantReadyRowProps) {
   const getStatusIcon = () => {
     if (participant.isReady) {
-      return (
-        <MaterialCommunityIcons name="check-circle" size={20} color="#10B981" />
-      );
+      return <Check size={20} color={colors.primary[400]} />;
     }
-    return (
-      <MaterialCommunityIcons name="circle-outline" size={20} color="#666" />
-    );
+    return <Circle size={20} color={colors.neutral[400]} />;
   };
 
   return (
-    <View className="mb-3 flex-row items-center rounded-lg bg-white p-4">
+    <View
+      className="mb-3 flex-row items-center rounded-lg p-4"
+      style={{ backgroundColor: colors.cardBackground }}
+    >
       <View className="mr-3">{getStatusIcon()}</View>
       <View className="flex-1">
-        <Text className="font-semibold">
+        <Text className="font-semibold" style={{ fontWeight: '700' }}>
           {participant.username} {isCurrentUser && '(You)'}
         </Text>
-        <Text className="text-sm text-neutral-600">
+        <Text className="text-sm" style={{ color: colors.neutral[500] }}>
           {participant.isReady ? 'Ready!' : 'Not ready yet'}
         </Text>
       </View>
@@ -194,62 +191,77 @@ export default function CooperativeQuestReady() {
   // Define the quest created handler
   const handleQuestCreatedResponse = useCallback(
     async (questRun: any) => {
-      console.log('Quest created, starting countdown:', questRun);
-      // Start countdown
-      updateLobbyStatus('starting');
-      let countdown = 5;
-      setCountdown(countdown);
+      console.log('Quest created, preparing quest:', questRun);
 
-      const countdownInterval = setInterval(() => {
-        countdown--;
-        setCountdown(countdown);
+      // Transform questRun data to match CustomQuestTemplate format
+      const questId =
+        questRun.questId || questRun._id || questRun.id || `coop-${Date.now()}`;
+      console.log(
+        'Creating quest template with ID:',
+        questId,
+        'from questRun:',
+        questRun
+      );
 
-        if (countdown === 0) {
-          clearInterval(countdownInterval);
-          // Transform questRun data to match CustomQuestTemplate format
-          const questId =
-            questRun.questId ||
-            questRun._id ||
-            questRun.id ||
-            `coop-${Date.now()}`;
-          console.log(
-            'Creating quest template with ID:',
-            questId,
-            'from questRun:',
-            questRun
-          );
+      const questTemplate: CustomQuestTemplate = {
+        id: questId,
+        title:
+          questRun.title || questRun.quest?.title || currentLobby.questTitle,
+        durationMinutes:
+          questRun.durationMinutes ||
+          questRun.quest?.durationMinutes ||
+          currentLobby.questDuration,
+        reward: questRun.reward ||
+          questRun.quest?.reward || { xp: currentLobby.questDuration * 10 },
+        mode: 'custom',
+        category: 'cooperative',
+        // Don't include inviteeIds in the template - the server already created the quest
+        // with all participants. Including inviteeIds would trigger a new quest creation
+      };
 
-          const questTemplate: CustomQuestTemplate = {
-            id: questId,
-            title:
-              questRun.title ||
-              questRun.quest?.title ||
-              currentLobby.questTitle,
-            durationMinutes:
-              questRun.durationMinutes ||
-              questRun.quest?.durationMinutes ||
-              currentLobby.questDuration,
-            reward: questRun.reward ||
-              questRun.quest?.reward || { xp: currentLobby.questDuration * 10 },
-            mode: 'custom',
-            category: 'cooperative',
-            inviteeIds: questRun.participants?.map((p: any) => p.userId) || [],
-          };
+      // Get the quest run ID from the server response
+      const questRunId = questRun.id || questRun._id;
+      if (!questRunId) {
+        console.error(
+          '[CooperativeQuestReady] No quest run ID in server response:',
+          questRun
+        );
+        throw new Error('Server did not provide quest run ID');
+      }
 
-          // Prepare quest with transformed data
-          prepareQuest(questTemplate);
-          QuestTimer.prepareQuest(questTemplate);
+      // Store the full questRun data in the quest store for cooperative features
+      const questStore = useQuestStore.getState();
 
-          // Store the full questRun data in the quest store for cooperative features
-          const questStore = useQuestStore.getState();
-          questStore.setCooperativeQuestRun({
-            ...questRun,
-            questId: questId, // Ensure quest ID is consistent
-          });
-        }
-      }, 1000);
+      // Ensure the cooperative quest run is set with the server-created quest run
+      const cooperativeQuestRunData = {
+        id: questRunId,
+        questId: questId,
+        hostId: questRun.hostId || questRun.creatorId,
+        status: questRun.status || 'pending',
+        participants: questRun.participants || [],
+        invitationId: questRun.invitationId,
+        actualStartTime: questRun.actualStartTime,
+        scheduledEndTime: questRun.scheduledEndTime,
+        createdAt: questRun.createdAt || Date.now(),
+        updatedAt: questRun.updatedAt || Date.now(),
+      };
+
+      console.log(
+        '[CooperativeQuestReady] Setting cooperative quest run:',
+        cooperativeQuestRunData
+      );
+      questStore.setCooperativeQuestRun(cooperativeQuestRunData);
+
+      // Prepare quest with transformed data
+      prepareQuest(questTemplate);
+
+      // For cooperative quests, pass the quest run ID directly to avoid race conditions
+      await QuestTimer.prepareQuest(questTemplate, questRunId);
+
+      // Navigate to cooperative pending quest which will show the countdown
+      router.replace('/cooperative-pending-quest');
     },
-    [currentLobby, updateLobbyStatus, setCountdown, prepareQuest]
+    [currentLobby, prepareQuest, router]
   );
 
   // When all are ready, creator should create the quest
@@ -324,36 +336,25 @@ export default function CooperativeQuestReady() {
     setIsLoading(false);
   };
 
-  // Show countdown screen
-  if (currentLobby.status === 'starting' && countdownSeconds !== null) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-primary-400">
-        <FocusAwareStatusBar />
-        <Text className="mb-4 text-3xl font-bold text-white">Get Ready!</Text>
-        <Text className="mb-8 text-xl text-white">Lock your phone in...</Text>
-        <View className="mb-8 size-32 items-center justify-center rounded-full bg-white">
-          <Text className="text-6xl font-bold text-primary-400">
-            {countdownSeconds}
-          </Text>
-        </View>
-        <Text className="text-lg text-white">
-          All players must lock their phones to start
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
+    <SafeAreaView
+      className="flex-1"
+      style={{ backgroundColor: colors.background }}
+    >
       <FocusAwareStatusBar />
 
       {/* Header */}
-      <View className="border-b border-neutral-200 bg-white px-5 py-4">
+      <View
+        className="border-b px-5 pb-4"
+        style={{ borderBottomColor: colors.neutral[200] }}
+      >
         <View className="flex-row items-center justify-between">
           <TouchableOpacity onPress={handleBackPress}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
+            <ArrowLeft size={24} color={colors.black} />
           </TouchableOpacity>
-          <Text className="text-lg font-semibold">Get Ready</Text>
+          <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>
+            Get Ready
+          </Text>
           <View className="w-6" />
         </View>
       </View>
@@ -361,36 +362,40 @@ export default function CooperativeQuestReady() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="p-5">
           {/* Quest Info */}
-          <View className="mb-6 rounded-lg bg-white p-4">
-            <Text className="mb-2 text-xl font-bold">
+          <View
+            className="mb-6 rounded-lg p-4"
+            style={{ backgroundColor: colors.cardBackground }}
+          >
+            <Text
+              className="mb-2 text-xl font-bold"
+              style={{ fontWeight: '700' }}
+            >
               {currentLobby.questTitle}
             </Text>
             <View className="flex-row items-center">
-              <MaterialCommunityIcons
-                name="clock-outline"
-                size={16}
-                color="#666"
-              />
-              <Text className="ml-1 text-sm text-neutral-600">
+              <Clock size={16} color={colors.neutral[400]} />
+              <Text
+                className="ml-1 text-sm"
+                style={{ color: colors.neutral[500] }}
+              >
                 {currentLobby.questDuration} minutes
               </Text>
             </View>
           </View>
 
           {/* Instructions */}
-          <View className="mb-6 rounded-lg bg-blue-100 p-4">
-            <Text className="mb-2 text-base font-semibold text-blue-800">
-              Ready to start?
-            </Text>
-            <Text className="text-sm text-blue-800">
-              Mark yourself as ready below. Once all players are ready, you'll
-              have 5 seconds to lock your phone. The quest begins when
-              everyone's phone is locked!
-            </Text>
-          </View>
+          <InfoCard
+            title="Ready to start?"
+            description="Mark yourself as ready below. Once all players are ready, a countdown will begin. The quest begins when everyone's phone is locked!"
+          />
 
           {/* Participants Ready Status */}
-          <Text className="mb-3 text-lg font-semibold">Ready Status</Text>
+          <Text
+            className="mb-3 mt-6 text-lg font-semibold"
+            style={{ fontWeight: '700' }}
+          >
+            Ready Status
+          </Text>
           {acceptedParticipants.map((participant) => (
             <ParticipantReadyRow
               key={participant.id}
@@ -400,8 +405,14 @@ export default function CooperativeQuestReady() {
           ))}
 
           {allReady && (
-            <View className="mt-4 rounded-lg bg-green-100 p-4">
-              <Text className="text-center text-base font-semibold text-green-800">
+            <View
+              className="mt-4 rounded-lg p-4"
+              style={{ backgroundColor: colors.primary[100] }}
+            >
+              <Text
+                className="text-center text-base font-semibold"
+                style={{ color: colors.primary[500], fontWeight: '700' }}
+              >
                 All players ready! Quest starting soon...
               </Text>
             </View>
@@ -410,12 +421,15 @@ export default function CooperativeQuestReady() {
       </ScrollView>
 
       {/* Ready Button */}
-      <View className="border-t border-neutral-200 bg-white p-5">
+      <View
+        className="border-t p-5"
+        style={{ borderTopColor: colors.neutral[200] }}
+      >
         <Button
           label={isReady ? 'Not Ready' : "I'm Ready!"}
           onPress={handleReadyToggle}
           disabled={isLoading}
-          className={`rounded-lg ${isReady ? 'bg-neutral-300' : 'bg-primary-400'}`}
+          className={`rounded-lg ${isReady ? 'bg-red-300' : 'bg-primary-400'}`}
           textClassName={`font-bold text-lg ${isReady ? 'text-neutral-700' : 'text-white'}`}
         />
       </View>

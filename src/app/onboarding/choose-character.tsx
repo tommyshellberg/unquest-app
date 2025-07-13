@@ -161,10 +161,10 @@ export default function ChooseCharacterScreen() {
         return (
           <View key="intro-and-name">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-xl font-bold">Your Character</Text>
+              <Text className="text-3xl font-bold">Your Character</Text>
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 text-sm font-semibold">
+              <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
                 Your companion on this journey
               </Text>
             </Animated.View>
@@ -187,7 +187,7 @@ export default function ChooseCharacterScreen() {
             <Animated.View entering={FadeInDown.delay(2100)}>
               <Text className="mb-2">Character Name</Text>
               <TextInput
-                className="h-12 rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200 dark:text-primary-400 dark:placeholder:text-muted-200"
+                className="h-12 rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200"
                 value={inputName}
                 onChangeText={(text) => {
                   const filtered = text.replace(/[^a-zA-Z0-9\s]/g, '');
@@ -205,18 +205,24 @@ export default function ChooseCharacterScreen() {
         return (
           <View key="character-selection" className="flex-1">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-xl font-bold">
-                Choose {debouncedName}'s Character Type
+              <Text className="text-3xl font-bold">Hello, {debouncedName}</Text>
+            </Animated.View>
+            <Animated.View entering={FadeInLeft.delay(600)}>
+              <Text className="mt-1 text-lg font-bold leading-relaxed">
+                It's time to choose your hero.
               </Text>
             </Animated.View>
-            <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 text-sm font-semibold">
-                Select the character that speaks to you
+            <Animated.View entering={FadeInDown.delay(1000)}>
+              <Text className="mt-6 text-base leading-relaxed">
+                Each hero brings unique strengths.
+              </Text>
+              <Text className="mb-6 text-base leading-relaxed">
+                Future updates will unlock special abilities and perks.
               </Text>
             </Animated.View>
 
             <Animated.View
-              className="flex-1 -mx-6"
+              className="-mx-6 flex-1"
               entering={FadeIn.delay(1100)}
             >
               <FlatList

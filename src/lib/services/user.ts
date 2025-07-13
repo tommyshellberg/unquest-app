@@ -20,6 +20,7 @@ export interface UserDetails {
   dailyQuestStreak?: number;
   totalQuestsCompleted?: number;
   totalMinutesOffPhone?: number;
+  featureFlags?: string[];
   // Legacy fields for backward compatibility
   type?: string;
   level?: number;

@@ -6,7 +6,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Button, Image, Text, View } from '@/components/ui';
+import { Button, Image, Text, View, ScreenContainer } from '@/components/ui';
 import type {
   CustomQuestTemplate,
   Quest,
@@ -57,7 +57,7 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
         />
       </View>
 
-      <View className="flex-1 px-6 py-8">
+      <ScreenContainer className="py-8">
         {/* Title Section */}
         <Animated.View
           style={headerAnimatedStyle}
@@ -86,10 +86,7 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
         </Animated.View>
 
         {/* Button Section */}
-        <Animated.View
-          style={buttonAnimatedStyle}
-          className="mb-2 items-center"
-        >
+        <Animated.View style={buttonAnimatedStyle} className="items-center">
           <Button
             label="Try Again"
             onPressOut={onRetry}
@@ -97,7 +94,7 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
             textClassName="text-white font-semibold"
           />
         </Animated.View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

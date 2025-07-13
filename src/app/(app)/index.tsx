@@ -4,6 +4,8 @@ import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image } from 'react-native';
 import Animated, {
+  FadeIn,
+  FadeInDown,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
@@ -12,14 +14,18 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { getRefreshToken } from '@/api/token';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { getMapNameForQuest } from '@/app/utils/map-utils';
 import QuestCard from '@/components/home/quest-card';
 import { StreakCounter } from '@/components/StreakCounter';
-import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  ScreenContainer,
+  ScreenHeader,
+  View,
+} from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
-import { getUserDetails } from '@/lib/services/user';
 import { useQuestStore } from '@/store/quest-store';
 import { type QuestOption } from '@/store/types';
 import { useUserStore } from '@/store/user-store';
@@ -27,8 +33,13 @@ import { useUserStore } from '@/store/user-store';
 // Define screen dimensions for the carousel
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
-const cardSpacing = 24; // spacing between cards
+const cardSpacing = 16; // spacing between cards
 const snapInterval = cardWidth + cardSpacing; // adjust snap to include spacing
+const cardHeight = cardWidth * (4 / 3); // Height based on 3:4 aspect ratio
+
+// Pre-require animations to avoid dynamic require
+const curvedLeftAnimation = require('@/../assets/animations/curved-left.json');
+const curvedRightAnimation = require('@/../assets/animations/curved-right.json');
 
 // Define our modes
 const MODES = [
@@ -192,22 +203,8 @@ export default function Home() {
     }
   }, [activeQuest, pendingQuest, refreshAvailableQuests]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const refreshToken = getRefreshToken();
-        if (!refreshToken) {
-          return;
-        }
-
-        await getUserDetails();
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  // User data should already be loaded from auth hydration
+  // The component will re-render when user data changes
 
   // Initialize animations
   useEffect(() => {
@@ -266,6 +263,13 @@ export default function Home() {
 
   // Check if user has cooperative quest feature
   const hasCoopFeature = user?.featureFlags?.includes('coop_mode') || false;
+
+  // Debug log to understand timing
+  useEffect(() => {
+    console.log('[Home] User state:', user ? 'loaded' : 'not loaded');
+    console.log('[Home] Feature flags:', user?.featureFlags);
+    console.log('[Home] Has coop feature:', hasCoopFeature);
+  }, [user, hasCoopFeature]);
 
   // Prepare carousel data
   const carouselData = [
@@ -379,27 +383,87 @@ export default function Home() {
       return null;
     }
 
-    // Otherwise show buttons for each option in a row
+    // Single option gets same treatment as multi-option
+    if (storyOptions.length === 1) {
+      return (
+        <Animated.View
+          entering={FadeIn.duration(600).delay(200)}
+          className="w-full items-center px-4"
+        >
+          <Animated.View
+            entering={FadeInDown.duration(600).delay(400)}
+            style={{
+              width: cardWidth,
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+              shadowOpacity: 0.12,
+              shadowRadius: 4,
+              elevation: 6,
+            }}
+          >
+            <Button
+              label={storyOptions[0].text}
+              onPress={() =>
+                handleQuestOptionSelect(storyOptions[0].nextQuestId)
+              }
+              className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
+              textClassName="text-sm text-white text-center leading-tight"
+              textStyle={{ fontWeight: '700' }}
+              disabled={!storyOptions[0].nextQuestId}
+            />
+          </Animated.View>
+        </Animated.View>
+      );
+    }
+
+    // Multiple options with arrow animations
     return (
-      <View className="w-full flex-row justify-between gap-2 px-2">
-        {storyOptions.map((option: QuestOption, index: number) => (
-          <Button
-            key={option.id}
-            label={option.text}
-            onPress={() => handleQuestOptionSelect(option.nextQuestId)}
-            className={`flex-1 justify-center rounded-xl ${index === 0 ? 'mr-1 bg-primary-400' : 'ml-1 bg-neutral-400'}`}
-            textClassName="text-sm text-white text-center leading-tight"
-            disabled={!option.nextQuestId} // Disable if nextQuestId is null
-          />
-        ))}
-      </View>
+      <Animated.View
+        entering={FadeIn.duration(600).delay(200)}
+        className="w-full items-center px-4"
+      >
+        {/* Decision buttons */}
+        <View className="w-full flex-row justify-between gap-3">
+          {storyOptions.map((option: QuestOption, index: number) => (
+            <Animated.View
+              key={option.id}
+              entering={FadeInDown.duration(600).delay(400 + index * 100)}
+              className="flex-1"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: 3,
+                },
+                shadowOpacity: 0.12,
+                shadowRadius: 4,
+                elevation: 6,
+              }}
+            >
+              <Button
+                label={option.text}
+                onPress={() => handleQuestOptionSelect(option.nextQuestId)}
+                className={`min-h-[48px] justify-center rounded-xl p-3 ${
+                  index === 0 ? 'bg-neutral-300' : 'bg-primary-300'
+                }`}
+                textClassName="text-sm text-white text-center leading-tight"
+                textStyle={{ fontWeight: '700' }}
+                disabled={!option.nextQuestId} // Disable if nextQuestId is null
+              />
+            </Animated.View>
+          ))}
+        </View>
+      </Animated.View>
     );
   };
 
   // Render item for the carousel
   const renderCarouselItem = ({ item }: { item: any }) => {
     return (
-      <View className="w-full" style={{ width: cardWidth }}>
+      <View style={{ width: cardWidth }}>
         <QuestCard
           mode={item.mode}
           title={item.title}
@@ -440,21 +504,18 @@ export default function Home() {
         />
       </View>
 
-      <View className="flex-1 flex-col">
+      <ScreenContainer className="flex-col">
         {/* Header */}
-        <Animated.View style={headerStyle} className="mb-4 px-4">
-          <Text className="mb-3 mt-2 text-xl font-bold">
-            Choose Your Adventure
-          </Text>
-          <Text>
-            Continue your epic story or embark on a new challenge in free play
-            mode.
-          </Text>
-        </Animated.View>
+        <ScreenHeader
+          title="Choose Your Adventure"
+          subtitle="Continue your epic story, create a quest of your own design, or play a cooperative quest with a friend."
+        />
 
         {/* Main content area */}
         <View className="flex-1 justify-center">
-          <Animated.View style={[animatedScrollStyle]} className="mb-4">
+          <Animated.View
+            style={[animatedScrollStyle, { height: cardHeight + 20 }]}
+          >
             <FlashList
               data={carouselData}
               horizontal
@@ -464,8 +525,8 @@ export default function Home() {
               keyExtractor={(item) => item.id}
               initialScrollIndex={0} // Start at the first item
               contentContainerStyle={{
-                paddingHorizontal: (screenWidth - cardWidth) / 2,
-                paddingBottom: 24, // Add some bottom padding
+                paddingHorizontal: (screenWidth - cardWidth) / 2 - cardSpacing,
+                paddingVertical: 10,
               }}
               ItemSeparatorComponent={() => (
                 <View style={{ width: cardSpacing }} />
@@ -485,31 +546,74 @@ export default function Home() {
 
         {/* Footer area with buttons */}
         {!activeQuest && !pendingQuest && (
-          <View className="mt-auto items-center justify-center pb-8">
+          <View
+            className="items-center justify-center"
+            style={{ minHeight: 140 }}
+          >
             {activeIndex === 0 ? (
               renderStoryOptions()
             ) : activeIndex === 1 ? (
               // Show create custom quest button for custom mode
-              <Button
-                label="Create Custom Quest"
-                onPress={handleStartCustomQuest}
-                className="mb-2 rounded-md bg-primary-400"
-                textClassName="text-white font-bold"
-                style={{ width: cardWidth }}
-              />
+              <Animated.View
+                entering={FadeIn.duration(600).delay(200)}
+                className="w-full items-center px-4"
+              >
+                <Animated.View
+                  entering={FadeInDown.duration(600).delay(400)}
+                  style={{
+                    width: cardWidth,
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 3,
+                    },
+                    shadowOpacity: 0.12,
+                    shadowRadius: 4,
+                    elevation: 6,
+                  }}
+                >
+                  <Button
+                    label="Create Custom Quest"
+                    onPress={handleStartCustomQuest}
+                    className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
+                    textClassName="text-sm text-white text-center leading-tight"
+                    textStyle={{ fontWeight: '700' }}
+                  />
+                </Animated.View>
+              </Animated.View>
             ) : activeIndex === 2 && hasCoopFeature ? (
               // Show cooperative quest button for cooperative mode (only if user has feature)
-              <Button
-                label="Cooperative Quests"
-                onPress={handleCooperativeQuest}
-                className="mb-2 rounded-md bg-primary-400"
-                textClassName="text-white font-bold"
-                style={{ width: cardWidth }}
-              />
+              <Animated.View
+                entering={FadeIn.duration(600).delay(200)}
+                className="w-full items-center px-4"
+              >
+                <Animated.View
+                  entering={FadeInDown.duration(600).delay(400)}
+                  style={{
+                    width: cardWidth,
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 3,
+                    },
+                    shadowOpacity: 0.12,
+                    shadowRadius: 4,
+                    elevation: 6,
+                  }}
+                >
+                  <Button
+                    label="Cooperative Quests"
+                    onPress={handleCooperativeQuest}
+                    className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
+                    textClassName="text-sm text-white text-center leading-tight"
+                    textStyle={{ fontWeight: '700' }}
+                  />
+                </Animated.View>
+              </Animated.View>
             ) : null}
           </View>
         )}
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

@@ -10,6 +10,8 @@ import {
   View,
   ScrollView,
   Pressable,
+  ScreenContainer,
+  ScreenHeader,
 } from '@/components/ui';
 import { getPendingInvitations } from '@/lib/services/invitation-service';
 import { useInvitationActions } from '@/lib/hooks/use-cooperative-quest';
@@ -89,14 +91,12 @@ export default function QuestDiscoveryScreen() {
     <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
-      {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-[#EEEEEE] px-5 py-4">
-        <Pressable onPress={() => router.back()}>
-          <Text className="text-base text-[#333]">Back</Text>
-        </Pressable>
-        <Text className="text-lg font-semibold">Join a Quest</Text>
-        <View className="w-14" />
-      </View>
+      <ScreenContainer>
+        {/* Header */}
+        <ScreenHeader
+          title="Join a Quest"
+          showBackButton
+        />
 
       {/* Content */}
       <ScrollView
@@ -136,6 +136,7 @@ export default function QuestDiscoveryScreen() {
           </View>
         </View>
       </ScrollView>
+      </ScreenContainer>
     </View>
   );
 }

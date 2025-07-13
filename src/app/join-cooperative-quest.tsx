@@ -1,5 +1,11 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import {
+  ArrowLeft,
+  Clock,
+  Inbox,
+  User,
+  Users,
+} from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -17,6 +23,8 @@ import {
   Text,
   View,
 } from '@/components/ui';
+import colors from '@/components/ui/colors.js';
+import { InfoCard } from '@/components/ui/info-card';
 
 interface InvitationCardProps {
   invitation: any;
@@ -53,18 +61,22 @@ function InvitationCard({
     invitation.duration ||
     invitation.metadata?.questDuration ||
     invitation.questData?.duration ||
+    invitation.quest?.durationMinutes ||
     invitation.quest?.duration ||
     invitation.questRun?.duration ||
     invitation.questRun?.durationMinutes ||
     30;
 
   return (
-    <Card className="mb-4 bg-white p-4">
+    <Card
+      className="mb-4 p-4"
+      style={{ backgroundColor: colors.cardBackground }}
+    >
       <View className="mb-3">
-        <Text className="text-lg font-semibold">{questTitle}</Text>
+        <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>{questTitle}</Text>
         <View className="mt-2 flex-row items-center">
-          <MaterialCommunityIcons name="account" size={16} color="#666" />
-          <Text className="ml-1 text-sm text-neutral-600">
+          <User size={16} color={colors.neutral[400]} />
+          <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
             Invited by{' '}
             {invitation.inviter.characterName ||
               invitation.inviter.username ||
@@ -72,14 +84,14 @@ function InvitationCard({
           </Text>
         </View>
         <View className="mt-1 flex-row items-center">
-          <MaterialCommunityIcons name="clock-outline" size={16} color="#666" />
-          <Text className="ml-1 text-sm text-neutral-600">
+          <Clock size={16} color={colors.neutral[400]} />
+          <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
             {questDuration} minutes
           </Text>
         </View>
         <View className="mt-1 flex-row items-center">
-          <MaterialCommunityIcons name="account-group" size={16} color="#666" />
-          <Text className="ml-1 text-sm text-neutral-600">
+          <Users size={16} color={colors.neutral[400]} />
+          <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
             {invitation.acceptedCount}/{invitation.inviteeCount} accepted
           </Text>
         </View>
@@ -89,9 +101,10 @@ function InvitationCard({
         <TouchableOpacity
           onPress={onDecline}
           disabled={isProcessing}
-          className="flex-1 rounded-lg bg-neutral-200 px-4 py-3"
+          className="flex-1 rounded-lg px-4 py-3"
+          style={{ backgroundColor: colors.neutral[300] }}
         >
-          <Text className="text-center font-semibold text-neutral-700">
+          <Text className="text-center font-semibold text-neutral-700" style={{ fontWeight: '700' }}>
             Decline
           </Text>
         </TouchableOpacity>
@@ -100,7 +113,7 @@ function InvitationCard({
           disabled={isProcessing}
           className="flex-1 rounded-lg bg-primary-400 px-4 py-3"
         >
-          <Text className="text-center font-semibold text-white">Accept</Text>
+          <Text className="text-center font-semibold text-white" style={{ fontWeight: '700' }}>Accept</Text>
         </TouchableOpacity>
       </View>
     </Card>
@@ -170,6 +183,7 @@ export default function JoinCooperativeQuest() {
         invitation.duration ||
         invitation.metadata?.questDuration ||
         invitation.questData?.duration ||
+        invitation.quest?.durationMinutes ||
         invitation.quest?.duration ||
         invitation.questRun?.duration ||
         invitation.questRun?.durationMinutes ||
@@ -218,6 +232,7 @@ export default function JoinCooperativeQuest() {
         invitation.duration ||
         invitation.metadata?.questDuration ||
         invitation.questData?.duration ||
+        invitation.quest?.durationMinutes ||
         invitation.quest?.duration ||
         invitation.questRun?.duration ||
         invitation.questRun?.durationMinutes ||
@@ -239,16 +254,26 @@ export default function JoinCooperativeQuest() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
+    <SafeAreaView
+      className="flex-1"
+      style={{ backgroundColor: colors.background }}
+    >
       <FocusAwareStatusBar />
 
       {/* Header */}
-      <View className="border-b border-neutral-200 bg-white px-5 py-4">
+      <View
+        className="border-b px-5 pb-4"
+        style={{
+          borderBottomColor: colors.neutral[200],
+        }}
+      >
         <View className="flex-row items-center justify-between">
           <TouchableOpacity onPress={() => router.back()}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
+            <ArrowLeft size={24} color={colors.black} />
           </TouchableOpacity>
-          <Text className="text-lg font-semibold">Join Quest</Text>
+          <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>
+            Join a Cooperative Quest
+          </Text>
           <View className="w-6" />
         </View>
       </View>
@@ -275,13 +300,12 @@ export default function JoinCooperativeQuest() {
           <>
             {/* No Invitations */}
             <View className="items-center py-10">
-              <MaterialCommunityIcons
-                name="inbox-outline"
-                size={48}
-                color="#999"
-              />
-              <Text className="mt-3 text-lg font-semibold">No Invitations</Text>
-              <Text className="mt-2 text-center text-neutral-600">
+              <Inbox size={48} color={colors.neutral[400]} />
+              <Text className="mt-3 text-lg font-semibold" style={{ fontWeight: '700' }}>No Invitations</Text>
+              <Text
+                className="mt-2 text-center text-base"
+                style={{ color: colors.neutral[500] }}
+              >
                 You don't have any pending quest invitations.
               </Text>
             </View>
@@ -289,9 +313,15 @@ export default function JoinCooperativeQuest() {
             {/* Public Quests Section - Coming Soon */}
             <View className="mt-8">
               <View className="mb-4 flex-row items-center justify-between">
-                <Text className="text-lg font-semibold">Public Quests</Text>
-                <View className="rounded-full bg-amber-100 px-3 py-1">
-                  <Text className="text-xs font-semibold text-amber-700">
+                <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>Public Quests</Text>
+                <View
+                  className="rounded-full px-3 py-1"
+                  style={{ backgroundColor: colors.secondary[100] }}
+                >
+                  <Text
+                    className="text-sm font-semibold"
+                    style={{ color: colors.secondary[500], fontWeight: '600' }}
+                  >
                     Coming Soon
                   </Text>
                 </View>
@@ -307,33 +337,22 @@ export default function JoinCooperativeQuest() {
                     participants: '12/20',
                     startTime: 'Starts in 5 min',
                   },
-                  {
-                    title: 'Study Hall - No Distractions',
-                    host: 'StudyBuddy',
-                    duration: 45,
-                    participants: '8/15',
-                    startTime: 'Starts in 12 min',
-                  },
-                  {
-                    title: 'Evening Wind Down',
-                    host: 'ZenMaster',
-                    duration: 30,
-                    participants: '5/10',
-                    startTime: 'Starts in 20 min',
-                  },
                 ].map((quest, index) => (
-                  <Card key={index} className="mb-3 bg-white p-4">
+                  <Card
+                    key={index}
+                    className="mb-3 p-4"
+                    style={{ backgroundColor: colors.cardBackground }}
+                  >
                     <View className="mb-3">
-                      <Text className="text-base font-semibold">
+                      <Text className="text-base font-semibold" style={{ fontWeight: '700' }}>
                         {quest.title}
                       </Text>
                       <View className="mt-2 flex-row items-center">
-                        <MaterialCommunityIcons
-                          name="account"
-                          size={14}
-                          color="#666"
-                        />
-                        <Text className="ml-1 text-xs text-neutral-600">
+                        <User size={16} color={colors.neutral[400]} />
+                        <Text
+                          className="ml-1 text-sm"
+                          style={{ color: colors.neutral[500] }}
+                        >
                           Hosted by {quest.host}
                         </Text>
                       </View>
@@ -341,35 +360,40 @@ export default function JoinCooperativeQuest() {
 
                     <View className="mb-3 flex-row justify-between">
                       <View className="flex-row items-center">
-                        <MaterialCommunityIcons
-                          name="clock-outline"
-                          size={14}
-                          color="#666"
-                        />
-                        <Text className="ml-1 text-xs text-neutral-600">
+                        <Clock size={16} color={colors.neutral[400]} />
+                        <Text
+                          className="ml-1 text-sm"
+                          style={{ color: colors.neutral[500] }}
+                        >
                           {quest.duration} min
                         </Text>
                       </View>
                       <View className="flex-row items-center">
-                        <MaterialCommunityIcons
-                          name="account-group"
-                          size={14}
-                          color="#666"
-                        />
-                        <Text className="ml-1 text-xs text-neutral-600">
+                        <Users size={16} color={colors.neutral[400]} />
+                        <Text
+                          className="ml-1 text-sm"
+                          style={{ color: colors.neutral[500] }}
+                        >
                           {quest.participants}
                         </Text>
                       </View>
-                      <Text className="text-xs font-semibold text-primary-600">
+                      <Text
+                        className="text-sm font-semibold"
+                        style={{ color: colors.primary[400], fontWeight: '600' }}
+                      >
                         {quest.startTime}
                       </Text>
                     </View>
 
                     <TouchableOpacity
                       disabled
-                      className="rounded-lg bg-neutral-200 px-4 py-2"
+                      className="rounded-lg px-4 py-2"
+                      style={{ backgroundColor: colors.neutral[200] }}
                     >
-                      <Text className="text-center text-sm font-semibold text-neutral-500">
+                      <Text
+                        className="text-center text-sm font-semibold"
+                        style={{ color: colors.neutral[400], fontWeight: '600' }}
+                      >
                         Join (Coming Soon)
                       </Text>
                     </TouchableOpacity>
@@ -377,32 +401,16 @@ export default function JoinCooperativeQuest() {
                 ))}
               </View>
 
-              <View className="mt-4 rounded-lg bg-blue-50 p-4">
-                <View className="flex-row items-start">
-                  <MaterialCommunityIcons
-                    name="information"
-                    size={16}
-                    color="#2563EB"
-                    style={{ marginTop: 2 }}
-                  />
-                  <View className="ml-2 flex-1">
-                    <Text className="text-sm font-semibold text-blue-700">
-                      Public Quests are coming soon!
-                    </Text>
-                    <Text className="mt-1 text-xs text-blue-600">
-                      Soon you'll be able to join quests created by the
-                      community, compete on leaderboards, and find
-                      accountability partners worldwide.
-                    </Text>
-                  </View>
-                </View>
-              </View>
+              <InfoCard
+                title="Public Quests are coming soon!"
+                description="Soon you'll be able to join quests created by the community, compete on leaderboards, and find accountability partners worldwide."
+              />
             </View>
           </>
         ) : (
           <>
             {/* Pending Invitations Section */}
-            <Text className="mb-4 text-lg font-semibold">
+            <Text className="mb-4 text-lg font-semibold" style={{ fontWeight: '700' }}>
               Pending Invitations ({invitations.length})
             </Text>
             {invitations.map((invitation) => (
@@ -414,119 +422,6 @@ export default function JoinCooperativeQuest() {
                 isProcessing={processingId === invitation.id}
               />
             ))}
-
-            {/* Public Quests Section - Coming Soon */}
-            <View className="mt-8">
-              <View className="mb-4 flex-row items-center justify-between">
-                <Text className="text-lg font-semibold">Public Quests</Text>
-                <View className="rounded-full bg-amber-100 px-3 py-1">
-                  <Text className="text-xs font-semibold text-amber-700">
-                    Coming Soon
-                  </Text>
-                </View>
-              </View>
-
-              {/* Mock Public Quest Cards */}
-              <View className="opacity-60">
-                {[
-                  {
-                    title: 'Morning Productivity Challenge',
-                    host: 'ProductivityPro',
-                    duration: 25,
-                    participants: '12/20',
-                    startTime: 'Starts in 5 min',
-                  },
-                  {
-                    title: 'Study Hall - No Distractions',
-                    host: 'StudyBuddy',
-                    duration: 45,
-                    participants: '8/15',
-                    startTime: 'Starts in 12 min',
-                  },
-                  {
-                    title: 'Evening Wind Down',
-                    host: 'ZenMaster',
-                    duration: 30,
-                    participants: '5/10',
-                    startTime: 'Starts in 20 min',
-                  },
-                ].map((quest, index) => (
-                  <Card key={index} className="mb-3 bg-white p-4">
-                    <View className="mb-3">
-                      <Text className="text-base font-semibold">
-                        {quest.title}
-                      </Text>
-                      <View className="mt-2 flex-row items-center">
-                        <MaterialCommunityIcons
-                          name="account"
-                          size={14}
-                          color="#666"
-                        />
-                        <Text className="ml-1 text-xs text-neutral-600">
-                          Hosted by {quest.host}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View className="mb-3 flex-row justify-between">
-                      <View className="flex-row items-center">
-                        <MaterialCommunityIcons
-                          name="clock-outline"
-                          size={14}
-                          color="#666"
-                        />
-                        <Text className="ml-1 text-xs text-neutral-600">
-                          {quest.duration} min
-                        </Text>
-                      </View>
-                      <View className="flex-row items-center">
-                        <MaterialCommunityIcons
-                          name="account-group"
-                          size={14}
-                          color="#666"
-                        />
-                        <Text className="ml-1 text-xs text-neutral-600">
-                          {quest.participants}
-                        </Text>
-                      </View>
-                      <Text className="text-xs font-semibold text-primary-600">
-                        {quest.startTime}
-                      </Text>
-                    </View>
-
-                    <TouchableOpacity
-                      disabled
-                      className="rounded-lg bg-neutral-200 px-4 py-2"
-                    >
-                      <Text className="text-center text-sm font-semibold text-neutral-500">
-                        Join (Coming Soon)
-                      </Text>
-                    </TouchableOpacity>
-                  </Card>
-                ))}
-              </View>
-
-              <View className="mt-4 rounded-lg bg-blue-50 p-4">
-                <View className="flex-row items-start">
-                  <MaterialCommunityIcons
-                    name="information"
-                    size={16}
-                    color="#2563EB"
-                    style={{ marginTop: 2 }}
-                  />
-                  <View className="ml-2 flex-1">
-                    <Text className="text-sm font-semibold text-blue-700">
-                      Public Quests are coming soon!
-                    </Text>
-                    <Text className="mt-1 text-xs text-blue-600">
-                      Soon you'll be able to join quests created by the
-                      community, compete on leaderboards, and find
-                      accountability partners worldwide.
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
           </>
         )}
       </ScrollView>

@@ -7,7 +7,13 @@ import Animated, {
   FadeInLeft,
 } from 'react-native-reanimated';
 
-import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  ScreenContainer,
+  Text,
+  View,
+} from '@/components/ui';
 import { useOnboardingStore } from '@/store/onboarding-store';
 import { OnboardingStep } from '@/store/onboarding-store';
 
@@ -52,42 +58,42 @@ export default function QuestCompletedSignupScreen() {
         <View className="absolute inset-0 bg-white/10" />
       </View>
 
-      <View className="flex-1 justify-between p-6">
-        <View className="mt-2">
+      <ScreenContainer className="justify-between">
+        <View className="mt-6">
           <Animated.View entering={FadeInLeft.delay(100)}>
-            <Text className="text-xl font-bold">Claim Your Legend</Text>
+            <Text className="text-3xl font-bold">Claim Your Legend</Text>
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(600)}>
-            <Text className="mb-2 font-semibold text-white">
+            <Text className="mt-2 text-lg font-bold leading-relaxed">
               You've completed your first quest—Vaedros already feels safer!
             </Text>
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(1100)}>
-            <Text className="mb-4">
+            <Text className="mt-4 text-base leading-relaxed">
               Create a free account to keep your hero's story alive and unlock
-              the realm's social magic.
+              the realm's magic.
             </Text>
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(1600)}>
-            <Text className="mb-4 text-lg font-semibold">
+            <Text className="mb-4 mt-6 text-lg font-semibold">
               Create an account to:
             </Text>
-            <Text className="mb-2 ml-4">
+            <Text className="mb-3 ml-4 text-base leading-relaxed">
               • Save your progress and continue your story
             </Text>
-            <Text className="mb-2 ml-4">
+            <Text className="mb-3 ml-4 text-base leading-relaxed">
               • Unlock the ability to add friends
             </Text>
-            <Text className="mb-2 ml-4">
-              • Join guilds and participate in cooperative quests(coming soon)
+            <Text className="mb-3 ml-4 text-base leading-relaxed">
+              • Participate in cooperative quests (coming soon)
             </Text>
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(2100)}>
-            <Text className="my-4">
+            <Text className="my-6 text-base leading-relaxed">
               Your hero is currently stored on this device only. Secure the
               journey now and pick up right where you left off—anywhere,
               anytime.
@@ -95,7 +101,7 @@ export default function QuestCompletedSignupScreen() {
           </Animated.View>
         </View>
 
-        <Animated.View entering={FadeIn.delay(2600)} className="mb-6">
+        <Animated.View entering={FadeIn.delay(2600)}>
           <Button
             label="Create Account"
             onPress={handleCreateAccount}
@@ -104,7 +110,7 @@ export default function QuestCompletedSignupScreen() {
             textClassName="text-white font-bold"
           />
         </Animated.View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

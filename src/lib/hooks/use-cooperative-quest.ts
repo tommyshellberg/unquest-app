@@ -53,7 +53,7 @@ export function useQuestRunStatus(
     queryKey: ['questRun', questRunId],
     queryFn: () => (questRunId ? getQuestRunStatus(questRunId) : null),
     enabled: !!questRunId && enabled,
-    refetchInterval: enabled ? 10000 : false, // Poll every 10 seconds as fallback
+    refetchInterval: enabled ? 30000 : false, // Poll every 30 seconds as fallback
     refetchIntervalInBackground: true,
     staleTime: 1000, // Consider data stale after 1 second
   });

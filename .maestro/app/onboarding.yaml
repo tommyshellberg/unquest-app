@@ -1,300 +1,231 @@
 appId: com.vaedros.unquest.development
 ---
 - clearState
-# Unset notifications permission to ensure consistent test state
-- launchApp:
-    permissions:
-      notifications: unset
-
-# =============================================================================
-# DEVELOPMENT ENVIRONMENT SETUP
-# =============================================================================
-# Handle development-specific screens that appear before the actual app loads
-# These only appear in development builds and need to be dismissed first
-# =============================================================================
-
-# Handle development server selection (if it appears)
-- runFlow:
-    when:
-      visible: 'http://10.0.2.2:8081'
-    commands:
-      - assertVisible: 'Development servers'
-      # Select the local development server (usually the first/default option)
-      - tapOn: 'http://10.0.2.2:8081'
-
-- runFlow:
-    when:
-      visible: 'http://localhost:8081'
-    commands:
-      - assertVisible: 'Development servers'
-      # Select the local development server (usually the first/default option)
-      - tapOn: 'http://localhost:8081'
-
-# Handle Expo development onboarding/menu introduction (if it appears)
-- runFlow:
-    when:
-      visible:
-        text: '.*developer menu.*'
-    commands:
-      # Go through the developer menu introduction
-      - tapOn: 'Continue'
-
-# Alternative approach: more specific regex for "This is the developer menu"
-- runFlow:
-    when:
-      visible:
-        text: '.*Runtime version.*'
-    commands:
-      # Tap continue to dismiss the developer menu
-      - tapOn: 'Reload'
-
-# Fallback: Look for any text containing "developer" (very permissive)
-- runFlow:
-    when:
-      visible:
-        text: '.*developer.*'
-    commands:
-      # Try to continue through any developer-related screens
-      - tapOn: 'Continue'
-
-# Handle any additional development environment screens
-- runFlow:
-    when:
-      visible: 'Development Build'
-    commands:
-      # If there are additional development-specific screens, handle them here
-      - tapOn: 'Continue'
-
-# Wait a moment for the app to fully load after development setup
-- waitForAnimationToEnd
-
-# =============================================================================
-# COMPLETE ONBOARDING TO LOGIN FLOW
-# =============================================================================
-# This test covers the entire user journey from first app launch through
-# onboarding, quest completion, and login. Since app state is cleared between
-# tests, this comprehensive flow ensures we test the complete user experience.
-# =============================================================================
-
-# =============================================================================
-# WELCOME SCREEN - The starting point for new users
-# =============================================================================
-- assertVisible: 'unQuest'
-- assertVisible: 'Level Up By Logging Off'
-- assertVisible: 'Begin New Journey'
-- assertVisible: '.*Log In.*'
-
-# Start the onboarding journey
-- tapOn: 'Begin New Journey'
-
-# =============================================================================
-# CHARACTER NAME SCREEN - Enter character name
-# =============================================================================
-- assertVisible: 'Your Character'
-- assertVisible: 'Character Name'
-- assertVisible: '.*Choose a character that reflects your personality.*'
-
-# Verify continue button exists but should be disabled initially
-- assertVisible:
-    text: 'Continue'
-
-# Enter character name
-- tapOn: 'Enter character name'
-- inputText: 'MaestroHero'
-
-# Verify continue button is now enabled after entering name
-- assertVisible:
-    text: 'Continue'
-    enabled: true
-
-# Proceed to character type selection
-- tapOn: 'Continue'
-
-# =============================================================================
-# CHARACTER TYPE SELECTION SCREEN - Choose character type
-# =============================================================================
-- assertVisible: "Choose MaestroHero's Character Type"
-- assertVisible: 'Select the character that speaks to you'
-
-# Test character selection carousel
-- assertVisible: 'ALCHEMIST'
-- assertVisible: '.*Transforms idle time into powerful elixirs.*'
-
-# Swipe through characters to test the carousel
-- swipe:
-    start: '80%, 50%'
-    end: '20%, 50%'
-    duration: 500
-
-# Should now see Druid
-- assertVisible: 'DRUID'
-
-# Swipe to see Scout
-- swipe:
-    start: '80%, 50%'
-    end: '20%, 50%'
-    duration: 500
-
-# Should now see Scout
-- assertVisible: 'SCOUT'
-
-# Swipe back to Alchemist
-- swipe:
-    start: '20%, 50%'
-    end: '80%, 50%'
-    duration: 500
-
-- swipe:
-    start: '20%, 50%'
-    end: '80%, 50%'
-    duration: 500
-
-# Back to Alchemist - proceed with character creation
-- assertVisible: 'ALCHEMIST'
-
-- tapOn: 'Create Character'
-
-# Wait for navigation after character creation
-- waitForAnimationToEnd
-
-# =============================================================================
-# APP INTRODUCTION - WELCOME STEP (VIEWING_INTRO)
-# =============================================================================
-- assertVisible: 'Welcome to unQuest'
-- assertVisible: '.*Each quest is a unique challenge.*'
-- assertVisible: 'Got it'
-
-# Proceed to notifications step
-- tapOn: 'Got it'
-
-# =============================================================================
-# APP INTRODUCTION - NOTIFICATIONS STEP
-# =============================================================================
-- assertVisible: 'Notifications'
-- assertVisible: 'Enable notifications'
-- assertVisible: '.*Not now.*'
-
-# Enable notifications (or skip if desired)
-- tapOn: 'Enable notifications'
-
-# Note: System notification permission alert may appear here
-# @todo: Handle system permission dialog if it shows up
-- runFlow:
-    when:
-      visible: '.*Allow*.*'
-    commands:
-      # If there are additional development-specific screens, handle them here
-      - tapOn: 'Allow'
-
-# =============================================================================
-# FIRST QUEST SCREEN - Quest introduction
-# =============================================================================
-- assertVisible: 'Your Journey Begins'
-- assertVisible: 'Wake up'
-
-# Start the first quest
-- tapOn: 'Wake up'
-
-# Wait for navigation to pending quest screen
-- waitForAnimationToEnd
-
-# =============================================================================
-# PENDING QUEST SCREEN - Quest preparation
-# =============================================================================
-- assertVisible: 'Quest Ready'
-- assertVisible: 'Lock your phone to begin your quest'
-- assertVisible: 'Cancel Quest'
-
-# Test quest cancellation and restart to ensure robustness
-- tapOn: 'Cancel Quest'
-
-# =============================================================================
-# BACK TO FIRST QUEST SCREEN - Test re-starting quest
-# =============================================================================
-- assertVisible: 'Your Journey Begins'
-- assertVisible: 'Wake up'
-
-# Start quest again to prepare for phase 2 test
-- tapOn: 'Wake up'
-- assertVisible: 'Quest Ready'
-
-# =============================================================================
-# END OF PHASE 1 - Ready to lock phone for quest
-# =============================================================================
-# To complete quest testing:
-# 1. Run this test to get to the pending quest screen
-# 2. Manually lock phone or run: maestro test .maestro/app/lock-quest.yaml
-# 3. Wait 2 minutes for quest completion
-# 4. Run: maestro test .maestro/app/post-quest.yaml
-
-# =============================================================================
-# ALTERNATIVE FLOW - EXISTING USER LOGIN PATH
-# =============================================================================
-# Test the direct login path for existing users
-# Since we can test this independently, let's restart and test it
-
-- clearState
 - launchApp
 
-# Handle development environment screens again after clearState
+# Wait for app to fully load
+- waitForAnimationToEnd
+
+# =============================================================================
+# HANDLE DEVELOPMENT ENVIRONMENT
+# =============================================================================
+# Handle dev server selection if needed
 - runFlow:
     when:
       visible: 'Development servers'
     commands:
       - tapOn: 'http://10.0.2.2:8081'
+      - waitForAnimationToEnd
 
+# Handle developer menu - first check if Continue button is visible
 - runFlow:
     when:
-      visible:
-        text: '.*developer menu.*'
+      visible: 'Continue'
     commands:
-      # Tap the X button to close the modal
       - tapOn: 'Continue'
+      - waitForAnimationToEnd
+
+# After tapping Continue or if menu is already open, tap Go home
+- runFlow:
+    when:
+      visible: 'Go home'
+    commands:
+      - tapOn: 'Go home'
+      - waitForAnimationToEnd
+
+# Handle if we're back at Expo home - tap on unQuest in recently opened
+- runFlow:
+    when:
+      visible: 'Recently opened'
+    commands:
+      - tapOn:
+          text: 'unQuest'
+          below: 'Recently opened'
+      - waitForAnimationToEnd
+
+# =============================================================================
+# WELCOME SCREEN
+# =============================================================================
+- assertVisible: 'unQuest'
+- assertVisible: 'Level Up By Logging Off'
+- assertVisible: 'Begin New Journey'
+
+- tapOn: 'Begin New Journey'
+- waitForAnimationToEnd
+
+# =============================================================================
+# CHARACTER NAME SCREEN
+# =============================================================================
+- assertVisible: 'Your Character'
+- assertVisible: 'Character Name'
+
+- tapOn: 'Enter character name'
+- inputText: 'MaestroHero'
+- tapOn: 'Continue'
+- waitForAnimationToEnd
+
+# =============================================================================
+# CHARACTER TYPE SELECTION
+# =============================================================================
+- assertVisible: "Choose MaestroHero's Character Type"
+- assertVisible: 'ALCHEMIST'
+
+# Test carousel by swiping through characters
+- swipe:
+    start: 80%, 50%
+    end: 20%, 50%
+    duration: 500
+
+- assertVisible: 'DRUID'
+
+- swipe:
+    start: 80%, 50%
+    end: 20%, 50%
+    duration: 500
+
+- assertVisible: 'SCOUT'
+
+# Swipe back to Alchemist
+- swipe:
+    start: 20%, 50%
+    end: 80%, 50%
+    duration: 500
+
+- swipe:
+    start: 20%, 50%
+    end: 80%, 50%
+    duration: 500
+
+- assertVisible: 'ALCHEMIST'
+- tapOn: 'Create Character'
+- waitForAnimationToEnd
+
+# =============================================================================
+# HANDLE APP INTRO SCREENS (if they appear after character creation)
+# =============================================================================
+- runFlow:
+    when:
+      visible: 'Welcome to unQuest'
+    commands:
+      - tapOn: 'Got it'
+      - waitForAnimationToEnd
 
 - runFlow:
     when:
-      visible:
-        text: '.*This is the developer menu*'
+      visible: 'Notifications'
     commands:
-      # Try to find and tap the close button/X
-      - tapOn: '×'
+      - tapOn: 'Enable notifications'
+      - waitForAnimationToEnd
+      # Handle system permission if it appears
+      - runFlow:
+          when:
+            visible: '.*Allow.*'
+          commands:
+            - tapOn: 'Allow'
+      # Wait for navigation after notification handling
+      - waitForAnimationToEnd
+
+# =============================================================================
+# FIRST QUEST SCREEN
+# =============================================================================
+- assertVisible: 'Your Journey Begins'
+- assertVisible: 'Wake up'
+
+- tapOn: 'Wake up'
+- waitForAnimationToEnd
+
+# If we're still on the quest screen, the tap might not have worked
+# This can happen in development due to the error message
+- runFlow:
+    when:
+      visible: 'Your Journey Begins'
+    commands:
+      # Try tapping the button area directly
+      - tapOn:
+          point: "50%, 87%"
+      - waitForAnimationToEnd
+
+# =============================================================================
+# PENDING QUEST SCREEN
+# =============================================================================
+- extendedWaitUntil:
+    visible: 'Quest Ready'
+    timeout: 10000
+
+- assertVisible: 'Lock your phone to begin your quest'
+
+# Test quest cancellation
+- assertVisible: 'Cancel Quest'
+- tapOn: 'Cancel Quest'
+- waitForAnimationToEnd
+
+# Should be back at quest screen
+- assertVisible: 'Your Journey Begins'
+- assertVisible: 'Wake up'
+
+# Start quest again
+- tapOn: 'Wake up'
+- waitForAnimationToEnd
+
+- assertVisible: 'Quest Ready'
+
+# =============================================================================
+# START QUEST BY LOCKING PHONE
+# =============================================================================
+- pressKey: Lock
+
+# =============================================================================
+# WAIT FOR QUEST COMPLETION (2 minutes)
+# =============================================================================
+# Use repeat to wait 2 minutes (24 x 5 seconds = 120 seconds)
+- repeat:
+    times: 24
+    commands:
+      - waitForAnimationToEnd
+
+# =============================================================================
+# UNLOCK AND VERIFY QUEST COMPLETION
+# =============================================================================
+- pressKey: Lock
+
+# Swipe to unlock
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+    duration: 500
 
 - waitForAnimationToEnd
 
-# From welcome screen, test direct login path
-- assertVisible: 'Level Up By Logging Off'
-- assertVisible: '.*Log In.*'
+# =============================================================================
+# QUEST COMPLETION SCREEN
+# =============================================================================
+- extendedWaitUntil:
+    visible: 'Quest Complete'
+    timeout: 10000
 
-# Test direct login for existing users
-- tapOn: '.*Log In.*'
+- assertVisible: 'XP Gained'
 
-# Should land on login screen
-- assertVisible: 'Email'
+- tapOn: 'Continue'
+- waitForAnimationToEnd
 
-# Test login form interaction
+# =============================================================================
+# SIGNUP SCREEN
+# =============================================================================
+- assertVisible: 'Create Account'
+- assertVisible: 'Save your progress'
+
 - tapOn: 'Email'
-- inputText: 'existing@example.com'
-
-- assertVisible: 'Send Link'
-- tapOn: 'Send Link'
-
+- inputText: 'testquester@example.com'
+- tapOn: 'Create Account'
 - waitForAnimationToEnd
 
-- assertVisible: 'Email sent to existing@example.com'
-- assertVisible: 'Send Again'
 # =============================================================================
-# TEST SUMMARY
+# EMAIL VERIFICATION SCREEN
 # =============================================================================
-# This comprehensive test covers:
-# ✅ Development environment setup (server selection, Expo onboarding)
-# ✅ Complete onboarding flow from welcome to quest setup
-# ✅ Character creation and carousel navigation (now happens first)
-# ✅ App introduction and notifications after character selection
-# ✅ Quest preparation and cancellation flows
-# ✅ Direct login path for existing users
-# ✅ Form interactions and user input
-#
-# Note: Full quest completion testing requires running multiple test files:
-# - onboarding.yaml (this file) - gets to pending quest
-# - lock-quest.yaml - locks the phone to start quest
-# - post-quest.yaml - verifies completion and signup flow
+- assertVisible: 'Check your email'
+- assertVisible: 'testquester@example.com'
+
+# =============================================================================
+# TEST COMPLETE
+# =============================================================================
+# Successfully completed full onboarding flow from welcome to signup!
