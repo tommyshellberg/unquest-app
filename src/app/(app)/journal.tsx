@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 import { router } from 'expo-router';
 import { Notebook } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
-import { ScrollView, TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -11,8 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { StreakCounter } from '@/components/StreakCounter';
-import { Text, View } from '@/components/ui';
-import { FocusAwareStatusBar } from '@/components/ui';
+import { Text, View, ScreenContainer, ScreenHeader, FocusAwareStatusBar, ScrollView, TouchableOpacity } from '@/components/ui';
 import { Chip } from '@/components/ui/chip';
 import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
@@ -85,14 +83,16 @@ export default function JournalScreen() {
     <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
       <StreakCounter size="small" position="topRight" />
-      {/* Header - with animation */}
-      <Animated.View style={headerStyle} className="mb-4 px-4">
-        <Text className="mb-3 mt-6 text-xl font-bold">Journal</Text>
-        <Text>Your quest history and achievements</Text>
-      </Animated.View>
+      
+      <ScreenContainer>
+        {/* Header */}
+        <ScreenHeader
+          title="Journal"
+          subtitle="Your quest history and achievements"
+        />
 
-      {/* Filter Pills */}
-      <Animated.View style={contentStyle} className="flex-1">
+        {/* Filter Pills */}
+        <Animated.View style={contentStyle} className="flex-1">
         <View className="flex-row px-4 pb-2">
           <Chip
             className={`mr-2 ${filter === 'all' ? 'bg-primary-300' : 'bg-neutral-100'}`}
@@ -221,7 +221,8 @@ export default function JournalScreen() {
           {/* Extra space at bottom for better scrolling */}
           <View className="h-20" />
         </ScrollView>
-      </Animated.View>
+        </Animated.View>
+      </ScreenContainer>
     </View>
   );
 }

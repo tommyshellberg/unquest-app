@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { StreakCounter } from '@/components/StreakCounter';
-import { Text, View } from '@/components/ui';
+import { Text, View, ScreenContainer } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { muted, red, white } from '@/components/ui/colors';
 import { useCharacterStore } from '@/store/character-store';
@@ -236,7 +236,7 @@ export default function StreakCelebrationScreen() {
         <View className="absolute inset-0" />
       </View>
 
-      <View className="flex-1 items-center justify-center px-6">
+      <ScreenContainer className="items-center justify-center">
         {/* Streak Counter with Confetti Animation */}
         <View className="relative mb-8 h-[150px] w-full items-center justify-center">
           <LottieView
@@ -308,7 +308,7 @@ export default function StreakCelebrationScreen() {
             <Text className="font-semibold text-white">CONTINUE</Text>
           </Button>
         </Animated.View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

@@ -52,7 +52,6 @@ function CenterButton({
 
 export default function TabLayout() {
   const navigationState = useRootNavigationState();
-  const insets = useSafeAreaInsets();
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
@@ -81,7 +80,7 @@ export default function TabLayout() {
           backgroundColor: white,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
-          height: 100,
+          height: 120,
           paddingBottom: 20,
           // Hide tab bar for quest screens and pending-quest
           display:

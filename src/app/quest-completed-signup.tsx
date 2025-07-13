@@ -7,7 +7,13 @@ import Animated, {
   FadeInLeft,
 } from 'react-native-reanimated';
 
-import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  Text,
+  View,
+  ScreenContainer,
+} from '@/components/ui';
 import { useOnboardingStore } from '@/store/onboarding-store';
 import { OnboardingStep } from '@/store/onboarding-store';
 
@@ -52,7 +58,7 @@ export default function QuestCompletedSignupScreen() {
         <View className="absolute inset-0 bg-white/10" />
       </View>
 
-      <View className="flex-1 justify-between p-6">
+      <ScreenContainer className="justify-between">
         <View className="mt-2">
           <Animated.View entering={FadeInLeft.delay(100)}>
             <Text className="text-xl font-bold">Claim Your Legend</Text>
@@ -95,7 +101,7 @@ export default function QuestCompletedSignupScreen() {
           </Animated.View>
         </View>
 
-        <Animated.View entering={FadeIn.delay(2600)} className="mb-6">
+        <Animated.View entering={FadeIn.delay(2600)}>
           <Button
             label="Create Account"
             onPress={handleCreateAccount}
@@ -104,7 +110,7 @@ export default function QuestCompletedSignupScreen() {
             textClassName="text-white font-bold"
           />
         </Animated.View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

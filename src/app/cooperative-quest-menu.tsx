@@ -1,9 +1,9 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { ArrowLeft, Lock, PlusCircle, Users, UserPlus } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useRef } from 'react';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 
 import {
   ContactsImportModal,
@@ -15,6 +15,9 @@ import {
   SafeAreaView,
   Text,
   View,
+  ScreenContainer,
+  ScreenHeader,
+  TouchableOpacity,
 } from '@/components/ui';
 import { useAuth } from '@/lib';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
@@ -25,7 +28,7 @@ interface MenuOption {
   id: string;
   title: string;
   description: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: React.ReactNode;
   route: string;
   color: string;
 }
@@ -35,7 +38,7 @@ const menuOptions: MenuOption[] = [
     id: 'create',
     title: 'Create Quest',
     description: 'Start a new cooperative quest and invite friends',
-    icon: 'plus-circle',
+    icon: <PlusCircle size={32} color="#FFFFFF" />,
     route: '/create-cooperative-quest',
     color: 'bg-primary-400',
   },
@@ -43,7 +46,7 @@ const menuOptions: MenuOption[] = [
     id: 'join',
     title: 'Join Quest',
     description: 'View and respond to quest invitations from friends',
-    icon: 'account-group',
+    icon: <Users size={32} color="#FFFFFF" />,
     route: '/join-cooperative-quest',
     color: 'bg-secondary-400',
   },
@@ -51,7 +54,7 @@ const menuOptions: MenuOption[] = [
     id: 'friends',
     title: 'Add Friends',
     description: 'Connect with friends to quest together',
-    icon: 'account-plus',
+    icon: <UserPlus size={32} color="#FFFFFF" />,
     route: '', // We'll handle this with modal instead
     color: 'bg-muted-300',
   },
@@ -109,32 +112,18 @@ export default function CooperativeQuestMenu() {
       <SafeAreaView className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
 
-        <View className="flex-1 px-4">
+        <ScreenContainer className="px-4">
           {/* Header */}
-          <View className="mb-6">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="mb-4 flex-row items-center"
-            >
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={24}
-                color="#333"
-              />
-              <Text className="ml-2 text-lg">Back</Text>
-            </TouchableOpacity>
-
-            <Text className="mb-2 text-3xl font-bold">Cooperative Quests</Text>
-            <Text className="text-neutral-600">
-              Team up with friends to complete quests together!
-            </Text>
-          </View>
+          <ScreenHeader
+            title="Cooperative Quests"
+            subtitle="Team up with friends to complete quests together!"
+            showBackButton
+          />
 
           {/* Premium Feature Message */}
           <View className="flex-1 items-center justify-center px-4">
             <View className="mb-6 rounded-full bg-primary-100 p-6">
-              <MaterialCommunityIcons
-                name="lock-outline"
+              <Lock
                 size={64}
                 color="#77c5bf"
               />
@@ -194,7 +183,7 @@ export default function CooperativeQuestMenu() {
               Premium subscription details coming soon!
             </Text>
           </View>
-        </View>
+        </ScreenContainer>
       </SafeAreaView>
     );
   }
@@ -205,7 +194,7 @@ export default function CooperativeQuestMenu() {
       <SafeAreaView className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
 
-        <View className="flex-1 px-4">
+        <ScreenContainer className="px-4">
           {/* Header */}
           <View className="mb-6 mt-2">
             <TouchableOpacity
@@ -294,7 +283,7 @@ export default function CooperativeQuestMenu() {
               </View>
             </Card>
           </View>
-        </View>
+        </ScreenContainer>
 
         {/* Contacts Import Modal */}
         <ContactsImportModal
@@ -341,11 +330,7 @@ export default function CooperativeQuestMenu() {
               <Card className={`p-6 ${option.color} shadow-md`}>
                 <View className="flex-row items-center">
                   <View className="mr-4 rounded-full bg-white/20 p-3">
-                    <MaterialCommunityIcons
-                      name={option.icon}
-                      size={32}
-                      color="white"
-                    />
+                    {option.icon}
                   </View>
                   <View className="flex-1">
                     <Text className="mb-1 text-xl font-bold text-white">

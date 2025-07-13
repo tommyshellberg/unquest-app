@@ -15,7 +15,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { FocusAwareStatusBar, ScrollView, Text, View } from '@/components/ui';
+import { FocusAwareStatusBar, ScrollView, Text, View, ScreenContainer, ScreenHeader } from '@/components/ui';
 import { useAuth } from '@/lib';
 import {
   areNotificationsEnabled,
@@ -347,14 +347,15 @@ export default function Settings() {
     <View className="flex-1 flex-col bg-background">
       <FocusAwareStatusBar />
 
-      {/* Header */}
-      <Animated.View style={headerStyle} className="mb-4 px-4">
-        <Text className="mb-3 mt-6 text-xl font-bold">Settings</Text>
-        <Text>Manage your account, preferences, and app settings.</Text>
-      </Animated.View>
+      <ScreenContainer>
+        {/* Header */}
+        <ScreenHeader
+          title="Settings"
+          subtitle="Manage your account, preferences, and app settings."
+        />
 
-      <ScrollView className="flex-1">
-        <View className="px-4">
+        <ScrollView className="flex-1">
+          <View className="px-4">
           {/* Account Section */}
           <View className="mb-8">
             <View className="flex-row items-center">
@@ -744,7 +745,8 @@ export default function Settings() {
             )}
           </View>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </ScreenContainer>
     </View>
   );
 }

@@ -1,7 +1,5 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import {
-  ArrowLeft,
   Award,
   BowArrow,
   Clock,
@@ -16,7 +14,7 @@ import {
   Watch,
 } from 'lucide-react-native';
 import React, { useRef } from 'react';
-import { Dimensions, Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Dimensions } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedScrollHandler,
@@ -24,7 +22,19 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 
-import { Card, FocusAwareStatusBar, ProgressBar, SafeAreaView, Text } from '@/components/ui';
+import {
+  Card,
+  FocusAwareStatusBar,
+  Pressable,
+  ProgressBar,
+  SafeAreaView,
+  ScreenContainer,
+  ScreenHeader,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from '@/components/ui';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -234,10 +244,11 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
           </View>
 
           <ProgressBar
-            progress={progress}
-            className={
-              achievement.isUnlocked ? 'bg-primary-500' : 'bg-gray-300'
+            initialProgress={progress * 100}
+            progressColor={
+              achievement.isUnlocked ? '#5E8977' : '#D1D5DB'
             }
+            backgroundColor="#F3F4F6"
           />
 
           {achievement.isUnlocked && achievement.unlockedAt && (
@@ -259,7 +270,7 @@ const AchievementSection = ({
   achievements: Achievement[];
 }) => {
   const scrollX = useSharedValue(0);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<Animated.ScrollView>(null);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -495,22 +506,14 @@ export default function AchievementsScreen() {
     <SafeAreaView className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
 
-      <View className="flex-1 px-4">
+      <ScreenContainer>
         {/* Header */}
-        <View className="mb-6 mt-2">
-          <TouchableOpacity
-            onPress={() => router.push('/profile')}
-            className="mb-4 flex-row items-center"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
-            <Text className="ml-2 text-lg">Back</Text>
-          </TouchableOpacity>
-          
-          <Text className="mb-2 text-3xl font-bold">Achievements</Text>
-          <Text className="text-neutral-600">
-            Track your progress • {unlockedAchievements}/{totalAchievements} Unlocked
-          </Text>
-        </View>
+        <ScreenHeader
+          title="Achievements"
+          subtitle={`Track your progress • ${unlockedAchievements}/${totalAchievements} Unlocked`}
+          showBackButton
+          onBackPress={() => router.push('/profile')}
+        />
 
         <ScrollView
           className="flex-1 -mx-4"
@@ -533,7 +536,7 @@ export default function AchievementsScreen() {
 
           <View className="h-8" />
         </ScrollView>
-      </View>
+      </ScreenContainer>
     </SafeAreaView>
   );
 }

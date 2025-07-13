@@ -19,7 +19,7 @@ import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { getMapNameForQuest } from '@/app/utils/map-utils';
 import QuestCard from '@/components/home/quest-card';
 import { StreakCounter } from '@/components/StreakCounter';
-import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { Button, FocusAwareStatusBar, Text, View, ScreenContainer, ScreenHeader } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { getUserDetails } from '@/lib/services/user';
 import { useQuestStore } from '@/store/quest-store';
@@ -499,17 +499,12 @@ export default function Home() {
         />
       </View>
 
-      <View className="flex-1 flex-col">
+      <ScreenContainer className="flex-col">
         {/* Header */}
-        <Animated.View style={headerStyle} className="mb-4 px-4">
-          <Text className="mb-3 mt-6 text-xl font-bold">
-            Choose Your Adventure
-          </Text>
-          <Text>
-            Continue your epic story, create a quest of your own design, or play
-            a cooperative quest with a friend.
-          </Text>
-        </Animated.View>
+        <ScreenHeader
+          title="Choose Your Adventure"
+          subtitle="Continue your epic story, create a quest of your own design, or play a cooperative quest with a friend."
+        />
 
         {/* Main content area */}
         <View className="flex-1 justify-center">
@@ -545,7 +540,7 @@ export default function Home() {
         {/* Footer area with buttons */}
         {!activeQuest && !pendingQuest && (
           <View
-            className="mt-auto items-center justify-center pb-8"
+            className="mt-auto items-center justify-center"
             style={{ minHeight: 140 }}
           >
             {activeIndex === 0 ? (
@@ -611,7 +606,7 @@ export default function Home() {
             ) : null}
           </View>
         )}
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

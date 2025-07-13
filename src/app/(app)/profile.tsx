@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Award, TrendingUp } from 'lucide-react-native';
 import React, { useEffect } from 'react';
-import { Pressable, RefreshControl, ScrollView } from 'react-native';
+import { RefreshControl } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -19,7 +19,7 @@ import { ProfileCard } from '@/components/profile/profile-card';
 // Import components
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
 import { StatsCard } from '@/components/profile/stats-card';
-import { Card, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { Card, FocusAwareStatusBar, Text, View, ScreenContainer, ScreenHeader, ScrollView, Pressable } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 // Import hooks
 import { useProfileData } from '@/lib/hooks/use-profile-data';
@@ -39,17 +39,7 @@ export default function ProfileScreen() {
   const contactsModalRef = React.useRef<ContactsImportModalRef>(null);
 
   // Animation value for header
-  const headerOpacity = useSharedValue(0);
-
-  // Initialize animation
-  useEffect(() => {
-    headerOpacity.value = withTiming(1, { duration: 1000 });
-  }, [headerOpacity]);
-
-  // Animated style
-  const headerStyle = useAnimatedStyle(() => ({
-    opacity: headerOpacity.value,
-  }));
+  // Header animation is now handled by ScreenHeader component
 
   // Get profile data from custom hook
   const { userEmail, fetchUserDetails } = useProfileData();
@@ -186,24 +176,25 @@ export default function ProfileScreen() {
     <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
-      {/* Header */}
-      <Animated.View style={headerStyle} className="mb-4 px-4">
-        <Text className="mb-3 mt-6 text-xl font-bold">Profile</Text>
-        <Text>Track your journey, stats, and connect with friends.</Text>
-      </Animated.View>
+      <ScreenContainer>
+        {/* Header */}
+        <ScreenHeader
+          title="Profile"
+          subtitle="Track your journey, stats, and connect with friends."
+        />
 
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#334738']}
-            tintColor={'#334738'}
-          />
-        }
-      >
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#334738']}
+              tintColor={'#334738'}
+            />
+          }
+        >
         {/* Profile Card */}
         <ProfileCard character={character} />
 
@@ -265,7 +256,8 @@ export default function ProfileScreen() {
           rescindMutation={rescindMutation}
           userEmail={userEmail}
         />
-      </ScrollView>
+        </ScrollView>
+      </ScreenContainer>
 
       {/* Modals */}
       <ContactsImportModal

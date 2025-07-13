@@ -1,9 +1,7 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { TouchableOpacity } from 'react-native';
 
 import { CategorySelector } from '@/components/QuestForm/category-selector';
 // Import our new components with appropriate paths
@@ -18,6 +16,9 @@ import {
   ScrollView,
   Text,
   View,
+  ScreenContainer,
+  ScreenHeader,
+  TouchableOpacity,
 } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
@@ -107,22 +108,13 @@ export default function CustomQuestScreen() {
     <SafeAreaView className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
       
-      <View className="flex-1 px-4">
+      <ScreenContainer>
         {/* Header */}
-        <View className="mb-6 mt-2">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="mb-4 flex-row items-center"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
-            <Text className="ml-2 text-lg">Back</Text>
-          </TouchableOpacity>
-          
-          <Text className="mb-2 text-3xl font-bold">Custom Quest</Text>
-          <Text className="text-neutral-600">
-            Create your own quest with a personalized name and duration
-          </Text>
-        </View>
+        <ScreenHeader
+          title="Custom Quest"
+          subtitle="Create your own quest with a personalized name and duration"
+          showBackButton
+        />
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="mb-6">
@@ -157,7 +149,7 @@ export default function CustomQuestScreen() {
             textClassName="text-lg font-semibold text-white"
           />
         </ScrollView>
-      </View>
+      </ScreenContainer>
     </SafeAreaView>
   );
 }

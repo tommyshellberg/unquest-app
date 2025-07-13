@@ -7,19 +7,19 @@ import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import React, { useCallback, useEffect } from 'react';
-import { Platform, AppState, AppStateStatus, View } from 'react-native';
+import { AppState, type AppStateStatus, Platform, View } from 'react-native';
+import BackgroundService from 'react-native-bg-actions';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
-import BackgroundService from 'react-native-bg-actions';
 
 import { APIProvider } from '@/api';
-import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
 import { PostHogNavigationTracker } from '@/components/providers/posthog-navigation-tracker';
+import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import { WebSocketProvider } from '@/components/providers/websocket-provider';
+import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
@@ -63,12 +63,14 @@ const hydrationPromise = Promise.all([hydrateAuth(), loadSelectedTheme()]);
 const handleQuestFailure = (questRunId: string) => {
   console.log('[Push Notification] Handling quest failure for:', questRunId);
   const questStore = useQuestStore.getState();
-  
-  if (questStore.cooperativeQuestRun?.id === questRunId || 
-      questStore.activeQuest?.id === questRunId) {
+
+  if (
+    questStore.cooperativeQuestRun?.id === questRunId ||
+    questStore.activeQuest?.id === questRunId
+  ) {
     console.log('[Push Notification] Marking quest as failed');
     questStore.failQuest();
-    
+
     // Stop Android background service
     if (Platform.OS === 'android' && BackgroundService.isRunning()) {
       console.log('[Push Notification] Stopping Android background service');
@@ -168,60 +170,80 @@ function RootLayout() {
           setTimeout(() => {
             router.push('/join-cooperative-quest');
           }, 1000);
-        } else if (additionalData?.type === 'quest_failed' && additionalData?.questRunId) {
+        } else if (
+          additionalData?.type === 'quest_failed' &&
+          additionalData?.questRunId
+        ) {
           // Handle quest failure notification
           handleQuestFailure(additionalData.questRunId);
         }
       });
 
       // Handle notifications received while app is in foreground
-      OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
-        console.log('Notification received in foreground:', event);
-        
-        const { notification } = event;
-        const additionalData = notification.additionalData as any;
-        
-        if (additionalData?.type === 'quest_failed' && additionalData?.questRunId) {
-          // Handle quest failure immediately
-          handleQuestFailure(additionalData.questRunId);
+      OneSignal.Notifications.addEventListener(
+        'foregroundWillDisplay',
+        (event) => {
+          console.log('Notification received in foreground:', event);
+
+          const { notification } = event;
+          const additionalData = notification.additionalData as any;
+
+          if (
+            additionalData?.type === 'quest_failed' &&
+            additionalData?.questRunId
+          ) {
+            // Handle quest failure immediately
+            handleQuestFailure(additionalData.questRunId);
+          }
+
+          // Display the notification
+          event.preventDefault();
+          event.notification.display();
         }
-        
-        // Display the notification
-        event.preventDefault();
-        event.notification.display();
-      });
+      );
     }
   }, []);
 
   // Handle app state changes to check quest status when app comes to foreground
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', async (nextAppState) => {
-      if (
-        appStateRef.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        // App has come to foreground
-        console.log('[App State] App foregrounded, checking quest status');
-        
-        // Check if we have an active cooperative quest that might have failed
-        const questStore = useQuestStore.getState();
-        if (questStore.cooperativeQuestRun?.status === 'active' && questStore.cooperativeQuestRun?.id) {
-          try {
-            // Single status check when app comes to foreground
-            const status = await getQuestRunStatus(questStore.cooperativeQuestRun.id);
-            console.log('[App State] Quest status check result:', status.status);
-            
-            if (status.status === 'failed') {
-              console.log('[App State] Quest has failed, handling failure');
-              handleQuestFailure(status.id);
+    const subscription = AppState.addEventListener(
+      'change',
+      async (nextAppState) => {
+        if (
+          appStateRef.current.match(/inactive|background/) &&
+          nextAppState === 'active'
+        ) {
+          // App has come to foreground
+          console.log('[App State] App foregrounded, checking quest status');
+
+          // Check if we have an active cooperative quest that might have failed
+          const questStore = useQuestStore.getState();
+          if (
+            questStore.cooperativeQuestRun?.status === 'active' &&
+            questStore.cooperativeQuestRun?.id
+          ) {
+            try {
+              // Single status check when app comes to foreground
+              const status = await getQuestRunStatus(
+                questStore.cooperativeQuestRun.id
+              );
+              console.log(
+                '[App State] Quest status check result:',
+                status.status
+              );
+
+              if (status.status === 'failed') {
+                console.log('[App State] Quest has failed, handling failure');
+                handleQuestFailure(status.id);
+              }
+            } catch (error) {
+              console.error('[App State] Failed to check quest status:', error);
             }
-          } catch (error) {
-            console.error('[App State] Failed to check quest status:', error);
           }
         }
+        appStateRef.current = nextAppState;
       }
-      appStateRef.current = nextAppState;
-    });
+    );
 
     return () => {
       subscription.remove();
@@ -298,6 +320,10 @@ function RootLayout() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="pending-quest" options={{ headerShown: false }} />
         <Stack.Screen
+          name="cooperative-pending-quest"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="first-quest-result"
           options={{ headerShown: false }}
         />
@@ -344,7 +370,10 @@ function Providers({
   const theme = useThemeConfig();
   return (
     <View className="flex-1 bg-white dark:bg-background">
-      <SafeAreaView className="flex-1 bg-background dark:bg-background" edges={['top', 'left', 'right']}>
+      <SafeAreaView
+        className="flex-1 bg-background dark:bg-background"
+        edges={['top', 'left', 'right']}
+      >
         <GestureHandlerRootView
           className={theme.dark ? `dark flex-1` : undefined}
           onLayout={onLayout}

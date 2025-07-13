@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import {
   CheckCircle,
@@ -12,10 +11,6 @@ import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-  View,
 } from 'react-native';
 
 import {
@@ -32,6 +27,12 @@ import {
   FocusAwareStatusBar,
   SafeAreaView,
   Text,
+  ScreenContainer,
+  ScreenHeader,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Pressable,
 } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
@@ -396,32 +397,19 @@ export default function LeaderboardScreen() {
     return (
       <SafeAreaView className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
-        <View className="flex-1 px-4">
+        <ScreenContainer>
           {/* Header */}
-          <View className="mb-6 mt-2">
-            <TouchableOpacity
-              onPress={() => router.push('/profile')}
-              className="mb-4 flex-row items-center"
-              accessibilityLabel="Back to Profile"
-              accessibilityRole="button"
-              testID="back-button"
-            >
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={24}
-                color="#333"
-              />
-              <Text className="ml-2 text-lg">Back</Text>
-            </TouchableOpacity>
-
-            <Text className="mb-2 text-3xl font-bold">Leaderboard</Text>
-            <Text className="text-neutral-600">{subheading}</Text>
+          <ScreenHeader
+            title="Leaderboard"
+            subtitle={subheading}
+            showBackButton
+            onBackPress={() => router.push('/profile')}
+          />
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#2E948D" />
+            <Text className="mt-2 text-gray-600">Loading leaderboard...</Text>
           </View>
-        </View>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#2E948D" />
-          <Text className="mt-2 text-gray-600">Loading leaderboard...</Text>
-        </View>
+        </ScreenContainer>
       </SafeAreaView>
     );
   }
@@ -431,39 +419,26 @@ export default function LeaderboardScreen() {
     return (
       <SafeAreaView className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
-        <View className="flex-1 px-4">
+        <ScreenContainer>
           {/* Header */}
-          <View className="mb-6 mt-2">
-            <TouchableOpacity
-              onPress={() => router.push('/profile')}
-              className="mb-4 flex-row items-center"
-              accessibilityLabel="Back to Profile"
-              accessibilityRole="button"
-              testID="back-button"
-            >
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={24}
-                color="#333"
-              />
-              <Text className="ml-2 text-lg">Back</Text>
-            </TouchableOpacity>
-
-            <Text className="mb-2 text-3xl font-bold">Leaderboard</Text>
-            <Text className="text-neutral-600">{subheading}</Text>
-          </View>
-        </View>
-        <View className="flex-1 items-center justify-center px-4">
-          <Text className="text-center text-gray-600">
-            Unable to load leaderboard data
-          </Text>
-          <Button
-            label="Try Again"
-            variant="ghost"
-            onPress={() => window.location.reload()}
-            className="mt-4"
+          <ScreenHeader
+            title="Leaderboard"
+            subtitle={subheading}
+            showBackButton
+            onBackPress={() => router.push('/profile')}
           />
-        </View>
+          <View className="flex-1 items-center justify-center px-4">
+            <Text className="text-center text-gray-600">
+              Unable to load leaderboard data
+            </Text>
+            <Button
+              label="Try Again"
+              variant="ghost"
+              onPress={() => window.location.reload()}
+              className="mt-4"
+            />
+          </View>
+        </ScreenContainer>
       </SafeAreaView>
     );
   }
@@ -472,23 +447,14 @@ export default function LeaderboardScreen() {
     <SafeAreaView className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
 
-      <View className="flex-1 px-4">
+      <ScreenContainer>
         {/* Header */}
-        <View className="mb-6 mt-2">
-          <TouchableOpacity
-            onPress={() => router.push('/profile')}
-            className="mb-4 flex-row items-center"
-            accessibilityLabel="Back to Profile"
-            accessibilityRole="button"
-            testID="back-button"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
-            <Text className="ml-2 text-lg">Back</Text>
-          </TouchableOpacity>
-
-          <Text className="mb-2 text-3xl font-bold">Leaderboard</Text>
-          <Text className="text-neutral-600">{subheading}</Text>
-        </View>
+        <ScreenHeader
+          title="Leaderboard"
+          subtitle={subheading}
+          showBackButton
+          onBackPress={() => router.push('/profile')}
+        />
 
         {/* Scope Toggle */}
         <View className="mb-4 flex-row rounded-full bg-gray-100 p-1">
@@ -678,7 +644,7 @@ export default function LeaderboardScreen() {
             </>
           )}
         </ScrollView>
-      </View>
+      </ScreenContainer>
 
       {/* Invite Friend Modal */}
       <ContactsImportModal

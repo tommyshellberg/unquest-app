@@ -222,13 +222,16 @@ export default function CooperativeQuestReady() {
       // Get the quest run ID from the server response
       const questRunId = questRun.id || questRun._id;
       if (!questRunId) {
-        console.error('[CooperativeQuestReady] No quest run ID in server response:', questRun);
+        console.error(
+          '[CooperativeQuestReady] No quest run ID in server response:',
+          questRun
+        );
         throw new Error('Server did not provide quest run ID');
       }
 
       // Store the full questRun data in the quest store for cooperative features
       const questStore = useQuestStore.getState();
-      
+
       // Ensure the cooperative quest run is set with the server-created quest run
       const cooperativeQuestRunData = {
         id: questRunId,
@@ -242,18 +245,21 @@ export default function CooperativeQuestReady() {
         createdAt: questRun.createdAt || Date.now(),
         updatedAt: questRun.updatedAt || Date.now(),
       };
-      
-      console.log('[CooperativeQuestReady] Setting cooperative quest run:', cooperativeQuestRunData);
+
+      console.log(
+        '[CooperativeQuestReady] Setting cooperative quest run:',
+        cooperativeQuestRunData
+      );
       questStore.setCooperativeQuestRun(cooperativeQuestRunData);
 
       // Prepare quest with transformed data
       prepareQuest(questTemplate);
-      
+
       // For cooperative quests, pass the quest run ID directly to avoid race conditions
       await QuestTimer.prepareQuest(questTemplate, questRunId);
 
-      // Navigate to pending quest which will show the countdown
-      router.replace('/pending-quest');
+      // Navigate to cooperative pending quest which will show the countdown
+      router.replace('/cooperative-pending-quest');
     },
     [currentLobby, prepareQuest, router]
   );

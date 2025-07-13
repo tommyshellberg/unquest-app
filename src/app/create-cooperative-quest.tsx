@@ -1,8 +1,7 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Info } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
 
 import { cooperativeQuestApi } from '@/api/cooperative-quest';
 import { CombinedQuestInput } from '@/components/QuestForm/combined-quest-input';
@@ -14,6 +13,9 @@ import {
   ScrollView,
   Text,
   View,
+  ScreenContainer,
+  ScreenHeader,
+  TouchableOpacity,
 } from '@/components/ui';
 import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
 import { useUserStore } from '@/store/user-store';
@@ -134,8 +136,7 @@ export default function CreateCooperativeQuestScreen() {
           {/* Info Card */}
           <View className="mb-6 rounded-lg bg-primary-100 p-4">
             <View className="flex-row items-start">
-              <MaterialCommunityIcons
-                name="information"
+              <Info
                 size={20}
                 color="#7C3AED"
                 style={{ marginTop: 2 }}
