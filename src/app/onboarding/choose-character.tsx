@@ -161,10 +161,10 @@ export default function ChooseCharacterScreen() {
         return (
           <View key="intro-and-name">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-xl font-bold">Your Character</Text>
+              <Text className="text-3xl font-bold">Your Character</Text>
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 text-sm font-semibold">
+              <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
                 Your companion on this journey
               </Text>
             </Animated.View>
@@ -205,18 +205,24 @@ export default function ChooseCharacterScreen() {
         return (
           <View key="character-selection" className="flex-1">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-xl font-bold">
-                Choose {debouncedName}'s Character Type
+              <Text className="text-3xl font-bold">Hello, {debouncedName}</Text>
+            </Animated.View>
+            <Animated.View entering={FadeInLeft.delay(600)}>
+              <Text className="mt-1 text-lg font-bold leading-relaxed">
+                It's time to choose your hero.
               </Text>
             </Animated.View>
-            <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 text-sm font-semibold">
-                Select the character that speaks to you
+            <Animated.View entering={FadeInDown.delay(1000)}>
+              <Text className="mt-6 text-base leading-relaxed">
+                Each hero brings unique strengths.
+              </Text>
+              <Text className="mb-6 text-base leading-relaxed">
+                Future updates will unlock special abilities and perks.
               </Text>
             </Animated.View>
 
             <Animated.View
-              className="flex-1 -mx-6"
+              className="-mx-6 flex-1"
               entering={FadeIn.delay(1100)}
             >
               <FlatList

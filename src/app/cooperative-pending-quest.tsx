@@ -13,9 +13,13 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useWebSocket } from '@/components/providers/websocket-provider';
-import { Button, Text, View, ScreenContainer } from '@/components/ui';
+import {
+  CompassAnimation,
+  LockInstructions,
+  QuestCard,
+} from '@/components/quest';
+import { Button, ScreenContainer, Text, View } from '@/components/ui';
 import colors from '@/components/ui/colors';
-import { QuestCard, CompassAnimation, LockInstructions } from '@/components/quest';
 import { useCooperativeQuest } from '@/lib/hooks/use-cooperative-quest';
 import { useQuestStore } from '@/store/quest-store';
 import { useUserStore } from '@/store/user-store';
@@ -75,7 +79,10 @@ export default function CooperativePendingQuestScreen() {
   // Join the quest room for real-time updates
   useEffect(() => {
     if (cooperativeQuestRun?.id) {
-      console.log('[CooperativePendingQuest] Joining quest room:', cooperativeQuestRun.id);
+      console.log(
+        '[CooperativePendingQuest] Joining quest room:',
+        cooperativeQuestRun.id
+      );
       joinQuestRoom(cooperativeQuestRun.id);
 
       return () => {
@@ -229,7 +236,7 @@ export default function CooperativePendingQuestScreen() {
           className="mb-8 items-center"
           style={headerAnimatedStyle}
         >
-          <Text className="text-2xl font-bold" style={{ fontWeight: '700' }}>
+          <Text className="text-3xl font-bold" style={{ fontWeight: '700' }}>
             Cooperative Quest
           </Text>
         </Animated.View>
@@ -274,10 +281,7 @@ export default function CooperativePendingQuestScreen() {
                     )}
                     className="mb-2 flex-row items-center justify-center"
                   >
-                    <Text
-                      className="text-base"
-                      style={{ fontWeight: '600' }}
-                    >
+                    <Text className="text-base" style={{ fontWeight: '600' }}>
                       {participant.userId === user?.id
                         ? '✨ You'
                         : `⚔️ ${participant.userName || participant.characterName || 'Quest Companion'}`}
@@ -298,9 +302,7 @@ export default function CooperativePendingQuestScreen() {
 
         <View className="flex-1" />
 
-        <Animated.View
-          style={buttonAnimatedStyle}
-        >
+        <Animated.View style={buttonAnimatedStyle}>
           <Button
             onPress={handleCancelQuest}
             variant="destructive"

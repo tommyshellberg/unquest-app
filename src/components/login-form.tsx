@@ -12,6 +12,9 @@ import * as z from 'zod';
 
 import { requestMagicLink } from '@/api/auth';
 import { Button, Image, Text, View } from '@/components/ui';
+import { useOnboardingStore } from '@/store/onboarding-store';
+import { removeItem } from '@/lib/storage';
+import { useAuth } from '@/lib/auth';
 
 const schema = z.object({
   email: z
@@ -35,6 +38,8 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
   const [sendAttempts, setSendAttempts] = useState(0);
   const [email, setEmail] = useState('');
   const posthog = usePostHog();
+  const resetOnboarding = useOnboardingStore((state) => state.resetOnboarding);
+  const signOut = useAuth((state) => state.signOut);
   useEffect(() => {
     if (initialError) {
       setError(initialError);
@@ -90,14 +95,21 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
           );
           posthog.capture('magic_link_request_failed_email_in_use', { email });
         } else {
+          // Generic error message for all other server errors
           setError(
-            `Failed to send login link: ${err.response.data?.message || err.message}`
+            'Login link failed to send. Please try again.'
           );
+          posthog.capture('magic_link_request_failed_server_error', { 
+            email,
+            status: err.response.status 
+          });
         }
       } else {
+        // Generic error message for non-Axios errors
         setError(
-          `Failed to send login link: ${err?.message || 'Unknown error'}`
+          'Login link failed to send. Please try again.'
         );
+        posthog.capture('magic_link_request_failed_unknown', { email });
       }
     } finally {
       setIsLoading(false);
@@ -224,7 +236,21 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
           
           {/* Link to go back to welcome screen */}
           <TouchableOpacity
-            onPress={() => router.replace('/onboarding/welcome')}
+            onPress={() => {
+              // Clear all auth data and provisional data
+              signOut();
+              
+              // Clear provisional data
+              removeItem('provisionalAccessToken');
+              removeItem('provisionalUserId');
+              removeItem('provisionalEmail');
+              
+              // Reset onboarding state to allow starting fresh
+              resetOnboarding();
+              
+              // Navigate to welcome screen
+              router.replace('/onboarding/welcome');
+            }}
             className="mt-4 items-center"
           >
             <Text className="font-semibold text-white underline">

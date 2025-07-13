@@ -145,7 +145,7 @@ export default function FirstQuestScreen() {
 
       <View className="flex-1 justify-between p-6">
         <Animated.View style={headerStyle} className="mt-10">
-          <Text className="text-2xl font-bold">Your Journey Begins</Text>
+          <Text className="text-3xl font-bold">Your Journey Begins</Text>
         </Animated.View>
 
         <View className="flex-1 justify-center">

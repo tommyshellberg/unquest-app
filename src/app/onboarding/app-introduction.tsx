@@ -95,10 +95,10 @@ export default function AppIntroductionScreen() {
         return (
           <View key="welcome">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-xl font-bold">Welcome to unQuest</Text>
+              <Text className="text-3xl font-bold">Welcome to unQuest</Text>
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 text-sm font-semibold">
+              <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
                 Discover quests and embrace your journey.
               </Text>
             </Animated.View>
@@ -127,10 +127,10 @@ export default function AppIntroductionScreen() {
         return (
           <View key="notifications">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-xl font-bold">Notifications</Text>
+              <Text className="text-3xl font-bold">Notifications</Text>
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 text-sm font-semibold">
+              <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
                 The key to successful quests
               </Text>
             </Animated.View>

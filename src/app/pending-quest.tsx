@@ -11,13 +11,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Text, View, ScreenContainer } from '@/components/ui';
-import colors from '@/components/ui/colors';
 import {
-  QuestCard,
   CompassAnimation,
   LockInstructions,
+  QuestCard,
 } from '@/components/quest';
+import { Button, ScreenContainer, Text, View } from '@/components/ui';
+import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
 
 export default function PendingQuestScreen() {
@@ -103,7 +103,7 @@ export default function PendingQuestScreen() {
           className="mb-8 items-center"
           style={headerAnimatedStyle}
         >
-          <Text className="text-2xl font-bold" style={{ fontWeight: '700' }}>
+          <Text className="text-3xl font-bold" style={{ fontWeight: '700' }}>
             {pendingQuest?.mode === 'custom' ? 'Custom Quest' : 'Quest Ready'}
           </Text>
         </Animated.View>
@@ -151,9 +151,7 @@ export default function PendingQuestScreen() {
 
         <View className="flex-1" />
 
-        <Animated.View
-          style={buttonAnimatedStyle}
-        >
+        <Animated.View style={buttonAnimatedStyle}>
           <Button
             onPress={handleCancelQuest}
             variant="destructive"
