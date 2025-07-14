@@ -1,6 +1,7 @@
 import * as FileSystem from 'expo-file-system';
 
 import { apiClient } from '@/api/common/client';
+import { getItem, setItem } from '@/lib/storage';
 import { convertLegacyAssetToPath, isLegacyAssetId } from '@/utils/legacyAudioMapping';
 
 interface CachedAudio {
@@ -20,6 +21,7 @@ class AudioCacheService {
   private cacheDir: string;
   private readonly CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
   private readonly MAX_CACHE_SIZE = 50; // Maximum number of cached files
+  private readonly CACHE_INDEX_KEY = 'audio-cache-index';
 
   constructor() {
     this.cacheDir = `${FileSystem.cacheDirectory}audio/`;
@@ -36,6 +38,9 @@ class AudioCacheService {
         });
       }
 
+      // Load cache index from storage
+      await this.loadCacheIndex();
+
       // Clean up expired files on startup
       await this.cleanupExpiredFiles();
     } catch (error) {
@@ -43,10 +48,59 @@ class AudioCacheService {
     }
   }
 
+  private async loadCacheIndex() {
+    try {
+      const savedIndex = getItem<Array<[string, AudioCacheEntry]>>(this.CACHE_INDEX_KEY);
+      if (!savedIndex || !Array.isArray(savedIndex)) {
+        return;
+      }
+
+      console.log(`Loading ${savedIndex.length} cached audio entries from storage`);
+      const now = Date.now();
+
+      // Restore cache entries and verify they still exist
+      for (const [key, entry] of savedIndex) {
+        // Skip expired entries
+        if (entry.expiresAt <= now) {
+          continue;
+        }
+
+        // Verify local file still exists
+        if (entry.localUri) {
+          try {
+            const fileInfo = await FileSystem.getInfoAsync(entry.localUri);
+            if (fileInfo.exists) {
+              this.cache.set(key, entry);
+            }
+          } catch (error) {
+            // File doesn't exist, skip this entry
+          }
+        } else {
+          // Entry without local file (in-memory URL)
+          this.cache.set(key, entry);
+        }
+      }
+
+      console.log(`Restored ${this.cache.size} valid cache entries`);
+    } catch (error) {
+      console.warn('Failed to load cache index:', error);
+    }
+  }
+
+  private saveCacheIndex() {
+    try {
+      const cacheArray = Array.from(this.cache.entries());
+      setItem(this.CACHE_INDEX_KEY, cacheArray);
+    } catch (error) {
+      console.warn('Failed to save cache index:', error);
+    }
+  }
+
   private async cleanupExpiredFiles() {
     try {
       const files = await FileSystem.readDirectoryAsync(this.cacheDir);
       const now = Date.now();
+      let filesDeleted = 0;
 
       for (const file of files) {
         const filePath = `${this.cacheDir}${file}`;
@@ -56,8 +110,24 @@ class AudioCacheService {
           const fileAge = now - fileInfo.modificationTime * 1000;
           if (fileAge > this.CACHE_DURATION) {
             await FileSystem.deleteAsync(filePath);
+            filesDeleted++;
           }
         }
+      }
+
+      // Also clean up expired entries from the cache map
+      const expiredKeys: string[] = [];
+      for (const [key, entry] of this.cache.entries()) {
+        if (entry.expiresAt <= now) {
+          expiredKeys.push(key);
+        }
+      }
+
+      expiredKeys.forEach(key => this.cache.delete(key));
+
+      if (filesDeleted > 0 || expiredKeys.length > 0) {
+        console.log(`Cleaned up ${filesDeleted} expired files and ${expiredKeys.length} cache entries`);
+        this.saveCacheIndex();
       }
     } catch (error) {
       console.warn('Failed to cleanup expired audio files:', error);
@@ -146,6 +216,7 @@ class AudioCacheService {
         try {
           const fileInfo = await FileSystem.getInfoAsync(cachedEntry.localUri);
           if (fileInfo.exists) {
+            console.log(`Using cached audio file for ${actualPath}`);
             return { uri: cachedEntry.localUri };
           }
         } catch (error) {
@@ -166,6 +237,9 @@ class AudioCacheService {
         expiresAt,
       });
 
+      // Save cache index to storage
+      this.saveCacheIndex();
+
       // Manage cache size
       await this.manageCacheSize();
 
@@ -183,6 +257,9 @@ class AudioCacheService {
         audioPath: actualPath,
         expiresAt,
       });
+
+      // Save cache index to storage
+      this.saveCacheIndex();
 
       return { uri: memoryUri };
     }
@@ -215,6 +292,9 @@ class AudioCacheService {
       }
       this.cache.delete(key);
     }
+
+    // Save updated cache index
+    this.saveCacheIndex();
   }
 
   async preloadAudio(audioPaths: (string | number)[]): Promise<void> {
@@ -237,6 +317,9 @@ class AudioCacheService {
     try {
       // Clear in-memory cache
       this.cache.clear();
+
+      // Clear cache index from storage
+      this.saveCacheIndex();
 
       // Remove all cached files
       const files = await FileSystem.readDirectoryAsync(this.cacheDir);
