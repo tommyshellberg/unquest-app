@@ -15,19 +15,26 @@ jest.mock('@/../assets/animations/compass.json', () => ({}));
 jest.mock('@/../assets/images/background/active-quest.jpg', () => ({}));
 
 // Mock the quest components
-jest.mock('@/components/quest', () => ({
-  QuestCard: ({ children, ...props }: any) => (
-    <MockView testID="quest-card" {...props}>
-      {children}
-    </MockView>
-  ),
-  CompassAnimation: ({ size, delay }: any) => (
-    <MockView testID="compass-animation" size={size} delay={delay} />
-  ),
-  LockInstructions: ({ variant, delay }: any) => (
-    <MockView testID="lock-instructions" variant={variant} delay={delay} />
-  ),
-}));
+jest.mock('@/components/quest', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    QuestCard: ({ title, duration, children, ...props }: any) => (
+      React.createElement(RN.View, { testID: "quest-card", ...props }, [
+        React.createElement(RN.Text, { key: 'title' }, title),
+        React.createElement(RN.Text, { key: 'duration' }, `${duration} minutes`),
+        children
+      ])
+    ),
+    CompassAnimation: ({ size, delay }: any) => (
+      React.createElement(RN.View, { testID: "compass-animation", size, delay })
+    ),
+    LockInstructions: ({ variant, delay }: any) => (
+      React.createElement(RN.View, { testID: "lock-instructions", variant, delay })
+    ),
+  };
+});
 
 // Helper to create mock view component
 const MockView = ({ children, ...props }: any) => {

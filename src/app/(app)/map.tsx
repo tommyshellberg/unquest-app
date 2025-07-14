@@ -1,8 +1,7 @@
-import MaskedView from '@react-native-masked-view/masked-view';
-import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { Dimensions, Platform } from 'react-native';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
-import type { ReactNativeZoomableViewProps } from '@openspacelabs/react-native-zoomable-view';
+import MaskedView from '@react-native-masked-view/masked-view';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Dimensions, Platform } from 'react-native';
 
 import { MAP_IMAGES, type MapId } from '@/app/data/maps';
 import {
@@ -57,13 +56,13 @@ export default function MapScreen() {
       // Reset load states to force re-render
       setIsImageLoaded(false);
       setIsMaskLoaded(false);
-      
+
       // Small delay to ensure proper loading
       const timer = setTimeout(() => {
         setIsImageLoaded(true);
         setIsMaskLoaded(true);
       }, 100);
-      
+
       return () => clearTimeout(timer);
     } else {
       setIsImageLoaded(true);
@@ -117,9 +116,9 @@ export default function MapScreen() {
                 />
                 {/* Map visible through mask areas */}
                 <MaskedView
-                  style={{ 
+                  style={{
                     position: 'absolute',
-                    width: IMAGE_WIDTH, 
+                    width: IMAGE_WIDTH,
                     height: IMAGE_HEIGHT,
                     top: 0,
                     left: 0,
@@ -134,8 +133,8 @@ export default function MapScreen() {
                     >
                       <Image
                         source={currentMask}
-                        style={{ 
-                          width: IMAGE_WIDTH, 
+                        style={{
+                          width: IMAGE_WIDTH,
                           height: IMAGE_HEIGHT,
                           tintColor: 'white', // Ensure mask is treated as alpha channel
                         }}
@@ -148,8 +147,8 @@ export default function MapScreen() {
                 >
                   <Image
                     source={mapImage}
-                    style={{ 
-                      width: IMAGE_WIDTH, 
+                    style={{
+                      width: IMAGE_WIDTH,
                       height: IMAGE_HEIGHT,
                     }}
                     contentFit="cover"

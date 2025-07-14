@@ -26,6 +26,8 @@ jest.mock('react-native', () => {
   return RN;
 });
 
+
+
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
@@ -71,19 +73,7 @@ jest.mock('expo-notifications', () => ({
   },
 }));
 
-jest.mock('@/components/ui', () => {
-  const actual = jest.requireActual('@/components/ui');
-  return {
-    ...actual,
-    FocusAwareStatusBar: function MockStatusBar() {
-      return null;
-    },
-    BottomSheetKeyboardAwareScrollView:
-      function MockBottomSheetKeyboardAwareScrollView({ children }: any) {
-        return children;
-      },
-  };
-});
+
 
 jest.mock('react-native-bg-actions', () => ({
   start: jest.fn().mockResolvedValue(undefined),
@@ -200,3 +190,6 @@ jest.mock('react-native-keyboard-controller', () => {
     })),
   };
 });
+
+// Note: Removed invasive global mocks that were breaking other tests
+// Test-specific mocks should be added in individual test files as needed

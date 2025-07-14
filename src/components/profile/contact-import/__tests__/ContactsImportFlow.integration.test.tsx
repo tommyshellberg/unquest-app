@@ -19,20 +19,32 @@ jest.mock('react-native/Libraries/Alert/Alert', () => ({
   alert: jest.fn(),
 }));
 
-// Mock UI components
-jest.mock('@/components/ui', () => ({
-  ...jest.requireActual('@/components/ui'),
-  Modal: ({ children, title }: any) => (
-    <div testID="modal" title={title}>
-      {children}
-    </div>
-  ),
-  useModal: () => ({
-    ref: { current: null },
-    present: jest.fn(),
-    dismiss: jest.fn(),
-  }),
-}));
+// Mock UI components without requireActual to avoid module resolution issues
+jest.mock('@/components/ui', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    Modal: ({ children, title }: any) => (
+      React.createElement('div', { testID: 'modal', title }, children)
+    ),
+    useModal: () => ({
+      ref: { current: null },
+      present: jest.fn(),
+      dismiss: jest.fn(),
+    }),
+    View: RN.View,
+    Text: RN.Text,
+    TouchableOpacity: RN.TouchableOpacity,
+    ActivityIndicator: RN.ActivityIndicator,
+    FlatList: RN.FlatList,
+    ScrollView: RN.ScrollView,
+    Button: ({ title, onPress }: any) => 
+      React.createElement(RN.TouchableOpacity, { onPress }, 
+        React.createElement(RN.Text, {}, title)
+      ),
+  };
+});
 
 describe('ContactsImportModal Integration Tests', () => {
   let queryClient: QueryClient;

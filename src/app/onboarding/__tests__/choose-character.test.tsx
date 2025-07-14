@@ -11,6 +11,11 @@ jest.mock('@/lib/services/user', () => ({
   createProvisionalUser: jest.fn(),
 }));
 
+// Mock UI components
+jest.mock('@/components/ui/focus-aware-status-bar', () => ({
+  FocusAwareStatusBar: () => null,
+}));
+
 // Mock posthog
 jest.mock('posthog-react-native', () => ({
   usePostHog: () => ({
@@ -105,8 +110,8 @@ describe('ChooseCharacterScreen', () => {
     fireEvent.press(getByText('Continue'));
 
     // Step 2: Should now be on character selection step
-    expect(getByText("Choose Arthur's Character Type")).toBeTruthy();
-    expect(getByText('Select the character that speaks to you')).toBeTruthy();
+    expect(getByText("Hello, Arthur")).toBeTruthy();
+    expect(getByText('It\'s time to choose your hero.')).toBeTruthy();
 
     // Get the FlatList component and simulate swipe to knight (second character)
     const flatList = getByTestId('character-carousel');
@@ -337,7 +342,7 @@ describe('ChooseCharacterScreen', () => {
     fireEvent.press(continueButton);
 
     // Should be on character selection screen
-    expect(getByText("Choose A's Character Type")).toBeTruthy();
+    expect(getByText("Hello, A")).toBeTruthy();
   });
 
   it('should filter out special characters from name input', () => {

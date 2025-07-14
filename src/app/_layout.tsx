@@ -16,9 +16,9 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
 
 import { APIProvider } from '@/api';
+import { LazyWebSocketProvider } from '@/components/providers/lazy-websocket-provider';
 import { PostHogNavigationTracker } from '@/components/providers/posthog-navigation-tracker';
 import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
-import { WebSocketProvider } from '@/components/providers/websocket-provider';
 import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
@@ -387,13 +387,13 @@ function Providers({
                 }}
               >
                 <APIProvider>
-                  <WebSocketProvider>
+                  <LazyWebSocketProvider>
                     <BottomSheetModalProvider>
                       <UpdateNotificationBar />
                       {children}
                       <FlashMessage position="top" />
                     </BottomSheetModalProvider>
-                  </WebSocketProvider>
+                  </LazyWebSocketProvider>
                 </APIProvider>
               </PostHogProviderWrapper>
             </ThemeProvider>
