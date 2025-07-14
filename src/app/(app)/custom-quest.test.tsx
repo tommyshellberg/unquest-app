@@ -67,7 +67,7 @@ describe('CustomQuestScreen', () => {
     render(<CustomQuestScreen />);
 
     // Verify main components are rendered
-    expect(screen.getByText('Custom quest')).toBeOnTheScreen();
+    expect(screen.getByText('Custom Quest')).toBeOnTheScreen();
     expect(screen.getByText('I want to')).toBeOnTheScreen();
     expect(screen.getByText(/for \d+ minutes/)).toBeOnTheScreen();
   });

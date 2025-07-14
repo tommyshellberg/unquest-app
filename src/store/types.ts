@@ -26,7 +26,7 @@ export interface StoryQuestTemplate extends BaseQuestTemplate {
   poiSlug: string;
   mode: 'story';
   story: string;
-  audioFile: string;
+  audioFile: string | any; // Can be a string path (from server) or required asset (from local data)
   recap: string;
   options: QuestOption[];
 }

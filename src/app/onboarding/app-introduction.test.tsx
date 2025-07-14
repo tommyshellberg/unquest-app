@@ -15,6 +15,11 @@ import AppIntroductionScreen from './app-introduction';
 // Mock API URL for testing
 process.env.API_URL = 'http://test-api.example.com';
 
+// Mock UI components
+jest.mock('@/components/ui/focus-aware-status-bar', () => ({
+  FocusAwareStatusBar: () => null,
+}));
+
 // Mock notification service
 jest.mock('@/lib/services/notifications', () => ({
   setupNotifications: jest.fn(),

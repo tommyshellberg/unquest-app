@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -11,13 +11,13 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
-import { Image, Text, View, ScreenContainer } from '@/components/ui';
+import { StreakCounter } from '@/components/StreakCounter';
+import { Image, ScreenContainer, Text, View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 import { type Quest, type StoryQuestTemplate } from '@/store/types';
-import { StreakCounter } from '@/components/StreakCounter';
 
 import { StoryNarration } from './StoryNarration';
 
@@ -183,7 +183,11 @@ export function QuestComplete({
         </Animated.View>
 
         <Animated.View
-          entering={disableEnteringAnimations ? undefined : FadeInDown.delay(200).duration(600)}
+          entering={
+            disableEnteringAnimations
+              ? undefined
+              : FadeInDown.delay(200).duration(600)
+          }
           className="my-4 w-full"
           style={[storyStyle, isStoryQuest ? { flex: 1 } : {}]}
         >
@@ -210,7 +214,13 @@ export function QuestComplete({
           )}
         </Animated.View>
 
-        <Animated.View entering={disableEnteringAnimations ? undefined : FadeInDown.delay(400).duration(600)}>
+        <Animated.View
+          entering={
+            disableEnteringAnimations
+              ? undefined
+              : FadeInDown.delay(400).duration(600)
+          }
+        >
           <View className="mb-6 items-center">
             <Text className="text-lg font-bold">
               Reward: {quest.reward.xp} XP

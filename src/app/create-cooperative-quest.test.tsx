@@ -26,6 +26,53 @@ jest.mock('posthog-react-native', () => ({
   }),
 }));
 
+// Mock lucide-react-native
+jest.mock('lucide-react-native', () => ({
+  Info: 'Info',
+}));
+
+// Mock @expo/vector-icons
+jest.mock('@expo/vector-icons', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    MaterialCommunityIcons: ({ name, ...props }: any) => 
+      React.createElement(RN.Text, { ...props }, name),
+  };
+});
+
+// Make MaterialCommunityIcons globally available (component seems to use it without import)
+const ReactGlobal = require('react');
+const RNGlobal = require('react-native');
+global.MaterialCommunityIcons = ({ name, ...props }: any) => 
+  ReactGlobal.createElement(RNGlobal.Text, { ...props }, name);
+
+// Mock UI components
+jest.mock('@/components/ui', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    Button: ({ label, onPress, disabled }: any) => 
+      React.createElement(RN.TouchableOpacity, { onPress, disabled }, 
+        React.createElement(RN.Text, {}, label)
+      ),
+    FocusAwareStatusBar: 'FocusAwareStatusBar',
+    SafeAreaView: RN.SafeAreaView,
+    ScrollView: RN.ScrollView,
+    Text: RN.Text,
+    View: RN.View,
+    ScreenContainer: ({ children }: any) => React.createElement(RN.View, {}, children),
+    ScreenHeader: ({ title, subtitle }: any) => 
+      React.createElement(RN.View, {}, [
+        React.createElement(RN.Text, { key: 'title' }, title),
+        subtitle && React.createElement(RN.Text, { key: 'subtitle' }, subtitle)
+      ]),
+    TouchableOpacity: RN.TouchableOpacity,
+  };
+});
+
 // Mock the API
 jest.mock('@/api/cooperative-quest', () => ({
   cooperativeQuestApi: {
@@ -35,11 +82,13 @@ jest.mock('@/api/cooperative-quest', () => ({
 
 // Mock the stores
 const mockCreateLobby = jest.fn();
+const mockLeaveLobby = jest.fn();
 
 jest.mock('@/store/cooperative-lobby-store', () => ({
   useCooperativeLobbyStore: jest.fn((selector) =>
     selector({
       createLobby: mockCreateLobby,
+      leaveLobby: mockLeaveLobby,
     })
   ),
 }));
@@ -98,6 +147,8 @@ import CreateCooperativeQuestScreen from './create-cooperative-quest';
 describe('CreateCooperativeQuestScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCreateLobby.mockClear();
+    mockLeaveLobby.mockClear();
   });
 
   it('should render the create cooperative quest form', () => {

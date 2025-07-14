@@ -21,20 +21,181 @@ jest.mock('expo-contacts', () => ({
   },
 }));
 
-// Mock the modal component
-jest.mock('@/components/ui', () => ({
-  ...jest.requireActual('@/components/ui'),
-  Modal: ({ children, title }: any) => (
-    <div testID="modal">
-      <div>{title}</div>
-      {children}
-    </div>
-  ),
-  useModal: () => ({
-    ref: { current: null },
-    present: jest.fn(),
-    dismiss: jest.fn(),
-  }),
+// Mock the UI components without requireActual to avoid module resolution issues
+jest.mock('@/components/ui', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    Modal: ({ children, title }: any) => (
+      React.createElement('div', { testID: 'modal' }, [
+        React.createElement('div', { key: 'title' }, title),
+        children
+      ])
+    ),
+    useModal: () => ({
+      ref: { current: null },
+      present: jest.fn(),
+      dismiss: jest.fn(),
+    }),
+    View: RN.View,
+    Text: RN.Text,
+    TouchableOpacity: RN.TouchableOpacity,
+    ActivityIndicator: RN.ActivityIndicator,
+    FlatList: RN.FlatList,
+    ScrollView: RN.ScrollView,
+    Button: ({ label, onPress, disabled }: any) => 
+      React.createElement(RN.TouchableOpacity, { onPress, disabled }, 
+        React.createElement(RN.Text, {}, label)
+      ),
+  };
+});
+
+// Mock child components with proper button text
+jest.mock('../EmptyContactsView', () => ({
+  EmptyContactsView: ({ onImportContacts, onManualAdd }: any) => {
+    const React = jest.requireActual('react');
+    const RN = jest.requireActual('react-native');
+    
+    return React.createElement(RN.View, {}, [
+      React.createElement(RN.TouchableOpacity, { 
+        key: 'import', 
+        onPress: onImportContacts 
+      }, React.createElement(RN.Text, {}, 'Import Contacts')),
+      React.createElement(RN.TouchableOpacity, { 
+        key: 'manual', 
+        onPress: onManualAdd 
+      }, React.createElement(RN.Text, {}, 'Add Manual Contact'))
+    ]);
+  }
+}));
+
+jest.mock('../ContactsList', () => ({
+  ContactsList: ({ contacts, onContactSelect, onInvite, onManualAdd, selectedCount }: any) => {
+    const React = jest.requireActual('react');
+    const RN = jest.requireActual('react-native');
+    
+    return React.createElement(RN.View, {}, [
+      // Render contacts
+      ...contacts.map((contact: any, index: number) => 
+        React.createElement(RN.TouchableOpacity, {
+          key: `contact-${index}`,
+          testID: `contact-item-${contact.id}`,
+          onPress: () => onContactSelect(contact),
+          accessibilityState: { disabled: contact.isFriend }
+        }, [
+          React.createElement(RN.Text, { key: 'name' }, contact.name),
+          contact.isFriend && React.createElement(RN.Text, { key: 'already-invited' }, 'Already invited')
+        ])
+      ),
+      // Invite button
+      React.createElement(RN.TouchableOpacity, {
+        key: 'invite-button',
+        onPress: onInvite
+      }, React.createElement(RN.Text, {}, 
+        selectedCount > 0 
+          ? `invite ${selectedCount} contact${selectedCount > 1 ? 's' : ''}` 
+          : 'select contacts'
+      )),
+      // Manual add button
+      React.createElement(RN.TouchableOpacity, {
+        key: 'manual-add',
+        onPress: onManualAdd
+      }, React.createElement(RN.Text, {}, 'add manual contact'))
+    ]);
+  }
+}));
+
+jest.mock('../ManualEmailView', () => ({
+  ManualEmailView: ({ onSubmit, onBack }: any) => {
+    const React = jest.requireActual('react');
+    const RN = jest.requireActual('react-native');
+    const [email, setEmail] = React.useState('');
+    
+    return React.createElement(RN.View, {}, [
+      React.createElement(RN.TextInput, {
+        key: 'email-input',
+        placeholder: 'friend@example.com',
+        value: email,
+        onChangeText: setEmail
+      }),
+      React.createElement(RN.TouchableOpacity, {
+        key: 'send-invite',
+        onPress: () => onSubmit(email)
+      }, React.createElement(RN.Text, {}, 'send invite')),
+      React.createElement(RN.TouchableOpacity, {
+        key: 'back',
+        onPress: onBack
+      }, React.createElement(RN.Text, {}, 'back'))
+    ]);
+  }
+}));
+
+jest.mock('../InviteResultsSummary', () => ({
+  InviteResultsSummary: ({ results, onDone }: any) => {
+    const React = jest.requireActual('react');
+    const RN = jest.requireActual('react-native');
+    
+    const { successful, failed } = results;
+    
+    return React.createElement(RN.View, {}, [
+      // Header text
+      React.createElement(RN.Text, { key: 'header' },
+        successful.length > 0 && failed.length > 0
+          ? 'invitations sent with some failures'
+          : successful.length > 0
+            ? 'all invitations sent successfully!'
+            : 'failed to send invitations'
+      ),
+      // Success count
+      successful.length > 0 && React.createElement(RN.Text, { key: 'success-count' },
+        `${successful.length} successful`
+      ),
+      // Failed count  
+      failed.length > 0 && React.createElement(RN.Text, { key: 'failed-count' },
+        `${failed.length} failed`
+      ),
+      // Success section
+      successful.length > 0 && React.createElement(RN.Text, { key: 'success-header' },
+        'successfully invited'
+      ),
+      // Successful contacts emails
+      ...successful.map((contact: any, index: number) =>
+        React.createElement(RN.Text, { key: `success-email-${index}` }, contact.email)
+      ),
+      // Failed section
+      failed.length > 0 && React.createElement(RN.Text, { key: 'failed-header' },
+        'failed to invite'
+      ),
+      // Individual contacts and their reasons
+      ...failed.map((contact: any, index: number) =>
+        React.createElement(RN.Text, { key: `failed-reason-${index}` }, contact.reason)
+      ),
+      // Done button
+      React.createElement(RN.TouchableOpacity, {
+        key: 'done',
+        onPress: onDone
+      }, React.createElement(RN.Text, {}, 'done'))
+    ].filter(Boolean));
+  }
+}));
+
+jest.mock('../PermissionDeniedView', () => ({
+  PermissionDeniedView: ({ onEnablePermissions, onManualAdd }: any) => {
+    const React = jest.requireActual('react');
+    const RN = jest.requireActual('react-native');
+    
+    return React.createElement(RN.View, {}, [
+      React.createElement(RN.TouchableOpacity, { 
+        key: 'enable', 
+        onPress: onEnablePermissions 
+      }, React.createElement(RN.Text, {}, 'enable permissions')),
+      React.createElement(RN.TouchableOpacity, { 
+        key: 'manual', 
+        onPress: onManualAdd 
+      }, React.createElement(RN.Text, {}, 'add manual contact'))
+    ]);
+  }
 }));
 
 describe('ContactsImportModal', () => {

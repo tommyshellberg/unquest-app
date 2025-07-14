@@ -10,8 +10,45 @@ import CooperativePendingQuestScreen from './cooperative-pending-quest';
 
 // Mock dependencies
 jest.mock('expo-router');
-jest.mock('@/components/providers/websocket-provider');
-jest.mock('@/lib/hooks/use-cooperative-quest');
+jest.mock('@/components/providers/websocket-provider', () => ({
+  useWebSocket: jest.fn(() => ({
+    isConnected: true,
+    joinRoom: jest.fn(),
+    leaveRoom: jest.fn(),
+    emit: jest.fn(),
+    on: jest.fn(),
+    off: jest.fn(),
+  })),
+}));
+jest.mock('@/lib/hooks/use-cooperative-quest', () => ({
+  useCooperativeQuest: jest.fn(() => ({
+    isCooperativeQuest: true,
+    currentInvitation: null,
+    cooperativeQuestRun: {
+      id: 'quest-run-1',
+      questId: 'quest-1',
+      hostId: 'host-1',
+      status: 'pending',
+      participants: [
+        { userId: 'user-1', ready: false, status: 'pending' },
+        { userId: 'user-2', ready: false, status: 'pending' },
+      ],
+      invitationId: 'invitation-1',
+      actualStartTime: null,
+      scheduledEndTime: null,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+    questRunStatus: {
+      id: 'quest-run-1',
+      status: 'pending',
+      participants: [
+        { userId: 'user-1', ready: false, status: 'pending' },
+        { userId: 'user-2', ready: false, status: 'pending' },
+      ],
+    },
+  })),
+}));
 jest.mock('expo-blur', () => ({
   BlurView: 'BlurView',
 }));
@@ -19,19 +56,26 @@ jest.mock('@/../assets/animations/compass.json', () => ({}));
 jest.mock('@/../assets/images/background/active-quest.jpg', () => ({}));
 
 // Mock the quest components
-jest.mock('@/components/quest', () => ({
-  QuestCard: ({ children, ...props }: any) => (
-    <MockView testID="quest-card" {...props}>
-      {children}
-    </MockView>
-  ),
-  CompassAnimation: ({ size, delay }: any) => (
-    <MockView testID="compass-animation" size={size} delay={delay} />
-  ),
-  LockInstructions: ({ variant, delay }: any) => (
-    <MockView testID="lock-instructions" variant={variant} delay={delay} />
-  ),
-}));
+jest.mock('@/components/quest', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+  
+  return {
+    QuestCard: ({ title, duration, children, ...props }: any) => (
+      React.createElement(RN.View, { testID: "quest-card", ...props }, [
+        React.createElement(RN.Text, { key: 'title' }, title),
+        React.createElement(RN.Text, { key: 'duration' }, `${duration} minutes`),
+        children
+      ])
+    ),
+    CompassAnimation: ({ size, delay }: any) => (
+      React.createElement(RN.View, { testID: "compass-animation", size, delay })
+    ),
+    LockInstructions: ({ variant, delay }: any) => (
+      React.createElement(RN.View, { testID: "lock-instructions", variant, delay })
+    ),
+  };
+});
 
 // Helper to create mock view component
 const MockView = ({ children, ...props }: any) => {

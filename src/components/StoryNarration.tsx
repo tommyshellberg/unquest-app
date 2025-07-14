@@ -13,6 +13,7 @@ import {
 import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
 import { type StoryQuestTemplate } from '@/store/types';
+import { getAudioAsset } from '@/utils/audioAssetMap';
 
 type Props = {
   quest: StoryQuestTemplate;
@@ -48,13 +49,16 @@ export function StoryNarration({ quest }: Props) {
           shouldDuckAndroid: true,
         });
 
-        // Load the audio file - quest.audioFile is already the required asset
-        if (!quest.audioFile) {
-          throw new Error('No audio file provided');
+        console.log('quest.audioFile', quest.audioFile);
+
+        // Get the audio asset (handles both string paths and required assets)
+        const audioAsset = getAudioAsset(quest.audioFile);
+        if (!audioAsset) {
+          throw new Error('No audio file provided or audio asset not found');
         }
 
         const { sound, status } = await Audio.Sound.createAsync(
-          quest.audioFile,
+          audioAsset,
           { shouldPlay: false },
           onPlaybackStatusUpdate
         );
@@ -228,7 +232,7 @@ export function StoryNarration({ quest }: Props) {
   return (
     <View className="bg-background-light mt-4 w-full rounded-lg p-4">
       {isLoading && (
-        <View className="absolute inset-0 z-10 items-center justify-center rounded-lg bg-background-light">
+        <View className="bg-background-light absolute inset-0 z-10 items-center justify-center rounded-lg">
           <Text className="text-sm text-neutral-600">Loading audio...</Text>
         </View>
       )}

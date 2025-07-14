@@ -59,10 +59,12 @@ jest.mock('@/store/settings-store', () => ({
 }));
 
 jest.mock('@/store/user-store', () => ({
-  useUserStore: jest.fn(() => ({
-    user: { email: 'test@example.com' },
-    setUser: jest.fn(),
-  })),
+  useUserStore: jest.fn((selector) => 
+    selector({
+      user: { email: 'test@example.com' },
+      setUser: jest.fn(),
+    })
+  ),
 }));
 
 // Mock expo-font
@@ -87,6 +89,36 @@ jest.mock('@/components/ui', () => ({
   ScrollView: 'ScrollView',
   Text: 'Text',
   View: 'View',
+  ScreenContainer: 'ScreenContainer',
+  ScreenHeader: 'ScreenHeader',
+}));
+
+// Mock expo-linking
+jest.mock('expo-linking', () => ({
+  openURL: jest.fn(),
+}));
+
+// Mock storage
+jest.mock('@/lib/storage', () => ({
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+}));
+
+// Mock OneSignal
+jest.mock('react-native-onesignal', () => ({
+  OneSignal: {
+    Notifications: {
+      requestPermission: jest.fn(),
+      hasPermission: jest.fn(() => Promise.resolve(true)),
+    },
+  },
+}));
+
+// Mock @env
+jest.mock('@env', () => ({
+  Env: {
+    VERSION: '1.0.0',
+  },
 }));
 
 // Mock expo-updates
@@ -121,7 +153,8 @@ describe('Settings Screen', () => {
   it('renders without crashing', async () => {
     const { getByText } = render(<Settings />);
     await waitFor(() => {
-      expect(getByText('Settings')).toBeTruthy();
+      // Look for content that's actually rendered as text, not just passed as props
+      expect(getByText('Account')).toBeTruthy();
     });
   });
 
