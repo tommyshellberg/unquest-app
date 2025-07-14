@@ -27,6 +27,7 @@ import {
   View,
 } from '@/components/ui';
 import { useServerQuests } from '@/hooks/use-server-quests';
+import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
 import { type StoryQuestTemplate } from '@/store/types';
@@ -74,6 +75,9 @@ export default function Home() {
   const prepareQuest = useQuestStore((state) => state.prepareQuest);
   const user = useUserStore((state) => state.user);
   const posthog = usePostHog();
+  
+  // Preload audio files for upcoming quests
+  useAudioPreloader({ storylineId: 'vaedros', enabled: true });
   // State for story choices - now primarily from server
   const [storyOptions, setStoryOptions] = useState<QuestOption[]>([]);
 

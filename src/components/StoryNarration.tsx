@@ -13,7 +13,7 @@ import {
 import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
 import { type StoryQuestTemplate } from '@/store/types';
-import { getAudioAsset } from '@/utils/audioAssetMap';
+import { audioCacheService } from '@/lib/services/audio-cache.service';
 
 type Props = {
   quest: StoryQuestTemplate;
@@ -51,14 +51,14 @@ export function StoryNarration({ quest }: Props) {
 
         console.log('quest.audioFile', quest.audioFile);
 
-        // Get the audio asset (handles both string paths and required assets)
-        const audioAsset = getAudioAsset(quest.audioFile);
-        if (!audioAsset) {
-          throw new Error('No audio file provided or audio asset not found');
+        // Get the audio source from cache service (handles S3 download, legacy assets, and fallback)
+        const audioSource = await audioCacheService.getAudioSource(quest.audioFile);
+        if (!audioSource) {
+          throw new Error('No audio file provided or audio source not found');
         }
 
         const { sound, status } = await Audio.Sound.createAsync(
-          audioAsset,
+          audioSource,
           { shouldPlay: false },
           onPlaybackStatusUpdate
         );
