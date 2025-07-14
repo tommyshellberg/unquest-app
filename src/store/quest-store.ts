@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { queryClient } from '@/api/common';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
+import type { QuestTemplate } from '@/api/quest/types';
 import {
   cancelStreakWarningNotification,
   scheduleStreakWarningNotification,
@@ -30,6 +31,10 @@ interface QuestState {
   lastCompletedQuestTimestamp: number | null;
   currentLiveActivityId: string | null;
   failedQuests: Quest[];
+  // Server-driven quest data
+  serverAvailableQuests: QuestTemplate[];
+  hasMoreQuests: boolean;
+  storylineComplete: boolean;
   // Cooperative quest fields
   currentInvitation: QuestInvitation | null;
   cooperativeQuestRun: CooperativeQuestRun | null;
@@ -46,6 +51,8 @@ interface QuestState {
   getCompletedQuests: () => Quest[];
   prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => void;
   setLiveActivityId: (id: string | null) => void;
+  // Server-driven quest actions
+  setServerAvailableQuests: (quests: QuestTemplate[], hasMore: boolean, complete: boolean) => void;
   // Cooperative quest actions
   setCurrentInvitation: (invitation: QuestInvitation | null) => void;
   setCooperativeQuestRun: (run: CooperativeQuestRun | null) => void;
@@ -79,6 +86,10 @@ export const useQuestStore = create<QuestState>()(
       lastCompletedQuestTimestamp: null,
       currentLiveActivityId: null,
       failedQuests: [],
+      // Server-driven quest data
+      serverAvailableQuests: [],
+      hasMoreQuests: false,
+      storylineComplete: false,
       // Cooperative quest fields
       currentInvitation: null,
       cooperativeQuestRun: null,
@@ -397,6 +408,23 @@ export const useQuestStore = create<QuestState>()(
         });
       },
 
+      setServerAvailableQuests: (quests: QuestTemplate[], hasMore: boolean, complete: boolean) => {
+        // Convert server quest templates to client format
+        const clientQuests = quests.map(quest => ({
+          ...quest,
+          // Map server fields to client fields if needed
+          id: quest.customId,
+          mode: quest.mode as 'story' | 'custom',
+        }));
+        
+        set({
+          serverAvailableQuests: quests,
+          availableQuests: clientQuests as (CustomQuestTemplate | StoryQuestTemplate)[],
+          hasMoreQuests: hasMore,
+          storylineComplete: complete,
+        });
+      },
+
       reset: () => {
         set({
           activeQuest: null,
@@ -408,6 +436,10 @@ export const useQuestStore = create<QuestState>()(
           lastCompletedQuestTimestamp: null,
           currentLiveActivityId: null, // Reset activity ID
           failedQuests: [],
+          // Reset server-driven quest data
+          serverAvailableQuests: [],
+          hasMoreQuests: false,
+          storylineComplete: false,
           // Reset cooperative quest fields
           currentInvitation: null,
           cooperativeQuestRun: null,

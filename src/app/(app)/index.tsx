@@ -14,6 +14,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { type QuestOption } from '@/api/quest/types';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { getMapNameForQuest } from '@/app/utils/map-utils';
 import QuestCard from '@/components/home/quest-card';
@@ -25,9 +26,10 @@ import {
   ScreenHeader,
   View,
 } from '@/components/ui';
+import { useServerQuests } from '@/hooks/use-server-quests';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
-import { type QuestOption } from '@/store/types';
+import { type StoryQuestTemplate } from '@/store/types';
 import { useUserStore } from '@/store/user-store';
 
 // Define screen dimensions for the carousel
@@ -60,29 +62,40 @@ export default function Home() {
     (state) => state.refreshAvailableQuests
   );
   const availableQuests = useQuestStore((state) => state.availableQuests);
+  
+  // Use server-driven quests
+  const { 
+    serverQuests, 
+    options: serverOptions, 
+    storylineProgress,
+    isLoading: isLoadingQuests 
+  } = useServerQuests();
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
   const prepareQuest = useQuestStore((state) => state.prepareQuest);
   const user = useUserStore((state) => state.user);
   const posthog = usePostHog();
-  // State for story choices
+  // State for story choices - now primarily from server
   const [storyOptions, setStoryOptions] = useState<QuestOption[]>([]);
 
   // Carousel state
   const [activeIndex, setActiveIndex] = useState(0);
   const progress = useSharedValue(0);
 
-  // Get current map name based on next quest
+  // Get current map name based on next quest - prefer server data
   const currentMapName =
-    availableQuests.length > 0
-      ? getMapNameForQuest(availableQuests[0].id)
-      : 'Vaedros Kingdom';
+    serverQuests.length > 0
+      ? getMapNameForQuest(serverQuests[0].customId)
+      : availableQuests.length > 0
+        ? getMapNameForQuest(availableQuests[0].id)
+        : 'Vaedros Kingdom';
 
-  // Calculate story progress
-  const storyProgress =
-    completedQuests.filter((quest) => quest.mode === 'story').length /
-    AVAILABLE_QUESTS.filter(
-      (quest) => quest.mode === 'story' && !/quest-\d+b$/.test(quest.id)
-    ).length;
+  // Calculate story progress - prefer server data if available
+  const storyProgress = storylineProgress
+    ? storylineProgress.progressPercentage / 100
+    : completedQuests.filter((quest) => quest.mode === 'story').length /
+      AVAILABLE_QUESTS.filter(
+        (quest) => quest.mode === 'story' && !/quest-\d+b$/.test(quest.id)
+      ).length;
 
   // Animation values
   const headerOpacity = useSharedValue(0);
@@ -111,19 +124,27 @@ export default function Home() {
     }
   }, [activeQuest]);
 
-  // Get next quest options based on the last completed story quest
+  // Get next quest options - prefer server data when available
   useEffect(() => {
     console.log('🔄 Story options useEffect running');
+    console.log('🔄 Server options available:', serverOptions.length);
     console.log('🔄 activeQuest:', activeQuest);
     console.log('🔄 pendingQuest:', pendingQuest);
-    console.log('🔄 completedQuests:', completedQuests);
 
     if (activeQuest || pendingQuest) {
       console.log('🔄 Returning early due to active/pending quest');
-      return; // Don't update if there's an active quest
+      return;
     }
-    console.log('we are not returning early');
-    // Get the last completed story quest
+
+    // Prefer server options if available
+    if (serverOptions.length > 0) {
+      console.log('🔄 Using server options:', serverOptions);
+      setStoryOptions(serverOptions);
+      return;
+    }
+
+    // Fallback to local logic if server data not available
+    console.log('🔄 Falling back to local quest logic');
     const storyQuests = completedQuests.filter(
       (quest) => quest.mode === 'story'
     );
@@ -133,17 +154,14 @@ export default function Home() {
       const firstQuest = AVAILABLE_QUESTS.find(
         (quest) => quest.mode === 'story'
       );
-      // Check if we have a story quest and it has options
       if (firstQuest && firstQuest.mode === 'story' && firstQuest.options) {
         setStoryOptions(firstQuest.options);
       } else {
-        // this should throw an error, not silently fail, otherwise, the user can't continue.
         throw new Error('No story quests found');
       }
     } else {
       // Get the last completed story quest
       const lastCompletedQuest = storyQuests[storyQuests.length - 1];
-
       console.log('lastCompletedQuest', lastCompletedQuest.id);
 
       // Find this quest in the AVAILABLE_QUESTS array to get its options
@@ -157,51 +175,23 @@ export default function Home() {
         questData.options &&
         questData.options.length > 0
       ) {
-        // Get the next quest IDs from the options
-        const nextQuestIds = questData.options.map(
-          (option) => option.nextQuestId
-        );
-        console.log('➡️ nextQuestIds', nextQuestIds);
-
-        // Filter out null nextQuestIds (end of storyline)
-        const validNextQuestIds = nextQuestIds.filter((id) => id !== null);
-        console.log('➡️ validNextQuestIds', validNextQuestIds);
-
-        if (validNextQuestIds.length > 0) {
-          // Find the next available quests
-          const nextQuests = validNextQuestIds
-            .map((id) => AVAILABLE_QUESTS.find((quest) => quest.id === id))
-            .filter(Boolean);
-
-          // Set the options for the next quest
-          if (nextQuests.length > 0) {
-            console.log('➡️ nextQuests', nextQuests);
-            // Use the options from the last completed quest
-            console.log('🔄 Setting story options:', questData.options);
-            setStoryOptions(questData.options);
-          } else {
-            console.log('🔄 No next quests found, setting empty options');
-            setStoryOptions([]);
-          }
-        } else {
-          console.log('🔄 No valid next quest IDs, setting empty options');
-          setStoryOptions([]);
-        }
+        console.log('🔄 Setting story options from local data:', questData.options);
+        setStoryOptions(questData.options);
       } else {
-        console.log('🔄 Quest data missing options, setting empty options');
+        console.log('🔄 No options found, setting empty');
         setStoryOptions([]);
       }
     }
-    console.log('🔄 Final storyOptions set to:', storyOptions);
-  }, [completedQuests, activeQuest, pendingQuest]);
+  }, [completedQuests, activeQuest, pendingQuest, serverOptions]);
 
   // Refresh available quests when there's no active quest
+  // Only use local refresh if server quests aren't being used
   useEffect(() => {
-    if (!activeQuest && !pendingQuest) {
-      console.log('➡️ refreshing available quests');
+    if (!activeQuest && !pendingQuest && serverQuests.length === 0) {
+      console.log('➡️ refreshing available quests locally');
       refreshAvailableQuests();
     }
-  }, [activeQuest, pendingQuest, refreshAvailableQuests]);
+  }, [activeQuest, pendingQuest, refreshAvailableQuests, serverQuests.length]);
 
   // User data should already be loaded from auth hydration
   // The component will re-render when user data changes
@@ -216,29 +206,38 @@ export default function Home() {
   // Function to handle quest option selection
   const handleQuestOptionSelect = async (nextQuestId: string | null) => {
     posthog.capture('try_trigger_start_quest');
-    if (!nextQuestId) return; // Don't proceed if there's no next quest
+    if (!nextQuestId) return;
 
-    // Find the quest by ID
-    const selectedQuest = AVAILABLE_QUESTS.find(
-      (quest) => quest.id === nextQuestId
+    // First check server quests, then fall back to local
+    let selectedQuest = serverQuests.find(
+      (quest) => quest.customId === nextQuestId
     );
-
+    
+    // Convert server quest to client format if found
     if (selectedQuest) {
-      console.log('🎯 Selected quest:', selectedQuest);
-      // Check state BEFORE
-      console.log(
-        '🎯 BEFORE prepareQuest - pendingQuest:',
-        useQuestStore.getState().pendingQuest
-      );
+      const clientQuest = {
+        ...selectedQuest,
+        id: selectedQuest.customId,
+        mode: selectedQuest.mode as 'story' | 'custom',
+      };
+      console.log('🎯 Selected server quest:', clientQuest);
       posthog.capture('trigger_start_quest');
-      prepareQuest(selectedQuest);
-      // Check state AFTER (should be immediate)
-      console.log(
-        '🎯 AFTER prepareQuest - pendingQuest:',
-        useQuestStore.getState().pendingQuest
-      );
-      await QuestTimer.prepareQuest(selectedQuest);
+      prepareQuest(clientQuest as StoryQuestTemplate);
+      await QuestTimer.prepareQuest(clientQuest as StoryQuestTemplate);
       posthog.capture('success_start_quest');
+    } else {
+      // Fallback to local quest data
+      const localQuest = AVAILABLE_QUESTS.find(
+        (quest) => quest.id === nextQuestId
+      );
+      
+      if (localQuest) {
+        console.log('🎯 Selected local quest:', localQuest);
+        posthog.capture('trigger_start_quest');
+        prepareQuest(localQuest);
+        await QuestTimer.prepareQuest(localQuest);
+        posthog.capture('success_start_quest');
+      }
     }
   };
 
@@ -271,18 +270,27 @@ export default function Home() {
     console.log('[Home] Has coop feature:', hasCoopFeature);
   }, [user, hasCoopFeature]);
 
-  // Prepare carousel data
+  // Prepare carousel data - prefer server data when available
   const carouselData = [
     {
       id: 'story',
       mode: 'story',
       title:
-        availableQuests.length > 0
-          ? availableQuests[0].title
-          : storyOptions.length > 0
-            ? 'Choose Your Path'
-            : 'No quests available',
+        serverQuests.length > 0
+          ? serverQuests[0].title
+          : availableQuests.length > 0
+            ? availableQuests[0].title
+            : storyOptions.length > 0
+              ? 'Choose Your Path'
+              : isLoadingQuests
+                ? 'Loading quests...'
+                : 'No quests available',
       recap: (() => {
+        // Use server quest recap if available
+        if (serverQuests.length > 0 && serverQuests[0].recap) {
+          return serverQuests[0].recap;
+        }
+        
         // Get the last completed story quest for the recap
         const storyQuests = completedQuests.filter(
           (quest) => quest.mode === 'story' && quest.status === 'completed'
@@ -299,26 +307,31 @@ export default function Home() {
         }
 
         // Fallback if no story quests completed
-        return availableQuests.length > 0 && availableQuests[0].mode === 'story'
+        return serverQuests.length > 0 || availableQuests.length > 0
           ? 'Begin your journey'
           : 'Continue your journey';
       })(),
       subtitle: currentMapName,
       duration:
-        availableQuests.length > 0
-          ? availableQuests[0].durationMinutes
-          : storyOptions.length > 0 && storyOptions[0].nextQuestId
-            ? AVAILABLE_QUESTS.find((q) => q.id === storyOptions[0].nextQuestId)
-                ?.durationMinutes || 0
-            : 0,
+        serverQuests.length > 0
+          ? serverQuests[0].durationMinutes
+          : availableQuests.length > 0
+            ? availableQuests[0].durationMinutes
+            : storyOptions.length > 0 && storyOptions[0].nextQuestId
+              ? AVAILABLE_QUESTS.find((q) => q.id === storyOptions[0].nextQuestId)
+                  ?.durationMinutes || 0
+              : 0,
       xp:
-        availableQuests.length > 0
-          ? availableQuests[0].reward.xp
-          : storyOptions.length > 0 && storyOptions[0].nextQuestId
-            ? AVAILABLE_QUESTS.find((q) => q.id === storyOptions[0].nextQuestId)
-                ?.reward.xp || 0
-            : 0,
+        serverQuests.length > 0
+          ? serverQuests[0].reward.xp
+          : availableQuests.length > 0
+            ? availableQuests[0].reward.xp
+            : storyOptions.length > 0 && storyOptions[0].nextQuestId
+              ? AVAILABLE_QUESTS.find((q) => q.id === storyOptions[0].nextQuestId)
+                  ?.reward.xp || 0
+              : 0,
       progress: storyProgress,
+      requiresPremium: serverQuests.length > 0 ? serverQuests[0].requiresPremium : false,
     },
     {
       id: 'custom',
@@ -375,16 +388,13 @@ export default function Home() {
 
     // Debug logging
     console.log('🎮 renderStoryOptions - storyOptions:', storyOptions);
+    console.log('🎮 renderStoryOptions - serverQuests:', serverQuests);
     console.log('🎮 renderStoryOptions - activeQuest:', activeQuest);
     console.log('🎮 renderStoryOptions - pendingQuest:', pendingQuest);
 
-    if (storyOptions.length === 0) {
-      console.log('⚠️ No story options available');
-      return null;
-    }
-
-    // Single option gets same treatment as multi-option
-    if (storyOptions.length === 1) {
+    // If there's a single server quest available with no branching, show start button
+    if (serverQuests.length === 1 && storyOptions.length === 0) {
+      const quest = serverQuests[0];
       return (
         <Animated.View
           entering={FadeIn.duration(600).delay(200)}
@@ -405,14 +415,72 @@ export default function Home() {
             }}
           >
             <Button
-              label={storyOptions[0].text}
-              onPress={() =>
-                handleQuestOptionSelect(storyOptions[0].nextQuestId)
-              }
-              className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
+              label={quest.requiresPremium ? 'Unlock Premium to Continue' : 'Start Quest'}
+              onPress={() => {
+                if (!quest.requiresPremium) {
+                  handleQuestOptionSelect(quest.customId);
+                } else {
+                  // TODO: Navigate to premium screen
+                  console.log('Navigate to premium screen');
+                }
+              }}
+              className={`min-h-[48px] justify-center rounded-xl p-3 ${
+                quest.requiresPremium ? 'bg-amber-400' : 'bg-primary-300'
+              }`}
               textClassName="text-sm text-white text-center leading-tight"
               textStyle={{ fontWeight: '700' }}
-              disabled={!storyOptions[0].nextQuestId}
+            />
+          </Animated.View>
+        </Animated.View>
+      );
+    }
+
+    if (storyOptions.length === 0) {
+      console.log('⚠️ No story options available');
+      return null;
+    }
+
+    // Single option gets same treatment as multi-option
+    if (storyOptions.length === 1) {
+      const option = storyOptions[0];
+      const nextQuest = option.nextQuest || serverQuests.find(q => q.customId === option.nextQuestId);
+      const requiresPremium = nextQuest?.isPremium || false;
+      
+      return (
+        <Animated.View
+          entering={FadeIn.duration(600).delay(200)}
+          className="w-full items-center px-4"
+        >
+          <Animated.View
+            entering={FadeInDown.duration(600).delay(400)}
+            style={{
+              width: cardWidth,
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+              shadowOpacity: 0.12,
+              shadowRadius: 4,
+              elevation: 6,
+            }}
+          >
+            <Button
+              label={requiresPremium ? `⭐ ${option.text}` : option.text}
+              onPress={() => {
+                if (requiresPremium) {
+                  // TODO: Navigate to premium screen
+                  console.log('Navigate to premium screen for:', option.nextQuestId);
+                } else {
+                  handleQuestOptionSelect(option.nextQuestId);
+                }
+              }}
+              className={`min-h-[48px] justify-center rounded-xl p-3 ${
+                requiresPremium ? 'bg-amber-400' : 'bg-primary-300'
+              }`}
+              textClassName="text-sm text-white text-center leading-tight"
+              textStyle={{ fontWeight: '700' }}
+              disabled={!option.nextQuestId}
             />
           </Animated.View>
         </Animated.View>
@@ -427,34 +495,47 @@ export default function Home() {
       >
         {/* Decision buttons */}
         <View className="w-full flex-row justify-between gap-3">
-          {storyOptions.map((option: QuestOption, index: number) => (
-            <Animated.View
-              key={option.id}
-              entering={FadeInDown.duration(600).delay(400 + index * 100)}
-              className="flex-1"
-              style={{
-                shadowColor: '#000',
-                shadowOffset: {
-                  width: 0,
-                  height: 3,
-                },
-                shadowOpacity: 0.12,
-                shadowRadius: 4,
-                elevation: 6,
-              }}
-            >
-              <Button
-                label={option.text}
-                onPress={() => handleQuestOptionSelect(option.nextQuestId)}
-                className={`min-h-[48px] justify-center rounded-xl p-3 ${
-                  index === 0 ? 'bg-neutral-300' : 'bg-primary-300'
-                }`}
-                textClassName="text-sm text-white text-center leading-tight"
-                textStyle={{ fontWeight: '700' }}
-                disabled={!option.nextQuestId} // Disable if nextQuestId is null
-              />
-            </Animated.View>
-          ))}
+          {storyOptions.map((option: QuestOption, index: number) => {
+            // Check if the next quest requires premium
+            const nextQuest = option.nextQuest || serverQuests.find(q => q.customId === option.nextQuestId);
+            const requiresPremium = nextQuest?.isPremium || false;
+            
+            return (
+              <Animated.View
+                key={option.id}
+                entering={FadeInDown.duration(600).delay(400 + index * 100)}
+                className="flex-1"
+                style={{
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 3,
+                  },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 4,
+                  elevation: 6,
+                }}
+              >
+                <Button
+                  label={requiresPremium ? `⭐ ${option.text}` : option.text}
+                  onPress={() => {
+                    if (requiresPremium) {
+                      // TODO: Navigate to premium screen
+                      console.log('Navigate to premium screen for:', option.nextQuestId);
+                    } else {
+                      handleQuestOptionSelect(option.nextQuestId);
+                    }
+                  }}
+                  className={`min-h-[48px] justify-center rounded-xl p-3 ${
+                    requiresPremium ? 'bg-amber-400' : index === 0 ? 'bg-neutral-300' : 'bg-primary-300'
+                  }`}
+                  textClassName="text-sm text-white text-center leading-tight"
+                  textStyle={{ fontWeight: '700' }}
+                  disabled={!option.nextQuestId} // Disable if nextQuestId is null
+                />
+              </Animated.View>
+            );
+          })}
         </View>
       </Animated.View>
     );
@@ -474,6 +555,7 @@ export default function Home() {
           description={item.recap || ''}
           progress={item.progress}
           showProgress={item.mode === 'story'}
+          requiresPremium={item.requiresPremium}
         />
       </View>
     );

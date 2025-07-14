@@ -1,6 +1,15 @@
-import { ArrowLeft, Lock, PlusCircle, Users, UserPlus } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import {
+  ArrowLeft,
+  CheckCircle,
+  ChevronRight,
+  Info,
+  Lock,
+  PlusCircle,
+  UserPlus,
+  Users,
+} from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useRef } from 'react';
 import { ActivityIndicator } from 'react-native';
@@ -13,16 +22,17 @@ import {
   Card,
   FocusAwareStatusBar,
   SafeAreaView,
-  Text,
-  View,
   ScreenContainer,
   ScreenHeader,
+  Text,
   TouchableOpacity,
+  View,
 } from '@/components/ui';
 import { useAuth } from '@/lib';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { getUserFriends } from '@/lib/services/user';
 import { useUserStore } from '@/store/user-store';
+import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 
 interface MenuOption {
   id: string;
@@ -67,6 +77,12 @@ export default function CooperativeQuestMenu() {
   const currentUser = useAuth((state) => state.user);
   const userEmail = currentUser?.email || '';
   const user = useUserStore((state) => state.user);
+  const { connect: connectWebSocket } = useLazyWebSocket();
+  
+  // Connect WebSocket when entering cooperative quest flow
+  React.useEffect(() => {
+    connectWebSocket();
+  }, [connectWebSocket]);
 
   // Check if user has friends
   const { data: friendsData, isLoading } = useQuery({
@@ -123,10 +139,7 @@ export default function CooperativeQuestMenu() {
           {/* Premium Feature Message */}
           <View className="flex-1 items-center justify-center px-4">
             <View className="mb-6 rounded-full bg-primary-100 p-6">
-              <Lock
-                size={64}
-                color="#77c5bf"
-              />
+              <Lock size={64} color="#77c5bf" />
             </View>
 
             <Text className="mb-4 text-center text-2xl font-bold">
@@ -144,8 +157,7 @@ export default function CooperativeQuestMenu() {
               </Text>
               <View className="gap-3">
                 <View className="flex-row items-start">
-                  <MaterialCommunityIcons
-                    name="check-circle"
+                  <CheckCircle
                     size={20}
                     color="#77c5bf"
                     style={{ marginTop: 2 }}
@@ -155,8 +167,7 @@ export default function CooperativeQuestMenu() {
                   </Text>
                 </View>
                 <View className="flex-row items-start">
-                  <MaterialCommunityIcons
-                    name="check-circle"
+                  <CheckCircle
                     size={20}
                     color="#77c5bf"
                     style={{ marginTop: 2 }}
@@ -166,8 +177,7 @@ export default function CooperativeQuestMenu() {
                   </Text>
                 </View>
                 <View className="flex-row items-start">
-                  <MaterialCommunityIcons
-                    name="check-circle"
+                  <CheckCircle
                     size={20}
                     color="#77c5bf"
                     style={{ marginTop: 2 }}
@@ -201,11 +211,7 @@ export default function CooperativeQuestMenu() {
               onPress={() => router.back()}
               className="mb-4 flex-row items-center"
             >
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={24}
-                color="#333"
-              />
+              <ArrowLeft size={24} color="#333" />
               <Text className="ml-2 text-lg">Back</Text>
             </TouchableOpacity>
 
@@ -217,11 +223,7 @@ export default function CooperativeQuestMenu() {
 
           {/* No Friends Message */}
           <View className="mb-6 items-center py-8">
-            <MaterialCommunityIcons
-              name="account-group-outline"
-              size={64}
-              color="#999"
-            />
+            <Users size={64} color="#999" />
             <Text className="mt-4 text-center text-lg font-semibold">
               Add Friends to Get Started
             </Text>
@@ -239,11 +241,7 @@ export default function CooperativeQuestMenu() {
             <Card className="bg-muted-300 p-6 shadow-md">
               <View className="flex-row items-center">
                 <View className="mr-4 rounded-full bg-white/20 p-3">
-                  <MaterialCommunityIcons
-                    name="account-plus"
-                    size={32}
-                    color="white"
-                  />
+                  <UserPlus size={32} color="white" />
                 </View>
                 <View className="flex-1">
                   <Text className="mb-1 text-xl font-bold text-white">
@@ -253,11 +251,7 @@ export default function CooperativeQuestMenu() {
                     Connect with friends to quest together
                   </Text>
                 </View>
-                <MaterialCommunityIcons
-                  name="chevron-right"
-                  size={24}
-                  color="white"
-                />
+                <ChevronRight size={24} color="white" />
               </View>
             </Card>
           </TouchableOpacity>
@@ -266,8 +260,7 @@ export default function CooperativeQuestMenu() {
           <View className="mt-auto">
             <Card className="mb-4 bg-neutral-200 p-4">
               <View className="flex-row items-start">
-                <MaterialCommunityIcons
-                  name="information"
+                <Info
                   size={20}
                   color="#666"
                   style={{ marginTop: 2 }}
@@ -308,7 +301,7 @@ export default function CooperativeQuestMenu() {
             onPress={() => router.back()}
             className="mb-4 flex-row items-center"
           >
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
+            <ArrowLeft size={24} color="#333" />
             <Text className="ml-2 text-lg">Back</Text>
           </TouchableOpacity>
 
@@ -340,11 +333,7 @@ export default function CooperativeQuestMenu() {
                       {option.description}
                     </Text>
                   </View>
-                  <MaterialCommunityIcons
-                    name="chevron-right"
-                    size={24}
-                    color="white"
-                  />
+                  <ChevronRight size={24} color="white" />
                 </View>
               </Card>
             </TouchableOpacity>
@@ -354,8 +343,7 @@ export default function CooperativeQuestMenu() {
         {/* Info Section */}
         <Card className="mb-4 bg-neutral-200 p-4">
           <View className="flex-row items-start">
-            <MaterialCommunityIcons
-              name="information"
+            <Info
               size={20}
               color="#666"
               style={{ marginTop: 2 }}

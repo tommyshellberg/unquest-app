@@ -15,6 +15,7 @@ interface QuestCardProps {
   description: string;
   progress: number;
   showProgress?: boolean;
+  requiresPremium?: boolean;
 }
 
 const imageMap = {
@@ -32,6 +33,7 @@ export default function QuestCard({
   description,
   progress = 0,
   showProgress = false,
+  requiresPremium = false,
 }: QuestCardProps) {
   // Create a reference to control the progress bar
   const progressBarRef = useRef<ProgressBarRef>(null);
@@ -70,6 +72,15 @@ export default function QuestCard({
             <Text className="max-w-[90%] text-xl font-bold text-amber-100">
               {title}
             </Text>
+            
+            {/* Premium Badge */}
+            {requiresPremium && (
+              <View className="mt-2">
+                <Chip className="bg-amber-400/30" textClassName="text-amber-100 font-semibold">
+                  ⭐ Premium
+                </Chip>
+              </View>
+            )}
 
             {/* Quest Info */}
             <View className="mb-4 mt-2">

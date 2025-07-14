@@ -49,13 +49,8 @@ interface WebSocketContextValue {
 
 const WebSocketContext = createContext<WebSocketContextValue | null>(null);
 
-export function useWebSocket() {
-  const context = useContext(WebSocketContext);
-  if (!context) {
-    throw new Error('useWebSocket must be used within WebSocketProvider');
-  }
-  return context;
-}
+// Re-export from lazy provider for compatibility
+export { useWebSocket } from './lazy-websocket-provider';
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const authStatus = useAuth((state) => state.status);
