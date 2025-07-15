@@ -428,10 +428,10 @@ export default function Home() {
                   console.log('Navigate to premium screen');
                 }
               }}
-              className={`min-h-[48px] justify-center rounded-xl p-3 ${
+              className={`h-16 justify-center rounded-xl p-3 ${
                 quest.requiresPremium ? 'bg-amber-400' : 'bg-primary-300'
               }`}
-              textClassName="text-sm text-white text-center leading-tight"
+              textClassName="text-sm text-white text-center leading-snug"
               textStyle={{ fontWeight: '700' }}
             />
           </Animated.View>
@@ -479,10 +479,10 @@ export default function Home() {
                   handleQuestOptionSelect(option.nextQuestId);
                 }
               }}
-              className={`min-h-[48px] justify-center rounded-xl p-3 ${
+              className={`h-16 justify-center rounded-xl p-3 ${
                 requiresPremium ? 'bg-amber-400' : 'bg-primary-300'
               }`}
-              textClassName="text-sm text-white text-center leading-tight"
+              textClassName="text-sm text-white text-center leading-snug"
               textStyle={{ fontWeight: '700' }}
               disabled={!option.nextQuestId}
             />
@@ -530,10 +530,10 @@ export default function Home() {
                       handleQuestOptionSelect(option.nextQuestId);
                     }
                   }}
-                  className={`min-h-[48px] justify-center rounded-xl p-3 ${
+                  className={`h-16 justify-center rounded-xl p-3 ${
                     requiresPremium ? 'bg-amber-400' : index === 0 ? 'bg-neutral-300' : 'bg-primary-300'
                   }`}
-                  textClassName="text-sm text-white text-center leading-tight"
+                  textClassName="text-sm text-white text-center leading-snug"
                   textStyle={{ fontWeight: '700' }}
                   disabled={!option.nextQuestId} // Disable if nextQuestId is null
                 />
@@ -661,8 +661,8 @@ export default function Home() {
                   <Button
                     label="Create Custom Quest"
                     onPress={handleStartCustomQuest}
-                    className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
-                    textClassName="text-sm text-white text-center leading-tight"
+                    className="h-16 justify-center rounded-xl bg-primary-300 p-3"
+                    textClassName="text-sm text-white text-center leading-snug"
                     textStyle={{ fontWeight: '700' }}
                   />
                 </Animated.View>
@@ -690,8 +690,8 @@ export default function Home() {
                   <Button
                     label="Cooperative Quests"
                     onPress={handleCooperativeQuest}
-                    className="min-h-[48px] justify-center rounded-xl bg-primary-300 p-3"
-                    textClassName="text-sm text-white text-center leading-tight"
+                    className="h-16 justify-center rounded-xl bg-primary-300 p-3"
+                    textClassName="text-sm text-white text-center leading-snug"
                     textStyle={{ fontWeight: '700' }}
                   />
                 </Animated.View>
