@@ -5,6 +5,7 @@ import { OneSignal } from 'react-native-onesignal';
 import { storeTokens } from '@/api/token';
 import { getUserDetails } from '@/lib/services/user';
 import { useUserStore } from '@/store/user-store';
+import { useCharacterStore } from '@/store/character-store';
 
 import { createSelectors } from '../utils';
 import type { TokenType, UserLoginResponse } from './utils';
@@ -137,9 +138,6 @@ const _useAuth = create<AuthState>((set, get) => ({
           // Sync character data if available
           // Check both nested character object and top-level properties
           if (user.character || ((user as any).type && (user as any).name)) {
-            const { useCharacterStore } = await import(
-              '@/store/character-store'
-            );
             const characterStore = useCharacterStore.getState();
 
             // Handle both formats: nested character object or top-level properties

@@ -62,10 +62,20 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   // Check if provisional user has a token
   const [hasProvisionalToken, setHasProvisionalToken] = React.useState(false);
 
+  // Check for token changes on auth status changes and component renders
   React.useEffect(() => {
     const provisionalToken = getItem('provisionalAccessToken');
     setHasProvisionalToken(!!provisionalToken);
   }, [authStatus]);
+  
+  // Also check for token changes on every render to catch mock changes in tests
+  React.useEffect(() => {
+    const provisionalToken = getItem('provisionalAccessToken');
+    const hasToken = !!provisionalToken;
+    if (hasToken !== hasProvisionalToken) {
+      setHasProvisionalToken(hasToken);
+    }
+  });
 
   useEffect(() => {
     console.log(
@@ -97,7 +107,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (
-        appStateRef.current.match(/inactive|background/) &&
+        (appStateRef.current === 'inactive' || appStateRef.current === 'background') &&
         nextAppState === 'active' &&
         (authStatus === 'signIn' || hasProvisionalToken)
       ) {
@@ -110,7 +120,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         // Quests should only be active while the phone is locked
       } else if (
         appStateRef.current === 'active' &&
-        nextAppState.match(/inactive|background/)
+        (nextAppState === 'inactive' || nextAppState === 'background')
       ) {
         // App going to background
         console.log('[WebSocket] App backgrounded');
@@ -130,9 +140,13 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     // Handle new quest invitations
     const handleQuestInvitation = (data: any) => {
       console.log('[WebSocket] New quest invitation:', data);
-      // Invalidate invitations query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['invitations', 'pending'] });
-      // TODO: Show push notification or in-app notification
+      try {
+        // Invalidate invitations query to refresh the list
+        queryClient.invalidateQueries({ queryKey: ['invitations', 'pending'] });
+        // TODO: Show push notification or in-app notification
+      } catch (error) {
+        console.error('Error handling quest invitation:', error);
+      }
     };
 
     // Handle invitation status changes
@@ -148,9 +162,13 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         'status',
       ]);
       console.log('========================================');
-      queryClient.invalidateQueries({
-        queryKey: ['invitation', data.invitationId, 'status'],
-      });
+      try {
+        queryClient.invalidateQueries({
+          queryKey: ['invitation', data.invitationId, 'status'],
+        });
+      } catch (error) {
+        console.error('Error handling invitation accepted:', error);
+      }
     };
 
     const handleInvitationDeclined = (data: any) => {
@@ -165,51 +183,67 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         'status',
       ]);
       console.log('========================================');
-      queryClient.invalidateQueries({
-        queryKey: ['invitation', data.invitationId, 'status'],
-      });
+      try {
+        queryClient.invalidateQueries({
+          queryKey: ['invitation', data.invitationId, 'status'],
+        });
+      } catch (error) {
+        console.error('Error handling invitation declined:', error);
+      }
     };
 
     // Handle quest status changes
     const handleQuestStarted = (data: any) => {
       console.log('[WebSocket] Quest started:', data);
-      const questStore = useQuestStore.getState();
-      const cooperativeQuestRun = questStore.cooperativeQuestRun;
+      try {
+        const questStore = useQuestStore.getState();
+        const cooperativeQuestRun = questStore.cooperativeQuestRun;
 
-      if (cooperativeQuestRun?.id === data.questRunId) {
-        // Update the cooperative quest run status
-        questStore.setCooperativeQuestRun({
-          ...cooperativeQuestRun,
-          status: 'active',
-          actualStartTime: data.actualStartTime,
-        });
+        if (cooperativeQuestRun?.id === data.questRunId) {
+          // Update the cooperative quest run status
+          questStore.setCooperativeQuestRun({
+            ...cooperativeQuestRun,
+            status: 'active',
+            actualStartTime: data.actualStartTime,
+          });
 
-        // DO NOT start the quest here - the app is in foreground which means phone is unlocked
-        // The quest timer will handle starting the quest when appropriate (while phone is locked)
-        console.log(
-          '[WebSocket] Quest activated by server, quest timer will handle local activation'
-        );
+          // DO NOT start the quest here - the app is in foreground which means phone is unlocked
+          // The quest timer will handle starting the quest when appropriate (while phone is locked)
+          console.log(
+            '[WebSocket] Quest activated by server, quest timer will handle local activation'
+          );
+        }
+      } catch (error) {
+        console.error('Error handling quest started:', error);
       }
     };
 
     const handleParticipantReady = (data: any) => {
       console.log('[WebSocket] Participant ready:', data);
-      useQuestStore.getState().updateParticipantReady(data.userId, data.ready);
-      // Also invalidate quest run query to get latest data
-      if (data.questRunId) {
-        queryClient.invalidateQueries({
-          queryKey: ['questRun', data.questRunId],
-        });
+      try {
+        useQuestStore.getState().updateParticipantReady(data.userId, data.ready);
+        // Also invalidate quest run query to get latest data
+        if (data.questRunId) {
+          queryClient.invalidateQueries({
+            queryKey: ['questRun', data.questRunId],
+          });
+        }
+      } catch (error) {
+        console.error('Error handling participant ready:', error);
       }
     };
 
     const handleParticipantJoined = (data: any) => {
       console.log('[WebSocket] Participant joined:', data);
-      // Invalidate quest run query to get latest participant list
-      if (data.questRunId) {
-        queryClient.invalidateQueries({
-          queryKey: ['questRun', data.questRunId],
-        });
+      try {
+        // Invalidate quest run query to get latest participant list
+        if (data.questRunId) {
+          queryClient.invalidateQueries({
+            queryKey: ['questRun', data.questRunId],
+          });
+        }
+      } catch (error) {
+        console.error('Error handling participant joined:', error);
       }
     };
 

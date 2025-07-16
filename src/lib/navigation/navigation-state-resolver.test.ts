@@ -2,20 +2,38 @@ import { renderHook } from '@testing-library/react-hooks';
 
 import { useNavigationTarget } from '@/lib/navigation/navigation-state-resolver';
 import { OnboardingStep } from '@/store/onboarding-store';
+import { useQuestStore } from '@/store/quest-store';
 
-// Mock storage for provisional data checks
-const mockGetItem = jest.fn();
-jest.mock('@/lib/storage', () => ({
-  getItem: jest.fn((key: string) => mockGetItem(key)),
-}));
+// Mock modules
+jest.mock('@/lib/storage');
+jest.mock('@/lib/auth');
+jest.mock('@/store/onboarding-store');
+jest.mock('@/store/character-store');
+jest.mock('@/store/quest-store');
 
-// Mock the stores before importing anything else
+// Import mocked modules
+import { getItem } from '@/lib/storage';
+import { useAuth } from '@/lib/auth';
+import { useOnboardingStore } from '@/store/onboarding-store';
+import { useCharacterStore } from '@/store/character-store';
+
+// Setup mock implementations
+const mockGetItem = getItem as jest.MockedFunction<typeof getItem>;
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockUseOnboardingStore = useOnboardingStore as jest.MockedFunction<typeof useOnboardingStore>;
+const mockUseCharacterStore = useCharacterStore as jest.MockedFunction<typeof useCharacterStore>;
+const mockUseQuestStore = useQuestStore as jest.MockedFunction<typeof useQuestStore> & {
+  getState: jest.MockedFunction<() => any>;
+  subscribe: jest.MockedFunction<(listener: any) => () => void>;
+};
+
+// Mock state objects
 const mockAuthState = {
   status: 'idle' as 'idle' | 'signOut' | 'signIn' | 'hydrating',
 };
 
 const mockOnboardingState = {
-  isOnboardingComplete: () => false,
+  isOnboardingComplete: jest.fn(() => false),
   currentStep: OnboardingStep.NOT_STARTED,
   setCurrentStep: jest.fn(),
 };
@@ -29,86 +47,56 @@ const mockQuestState = {
   recentCompletedQuest: null as any,
   failedQuest: null as any,
   completedQuests: [] as any[],
+  resetFailedQuest: jest.fn(),
+  clearRecentCompletedQuest: jest.fn(),
 };
 
-// Mock auth store
-jest.mock('@/lib/auth', () => ({
-  useAuth: jest.fn((selector) => selector(mockAuthState)),
-}));
+// Setup initial mocks
+beforeAll(() => {
+  // Mock useQuestStore static methods
+  mockUseQuestStore.getState = jest.fn(() => mockQuestState);
+  mockUseQuestStore.subscribe = jest.fn(() => jest.fn());
+});
 
-// Mock onboarding store
-jest.mock('@/store/onboarding-store', () => ({
-  useOnboardingStore: jest.fn((selector) => selector(mockOnboardingState)),
-  OnboardingStep: {
-    NOT_STARTED: 'NOT_STARTED',
-    SELECTING_CHARACTER: 'SELECTING_CHARACTER',
-    VIEWING_INTRO: 'VIEWING_INTRO',
-    REQUESTING_NOTIFICATIONS: 'REQUESTING_NOTIFICATIONS',
-    STARTING_FIRST_QUEST: 'STARTING_FIRST_QUEST',
-    VIEWING_SIGNUP_PROMPT: 'VIEWING_SIGNUP_PROMPT',
-    COMPLETED: 'COMPLETED',
-  },
-}));
-
-// Mock character store
-jest.mock('@/store/character-store', () => ({
-  useCharacterStore: jest.fn((selector) => selector(mockCharacterState)),
-}));
-
-// Mock quest store with proper Zustand interface
-jest.mock('@/store/quest-store', () => ({
-  useQuestStore: Object.assign(
-    jest.fn((selector) => selector(mockQuestState)),
-    {
-      getState: jest.fn(() => mockQuestState),
-      subscribe: jest.fn((_listener) => {
-        // Return an unsubscribe function
-        return jest.fn();
-      }),
-    }
-  ),
-}));
-
-// Helper functions to update mock state
-const setAuthState = (state: Partial<typeof mockAuthState>) => {
-  Object.assign(mockAuthState, state);
-};
-
-const setOnboardingState = (state: Partial<typeof mockOnboardingState>) => {
-  Object.assign(mockOnboardingState, state);
-};
-
-const setCharacterState = (state: Partial<typeof mockCharacterState>) => {
-  Object.assign(mockCharacterState, state);
-};
-
-const setQuestState = (state: Partial<typeof mockQuestState>) => {
-  Object.assign(mockQuestState, state);
-};
-
-// Reset state before each test
 beforeEach(() => {
-  setAuthState({ status: 'idle' });
-  setOnboardingState({
-    isOnboardingComplete: () => false,
-    currentStep: OnboardingStep.NOT_STARTED,
-    setCurrentStep: jest.fn(),
-  });
-  setCharacterState({ character: null });
-  setQuestState({
-    pendingQuest: null,
-    recentCompletedQuest: null,
-    failedQuest: null,
-    completedQuests: [],
+  jest.clearAllMocks();
+
+  // Reset mock implementations
+  mockGetItem.mockReturnValue(null);
+  
+  mockUseAuth.mockImplementation((selector) => selector(mockAuthState));
+  
+  mockUseOnboardingStore.mockImplementation((selector) => selector(mockOnboardingState));
+  
+  mockUseCharacterStore.mockImplementation((selector) => selector(mockCharacterState));
+  
+  mockUseQuestStore.mockImplementation((selector) => {
+    if (typeof selector === 'function') {
+      return selector(mockQuestState);
+    }
+    return mockQuestState;
   });
 
-  // Reset storage mock - return null by default (no provisional data)
-  mockGetItem.mockReturnValue(null);
+  // Reset mock state
+  mockAuthState.status = 'idle';
+  mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+  mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+  mockOnboardingState.setCurrentStep.mockClear();
+  mockCharacterState.character = null;
+  mockQuestState.pendingQuest = null;
+  mockQuestState.recentCompletedQuest = null;
+  mockQuestState.failedQuest = null;
+  mockQuestState.completedQuests = [];
+  mockQuestState.resetFailedQuest.mockClear();
+  mockQuestState.clearRecentCompletedQuest.mockClear();
+  
+  // Reset getState mock
+  mockUseQuestStore.getState.mockReturnValue(mockQuestState);
 });
 
 describe('Navigation State Resolver', () => {
   it('returns loading when auth is hydrating', () => {
-    setAuthState({ status: 'hydrating' });
+    mockAuthState.status = 'hydrating';
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -116,8 +104,8 @@ describe('Navigation State Resolver', () => {
   });
 
   it('prioritizes pending quest over everything', () => {
-    setAuthState({ status: 'signOut' }); // Even if signed out
-    setQuestState({ pendingQuest: { id: 'quest-1' } });
+    mockAuthState.status = 'signOut'; // Even if signed out
+    mockQuestState.pendingQuest = { id: 'quest-1' };
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -128,13 +116,11 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to first-quest-result for failed quest-1 during onboarding', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => false });
-    setCharacterState({ character: null });
-    setQuestState({
-      failedQuest: { id: 'quest-1' },
-      completedQuests: [],
-    });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockCharacterState.character = null;
+    mockQuestState.failedQuest = { id: 'quest-1' };
+    mockQuestState.completedQuests = [];
 
     // Mock provisional data to prevent auto-sync
     mockGetItem.mockImplementation((key) => {
@@ -151,9 +137,9 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to quest-result for regular failed quest', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({ failedQuest: { id: 'quest-2' } });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.failedQuest = { id: 'quest-2' };
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -165,12 +151,10 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to first-quest-result for completed quest-1 during onboarding', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => false });
-    setQuestState({
-      recentCompletedQuest: { id: 'quest-1' },
-      completedQuests: [],
-    });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockQuestState.recentCompletedQuest = { id: 'quest-1' };
+    mockQuestState.completedQuests = [];
 
     // Mock provisional data to prevent auto-sync
     mockGetItem.mockImplementation((key) => {
@@ -187,9 +171,9 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to quest-result for regular completed quest', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({ recentCompletedQuest: { id: 'quest-2' } });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.recentCompletedQuest = { id: 'quest-2' };
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -201,13 +185,11 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to onboarding when not complete and user has provisional data', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => false,
-      currentStep: OnboardingStep.NOT_STARTED,
-    });
-    setCharacterState({ character: null });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+    mockCharacterState.character = null;
+    mockQuestState.completedQuests = [];
 
     // Mock provisional data to indicate genuine new user
     mockGetItem.mockImplementation((key) => {
@@ -221,21 +203,17 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to app for legacy users with character data but incomplete onboarding', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => true, // Will be set by synchronization
-      currentStep: OnboardingStep.COMPLETED,
-    });
-    setCharacterState({
-      character: {
-        name: 'LegacyChar',
-        type: 'warrior',
-        level: 5,
-        currentXP: 200,
-        xpToNextLevel: 300,
-      },
-    });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true); // Will be set by synchronization
+    mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
+    mockCharacterState.character = {
+      name: 'LegacyChar',
+      type: 'warrior',
+      level: 5,
+      currentXP: 200,
+      xpToNextLevel: 300,
+    };
+    mockQuestState.completedQuests = [];
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -243,18 +221,16 @@ describe('Navigation State Resolver', () => {
   });
 
   it('handles failed quest-1 correctly for legacy users with character data', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true }); // Will be set by sync
-    setCharacterState({
-      character: {
-        name: 'LegacyChar',
-        type: 'druid',
-        level: 1,
-        currentXP: 0,
-        xpToNextLevel: 100,
-      },
-    });
-    setQuestState({ failedQuest: { id: 'quest-1' } });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true); // Will be set by sync
+    mockCharacterState.character = {
+      name: 'LegacyChar',
+      type: 'druid',
+      level: 1,
+      currentXP: 0,
+      xpToNextLevel: 100,
+    };
+    mockQuestState.failedQuest = { id: 'quest-1' };
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -267,9 +243,9 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to login when signed out', () => {
-    setAuthState({ status: 'signOut' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signOut';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.completedQuests = [];
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -277,9 +253,9 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to app by default', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.completedQuests = [];
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -288,9 +264,9 @@ describe('Navigation State Resolver', () => {
 
   it('updates navigation target when auth status changes from signOut to signIn', () => {
     // Start with signed out state
-    setAuthState({ status: 'signOut' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signOut';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.completedQuests = [];
 
     const { result, rerender } = renderHook(() => useNavigationTarget());
 
@@ -298,7 +274,7 @@ describe('Navigation State Resolver', () => {
     expect(result.current).toEqual({ type: 'login' });
 
     // Simulate auth status change (magic link verification)
-    setAuthState({ status: 'signIn' });
+    mockAuthState.status = 'signIn';
     rerender();
 
     // Should now redirect to app
@@ -306,15 +282,13 @@ describe('Navigation State Resolver', () => {
   });
 
   it('prioritizes quest states in correct order', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
 
     // Test priority: pending > failed > completed
-    setQuestState({
-      pendingQuest: { id: 'quest-1' },
-      failedQuest: { id: 'quest-2' },
-      recentCompletedQuest: { id: 'quest-3' },
-    });
+    mockQuestState.pendingQuest = { id: 'quest-1' };
+    mockQuestState.failedQuest = { id: 'quest-2' };
+    mockQuestState.recentCompletedQuest = { id: 'quest-3' };
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -325,12 +299,10 @@ describe('Navigation State Resolver', () => {
   });
 
   it('handles failed quest priority over completed quest', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({ isOnboardingComplete: () => true });
-    setQuestState({
-      failedQuest: { id: 'quest-2' },
-      recentCompletedQuest: { id: 'quest-3' },
-    });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.failedQuest = { id: 'quest-2' };
+    mockQuestState.recentCompletedQuest = { id: 'quest-3' };
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -342,15 +314,11 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to app when user has completed quests but onboarding state is reset', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => true, // Will be set by synchronization
-      currentStep: OnboardingStep.COMPLETED,
-    });
-    setCharacterState({ character: null });
-    setQuestState({
-      completedQuests: [{ id: 'quest-1a', status: 'completed' }],
-    });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true); // Will be set by synchronization
+    mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
+    mockCharacterState.character = null;
+    mockQuestState.completedQuests = [{ id: 'quest-1a', status: 'completed' }];
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -358,21 +326,17 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to app when user has character data even with reset onboarding state', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => true, // Will be set by synchronization
-      currentStep: OnboardingStep.COMPLETED,
-    });
-    setCharacterState({
-      character: {
-        name: 'TestChar',
-        type: 'warrior',
-        level: 2,
-        currentXP: 150,
-        xpToNextLevel: 250,
-      },
-    });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true); // Will be set by synchronization
+    mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
+    mockCharacterState.character = {
+      name: 'TestChar',
+      type: 'warrior',
+      level: 2,
+      currentXP: 150,
+      xpToNextLevel: 250,
+    };
+    mockQuestState.completedQuests = [];
 
     const { result } = renderHook(() => useNavigationTarget());
 
@@ -380,15 +344,11 @@ describe('Navigation State Resolver', () => {
   });
 
   it('still redirects to onboarding for truly new users with no quest history', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => false,
-      currentStep: OnboardingStep.NOT_STARTED,
-    });
-    setCharacterState({ character: null });
-    setQuestState({
-      completedQuests: [], // No completed quests - truly new user
-    });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+    mockCharacterState.character = null;
+    mockQuestState.completedQuests = []; // No completed quests - truly new user
 
     // Mock provisional data to indicate this is a genuine new user
     mockGetItem.mockImplementation((key) => {
@@ -402,59 +362,43 @@ describe('Navigation State Resolver', () => {
   });
 
   it('automatically synchronizes onboarding state for users with character data', () => {
-    const mockSetCurrentStep = jest.fn();
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => false,
-      currentStep: OnboardingStep.NOT_STARTED,
-      setCurrentStep: mockSetCurrentStep,
-    });
-    setCharacterState({
-      character: {
-        name: 'LegacyChar',
-        type: 'warrior',
-        level: 5,
-        currentXP: 200,
-        xpToNextLevel: 300,
-      },
-    });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+    mockCharacterState.character = {
+      name: 'LegacyChar',
+      type: 'warrior',
+      level: 5,
+      currentXP: 200,
+      xpToNextLevel: 300,
+    };
+    mockQuestState.completedQuests = [];
 
     renderHook(() => useNavigationTarget());
 
     // Should have called setCurrentStep to mark onboarding as complete
-    expect(mockSetCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
+    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
   });
 
   it('automatically synchronizes onboarding state for users with completed quests', () => {
-    const mockSetCurrentStep = jest.fn();
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => false,
-      currentStep: OnboardingStep.NOT_STARTED,
-      setCurrentStep: mockSetCurrentStep,
-    });
-    setCharacterState({ character: null });
-    setQuestState({
-      completedQuests: [{ id: 'quest-1a', status: 'completed' }],
-    });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+    mockCharacterState.character = null;
+    mockQuestState.completedQuests = [{ id: 'quest-1a', status: 'completed' }];
 
     renderHook(() => useNavigationTarget());
 
     // Should have called setCurrentStep to mark onboarding as complete
-    expect(mockSetCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
+    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
   });
 
   it('does not synchronize onboarding state for truly new users', () => {
-    const mockSetCurrentStep = jest.fn();
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => false,
-      currentStep: OnboardingStep.NOT_STARTED,
-      setCurrentStep: mockSetCurrentStep,
-    });
-    setCharacterState({ character: null });
-    setQuestState({ completedQuests: [] }); // No completed quests
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+    mockCharacterState.character = null;
+    mockQuestState.completedQuests = []; // No completed quests
 
     // Mock provisional data to indicate this is a genuinely new user
     mockGetItem.mockImplementation((key) => {
@@ -465,19 +409,15 @@ describe('Navigation State Resolver', () => {
     renderHook(() => useNavigationTarget());
 
     // Should NOT have called setCurrentStep since this is a genuinely new user
-    expect(mockSetCurrentStep).not.toHaveBeenCalled();
+    expect(mockOnboardingState.setCurrentStep).not.toHaveBeenCalled();
   });
 
   it('automatically synchronizes onboarding state for verified users with no provisional data', () => {
-    const mockSetCurrentStep = jest.fn();
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => false,
-      currentStep: OnboardingStep.NOT_STARTED,
-      setCurrentStep: mockSetCurrentStep,
-    });
-    setCharacterState({ character: null });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+    mockCharacterState.character = null;
+    mockQuestState.completedQuests = [];
 
     // Mock getItem to return null (no provisional data)
     mockGetItem.mockReturnValue(null);
@@ -485,19 +425,15 @@ describe('Navigation State Resolver', () => {
     renderHook(() => useNavigationTarget());
 
     // Should have called setCurrentStep to mark onboarding as complete for verified user
-    expect(mockSetCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
+    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
   });
 
   it('does not synchronize onboarding state for users with provisional data', () => {
-    const mockSetCurrentStep = jest.fn();
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => false,
-      currentStep: OnboardingStep.NOT_STARTED,
-      setCurrentStep: mockSetCurrentStep,
-    });
-    setCharacterState({ character: null });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
+    mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
+    mockCharacterState.character = null;
+    mockQuestState.completedQuests = [];
 
     // Mock getItem to return provisional data (indicating new user in onboarding)
     mockGetItem.mockImplementation((key) => {
@@ -508,17 +444,15 @@ describe('Navigation State Resolver', () => {
     renderHook(() => useNavigationTarget());
 
     // Should NOT have called setCurrentStep since user has provisional data (genuine new user)
-    expect(mockSetCurrentStep).not.toHaveBeenCalled();
+    expect(mockOnboardingState.setCurrentStep).not.toHaveBeenCalled();
   });
 
   it('redirects verified users without local data to app after synchronization', () => {
-    setAuthState({ status: 'signIn' });
-    setOnboardingState({
-      isOnboardingComplete: () => true, // Will be set to true by synchronization
-      currentStep: OnboardingStep.COMPLETED,
-    });
-    setCharacterState({ character: null });
-    setQuestState({ completedQuests: [] });
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true); // Will be set to true by synchronization
+    mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
+    mockCharacterState.character = null;
+    mockQuestState.completedQuests = [];
 
     // Mock getItem to return null (no provisional data)
     mockGetItem.mockReturnValue(null);
@@ -526,5 +460,49 @@ describe('Navigation State Resolver', () => {
     const { result } = renderHook(() => useNavigationTarget());
 
     expect(result.current).toEqual({ type: 'app' });
+  });
+
+  it('handles failed quest with undefined ID and redirects to app', () => {
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.failedQuest = { id: 'undefined' };
+
+    const { result } = renderHook(() => useNavigationTarget());
+
+    expect(result.current).toEqual({ type: 'app' });
+    expect(mockQuestState.resetFailedQuest).toHaveBeenCalled();
+  });
+
+  it('handles failed quest with no ID and redirects to app', () => {
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.failedQuest = { id: undefined };
+
+    const { result } = renderHook(() => useNavigationTarget());
+
+    expect(result.current).toEqual({ type: 'app' });
+    expect(mockQuestState.resetFailedQuest).toHaveBeenCalled();
+  });
+
+  it('handles completed quest with undefined ID and redirects to app', () => {
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.recentCompletedQuest = { id: 'undefined' };
+
+    const { result } = renderHook(() => useNavigationTarget());
+
+    expect(result.current).toEqual({ type: 'app' });
+    expect(mockQuestState.clearRecentCompletedQuest).toHaveBeenCalled();
+  });
+
+  it('handles completed quest with no ID and redirects to app', () => {
+    mockAuthState.status = 'signIn';
+    mockOnboardingState.isOnboardingComplete.mockReturnValue(true);
+    mockQuestState.recentCompletedQuest = { id: undefined };
+
+    const { result } = renderHook(() => useNavigationTarget());
+
+    expect(result.current).toEqual({ type: 'app' });
+    expect(mockQuestState.clearRecentCompletedQuest).toHaveBeenCalled();
   });
 });

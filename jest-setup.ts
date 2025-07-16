@@ -183,6 +183,9 @@ jest.mock('react-native-keyboard-controller', () => {
     KeyboardAwareScrollView: jest.fn((props) => 
       React.createElement(RN.ScrollView, props)
     ),
+    KeyboardAvoidingView: jest.fn((props) => 
+      React.createElement(RN.View, props)
+    ),
     KeyboardProvider: jest.fn(({ children }) => children),
     useKeyboardController: jest.fn(() => ({
       setEnabled: jest.fn(),

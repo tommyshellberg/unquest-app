@@ -211,7 +211,7 @@ function RootLayout() {
       'change',
       async (nextAppState) => {
         if (
-          appStateRef.current.match(/inactive|background/) &&
+          (appStateRef.current === 'inactive' || appStateRef.current === 'background') &&
           nextAppState === 'active'
         ) {
           // App has come to foreground

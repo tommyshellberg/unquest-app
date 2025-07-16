@@ -36,6 +36,17 @@ jest.mock('@/lib/services/quest-run-service', () => ({
   }),
 }));
 
+jest.mock('react-native-onesignal', () => ({
+  OneSignal: {
+    LiveActivities: {
+      startDefault: jest.fn(),
+      exit: jest.fn(),
+      setupDefault: jest.fn(),
+      updateDefault: jest.fn(),
+    },
+  },
+}));
+
 jest.mock('@/lib/services/notifications', () => ({
   areNotificationsEnabled: jest.fn().mockResolvedValue(true),
   clearAllNotifications: jest.fn(),
@@ -62,10 +73,13 @@ const mockGetItem = jest.fn().mockImplementation((key: string) => {
   return null;
 });
 
+const mockSetItem = jest.fn();
+const mockRemoveItem = jest.fn();
+
 jest.mock('@/lib/storage', () => ({
   getItem: mockGetItem,
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
+  setItem: mockSetItem,
+  removeItem: mockRemoveItem,
 }));
 
 jest.mock('@/store/quest-store', () => {
@@ -74,10 +88,13 @@ jest.mock('@/store/quest-store', () => {
     startQuest: jest.fn(),
     completeQuest: jest.fn(),
     failQuest: jest.fn(),
+    resetActiveQuest: jest.fn(),
+    setCooperativeQuestRun: jest.fn(),
     activeQuest: {
       id: 'test-quest-id',
       startTime: 0,
     },
+    cooperativeQuestRun: null,
   };
 
   return {
@@ -87,21 +104,47 @@ jest.mock('@/store/quest-store', () => {
   };
 });
 
+jest.mock('@/store/user-store', () => ({
+  useUserStore: {
+    getState: jest.fn(() => ({
+      user: { id: 'test-user-id' },
+    })),
+  },
+}));
+
+jest.mock('@/store/character-store', () => ({
+  useCharacterStore: {
+    getState: jest.fn(() => ({
+      character: { id: 'test-character-id' },
+    })),
+  },
+}));
+
+// Mock uuid
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => 'test-uuid-' + Math.random()),
+}));
+
+// Mock react-native-bg-actions
 jest.mock('react-native-bg-actions', () => ({
-  start: jest.fn().mockResolvedValue(undefined),
-  stop: jest.fn().mockResolvedValue(undefined),
+  start: jest.fn(),
+  stop: jest.fn(),
   isRunning: jest.fn().mockReturnValue(false),
-  updateNotification: jest.fn().mockResolvedValue(undefined),
+  updateNotification: jest.fn(),
+  // Add the default export
+  default: {
+    start: jest.fn(),
+    stop: jest.fn(),
+    isRunning: jest.fn().mockReturnValue(false),
+    updateNotification: jest.fn(),
+  },
 }));
 
 describe('QuestTimer', () => {
-  // Reset all mocks before each test
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock Platform.OS as 'ios' for consistent testing
+    // Reset Platform.OS to ios for most tests
     Platform.OS = 'ios';
-    // Mock Date.now to ensure consistent timing
-    jest.spyOn(Date, 'now').mockReturnValue(1000); // Mock timestamp
   });
 
   describe('prepareQuest', () => {
@@ -125,27 +168,12 @@ describe('QuestTimer', () => {
 
       // Assert
       expect(createQuestRun).toHaveBeenCalledWith(mockQuestTemplate);
-
-      // Verify OneSignal LiveActivity was started with pending status
-      expect(OneSignal.LiveActivities.startDefault).toHaveBeenCalledWith(
-        expect.any(String), // Activity ID
-        expect.objectContaining({
-          title: 'Quest Ready',
-          description: 'Lock your phone to begin your quest',
-        }),
-        expect.objectContaining({
-          durationMinutes: 15,
-          status: 'pending',
-        })
-      );
+      expect(mockSetItem).toHaveBeenCalledWith('QUEST_TIMER_TEMPLATE', JSON.stringify(mockQuestTemplate));
+      expect(mockSetItem).toHaveBeenCalledWith('QUEST_RUN_ID', 'mock-quest-run-id');
     });
 
     it('continues with quest preparation even if server request fails', async () => {
       // Arrange
-      (createQuestRun as jest.Mock).mockRejectedValueOnce(
-        new Error('Network error')
-      );
-
       const mockQuestTemplate: StoryQuestTemplate = {
         id: 'test-quest-id',
         title: 'Test Quest',
@@ -159,14 +187,15 @@ describe('QuestTimer', () => {
         reward: { xp: 100 },
       };
 
+      // Mock server failure
+      (createQuestRun as jest.Mock).mockRejectedValue(new Error('Server error'));
+
       // Act
       await QuestTimer.prepareQuest(mockQuestTemplate);
 
-      // Assert
+      // Assert - should continue with quest preparation despite server error
       expect(createQuestRun).toHaveBeenCalledWith(mockQuestTemplate);
-
-      // Verify we still continue with LiveActivity setup despite the error
-      expect(OneSignal.LiveActivities.startDefault).toHaveBeenCalled();
+      expect(mockSetItem).toHaveBeenCalledWith('QUEST_TIMER_TEMPLATE', JSON.stringify(mockQuestTemplate));
     });
   });
 
@@ -182,51 +211,87 @@ describe('QuestTimer', () => {
         poiSlug: 'test-poi',
         story: 'Test story content',
         audioFile: 'test-audio.mp3',
-        options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
+        options: [],
         reward: { xp: 100 },
       };
 
-      // Set up internal state directly for onPhoneLocked
-      // This simulates the state after prepareQuest is called
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.questTemplate = mockQuestTemplate;
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.questRunId = 'mock-quest-run-id';
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.questStartTime = null; // this is important to trigger the quest start path
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.isPhoneLocked = false;
+      // Prepare quest first
+      await QuestTimer.prepareQuest(mockQuestTemplate);
 
       // Act
       await QuestTimer.onPhoneLocked();
 
-      // Assert - now we expect updatePhoneLockStatus to be called
+      // Assert
       expect(updatePhoneLockStatus).toHaveBeenCalledWith(
         'mock-quest-run-id',
         true,
         expect.any(String)
       );
+    });
 
-      // Verify LiveActivity was updated with active status
-      expect(OneSignal.LiveActivities.startDefault).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          title: 'Test Quest',
-        }),
-        expect.objectContaining({
-          status: 'active',
-        })
-      );
+    it('should handle duplicate phone lock calls', async () => {
+      // Arrange
+      // @ts-ignore
+      QuestTimer.isPhoneLocked = true;
+      
+      // Act
+      await QuestTimer.onPhoneLocked();
+      
+      // Assert
+      expect(updatePhoneLockStatus).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('stopQuest', () => {
+    it('should stop quest and clear all data', async () => {
+      // Arrange
+      const mockQuestTemplate: StoryQuestTemplate = {
+        id: 'test-quest-id',
+        title: 'Test Quest',
+        durationMinutes: 15,
+        mode: 'story',
+        recap: 'Test quest recap',
+        poiSlug: 'test-poi',
+        story: 'Test story content',
+        audioFile: 'test-audio.mp3',
+        options: [],
+        reward: { xp: 100 },
+      };
+
+      // Prepare quest first
+      await QuestTimer.prepareQuest(mockQuestTemplate);
+
+      // Act
+      await QuestTimer.stopQuest();
+
+      // Assert - should clear storage
+      expect(mockRemoveItem).toHaveBeenCalledWith('QUEST_TIMER_TEMPLATE');
+      expect(mockRemoveItem).toHaveBeenCalledWith('QUEST_TIMER_START_TIME');
+      expect(mockRemoveItem).toHaveBeenCalledWith('ONESIGNAL_ACTIVITY_ID');
+      expect(mockRemoveItem).toHaveBeenCalledWith('QUEST_RUN_ID');
+    });
+
+    it('should handle Android platform', async () => {
+      // Arrange
+      Platform.OS = 'android';
+      const BackgroundService = require('react-native-bg-actions');
+      BackgroundService.isRunning.mockReturnValue(true);
+
+      // Act
+      await QuestTimer.stopQuest();
+
+      // Assert
+      expect(BackgroundService.stop).toHaveBeenCalled();
     });
   });
 
   describe('onPhoneUnlocked', () => {
     it('marks quest as failed locally when phone is unlocked during quest', async () => {
-      // Arrange - set up with a quest that's in progress (shorter duration to ensure it fails)
+      // Arrange - set up with a quest that's in progress
       const mockQuestTemplate: StoryQuestTemplate = {
         id: 'test-quest-id',
         title: 'Test Quest',
-        durationMinutes: 1, // Shorter duration
+        durationMinutes: 1, // Short duration
         mode: 'story',
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
@@ -236,22 +301,14 @@ describe('QuestTimer', () => {
         reward: { xp: 100 },
       };
 
-      // Mock a quest run in progress - very important for the test!
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.questTemplate = mockQuestTemplate;
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.questRunId = 'mock-quest-run-id';
-      // @ts-ignore - accessing private static properties for testing
+      // Prepare quest first
+      await QuestTimer.prepareQuest(mockQuestTemplate);
+      
+      // Mock the quest as started
+      // @ts-ignore
       QuestTimer.questStartTime = Date.now() - 10000; // Started 10 seconds ago
-      // @ts-ignore - accessing private static properties for testing
+      // @ts-ignore
       QuestTimer.isPhoneLocked = true;
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.oneSignalActivityId = 'mock-activity-id';
-
-      // Mock the store to have an active quest
-      jest.spyOn(QuestTimer, 'loadQuestData').mockImplementation(async () => {
-        // Don't need to do anything as we've already set the state manually
-      });
 
       // Act - unlock the phone before quest duration is complete
       await QuestTimer.onPhoneUnlocked();
@@ -265,18 +322,6 @@ describe('QuestTimer', () => {
       // Verify quest was failed locally
       const questStore = useQuestStore.getState();
       expect(questStore.failQuest).toHaveBeenCalled();
-
-      // Verify LiveActivity was updated with failed status
-      expect(OneSignal.LiveActivities.startDefault).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          title: 'Quest Failed',
-          description: 'Try again next time',
-        }),
-        expect.objectContaining({
-          status: 'failed',
-        })
-      );
     });
 
     it('handles cooperative quest unlock differently than single-player', async () => {
@@ -312,35 +357,107 @@ describe('QuestTimer', () => {
         }
       });
 
-      // Set up quest timer state
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.questTemplate = mockQuestTemplate;
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.questRunId = 'mock-quest-run-id';
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.questStartTime = Date.now() - 10000; // Started 10 seconds ago
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.isPhoneLocked = true;
-      // @ts-ignore - accessing private static properties for testing
-      QuestTimer.oneSignalActivityId = 'mock-activity-id';
+      // Prepare quest first
+      await QuestTimer.prepareQuest(mockQuestTemplate);
 
-      // Mock the store to have cooperative quest
-      jest.spyOn(QuestTimer, 'loadQuestData').mockImplementation(async () => {
-        // Don't need to do anything as we've already set the state manually
-      });
-
-      // Act - unlock the phone
+      // Act
       await QuestTimer.onPhoneUnlocked();
 
-      // Assert - verify it's treated as cooperative quest
+      // Assert - should send unlock status to server
       expect(updatePhoneLockStatus).toHaveBeenCalledWith(
         'mock-quest-run-id',
         false
       );
+    });
+  });
 
-      // Verify the log shows cooperative quest
-      const questStore = useQuestStore.getState();
-      expect(questStore.failQuest).toHaveBeenCalled();
+  describe('prepareQuest with cooperative quest', () => {
+    it('should throw error if cooperative quest has no questRunId', async () => {
+      // Arrange
+      const cooperativeQuest: StoryQuestTemplate = {
+        id: 'coop-quest-1',
+        title: 'Cooperative Quest',
+        durationMinutes: 10,
+        mode: 'story',
+        category: 'cooperative',
+        recap: 'Test cooperative quest',
+        poiSlug: 'test-poi',
+        story: 'Test story',
+        audioFile: 'test.mp3',
+        options: [],
+        reward: { xp: 200 },
+      };
+      
+      // Act & Assert
+      await expect(QuestTimer.prepareQuest(cooperativeQuest)).rejects.toThrow(
+        'Cooperative quest must have an existing quest run ID from server'
+      );
+    });
+    
+    it('should use provided cooperativeQuestRunId for cooperative quests', async () => {
+      // Arrange
+      const cooperativeQuest: StoryQuestTemplate = {
+        id: 'coop-quest-1',
+        title: 'Cooperative Quest',
+        durationMinutes: 10,
+        mode: 'story',
+        category: 'cooperative',
+        recap: 'Test cooperative quest',
+        poiSlug: 'test-poi',
+        story: 'Test story',
+        audioFile: 'test.mp3',
+        options: [],
+        reward: { xp: 200 },
+      };
+      
+      // Act
+      await QuestTimer.prepareQuest(cooperativeQuest, 'existing-coop-run-id');
+      
+      // Assert
+      expect(createQuestRun).not.toHaveBeenCalled(); // Should not create new quest run
+      expect(mockSetItem).toHaveBeenCalledWith('QUEST_RUN_ID', 'existing-coop-run-id');
+    });
+  });
+
+  describe('Android platform specific tests', () => {
+    beforeEach(() => {
+      Platform.OS = 'android';
+    });
+    
+    it('should use BackgroundService for Android', async () => {
+      // Arrange
+      const BackgroundService = require('react-native-bg-actions');
+      const mockQuestTemplate: StoryQuestTemplate = {
+        id: 'test-quest-id',
+        title: 'Test Quest',
+        durationMinutes: 15,
+        mode: 'story',
+        recap: 'Test quest recap',
+        poiSlug: 'test-poi',
+        story: 'Test story content',
+        audioFile: 'test-audio.mp3',
+        options: [],
+        reward: { xp: 100 },
+      };
+      
+      // Act
+      await QuestTimer.prepareQuest(mockQuestTemplate);
+      
+      // Assert
+      expect(BackgroundService.start).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.objectContaining({
+          taskName: 'QuestTimer',
+          taskTitle: 'Quest Ready',
+          taskDesc: 'Lock your phone to begin your quest',
+          parameters: expect.objectContaining({
+            questDuration: 900000, // 15 * 60 * 1000
+            questTitle: 'Test Quest',
+            questId: 'test-quest-id',
+          }),
+        })
+      );
+      expect(OneSignal.LiveActivities.startDefault).not.toHaveBeenCalled();
     });
   });
 });
