@@ -39,9 +39,9 @@ jest.mock('@/components/ui', () => {
     ActivityIndicator: RN.ActivityIndicator,
     FlatList: RN.FlatList,
     ScrollView: RN.ScrollView,
-    Button: ({ title, onPress }: any) => 
+    Button: ({ title, label, onPress }: any) => 
       React.createElement(RN.TouchableOpacity, { onPress }, 
-        React.createElement(RN.Text, {}, title)
+        React.createElement(RN.Text, {}, title || label)
       ),
   };
 });
@@ -116,7 +116,7 @@ describe('ContactsImportModal Integration Tests', () => {
       await waitFor(() => ref.current?.present());
 
       // Step 2: See empty state and click import
-      expect(getByText(/complete quests together/i)).toBeTruthy();
+      expect(getByText(/play cooperative quests together/i)).toBeTruthy();
       fireEvent.press(getByText(/import contacts/i));
 
       // Step 3: Wait for contacts to load

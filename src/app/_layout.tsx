@@ -24,6 +24,7 @@ import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { getQuestRunStatus } from '@/lib/services/quest-run-service';
+import { initializeTimezoneSync } from '@/lib/services/timezone-service';
 import { useThemeConfig } from '@/lib/use-theme-config';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
@@ -210,7 +211,7 @@ function RootLayout() {
       'change',
       async (nextAppState) => {
         if (
-          appStateRef.current.match(/inactive|background/) &&
+          (appStateRef.current === 'inactive' || appStateRef.current === 'background') &&
           nextAppState === 'active'
         ) {
           // App has come to foreground
@@ -251,6 +252,9 @@ function RootLayout() {
   }, []);
 
   useEffect(() => {
+    // Initialize timezone sync
+    const cleanupTimezoneSync = initializeTimezoneSync();
+
     // Check streak status on app launch
     const lastCompletedQuestTimestamp =
       useQuestStore.getState().lastCompletedQuestTimestamp;
@@ -292,6 +296,11 @@ function RootLayout() {
         scheduleStreakWarningNotification().catch(console.error);
       }
     }
+
+    // Cleanup on unmount
+    return () => {
+      cleanupTimezoneSync();
+    };
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
