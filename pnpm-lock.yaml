@@ -188,6 +188,12 @@ importers:
       react-native-onesignal:
         specifier: ^5.2.9
         version: 5.2.13
+      react-native-purchases:
+        specifier: ^8.11.10
+        version: 8.11.10(react-native@0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1)
+      react-native-purchases-ui:
+        specifier: ^8.11.10
+        version: 8.11.10(react-native@0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1)
       react-native-reanimated:
         specifier: ~3.16.1
         version: 3.16.7(@babel/core@7.28.0)(react-native@0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1)
@@ -2017,6 +2023,9 @@ packages:
 
   '@react-navigation/routers@7.4.1':
     resolution: {integrity: sha512-42mZrMzQ0LfKxUb5OHIurYrPYyRsXFLolucILrvm21f0O40Sw0Ufh1bnn/jRqnxZZu7wvpUGIGYM8nS9zVE1Aw==}
+
+  '@revenuecat/purchases-typescript-internal@14.2.0':
+    resolution: {integrity: sha512-C/9RB2fZk/19HxCO+iFIMBR6WG5TtioUtHlsB7evYwLlHetMFmz79VNcRN1yXmHs1pcLcoRd/tnw9P0neG/54Q==}
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
@@ -6753,6 +6762,18 @@ packages:
   react-native-onesignal@5.2.13:
     resolution: {integrity: sha512-PCpOZfepieSPHaaT3uFYHDMy2+XMi7HMGiCWW7oic6SthW4NmjYPt0AmykZP7SJIQ9C3h2zMMlwrvPKK2ooxoQ==}
 
+  react-native-purchases-ui@8.11.10:
+    resolution: {integrity: sha512-L5cgjaBhE7rqospva9QURMsEHlUsU0tnqtR48WsC2AXgqJJQcVZUldMnuG0ZUjfw126NIuSQrGepKEGk5htf4Q==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
+  react-native-purchases@8.11.10:
+    resolution: {integrity: sha512-ceIYLqH+jr3pRcQ7VxGwyTwpa+Qg1ERk47Bx1lJ8lCBdDjI4HLE+6//3X5I5e+2tpTo3iEy84y/+SyOB/tOLmg==}
+    peerDependencies:
+      react: '>= 16.6.3'
+      react-native: '*'
+
   react-native-reanimated@3.16.7:
     resolution: {integrity: sha512-qoUUQOwE1pHlmQ9cXTJ2MX9FQ9eHllopCLiWOkDkp6CER95ZWeXhJCP4cSm6AD4jigL5jHcZf/SkWrg8ttZUsw==}
     peerDependencies:
@@ -10576,6 +10597,8 @@ snapshots:
   '@react-navigation/routers@7.4.1':
     dependencies:
       nanoid: 3.3.11
+
+  '@revenuecat/purchases-typescript-internal@14.2.0': {}
 
   '@rtsao/scc@1.1.0': {}
 
@@ -16038,6 +16061,19 @@ snapshots:
   react-native-onesignal@5.2.13:
     dependencies:
       invariant: 2.2.4
+
+  react-native-purchases-ui@8.11.10(react-native@0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1):
+    dependencies:
+      '@revenuecat/purchases-typescript-internal': 14.2.0
+      react: 18.3.1
+      react-native: 0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1)
+      react-native-purchases: 8.11.10(react-native@0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1)
+
+  react-native-purchases@8.11.10(react-native@0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1):
+    dependencies:
+      '@revenuecat/purchases-typescript-internal': 14.2.0
+      react: 18.3.1
+      react-native: 0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1)
 
   react-native-reanimated@3.16.7(@babel/core@7.28.0)(react-native@0.76.9(@babel/core@7.28.0)(@babel/preset-env@7.28.0(@babel/core@7.28.0))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1):
     dependencies:

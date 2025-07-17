@@ -4,6 +4,7 @@ import { OneSignal } from 'react-native-onesignal';
 
 import { storeTokens } from '@/api/token';
 import { getUserDetails } from '@/lib/services/user';
+import { revenueCatService } from '@/lib/services/revenuecat-service';
 import { useUserStore } from '@/store/user-store';
 import { useCharacterStore } from '@/store/character-store';
 
@@ -22,7 +23,7 @@ interface AuthState {
 const _useAuth = create<AuthState>((set, get) => ({
   status: 'idle',
   token: null,
-  signIn: (loginResponse) => {
+  signIn: async (loginResponse) => {
     setToken({
       access: loginResponse.token.access,
       refresh: loginResponse.token.refresh,
@@ -35,9 +36,19 @@ const _useAuth = create<AuthState>((set, get) => ({
         refresh: loginResponse.token.refresh,
       },
     });
+
+    // Login to RevenueCat with user ID if available
+    if (loginResponse.user?.id && revenueCatService.isConfigured()) {
+      try {
+        await revenueCatService.loginUser(loginResponse.user.id);
+        console.log('[Auth] Logged into RevenueCat with user ID:', loginResponse.user.id);
+      } catch (error) {
+        console.error('[Auth] Failed to login to RevenueCat:', error);
+      }
+    }
   },
 
-  signOut: () => {
+  signOut: async () => {
     removeToken();
     set({
       status: 'signOut',
@@ -46,6 +57,16 @@ const _useAuth = create<AuthState>((set, get) => ({
 
     // Clear user store
     useUserStore.getState().clearUser();
+
+    // Logout from RevenueCat
+    if (revenueCatService.isConfigured()) {
+      try {
+        await revenueCatService.logoutUser();
+        console.log('[Auth] Logged out from RevenueCat');
+      } catch (error) {
+        console.error('[Auth] Failed to logout from RevenueCat:', error);
+      }
+    }
 
     // Logout from OneSignal (only if initialized)
     if ((global as any).isOneSignalInitialized) {
@@ -133,6 +154,16 @@ const _useAuth = create<AuthState>((set, get) => ({
             console.log(
               '[Auth] OneSignal not initialized yet, will login later'
             );
+          }
+
+          // Login to RevenueCat with user ID
+          if (user.id && revenueCatService.isConfigured()) {
+            try {
+              await revenueCatService.loginUser(user.id);
+              console.log('[Auth] Logged into RevenueCat during hydration with user ID:', user.id);
+            } catch (error) {
+              console.error('[Auth] Failed to login to RevenueCat during hydration:', error);
+            }
           }
 
           // Sync character data if available

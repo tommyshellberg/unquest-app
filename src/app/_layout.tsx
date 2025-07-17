@@ -24,6 +24,7 @@ import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { getQuestRunStatus } from '@/lib/services/quest-run-service';
+import { revenueCatService } from '@/lib/services/revenuecat-service';
 import { initializeTimezoneSync } from '@/lib/services/timezone-service';
 import { useThemeConfig } from '@/lib/use-theme-config';
 import { useCharacterStore } from '@/store/character-store';
@@ -203,6 +204,31 @@ function RootLayout() {
         }
       );
     }
+  }, []);
+
+  // Initialize RevenueCat
+  useEffect(() => {
+    async function initializeRevenueCat() {
+      try {
+        // Get the current user from store
+        const { useUserStore } = require('@/store/user-store');
+        const user = useUserStore.getState().user;
+        
+        // Initialize RevenueCat with user ID if available
+        await revenueCatService.initialize(user?.id);
+        
+        // Enable test mode in development
+        if (__DEV__) {
+          revenueCatService.enableTestMode();
+        }
+        
+        console.log('[RevenueCat] Initialized successfully');
+      } catch (error) {
+        console.error('[RevenueCat] Failed to initialize:', error);
+      }
+    }
+    
+    initializeRevenueCat();
   }, []);
 
   // Handle app state changes to check quest status when app comes to foreground

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useNextAvailableQuests } from '@/api/quest';
 import { useQuestStore } from '@/store/quest-store';
@@ -39,13 +39,36 @@ export const useServerQuests = () => {
     }
   }, [data, isLoading, error, setServerAvailableQuests]);
   
+  // Memoize arrays to ensure referential stability
+  const serverQuests = useMemo(() => data?.quests || [], [data?.quests]);
+  
+  // Create options from multiple available quests (branching paths)
+  const options = useMemo(() => {
+    // If server explicitly provides options, use them
+    if (data?.options && data.options.length > 0) {
+      return data.options;
+    }
+    
+    // If there are multiple available quests, they represent branching options
+    if (serverQuests.length > 1) {
+      return serverQuests.map((quest, index) => ({
+        id: `option-${index + 1}`,
+        text: quest.decisionText || quest.title, // Use decisionText if available
+        nextQuestId: quest.customId,
+        nextQuest: quest,
+      }));
+    }
+    
+    return [];
+  }, [data?.options, serverQuests]);
+  
   return {
     isLoading,
     error,
-    serverQuests: data?.quests || [],
+    serverQuests,
     hasMoreQuests: data?.hasMoreQuests || false,
     storylineComplete: data?.storylineComplete || false,
     storylineProgress: data?.storylineProgress,
-    options: data?.options || [],
+    options,
   };
 };

@@ -52,9 +52,14 @@ export interface NextAvailableQuestsResponse {
 
 export interface QuestRun {
   _id: string;
+  id: string;
   status: 'pending' | 'active' | 'completed' | 'failed' | 'cancelled';
   startedAt?: string;
   expiresAt?: string;
+  completedAt?: string;
+  actualStartTime?: string;
+  actualEndTime?: string;
+  scheduledEndTime?: string;
   quest: {
     id: string;
     title: string;

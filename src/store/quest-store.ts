@@ -58,6 +58,7 @@ interface QuestState {
   setCooperativeQuestRun: (run: CooperativeQuestRun | null) => void;
   setPendingInvitations: (invitations: QuestInvitation[]) => void;
   updateParticipantReady: (userId: string, ready: boolean) => void;
+  syncQuestRuns: (questRuns: Quest[]) => void;
 }
 
 // Create type-safe functions for Zustand's storage
@@ -406,6 +407,73 @@ export const useQuestStore = create<QuestState>()(
             participants: updatedParticipants,
           },
         });
+      },
+
+      syncQuestRuns: (questRuns: Quest[]) => {
+        const currentState = get();
+        
+        // Create maps for all quests (server quests)
+        const serverQuestMap = new Map<string, Quest>();
+        questRuns.forEach(quest => {
+          const key = `${quest.id}-${quest.stopTime}`;
+          serverQuestMap.set(key, quest);
+        });
+
+        // Merge with local quests, preserving local-only quests
+        const mergedCompletedMap = new Map<string, Quest>();
+        const mergedFailedMap = new Map<string, Quest>();
+        
+        // First, add all server quests
+        questRuns.forEach(quest => {
+          const key = `${quest.id}-${quest.stopTime}`;
+          if (quest.status === 'completed') {
+            mergedCompletedMap.set(key, quest);
+          } else if (quest.status === 'failed') {
+            mergedFailedMap.set(key, quest);
+          }
+        });
+
+        // Then, add local quests that aren't on the server
+        currentState.completedQuests.forEach(localQuest => {
+          const key = `${localQuest.id}-${localQuest.stopTime}`;
+          if (!serverQuestMap.has(key)) {
+            // This is a local-only quest, preserve it
+            mergedCompletedMap.set(key, localQuest);
+          }
+        });
+
+        currentState.failedQuests.forEach(localQuest => {
+          const key = `${localQuest.id}-${localQuest.stopTime}`;
+          if (!serverQuestMap.has(key)) {
+            // This is a local-only quest, preserve it
+            mergedFailedMap.set(key, localQuest);
+          }
+        });
+
+        // Only update if there are changes to avoid re-renders
+        const newCompletedQuests = Array.from(mergedCompletedMap.values());
+        const newFailedQuests = Array.from(mergedFailedMap.values());
+        
+        const hasCompletedChanges = 
+          newCompletedQuests.length !== currentState.completedQuests.length ||
+          newCompletedQuests.some((quest, index) => {
+            const existing = currentState.completedQuests[index];
+            return !existing || quest.id !== existing.id || quest.stopTime !== existing.stopTime;
+          });
+          
+        const hasFailedChanges = 
+          newFailedQuests.length !== currentState.failedQuests.length ||
+          newFailedQuests.some((quest, index) => {
+            const existing = currentState.failedQuests[index];
+            return !existing || quest.id !== existing.id || quest.stopTime !== existing.stopTime;
+          });
+
+        if (hasCompletedChanges || hasFailedChanges) {
+          set({
+            completedQuests: newCompletedQuests,
+            failedQuests: newFailedQuests,
+          });
+        }
       },
 
       setServerAvailableQuests: (quests: QuestTemplate[], hasMore: boolean, complete: boolean) => {

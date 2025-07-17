@@ -421,6 +421,11 @@ PODS:
     - OneSignalXCFramework/OneSignalNotifications
     - OneSignalXCFramework/OneSignalOSCore
     - OneSignalXCFramework/OneSignalOutcomes
+  - PurchasesHybridCommon (14.2.0):
+    - RevenueCat (= 5.32.0)
+  - PurchasesHybridCommonUI (14.2.0):
+    - PurchasesHybridCommon (= 14.2.0)
+    - RevenueCatUI (= 5.32.0)
   - RCT-Folly (2024.10.14.00):
     - boost
     - DoubleConversion
@@ -2154,6 +2159,9 @@ PODS:
     - React-logger
     - React-perflogger
     - React-utils (= 0.76.9)
+  - RevenueCat (5.32.0)
+  - RevenueCatUI (5.32.0):
+    - RevenueCat (= 5.32.0)
   - RNCMaskedView (0.3.2):
     - DoubleConversion
     - glog
@@ -2280,6 +2288,12 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNPaywalls (8.11.10):
+    - PurchasesHybridCommonUI (= 14.2.0)
+    - React-Core
+  - RNPurchases (8.11.10):
+    - PurchasesHybridCommon (= 14.2.0)
+    - React-Core
   - RNReanimated (3.16.7):
     - DoubleConversion
     - glog
@@ -2603,6 +2617,8 @@ DEPENDENCIES:
   - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNPaywalls (from `../node_modules/react-native-purchases-ui`)
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
@@ -2616,7 +2632,11 @@ SPEC REPOS:
     - lottie-ios
     - OneSignal
     - OneSignalXCFramework
+    - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
     - ReachabilitySwift
+    - RevenueCat
+    - RevenueCatUI
     - SDWebImage
     - SDWebImageAVIFCoder
     - SDWebImageSVGCoder
@@ -2843,6 +2863,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNPaywalls:
+    :path: "../node_modules/react-native-purchases-ui"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2899,6 +2923,8 @@ SPEC CHECKSUMS:
   lottie-react-native: 4ba06e2e4985c53dda6595a880f780e7ff551df1
   OneSignal: bff7465332603656a26da2d8ba4b205717b1f197
   OneSignalXCFramework: 7112f3e89563e41ebc23fe807788f11985ac541c
+  PurchasesHybridCommon: f1650b33e9a1dd04d5e8a40dfe757f39e63f935c
+  PurchasesHybridCommonUI: c573749b8317555ddda02d454d58f7a108462e79
   RCT-Folly: ea9d9256ba7f9322ef911169a9f696e5857b9e17
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
   RCTRequired: ca91e5dd26b64f577b528044c962baf171c6b716
@@ -2964,12 +2990,16 @@ SPEC CHECKSUMS:
   React-utils: ed818f19ab445000d6b5c4efa9d462449326cc9f
   ReactCodegen: f853a20cc9125c5521c8766b4b49375fec20648b
   ReactCommon: 300d8d9c5cb1a6cd79a67cf5d8f91e4d477195f9
+  RevenueCat: 7e1d0768fb287c9983173c9b28e39ccbeeb828a9
+  RevenueCatUI: 61ddba6f94803f9b79c470ffe1e8b81d807c11ce
   RNCMaskedView: b3aee2f4fa81807ec035be51c057aa2eed166173
   RNCPicker: 4995c384c0a33966352c70cc800012a4ee658a37
   RNDateTimePicker: d1b3b7412981ec0d4f9136b7b2566bc612b0045b
   RNFlashList: 648e2273693600985aaa72a2ef4700e815500901
   RNGestureHandler: fffddeb8af59709c6d8de11b6461a6af63cad532
   RNLocalize: 7656712a8d03c9b9a394613d52f817331e8de2e6
+  RNPaywalls: d171a521a45a58e4fa647d80001266cfc5b3b0e5
+  RNPurchases: f465d1bc4cc84c2ea46c528930ac602275e047b6
   RNReanimated: 2e5069649cbab2c946652d3b97589b2ae0526220
   RNScreens: 362f4c861dd155f898908d5035d97b07a3f1a9d1
   RNSentry: ac7beae04304d95491a512b5abf6926d4501c73c
