@@ -53,7 +53,7 @@ export const useServerQuests = () => {
     if (serverQuests.length > 1) {
       return serverQuests.map((quest, index) => ({
         id: `option-${index + 1}`,
-        text: quest.decisionText || quest.title, // Use decisionText if available
+        text: quest.decisionText || 'Continue', // Use decisionText if available, fallback to Continue
         nextQuestId: quest.customId,
         nextQuest: quest,
       }));

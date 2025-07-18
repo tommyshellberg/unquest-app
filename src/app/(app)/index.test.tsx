@@ -24,6 +24,21 @@ jest.mock('@/lib/services/quest-timer', () => ({
   prepareQuest: jest.fn(),
 }));
 
+// Mock useServerQuests hook
+const mockUseServerQuests = {
+  isLoading: false,
+  error: null,
+  serverQuests: [],
+  hasMoreQuests: false,
+  storylineComplete: false,
+  storylineProgress: undefined,
+  options: [],
+};
+
+jest.mock('@/hooks/use-server-quests', () => ({
+  useServerQuests: jest.fn(() => mockUseServerQuests),
+}));
+
 // Mock quest data
 const mockFirstQuest = {
   id: 'quest-1',
@@ -159,6 +174,14 @@ describe('Home Component', () => {
       prepareQuest: mockPrepareQuest,
       refreshAvailableQuests: jest.fn(),
     };
+    // Reset the mock server quests
+    mockUseServerQuests.isLoading = false;
+    mockUseServerQuests.error = null;
+    mockUseServerQuests.serverQuests = [];
+    mockUseServerQuests.hasMoreQuests = false;
+    mockUseServerQuests.storylineComplete = false;
+    mockUseServerQuests.storylineProgress = undefined;
+    mockUseServerQuests.options = [];
   });
 
   it('should render two option buttons when last completed quest has two options', () => {
@@ -347,5 +370,204 @@ describe('Home Component', () => {
     const rightOption = screen.queryByText('Go right');
     expect(leftOption).not.toBeNull();
     expect(rightOption).not.toBeNull();
+  });
+
+  describe('Server-driven quest scenarios', () => {
+    it('should display decision text from server quests when available', () => {
+      // Mock server returning quests with decisionText
+      mockUseServerQuests.serverQuests = [
+        {
+          customId: 'quest-4a',
+          title: 'Unraveling the Inscription',
+          durationMinutes: 12,
+          reward: { xp: 36 },
+          decisionText: 'Stay and investigate the ruins',
+          requiresPremium: false,
+        },
+        {
+          customId: 'quest-4b',
+          title: 'Moving Forward Before Nightfall',
+          durationMinutes: 12,
+          reward: { xp: 36 },
+          decisionText: 'Continue on before nightfall',
+          requiresPremium: false,
+        },
+      ];
+
+      render(<Home />);
+
+      // Should see the decision text, not the quest titles
+      expect(screen.getByText('Stay and investigate the ruins')).toBeTruthy();
+      expect(screen.getByText('Continue on before nightfall')).toBeTruthy();
+      
+      // Should NOT see the quest titles
+      expect(screen.queryByText('Unraveling the Inscription')).toBeNull();
+      expect(screen.queryByText('Moving Forward Before Nightfall')).toBeNull();
+    });
+
+    it('should use Continue as fallback when decisionText is missing', () => {
+      // Mock server returning quests without decisionText
+      mockUseServerQuests.serverQuests = [
+        {
+          customId: 'quest-4a',
+          title: 'Unraveling the Inscription',
+          durationMinutes: 12,
+          reward: { xp: 36 },
+          // No decisionText
+          requiresPremium: false,
+        },
+        {
+          customId: 'quest-4b',
+          title: 'Moving Forward Before Nightfall',
+          durationMinutes: 12,
+          reward: { xp: 36 },
+          // No decisionText
+          requiresPremium: false,
+        },
+      ];
+
+      render(<Home />);
+
+      // Should see "Continue" as fallback, not the quest titles
+      const continueButtons = screen.getAllByText('Continue');
+      expect(continueButtons).toHaveLength(2);
+      
+      // Should NOT see the quest titles
+      expect(screen.queryByText('Unraveling the Inscription')).toBeNull();
+      expect(screen.queryByText('Moving Forward Before Nightfall')).toBeNull();
+    });
+
+    it('should handle single server quest with Start Quest button', () => {
+      // Mock a single server quest (no branching)
+      mockUseServerQuests.serverQuests = [
+        {
+          customId: 'quest-5',
+          title: 'The Lake Discovery',
+          durationMinutes: 15,
+          reward: { xp: 45 },
+          decisionText: 'Approach the lake',
+          requiresPremium: false,
+        },
+      ];
+
+      render(<Home />);
+
+      // Should see Start Quest button, not the decisionText
+      expect(screen.getByText('Start Quest')).toBeTruthy();
+      expect(screen.queryByText('Approach the lake')).toBeNull();
+    });
+
+    it('should show premium unlock button for premium quests', () => {
+      // Mock server returning premium quests
+      mockUseServerQuests.serverQuests = [
+        {
+          customId: 'quest-11',
+          title: 'The Escape',
+          durationMinutes: 12,
+          reward: { xp: 36 },
+          decisionText: 'Escape with the map',
+          requiresPremium: true,
+          isPremium: true,
+        },
+      ];
+
+      render(<Home />);
+
+      // Should see unlock premium button
+      expect(screen.getByText('Unlock Premium to Continue')).toBeTruthy();
+    });
+
+    it('should handle mixed premium and non-premium options', () => {
+      // Mock server returning mix of premium and non-premium
+      mockUseServerQuests.serverQuests = [
+        {
+          customId: 'quest-11a',
+          title: 'The Kings Secret',
+          durationMinutes: 12,
+          reward: { xp: 36 },
+          decisionText: "Learn the King's secret",
+          requiresPremium: false,
+          isPremium: false,
+        },
+        {
+          customId: 'quest-11b',
+          title: 'Focus on Power',
+          durationMinutes: 12,
+          reward: { xp: 36 },
+          decisionText: 'Focus on the power',
+          requiresPremium: true,
+          isPremium: true,
+        },
+      ];
+
+      render(<Home />);
+
+      // Should see normal option
+      expect(screen.getByText("Learn the King's secret")).toBeTruthy();
+      
+      // Should see premium option with star
+      expect(screen.getByText('⭐ Focus on the power')).toBeTruthy();
+    });
+
+    it('should use server options when explicitly provided', () => {
+      // Mock server providing explicit options array
+      mockUseServerQuests.options = [
+        {
+          id: 'option-1',
+          text: 'Custom option from server',
+          nextQuestId: 'quest-x',
+        },
+        {
+          id: 'option-2',
+          text: 'Another custom option',
+          nextQuestId: 'quest-y',
+        },
+      ];
+
+      render(<Home />);
+
+      // Should see the explicit server options
+      expect(screen.getByText('Custom option from server')).toBeTruthy();
+      expect(screen.getByText('Another custom option')).toBeTruthy();
+    });
+
+    it('should handle quest progression after completing quest-3', () => {
+      // Simulate completing quest-3 and having quest-4 available
+      mockQuestStoreState.completedQuests = [
+        {
+          id: 'quest-3',
+          title: 'The River Crossing',
+          mode: 'story',
+          status: 'completed',
+          stopTime: Date.now() - 60000,
+        },
+      ];
+
+      mockUseServerQuests.serverQuests = [
+        {
+          customId: 'quest-4',
+          title: 'Discovering the Ancient Arch with Inscriptions',
+          durationMinutes: 12,
+          reward: { xp: 36 },
+          decisionText: 'Continue exploring',
+          requiresPremium: false,
+        },
+      ];
+
+      render(<Home />);
+
+      // Should see the single quest with Start Quest button
+      expect(screen.getByText('Start Quest')).toBeTruthy();
+      expect(screen.getByText('Discovering the Ancient Arch with Inscriptions')).toBeTruthy();
+    });
+
+    it('should show loading state when server quests are loading', () => {
+      mockUseServerQuests.isLoading = true;
+
+      render(<Home />);
+
+      // Should show loading state
+      expect(screen.getByText('Loading quests...')).toBeTruthy();
+    });
   });
 });

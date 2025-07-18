@@ -164,7 +164,7 @@ export default function Home() {
       console.log('🔄 Creating options from server quests with decisionText');
       const optionsFromQuests = serverQuests.map((quest, index) => ({
         id: `option-${index}`,
-        text: quest.decisionText || quest.title, // Fallback to title if no decisionText
+        text: quest.decisionText || 'Continue', // Fallback to Continue if no decisionText
         nextQuestId: quest.customId,
         nextQuest: quest,
       }));
