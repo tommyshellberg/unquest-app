@@ -108,7 +108,7 @@ export default function CustomQuestScreen() {
     <SafeAreaView className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
       
-      <ScreenContainer>
+      <ScreenContainer bottomPadding={0}>
         {/* Header */}
         <ScreenHeader
           title="Custom Quest"
@@ -117,7 +117,7 @@ export default function CustomQuestScreen() {
         />
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="mb-6">
+          <View className="mb-4">
             {/* Paper planes illustration */}
             <PaperPlanes />
           </View>
@@ -130,7 +130,7 @@ export default function CustomQuestScreen() {
             onDurationChange={handleDurationChange}
           />
 
-          <View className="my-4 h-px bg-[#EEEEEE]" />
+          <View className="my-3 h-px bg-[#EEEEEE]" />
 
           {/* Category Dropdown */}
           <CategorySelector control={control} questCategory={questCategory} />
@@ -143,7 +143,7 @@ export default function CustomQuestScreen() {
             size="lg"
             disabled={!canContinue}
             onPress={handleSubmit(onSubmit)}
-            className={`mt-6 rounded-md bg-primary-400 py-3 ${
+            className={`mt-4 mb-4 rounded-md bg-primary-400 py-3 ${
               canContinue ? 'opacity-100' : 'opacity-50'
             }`}
             textClassName="text-lg font-semibold text-white"
