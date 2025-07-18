@@ -14,6 +14,7 @@ import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
 import { type StoryQuestTemplate } from '@/store/types';
 import { audioCacheService } from '@/lib/services/audio-cache.service';
+import { getQuestAudioPath } from '@/utils/audio-utils';
 
 type Props = {
   quest: StoryQuestTemplate;
@@ -49,12 +50,14 @@ export function StoryNarration({ quest }: Props) {
           shouldDuckAndroid: true,
         });
 
-        console.log('quest.audioFile', quest.audioFile);
+        // Get the audio path dynamically based on quest ID
+        const audioPath = getQuestAudioPath(quest.id);
+        console.log('quest audio path:', audioPath);
 
-        // Get the audio source from cache service (handles S3 download, legacy assets, and fallback)
-        const audioSource = await audioCacheService.getAudioSource(quest.audioFile);
+        // Get the audio source from cache service (handles S3 download and fallback)
+        const audioSource = await audioCacheService.getAudioSource(audioPath);
         if (!audioSource) {
-          throw new Error('No audio file provided or audio source not found');
+          throw new Error('No audio source found for quest');
         }
 
         const { sound, status } = await Audio.Sound.createAsync(
@@ -217,10 +220,6 @@ export function StoryNarration({ quest }: Props) {
   };
 
   // Early returns for error and loading states
-  if (!quest.audioFile) {
-    return null;
-  }
-
   if (loadError) {
     return (
       <View className="bg-background-light mt-4 w-full items-center rounded-lg p-4">

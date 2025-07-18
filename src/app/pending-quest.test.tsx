@@ -50,7 +50,6 @@ describe('PendingQuestScreen', () => {
     mode: 'story' as const,
     poiSlug: 'tavern',
     story: 'Your adventure begins...',
-    audioFile: 'quest-1.mp3',
     recap: 'You started your journey',
     options: [],
     reward: { xp: 20 },

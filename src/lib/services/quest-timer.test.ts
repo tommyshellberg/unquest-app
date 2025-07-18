@@ -65,7 +65,6 @@ const mockGetItem = jest.fn().mockImplementation((key: string) => {
       recap: 'Test quest recap',
       poiSlug: 'test-poi',
       story: 'Test story content',
-      audioFile: 'test-audio.mp3',
       options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
       reward: { xp: 100 },
     });
@@ -158,8 +157,7 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
-        options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
+          options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
         reward: { xp: 100 },
       };
 
@@ -182,8 +180,7 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
-        options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
+          options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
         reward: { xp: 100 },
       };
 
@@ -210,8 +207,7 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
-        options: [],
+          options: [],
         reward: { xp: 100 },
       };
 
@@ -253,8 +249,7 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
-        options: [],
+          options: [],
         reward: { xp: 100 },
       };
 
@@ -296,8 +291,7 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
-        options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
+          options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
         reward: { xp: 100 },
       };
 
@@ -334,8 +328,7 @@ describe('QuestTimer', () => {
         recap: 'Test cooperative quest',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
-        options: [],
+          options: [],
         reward: { xp: 100 },
       };
 
@@ -383,7 +376,6 @@ describe('QuestTimer', () => {
         recap: 'Test cooperative quest',
         poiSlug: 'test-poi',
         story: 'Test story',
-        audioFile: 'test.mp3',
         options: [],
         reward: { xp: 200 },
       };
@@ -405,7 +397,6 @@ describe('QuestTimer', () => {
         recap: 'Test cooperative quest',
         poiSlug: 'test-poi',
         story: 'Test story',
-        audioFile: 'test.mp3',
         options: [],
         reward: { xp: 200 },
       };
@@ -435,8 +426,7 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
-        options: [],
+          options: [],
         reward: { xp: 100 },
       };
       

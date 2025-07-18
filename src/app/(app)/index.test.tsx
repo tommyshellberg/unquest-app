@@ -48,7 +48,6 @@ const mockFirstQuest = {
   reward: { xp: 10 },
   recap: 'First quest recap',
   story: 'First quest story',
-  audioFile: 'test.mp3',
   poiSlug: 'test-poi',
   options: [
     {
@@ -79,7 +78,6 @@ const mockQuestWithSingleOption = {
   reward: { xp: 15 },
   recap: 'Second quest A recap',
   story: 'Second quest A story',
-  audioFile: 'test.mp3',
   poiSlug: 'test-poi-2',
   options: [
     {
@@ -133,7 +131,6 @@ jest.mock('@/app/data/quests', () => ({
       reward: { xp: 15 },
       recap: 'Second quest B recap',
       story: 'Second quest B story',
-      audioFile: 'test.mp3',
       poiSlug: 'test-poi-3',
       options: [
         {
@@ -151,7 +148,6 @@ jest.mock('@/app/data/quests', () => ({
       reward: { xp: 20 },
       recap: 'Third quest recap',
       story: 'Third quest story',
-      audioFile: 'test.mp3',
       poiSlug: 'test-poi-4',
       options: [],
     },

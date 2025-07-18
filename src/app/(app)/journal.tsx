@@ -121,6 +121,7 @@ export default function JournalScreen() {
 
         return {
           id: run.quest.id,
+          customId: run.quest.customId, // Preserve the original quest template ID
           title: run.quest.title,
           mode: run.quest.mode,
           durationMinutes: run.quest.durationMinutes,

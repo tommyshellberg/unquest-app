@@ -18,24 +18,26 @@ export function getMapNameForQuest(questId: string): MapName {
 }
 
 export function getFogMaskForQuest(questId: string | undefined): number {
-  console.log('questId', questId);
+  console.log('getFogMaskForQuest - questId:', questId);
   if (!questId) return FOG_MASKS['01']; // Default to first mask
 
   // Extract quest number, ignoring side-quest letters (a, b, etc.)
   const questNumberMatch = questId.match(/quest-(\d+)[a-z]?/);
-  console.log('questNumberMatch', questNumberMatch);
+  console.log('getFogMaskForQuest - questNumberMatch:', questNumberMatch);
 
   if (!questNumberMatch) return FOG_MASKS['01']; // Default if no match
 
   // Get the quest number and convert to a number
   const questNumStr = questNumberMatch[1];
   const questNum = parseInt(questNumStr, 10);
-  console.log('questNum', questNum);
+  console.log('getFogMaskForQuest - questNum:', questNum);
   const fogNum = Math.max(1, questNum);
-  console.log('fogNum', fogNum);
+  console.log('getFogMaskForQuest - fogNum:', fogNum);
   // Convert back to padded string format
   const questKey = fogNum.toString().padStart(2, '0');
-  console.log('questKey', questKey);
+  console.log('getFogMaskForQuest - questKey:', questKey);
+  console.log('getFogMaskForQuest - FOG_MASKS keys:', Object.keys(FOG_MASKS));
+  console.log('getFogMaskForQuest - FOG_MASKS[questKey]:', FOG_MASKS[questKey]);
   // Return the corresponding mask or default to first one
   return FOG_MASKS[questKey] || FOG_MASKS['01'];
 }

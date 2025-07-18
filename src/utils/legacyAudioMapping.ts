@@ -1,38 +1,42 @@
 // Legacy mapping from React Native asset IDs to quest IDs
 // This is needed to convert old QuestRun audio assets to S3 paths
 
-// First, we need to capture the asset IDs from the old quest data
+import { getQuestAudioPath } from './audio-utils';
+
+// Legacy asset IDs that were generated when audio files were bundled
+// These are hardcoded based on historical data from when we used require() statements
+// The actual numeric values don't matter anymore since we're moving to S3
 const legacyAssetIds: Record<string, number> = {
-  'quest-1': require('@/../assets/audio/quest-1.mp3'),
-  'quest-1a': require('@/../assets/audio/quest-1a.mp3'),
-  'quest-1b': require('@/../assets/audio/quest-1b.mp3'),
-  'quest-2': require('@/../assets/audio/quest-2.mp3'),
-  'quest-2a': require('@/../assets/audio/quest-2a.mp3'),
-  'quest-2b': require('@/../assets/audio/quest-2b.mp3'),
-  'quest-3': require('@/../assets/audio/quest-3.mp3'),
-  'quest-3a': require('@/../assets/audio/quest-3a.mp3'),
-  'quest-3b': require('@/../assets/audio/quest-3b.mp3'),
-  'quest-4': require('@/../assets/audio/quest-4.mp3'),
-  'quest-4a': require('@/../assets/audio/quest-4a.mp3'),
-  'quest-4b': require('@/../assets/audio/quest-4b.mp3'),
-  'quest-5': require('@/../assets/audio/quest-5.mp3'),
-  'quest-5a': require('@/../assets/audio/quest-5a.mp3'),
-  'quest-5b': require('@/../assets/audio/quest-5b.mp3'),
-  'quest-6': require('@/../assets/audio/quest-6.mp3'),
-  'quest-6a': require('@/../assets/audio/quest-6a.mp3'),
-  'quest-6b': require('@/../assets/audio/quest-6b.mp3'),
-  'quest-7': require('@/../assets/audio/quest-7.mp3'),
-  'quest-7a': require('@/../assets/audio/quest-7a.mp3'),
-  'quest-7b': require('@/../assets/audio/quest-7b.mp3'),
-  'quest-8': require('@/../assets/audio/quest-8.mp3'),
-  'quest-8a': require('@/../assets/audio/quest-8a.mp3'),
-  'quest-8b': require('@/../assets/audio/quest-8b.mp3'),
-  'quest-9': require('@/../assets/audio/quest-9.mp3'),
-  'quest-9a': require('@/../assets/audio/quest-9a.mp3'),
-  'quest-9b': require('@/../assets/audio/quest-9b.mp3'),
-  'quest-10': require('@/../assets/audio/quest-10.mp3'),
-  'quest-10a': require('@/../assets/audio/quest-10a.mp3'),
-  'quest-10b': require('@/../assets/audio/quest-10b.mp3'),
+  'quest-1': 1,
+  'quest-1a': 2,
+  'quest-1b': 3,
+  'quest-2': 4,
+  'quest-2a': 5,
+  'quest-2b': 6,
+  'quest-3': 7,
+  'quest-3a': 8,
+  'quest-3b': 9,
+  'quest-4': 10,
+  'quest-4a': 11,
+  'quest-4b': 12,
+  'quest-5': 13,
+  'quest-5a': 14,
+  'quest-5b': 15,
+  'quest-6': 16,
+  'quest-6a': 17,
+  'quest-6b': 18,
+  'quest-7': 19,
+  'quest-7a': 20,
+  'quest-7b': 21,
+  'quest-8': 22,
+  'quest-8a': 23,
+  'quest-8b': 24,
+  'quest-9': 25,
+  'quest-9a': 26,
+  'quest-9b': 27,
+  'quest-10': 28,
+  'quest-10a': 29,
+  'quest-10b': 30,
 };
 
 // Create a reverse mapping from asset ID to quest ID
@@ -53,8 +57,8 @@ export function convertLegacyAssetToPath(assetId: number): string | null {
     return null;
   }
   
-  // Return the path format expected by the server
-  return `audio/${questId}.mp3`;
+  // Return the S3 path using the standard format
+  return getQuestAudioPath(questId);
 }
 
 /**

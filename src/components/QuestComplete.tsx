@@ -208,8 +208,8 @@ export function QuestComplete({
             </ScrollView>
           </Card>
 
-          {/* Audio Controls - Only show if the quest has audio */}
-          {isStoryQuest && quest.mode === 'story' && quest.audioFile && (
+          {/* Audio Controls - Only show for story quests */}
+          {isStoryQuest && quest.mode === 'story' && (
             <StoryNarration quest={quest as StoryQuestTemplate} />
           )}
         </Animated.View>

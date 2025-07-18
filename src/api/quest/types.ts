@@ -12,7 +12,6 @@ export interface QuestTemplate {
   isPremium?: boolean;
   requiresPremium?: boolean;
   poiSlug?: string;
-  audioFile?: string;
   story?: string;
   recap?: string;
   options?: QuestOption[];
@@ -62,6 +61,7 @@ export interface QuestRun {
   scheduledEndTime?: string;
   quest: {
     id: string;
+    customId?: string; // The original quest template ID (e.g., 'quest-1', 'quest-4')
     title: string;
     durationMinutes: number;
     reward: {
@@ -69,11 +69,11 @@ export interface QuestRun {
     };
     mode: 'story' | 'custom' | 'cooperative';
     poiSlug?: string;
-    audioFile?: string;
     story?: string;
     recap?: string;
     options?: QuestOption[];
     category?: string;
+    storylineId?: string;
   };
   participants: Array<{
     userId: string;

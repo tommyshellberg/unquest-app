@@ -3,7 +3,8 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Platform } from 'react-native';
 
-import { MAP_IMAGES, type MapId } from '@/app/data/maps';
+import { useHighestCompletedQuest } from '@/api/quest';
+import { MAP_IMAGES, type MapId, FOG_MASKS } from '@/app/data/maps';
 import {
   getFogMaskForQuest,
   getMapForQuest,
@@ -24,21 +25,30 @@ export default function MapScreen() {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isMaskLoaded, setIsMaskLoaded] = useState(false);
 
-  // Get the last completed quest
-  const completedQuests = useQuestStore((state) => state.getCompletedQuests());
-  const lastCompletedQuest = completedQuests[completedQuests.length - 1];
+  // Fetch the highest completed quest from the API
+  const { data: highestQuestData, isLoading, error } = useHighestCompletedQuest({
+    storylineId: 'vaedros', // TODO: Make this dynamic based on current storyline
+  });
 
-  // Determine the map to display
-  const mapId = useMemo<MapId>(
-    () => getMapForQuest(lastCompletedQuest?.id || ''),
-    [lastCompletedQuest]
-  );
+  // Log the API response for debugging
+  useEffect(() => {
+    if (highestQuestData) {
+      console.log('Map Screen - Highest quest API response:', highestQuestData);
+    }
+    if (error) {
+      console.error('Map Screen - Error fetching highest quest:', error);
+    }
+  }, [highestQuestData, error]);
+
+  // Fallback to quest-1 if no quests completed or loading
+  const highestQuestId = highestQuestData?.highestCompletedQuest?.customId || 'quest-1';
+
+  // Determine the map to display based on highest quest
+  const mapId = useMemo<MapId>(() => getMapForQuest(highestQuestId), [highestQuestId]);
   const mapImage = MAP_IMAGES[mapId];
 
-  console.log('lastCompletedQuest', lastCompletedQuest);
-
-  // Get the appropriate fog mask based on quest progression
-  const currentMask = getFogMaskForQuest(lastCompletedQuest?.id);
+  // Get the appropriate fog mask based on highest completed quest
+  const currentMask = getFogMaskForQuest(highestQuestId);
 
   // Calculate initial zoom to ensure the map covers the screen
   const initialZoom = Math.max(
@@ -70,6 +80,16 @@ export default function MapScreen() {
     }
   }, [mapImage, currentMask]);
 
+  // Show loading state while fetching highest quest
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[rgba(61,73,78,0.92)]">
+        <FocusAwareStatusBar />
+        <Text className="text-lg text-primary-300">Loading map...</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-[rgba(61,73,78,0.92)]">
       <FocusAwareStatusBar />
@@ -77,7 +97,7 @@ export default function MapScreen() {
       {/* Map Title */}
       <View className="absolute left-4 top-10 z-10 rounded-lg bg-white/10 px-3 py-1 backdrop-blur-sm">
         <Text className="text-xl font-bold text-primary-400">
-          {getMapNameForQuest(lastCompletedQuest?.id || '')}
+          {getMapNameForQuest(highestQuestId)}
         </Text>
       </View>
 

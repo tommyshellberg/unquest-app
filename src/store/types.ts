@@ -26,7 +26,6 @@ export interface StoryQuestTemplate extends BaseQuestTemplate {
   poiSlug: string;
   mode: 'story';
   story: string;
-  audioFile: string | any; // Can be a string path (from server) or required asset (from local data)
   recap: string;
   options: QuestOption[];
 }
@@ -43,6 +42,7 @@ export type Quest = (StoryQuestTemplate | CustomQuestTemplate) & {
   startTime: number;
   stopTime?: number; // When the quest ended, for any reason
   status: QuestStatus;
+  customId?: string; // Preserve the original quest template ID (e.g., 'quest-1', 'quest-4')
 };
 
 export interface Character {

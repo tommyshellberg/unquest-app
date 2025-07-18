@@ -480,8 +480,10 @@ export const useQuestStore = create<QuestState>()(
         // Convert server quest templates to client format
         const clientQuests = quests.map(quest => ({
           ...quest,
-          // Map server fields to client fields if needed
-          id: quest.customId,
+          // Preserve both IDs
+          id: quest.customId, // Use customId as the primary ID for client
+          customId: quest.customId, // Also preserve it as customId
+          _id: quest._id, // Keep the MongoDB ID as well
           mode: quest.mode as 'story' | 'custom',
         }));
         

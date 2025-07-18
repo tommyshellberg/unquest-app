@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNextAvailableQuests } from '@/api/quest/use-next-available-quests';
 import { audioCacheService } from '@/lib/services/audio-cache.service';
+import { getQuestAudioPath } from '@/utils/audio-utils';
 import type { StoryQuestTemplate } from '@/store/types';
 
 interface UseAudioPreloaderOptions {
@@ -31,8 +32,8 @@ export const useAudioPreloader = ({
         // Add main quest audio files
         if (questsData.quests) {
           for (const quest of questsData.quests) {
-            if (quest.audioFile) {
-              audioFiles.push(quest.audioFile);
+            if (quest.customId) {
+              audioFiles.push(getQuestAudioPath(quest.customId, storylineId));
             }
           }
         }
@@ -40,8 +41,8 @@ export const useAudioPreloader = ({
         // Add option quest audio files
         if (questsData.options) {
           for (const option of questsData.options) {
-            if (option.nextQuest?.audioFile) {
-              audioFiles.push(option.nextQuest.audioFile);
+            if (option.nextQuest?.customId) {
+              audioFiles.push(getQuestAudioPath(option.nextQuest.customId, storylineId));
             }
           }
         }
