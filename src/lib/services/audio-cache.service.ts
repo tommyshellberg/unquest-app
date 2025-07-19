@@ -1,6 +1,8 @@
 import * as FileSystem from 'expo-file-system';
 
 import { apiClient } from '@/api/common/client';
+import { provisionalApiClient } from '@/api/common/provisional-client';
+import { getToken } from '@/lib/auth/utils';
 import { getItem, setItem } from '@/lib/storage';
 import { convertLegacyAssetToPath, isLegacyAssetId } from '@/utils/legacyAudioMapping';
 
@@ -140,8 +142,13 @@ class AudioCacheService {
 
   private async downloadAudioFile(audioPath: string): Promise<string | null> {
     try {
+      // Choose the appropriate client based on authentication state
+      const hasRegularToken = !!getToken();
+      const hasProvisionalToken = !!getItem('provisionalAccessToken');
+      const client = hasRegularToken ? apiClient : hasProvisionalToken ? provisionalApiClient : apiClient;
+      
       // Get signed URL from server
-      const response = await apiClient.get('audio/file', {
+      const response = await client.get('audio/file', {
         params: { path: audioPath },
       });
 
@@ -169,8 +176,13 @@ class AudioCacheService {
 
   private async downloadToMemory(audioPath: string): Promise<string | null> {
     try {
+      // Choose the appropriate client based on authentication state
+      const hasRegularToken = !!getToken();
+      const hasProvisionalToken = !!getItem('provisionalAccessToken');
+      const client = hasRegularToken ? apiClient : hasProvisionalToken ? provisionalApiClient : apiClient;
+      
       // Get signed URL from server
-      const response = await apiClient.get('/audio/file', {
+      const response = await client.get('/audio/file', {
         params: { path: audioPath },
       });
 

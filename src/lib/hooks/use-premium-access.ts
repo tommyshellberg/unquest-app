@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { revenueCatService } from '@/lib/services/revenuecat-service';
 
 export function usePremiumAccess() {
@@ -10,7 +11,7 @@ export function usePremiumAccess() {
     try {
       // Wait for RevenueCat to be initialized
       await revenueCatService.waitForInitialization();
-      
+
       const hasAccess = await revenueCatService.hasPremiumAccess();
       setHasPremiumAccess(hasAccess);
     } catch (error) {
@@ -22,7 +23,7 @@ export function usePremiumAccess() {
   }, []);
 
   useEffect(() => {
-    checkPremiumAccess();
+    // checkPremiumAccess();
   }, [checkPremiumAccess]);
 
   const requirePremium = useCallback(

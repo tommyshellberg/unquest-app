@@ -31,6 +31,7 @@ interface QuestState {
   lastCompletedQuestTimestamp: number | null;
   currentLiveActivityId: string | null;
   failedQuests: Quest[];
+  shouldShowStreakCelebration: boolean;
   // Server-driven quest data
   serverAvailableQuests: QuestTemplate[];
   hasMoreQuests: boolean;
@@ -47,12 +48,17 @@ interface QuestState {
   refreshAvailableQuests: () => void;
   resetFailedQuest: () => void;
   clearRecentCompletedQuest: () => void;
+  setShouldShowStreakCelebration: (show: boolean) => void;
   reset: () => void;
   getCompletedQuests: () => Quest[];
   prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => void;
   setLiveActivityId: (id: string | null) => void;
   // Server-driven quest actions
-  setServerAvailableQuests: (quests: QuestTemplate[], hasMore: boolean, complete: boolean) => void;
+  setServerAvailableQuests: (
+    quests: QuestTemplate[],
+    hasMore: boolean,
+    complete: boolean
+  ) => void;
   // Cooperative quest actions
   setCurrentInvitation: (invitation: QuestInvitation | null) => void;
   setCooperativeQuestRun: (run: CooperativeQuestRun | null) => void;
@@ -87,6 +93,7 @@ export const useQuestStore = create<QuestState>()(
       lastCompletedQuestTimestamp: null,
       currentLiveActivityId: null,
       failedQuests: [],
+      shouldShowStreakCelebration: false,
       // Server-driven quest data
       serverAvailableQuests: [],
       hasMoreQuests: false,
@@ -158,6 +165,54 @@ export const useQuestStore = create<QuestState>()(
             const characterStore = useCharacterStore.getState();
             characterStore.updateStreak(lastCompletedQuestTimestamp);
 
+            // Check if we should show streak celebration
+            const shouldShowStreakCelebration = (() => {
+              const dailyQuestStreak = characterStore.dailyQuestStreak;
+              const lastStreakCelebrationShown =
+                characterStore.lastStreakCelebrationShown;
+
+              console.log('[QuestStore] Checking streak celebration:', {
+                dailyQuestStreak,
+                lastStreakCelebrationShown,
+                lastShownDate: lastStreakCelebrationShown
+                  ? new Date(lastStreakCelebrationShown).toDateString()
+                  : null,
+                today: new Date().toDateString(),
+              });
+
+              // Must have a streak (at least 1)
+              if (dailyQuestStreak < 1) {
+                console.log('[QuestStore] No streak, not showing celebration');
+                return false;
+              }
+
+              // Check if we've already shown the celebration today
+              const today = new Date();
+              const todayString = today.toDateString();
+
+              if (lastStreakCelebrationShown) {
+                const lastShownDate = new Date(lastStreakCelebrationShown);
+                const lastShownString = lastShownDate.toDateString();
+
+                // If we already showed it today, don't show again
+                if (lastShownString === todayString) {
+                  console.log(
+                    '[QuestStore] Already shown today, not showing again'
+                  );
+                  return false;
+                }
+              }
+
+              // Haven't shown it today, so we should show it
+              console.log('[QuestStore] Should show streak celebration!');
+              return true;
+            })();
+
+            console.log(
+              '[QuestStore] Setting state with shouldShowStreakCelebration:',
+              shouldShowStreakCelebration
+            );
+
             set((state) => ({
               activeQuest: null, // Quest is no longer active
               pendingQuest: null, // Clear any lingering pending quest
@@ -167,6 +222,7 @@ export const useQuestStore = create<QuestState>()(
               // TODO: does this interfere with updating the live activity?
               currentLiveActivityId: null, // Clear activity ID on completion
               cooperativeQuestRun: null, // Clear cooperative quest run on completion
+              shouldShowStreakCelebration, // Set the flag here
             }));
 
             if (activeQuest.mode === 'story' && activeQuest.poiSlug) {
@@ -372,6 +428,10 @@ export const useQuestStore = create<QuestState>()(
         set({ recentCompletedQuest: null });
       },
 
+      setShouldShowStreakCelebration: (show: boolean) => {
+        set({ shouldShowStreakCelebration: show });
+      },
+
       getCompletedQuests: () => {
         return get().completedQuests;
       },
@@ -411,10 +471,10 @@ export const useQuestStore = create<QuestState>()(
 
       syncQuestRuns: (questRuns: Quest[]) => {
         const currentState = get();
-        
+
         // Create maps for all quests (server quests)
         const serverQuestMap = new Map<string, Quest>();
-        questRuns.forEach(quest => {
+        questRuns.forEach((quest) => {
           const key = `${quest.id}-${quest.stopTime}`;
           serverQuestMap.set(key, quest);
         });
@@ -422,9 +482,9 @@ export const useQuestStore = create<QuestState>()(
         // Merge with local quests, preserving local-only quests
         const mergedCompletedMap = new Map<string, Quest>();
         const mergedFailedMap = new Map<string, Quest>();
-        
+
         // First, add all server quests
-        questRuns.forEach(quest => {
+        questRuns.forEach((quest) => {
           const key = `${quest.id}-${quest.stopTime}`;
           if (quest.status === 'completed') {
             mergedCompletedMap.set(key, quest);
@@ -434,7 +494,7 @@ export const useQuestStore = create<QuestState>()(
         });
 
         // Then, add local quests that aren't on the server
-        currentState.completedQuests.forEach(localQuest => {
+        currentState.completedQuests.forEach((localQuest) => {
           const key = `${localQuest.id}-${localQuest.stopTime}`;
           if (!serverQuestMap.has(key)) {
             // This is a local-only quest, preserve it
@@ -442,7 +502,7 @@ export const useQuestStore = create<QuestState>()(
           }
         });
 
-        currentState.failedQuests.forEach(localQuest => {
+        currentState.failedQuests.forEach((localQuest) => {
           const key = `${localQuest.id}-${localQuest.stopTime}`;
           if (!serverQuestMap.has(key)) {
             // This is a local-only quest, preserve it
@@ -453,19 +513,27 @@ export const useQuestStore = create<QuestState>()(
         // Only update if there are changes to avoid re-renders
         const newCompletedQuests = Array.from(mergedCompletedMap.values());
         const newFailedQuests = Array.from(mergedFailedMap.values());
-        
-        const hasCompletedChanges = 
+
+        const hasCompletedChanges =
           newCompletedQuests.length !== currentState.completedQuests.length ||
           newCompletedQuests.some((quest, index) => {
             const existing = currentState.completedQuests[index];
-            return !existing || quest.id !== existing.id || quest.stopTime !== existing.stopTime;
+            return (
+              !existing ||
+              quest.id !== existing.id ||
+              quest.stopTime !== existing.stopTime
+            );
           });
-          
-        const hasFailedChanges = 
+
+        const hasFailedChanges =
           newFailedQuests.length !== currentState.failedQuests.length ||
           newFailedQuests.some((quest, index) => {
             const existing = currentState.failedQuests[index];
-            return !existing || quest.id !== existing.id || quest.stopTime !== existing.stopTime;
+            return (
+              !existing ||
+              quest.id !== existing.id ||
+              quest.stopTime !== existing.stopTime
+            );
           });
 
         if (hasCompletedChanges || hasFailedChanges) {
@@ -476,9 +544,13 @@ export const useQuestStore = create<QuestState>()(
         }
       },
 
-      setServerAvailableQuests: (quests: QuestTemplate[], hasMore: boolean, complete: boolean) => {
+      setServerAvailableQuests: (
+        quests: QuestTemplate[],
+        hasMore: boolean,
+        complete: boolean
+      ) => {
         // Convert server quest templates to client format
-        const clientQuests = quests.map(quest => ({
+        const clientQuests = quests.map((quest) => ({
           ...quest,
           // Preserve both IDs
           id: quest.customId, // Use customId as the primary ID for client
@@ -486,10 +558,13 @@ export const useQuestStore = create<QuestState>()(
           _id: quest._id, // Keep the MongoDB ID as well
           mode: quest.mode as 'story' | 'custom',
         }));
-        
+
         set({
           serverAvailableQuests: quests,
-          availableQuests: clientQuests as (CustomQuestTemplate | StoryQuestTemplate)[],
+          availableQuests: clientQuests as (
+            | CustomQuestTemplate
+            | StoryQuestTemplate
+          )[],
           hasMoreQuests: hasMore,
           storylineComplete: complete,
         });
@@ -506,6 +581,7 @@ export const useQuestStore = create<QuestState>()(
           lastCompletedQuestTimestamp: null,
           currentLiveActivityId: null, // Reset activity ID
           failedQuests: [],
+          shouldShowStreakCelebration: false,
           // Reset server-driven quest data
           serverAvailableQuests: [],
           hasMoreQuests: false,

@@ -19,11 +19,9 @@ import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { primary } from '@/components/ui/colors';
 import { createProvisionalUser } from '@/lib/services/user';
-import { audioCacheService } from '@/lib/services/audio-cache.service';
 import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 import { type Character, type CharacterType } from '@/store/types';
-import { getQuestAudioPath } from '@/utils/audio-utils';
 
 import CHARACTERS from '../data/characters';
 
@@ -189,7 +187,8 @@ export default function ChooseCharacterScreen() {
             <Animated.View entering={FadeInDown.delay(2100)}>
               <Text className="mb-2">Character Name</Text>
               <TextInput
-                className="h-12 rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200"
+                className="flex h-14 items-center rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200"
+                style={{ textAlignVertical: 'center' }}
                 value={inputName}
                 onChangeText={(text) => {
                   const filtered = text.replace(/[^a-zA-Z0-9\s]/g, '');
@@ -313,20 +312,6 @@ export default function ChooseCharacterScreen() {
       // 2. Create a provisional user on the server
       await createProvisionalUser(newCharacter as Character);
       posthog.capture('onboarding_create_provisional_user_success');
-      
-      // 3. Pre-download quest-1 audio for better onboarding experience
-      // This is non-blocking - we don't wait for it to complete
-      try {
-        const quest1AudioPath = getQuestAudioPath('quest-1');
-        console.log('Pre-downloading quest-1 audio:', quest1AudioPath);
-        audioCacheService.getAudioSource(quest1AudioPath).catch((error) => {
-          console.warn('Failed to pre-download quest-1 audio:', error);
-          // Non-critical error - continue with onboarding
-        });
-      } catch (error) {
-        console.warn('Error initiating quest-1 audio pre-download:', error);
-        // Non-critical error - continue with onboarding
-      }
 
       // Only proceed if both operations succeeded
       useOnboardingStore

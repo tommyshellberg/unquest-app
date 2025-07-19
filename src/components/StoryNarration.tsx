@@ -50,8 +50,10 @@ export function StoryNarration({ quest }: Props) {
           shouldDuckAndroid: true,
         });
 
-        // Get the audio path dynamically based on quest ID
-        const audioPath = getQuestAudioPath(quest.id);
+        // Get the audio path dynamically based on quest custom ID
+        // Use customId if available (from server), otherwise fall back to id (for local quests)
+        const questId = (quest as any).customId || quest.id;
+        const audioPath = getQuestAudioPath(questId);
         console.log('quest audio path:', audioPath);
 
         // Get the audio source from cache service (handles S3 download and fallback)

@@ -11,7 +11,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
-import { StreakCounter } from '@/components/StreakCounter';
 import { Image, ScreenContainer, Text, View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -29,6 +28,30 @@ type QuestCompleteProps = {
   showActionButton?: boolean;
   disableEnteringAnimations?: boolean;
 };
+
+// Helper function to get the appropriate quest image
+function getQuestImage(questId: string) {
+  // Extract the base quest number from the ID (e.g., "quest-1a" -> "1")
+  const match = questId.match(/quest-(\d+)[a-z]?/);
+  if (!match) {
+    // Fallback to a default image or the first one
+    return require('@/../assets/images/fog-pois/vaedros-poi-img-1.png');
+  }
+
+  const questNumber = match[1];
+
+  // Map quest numbers to their corresponding images
+  const imageMap: { [key: string]: any } = {
+    '1': require('@/../assets/images/fog-pois/vaedros-poi-img-1.png'),
+    '2': require('@/../assets/images/fog-pois/vaedros-poi-img-2.png'),
+  };
+
+  // Return the corresponding image or fallback to the first one
+  return (
+    imageMap[questNumber] ||
+    require('@/../assets/images/fog-pois/vaedros-poi-img-1.png')
+  );
+}
 
 export function QuestComplete({
   quest,
@@ -134,10 +157,11 @@ export function QuestComplete({
     // Clear the quest state - this will trigger navigation
     clearRecentCompletedQuest();
 
-    // Navigate to continue or home
+    // If there's a custom onContinue handler, use it
     if (onContinue) {
       onContinue();
     } else {
+      // Default navigation is handled by NavigationGate based on state
       router.push('/(app)');
     }
   };
@@ -164,8 +188,8 @@ export function QuestComplete({
             You've completed the quest!
           </Text>
 
-          {/* Streak Counter with Lottie Animation */}
-          <View className="relative mt-6 h-[120px] w-full items-center justify-center">
+          {/* Quest Image with Lottie Animation */}
+          <View className="relative mt-6 h-[150px] w-full items-center justify-center">
             <LottieView
               ref={lottieRef}
               source={require('@/../assets/animations/congrats.json')}
@@ -178,7 +202,17 @@ export function QuestComplete({
                 opacity: 0.8,
               }}
             />
-            <StreakCounter animate={true} size="large" disablePress={true} />
+            {quest.mode === 'story' && quest.id && (
+              <Image
+                source={getQuestImage(quest.id)}
+                style={{
+                  width: 150,
+                  height: 150,
+                  opacity: 0.8,
+                }}
+                resizeMode="contain"
+              />
+            )}
           </View>
         </Animated.View>
 

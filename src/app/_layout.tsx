@@ -213,22 +213,22 @@ function RootLayout() {
         // Get the current user from store
         const { useUserStore } = require('@/store/user-store');
         const user = useUserStore.getState().user;
-        
+
         // Initialize RevenueCat with user ID if available
         await revenueCatService.initialize(user?.id);
-        
+
         // Enable test mode in development
         if (__DEV__) {
           revenueCatService.enableTestMode();
         }
-        
+
         console.log('[RevenueCat] Initialized successfully');
       } catch (error) {
         console.error('[RevenueCat] Failed to initialize:', error);
       }
     }
-    
-    initializeRevenueCat();
+
+    //initializeRevenueCat();
   }, []);
 
   // Handle app state changes to check quest status when app comes to foreground
@@ -237,7 +237,8 @@ function RootLayout() {
       'change',
       async (nextAppState) => {
         if (
-          (appStateRef.current === 'inactive' || appStateRef.current === 'background') &&
+          (appStateRef.current === 'inactive' ||
+            appStateRef.current === 'background') &&
           nextAppState === 'active'
         ) {
           // App has come to foreground

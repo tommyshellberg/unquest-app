@@ -809,7 +809,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: "The River's Reflection",
     story:
       "You knelt at the river's edge, the water so still it mirrored the sky like glass. Breathing deep, you let the hush of the forest quiet your thoughts, the chaos of your journey settling into stillness. When you opened your eyes, the reflection had shifted—a faint figure watching from the reeds, gone in the next blink. Whether spirit or trick of the light, you rose feeling lighter, as if something unseen had granted you peace.",
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'L9VnQ3XpK7YB',
@@ -851,7 +851,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: 'The Still Pool',
     story:
       'At the heart of the glade, a pool so still it reflected the stars at midday. You knelt at its edge, listening to the wind carry voices too faint to understand. As you breathed in the cool air, the world seemed to hold itself in perfect balance. In that moment, you understood why silence mattered.',
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'M7XPQ9VNLK3T',
@@ -872,7 +872,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: "The Healer's Meditation",
     story:
       "The old woman handed you a steaming cup of herbal tea and told you to breathe. 'Too much weight on your shoulders, traveler,' she murmured, watching the fire crackle. You closed your eyes, inhaling the earthy scent, and for the first time in days, your thoughts slowed. When you finally spoke, your voice felt clearer, lighter.",
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'LXP9Q7NMTV3K',
@@ -914,7 +914,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: 'The Mirror of Stillness',
     story:
       'A placid lake stretched before you, the surface unmoving, mirroring the sky. You sat at the edge, watching your own reflection stare back, patient and expectant. In the silence, your breath slowed, your thoughts softened, and the tension in your chest unwound. When you finally rose, the lake was still—but something in you had shifted.',
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'L7XKQ9NVP3MT',
@@ -942,7 +942,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: "The Elder's Silence",
     story:
       "An old monk sat beneath the temple's ruined archway, eyes closed, hands resting lightly on his knees. You sat beside him, waiting for wisdom, for a parable, for anything—but he only breathed. Minutes passed, then hours, until something within you shifted. When you finally stood to leave, the monk spoke only two words: 'You understand.'",
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'L9X7VPQK3NMT',
@@ -984,7 +984,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: 'The Tower of Echoes',
     story:
       'At the top of a long-abandoned bell tower, you called out into the abyss. The wind carried your voice, stretching it into something both familiar and strange. A second later, your words returned, but they were not your own. Some places, it seemed, did not forget the voices of those who came before.',
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'M9X7VPQLK3NT',

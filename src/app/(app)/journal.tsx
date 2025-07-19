@@ -43,10 +43,6 @@ export default function JournalScreen() {
   const headerOpacity = useSharedValue(0);
   const contentOpacity = useSharedValue(0);
 
-  // Get completed quests from local store as fallback
-  const localCompletedQuests = useQuestStore((state) => state.completedQuests);
-  const localFailedQuests = useQuestStore((state) => state.failedQuests);
-
   // Get quest runs from server - don't filter on API level to allow client-side filtering
   const { data, isLoading, error } = useQuestRuns({
     page,
@@ -143,32 +139,8 @@ export default function JournalScreen() {
     return transformed;
   }, [data]);
 
-  // Combine server and local quests, removing duplicates
-  const allQuests = useMemo(() => {
-    const questMap = new Map();
-
-    // Add server quests first (they're more authoritative)
-    serverQuests.forEach((quest) => {
-      questMap.set(`${quest.id}-${quest.stopTime}`, quest);
-    });
-
-    // Add local quests if not already present and have valid dates
-    const localQuests = [...localCompletedQuests, ...localFailedQuests];
-    const validLocalQuests = localQuests.filter(
-      (quest) => quest.stopTime && !isNaN(quest.stopTime)
-    );
-
-    validLocalQuests.forEach((quest) => {
-      const key = `${quest.id}-${quest.stopTime}`;
-      if (!questMap.has(key)) {
-        questMap.set(key, quest);
-      }
-    });
-
-    const result = Array.from(questMap.values());
-
-    return result;
-  }, [serverQuests, localCompletedQuests, localFailedQuests]);
+  // Just use server quests directly, no merging needed
+  const allQuests = serverQuests;
 
   // Filter quests based on mode and status filters
   const filteredQuests = useMemo(() => {
@@ -194,7 +166,7 @@ export default function JournalScreen() {
     });
 
     return sorted;
-  }, [filteredQuests, filter, statusFilter]);
+  }, [filteredQuests]);
 
   // Formats quest duration into readable format
   const formatDuration = (quest: any) => {

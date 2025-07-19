@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { Flame, Share } from 'lucide-react-native';
 import React, { useCallback, useRef } from 'react';
@@ -14,9 +14,9 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { StreakCounter } from '@/components/StreakCounter';
-import { Text, View, ScreenContainer } from '@/components/ui';
+import { ScreenContainer, Text, View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
-import { muted, red, white } from '@/components/ui/colors';
+import { muted, primary, red, white } from '@/components/ui/colors';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -92,6 +92,9 @@ export default function StreakCelebrationScreen() {
   const dailyQuestStreak = useCharacterStore((state) => state.dailyQuestStreak);
   const markStreakCelebrationShown = useCharacterStore(
     (state) => state.markStreakCelebrationShown
+  );
+  const setShouldShowStreakCelebration = useQuestStore(
+    (state) => state.setShouldShowStreakCelebration
   );
   const lastCompletedQuestTimestamp = useQuestStore(
     (state) => state.lastCompletedQuestTimestamp
@@ -221,7 +224,9 @@ export default function StreakCelebrationScreen() {
   };
 
   const handleContinue = () => {
-    router.push('/(app)');
+    // Clear the flag when user clicks continue
+    setShouldShowStreakCelebration(false);
+    // Navigation will happen automatically when the flag is cleared
   };
 
   return (
@@ -303,7 +308,7 @@ export default function StreakCelebrationScreen() {
           {/* Continue Button */}
           <Button
             onPress={handleContinue}
-            style={{ backgroundColor: red[300] }}
+            style={{ backgroundColor: primary[300] }}
           >
             <Text className="font-semibold text-white">CONTINUE</Text>
           </Button>

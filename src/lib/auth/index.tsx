@@ -1,12 +1,12 @@
 import Constants from 'expo-constants';
-import { create } from 'zustand';
 import { OneSignal } from 'react-native-onesignal';
+import { create } from 'zustand';
 
 import { storeTokens } from '@/api/token';
-import { getUserDetails } from '@/lib/services/user';
 import { revenueCatService } from '@/lib/services/revenuecat-service';
-import { useUserStore } from '@/store/user-store';
+import { getUserDetails } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
+import { useUserStore } from '@/store/user-store';
 
 import { createSelectors } from '../utils';
 import type { TokenType, UserLoginResponse } from './utils';
@@ -38,6 +38,7 @@ const _useAuth = create<AuthState>((set, get) => ({
     });
 
     // Login to RevenueCat with user ID if available
+    /*
     if (loginResponse.user?.id && revenueCatService.isConfigured()) {
       try {
         await revenueCatService.loginUser(loginResponse.user.id);
@@ -46,6 +47,7 @@ const _useAuth = create<AuthState>((set, get) => ({
         console.error('[Auth] Failed to login to RevenueCat:', error);
       }
     }
+      */
   },
 
   signOut: async () => {
@@ -160,9 +162,15 @@ const _useAuth = create<AuthState>((set, get) => ({
           if (user.id && revenueCatService.isConfigured()) {
             try {
               await revenueCatService.loginUser(user.id);
-              console.log('[Auth] Logged into RevenueCat during hydration with user ID:', user.id);
+              console.log(
+                '[Auth] Logged into RevenueCat during hydration with user ID:',
+                user.id
+              );
             } catch (error) {
-              console.error('[Auth] Failed to login to RevenueCat during hydration:', error);
+              console.error(
+                '[Auth] Failed to login to RevenueCat during hydration:',
+                error
+              );
             }
           }
 
