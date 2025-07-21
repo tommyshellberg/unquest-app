@@ -9,9 +9,12 @@ interface LockInstructionsProps {
   delay?: number;
 }
 
-export function LockInstructions({ variant, delay = 1000 }: LockInstructionsProps) {
+export function LockInstructions({
+  variant,
+  delay = 1000,
+}: LockInstructionsProps) {
   const isSingle = variant === 'single';
-  
+
   return (
     <Animated.View
       entering={FadeInDown.delay(delay).duration(800)}
@@ -28,10 +31,9 @@ export function LockInstructions({ variant, delay = 1000 }: LockInstructionsProp
         className="mt-2 text-center text-sm"
         style={{ color: colors.primary[400] }}
       >
-        {isSingle 
+        {isSingle
           ? 'Stay focused • Complete your quest • Earn rewards'
-          : 'All companions must lock together'
-        }
+          : 'All companions must lock together'}
       </Text>
     </Animated.View>
   );

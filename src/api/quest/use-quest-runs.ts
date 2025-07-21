@@ -32,7 +32,7 @@ export const useQuestRuns = ({
       if (status) {
         params.append('status', status);
       }
-      
+
       if (mode) {
         params.append('mode', mode);
       }

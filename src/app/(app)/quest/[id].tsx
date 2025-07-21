@@ -112,7 +112,9 @@ export default function AppQuestDetailsScreen() {
           q.status === 'completed'
       );
       if (completedMatch) {
-        console.log('[QuestDetails] Found quest in completed quests with timestamp');
+        console.log(
+          '[QuestDetails] Found quest in completed quests with timestamp'
+        );
         return completedMatch;
       }
     }
@@ -122,7 +124,9 @@ export default function AppQuestDetailsScreen() {
       (q) => q.id === id && q.status === 'completed'
     );
     if (completedMatchNoTimestamp) {
-      console.log('[QuestDetails] Found quest in completed quests without timestamp');
+      console.log(
+        '[QuestDetails] Found quest in completed quests without timestamp'
+      );
       return completedMatchNoTimestamp;
     }
 
@@ -140,7 +144,14 @@ export default function AppQuestDetailsScreen() {
 
     console.log('[QuestDetails] Quest not found');
     return null;
-  }, [id, timestamp, completedQuests, failedQuest, questData, recentCompletedQuest]);
+  }, [
+    id,
+    timestamp,
+    completedQuests,
+    failedQuest,
+    questData,
+    recentCompletedQuest,
+  ]);
 
   if (!quest) {
     return (

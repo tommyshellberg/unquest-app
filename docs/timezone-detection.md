@@ -38,6 +38,7 @@ The timezone service provides the following functionality:
 ## Testing
 
 The implementation includes comprehensive tests:
+
 - Unit tests for timezone service logic
 - Integration tests for expo-localization
 - Mock implementations for all external dependencies
@@ -47,6 +48,7 @@ The implementation includes comprehensive tests:
 The timezone detection runs automatically. No additional configuration or user action is required.
 
 When a user:
+
 1. Opens the app for the first time → timezone is detected and sent to server
 2. Travels to a new timezone → timezone updates when app returns to foreground
 3. Manually selects a timezone in settings → automatic detection respects this choice

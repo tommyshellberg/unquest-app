@@ -96,19 +96,15 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
           posthog.capture('magic_link_request_failed_email_in_use', { email });
         } else {
           // Generic error message for all other server errors
-          setError(
-            'Login link failed to send. Please try again.'
-          );
-          posthog.capture('magic_link_request_failed_server_error', { 
+          setError('Login link failed to send. Please try again.');
+          posthog.capture('magic_link_request_failed_server_error', {
             email,
-            status: err.response.status 
+            status: err.response.status,
           });
         }
       } else {
         // Generic error message for non-Axios errors
-        setError(
-          'Login link failed to send. Please try again.'
-        );
+        setError('Login link failed to send. Please try again.');
         posthog.capture('magic_link_request_failed_unknown', { email });
       }
     } finally {
@@ -233,21 +229,21 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
               </View>
             )}
           </View>
-          
+
           {/* Link to go back to welcome screen */}
           <TouchableOpacity
             onPress={() => {
               // Clear all auth data and provisional data
               signOut();
-              
+
               // Clear provisional data
               removeItem('provisionalAccessToken');
               removeItem('provisionalUserId');
               removeItem('provisionalEmail');
-              
+
               // Reset onboarding state to allow starting fresh
               resetOnboarding();
-              
+
               // Navigate to welcome screen
               router.replace('/onboarding/welcome');
             }}

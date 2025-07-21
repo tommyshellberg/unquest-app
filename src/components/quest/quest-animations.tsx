@@ -7,7 +7,10 @@ interface CompassAnimationProps {
   delay?: number;
 }
 
-export function CompassAnimation({ size = 100, delay = 300 }: CompassAnimationProps) {
+export function CompassAnimation({
+  size = 100,
+  delay = 300,
+}: CompassAnimationProps) {
   return (
     <Animated.View
       entering={FadeIn.delay(delay).duration(800)}

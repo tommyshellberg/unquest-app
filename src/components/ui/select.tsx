@@ -126,9 +126,7 @@ const Option = React.memo(
         className="flex-row items-center border-b border-neutral-300 bg-white px-3 py-2"
         {...props}
       >
-        <Text className="flex-1 text-neutral-400">
-          {label}
-        </Text>
+        <Text className="flex-1 text-neutral-400">{label}</Text>
         {selected && <Check />}
       </Pressable>
     );
@@ -210,10 +208,7 @@ export const Select = (props: SelectProps) => {
           <CaretDown />
         </Pressable>
         {error && (
-          <Text
-            testID={`${testID}-error`}
-            className="text-sm text-red-300"
-          >
+          <Text testID={`${testID}-error`} className="text-sm text-red-300">
             {error}
           </Text>
         )}

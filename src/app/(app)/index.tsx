@@ -111,6 +111,9 @@ export default function Home() {
       AVAILABLE_QUESTS.filter(
         (quest) => quest.mode === 'story' && !/quest-\d+b$/.test(quest.id)
       ).length;
+  
+  // Check if the storyline is complete
+  const isStorylineComplete = storyProgress >= 0.999; // Account for floating point precision
 
   // Animation values
   const headerOpacity = useSharedValue(0);
@@ -237,8 +240,12 @@ export default function Home() {
 
   // Function to handle quest option selection
   const handleQuestOptionSelect = async (nextQuestId: string | null) => {
+    console.log('[handleQuestOptionSelect] Called with nextQuestId:', nextQuestId);
     posthog.capture('try_trigger_start_quest');
-    if (!nextQuestId) return;
+    if (!nextQuestId) {
+      console.log('[handleQuestOptionSelect] No nextQuestId provided, returning');
+      return;
+    }
 
     // First check server quests, then fall back to local
     let selectedQuest = serverQuests.find(
@@ -423,6 +430,8 @@ export default function Home() {
     // If there's a single server quest available with no branching, show start button
     if (serverQuests.length === 1 && storyOptions.length === 0) {
       const quest = serverQuests[0];
+      console.log('[renderStoryOptions] Single server quest:', quest);
+      console.log('[renderStoryOptions] isStorylineComplete:', isStorylineComplete);
       return (
         <Animated.View
           entering={FadeIn.duration(600).delay(200)}
@@ -445,13 +454,22 @@ export default function Home() {
             <Button
               label={
                 quest.requiresPremium
-                  ? 'Unlock Premium to Continue'
+                  ? 'Unlock full Vaedros storyline'
+                  : isStorylineComplete
+                  ? 'Begin your journey'
                   : 'Start Quest'
               }
               onPress={() => {
+                console.log(
+                  '[Story Quest Button] Pressed - requiresPremium:',
+                  quest.requiresPremium
+                );
                 if (!quest.requiresPremium) {
                   handleQuestOptionSelect(quest.customId);
                 } else {
+                  console.log(
+                    '[Story Quest Button] Setting showPaywallModal to true'
+                  );
                   setShowPaywallModal(true);
                 }
               }}
@@ -499,7 +517,13 @@ export default function Home() {
             }}
           >
             <Button
-              label={requiresPremium ? `⭐ ${option.text}` : option.text}
+              label={
+                requiresPremium 
+                  ? 'Unlock full Vaedros storyline' 
+                  : isStorylineComplete
+                  ? 'Begin your journey'
+                  : option.text
+              }
               onPress={() => {
                 if (requiresPremium) {
                   setShowPaywallModal(true);
@@ -551,7 +575,13 @@ export default function Home() {
                 }}
               >
                 <Button
-                  label={requiresPremium ? `⭐ ${option.text}` : option.text}
+                  label={
+                    requiresPremium
+                      ? 'Unlock full Vaedros storyline'
+                      : isStorylineComplete
+                      ? 'Begin your journey'
+                      : option.text
+                  }
                   onPress={() => {
                     if (requiresPremium) {
                       setShowPaywallModal(true);
@@ -593,6 +623,7 @@ export default function Home() {
           progress={item.progress}
           showProgress={item.mode === 'story'}
           requiresPremium={item.requiresPremium}
+          isCompleted={item.mode === 'story' && isStorylineComplete}
         />
       </View>
     );

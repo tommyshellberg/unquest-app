@@ -37,17 +37,19 @@ const _useAuth = create<AuthState>((set, get) => ({
       },
     });
 
-    // Login to RevenueCat with user ID if available
-    /*
-    if (loginResponse.user?.id && revenueCatService.isConfigured()) {
+    // Login to RevenueCat with user ID
+    if (loginResponse.user?.id) {
       try {
         await revenueCatService.loginUser(loginResponse.user.id);
-        console.log('[Auth] Logged into RevenueCat with user ID:', loginResponse.user.id);
+        console.log(
+          '[Auth] Logged into RevenueCat with user ID:',
+          loginResponse.user.id
+        );
       } catch (error) {
         console.error('[Auth] Failed to login to RevenueCat:', error);
+        // Don't fail auth if RevenueCat login fails
       }
     }
-      */
   },
 
   signOut: async () => {
@@ -61,13 +63,12 @@ const _useAuth = create<AuthState>((set, get) => ({
     useUserStore.getState().clearUser();
 
     // Logout from RevenueCat
-    if (revenueCatService.isConfigured()) {
-      try {
-        await revenueCatService.logoutUser();
-        console.log('[Auth] Logged out from RevenueCat');
-      } catch (error) {
-        console.error('[Auth] Failed to logout from RevenueCat:', error);
-      }
+    try {
+      await revenueCatService.logoutUser();
+      console.log('[Auth] Logged out from RevenueCat');
+    } catch (error) {
+      console.error('[Auth] Failed to logout from RevenueCat:', error);
+      // Don't fail signOut if RevenueCat logout fails
     }
 
     // Logout from OneSignal (only if initialized)
@@ -159,7 +160,7 @@ const _useAuth = create<AuthState>((set, get) => ({
           }
 
           // Login to RevenueCat with user ID
-          if (user.id && revenueCatService.isConfigured()) {
+          if (user.id) {
             try {
               await revenueCatService.loginUser(user.id);
               console.log(
@@ -171,6 +172,7 @@ const _useAuth = create<AuthState>((set, get) => ({
                 '[Auth] Failed to login to RevenueCat during hydration:',
                 error
               );
+              // Don't fail hydration if RevenueCat login fails
             }
           }
 

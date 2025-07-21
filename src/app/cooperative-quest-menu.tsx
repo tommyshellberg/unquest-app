@@ -81,7 +81,7 @@ export default function CooperativeQuestMenu() {
   const user = useUserStore((state) => state.user);
   const { connect: connectWebSocket } = useLazyWebSocket();
   const [showPaywallModal, setShowPaywallModal] = React.useState(false);
-  
+
   // Connect WebSocket when entering cooperative quest flow
   React.useEffect(() => {
     connectWebSocket();
@@ -94,10 +94,11 @@ export default function CooperativeQuestMenu() {
   });
 
   const hasFriends = friendsData?.friends && friendsData.friends.length > 0;
-  
+
   // Premium access check
   const {
     hasPremiumAccess,
+    isLoading: isPremiumLoading,
     showPaywall,
     handlePaywallClose,
     handlePaywallSuccess,
@@ -119,8 +120,17 @@ export default function CooperativeQuestMenu() {
     }
   };
 
-  // Show loading state while checking friends
-  if (isLoading) {
+  // Add debug logging
+  React.useEffect(() => {
+    console.log('[CooperativeQuestMenu] Premium status:', {
+      hasPremiumAccess,
+      isPremiumLoading,
+      showPaywallModal,
+    });
+  }, [hasPremiumAccess, isPremiumLoading, showPaywallModal]);
+
+  // Show loading state while checking friends or premium status
+  if (isLoading || isPremiumLoading) {
     return (
       <SafeAreaView className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
@@ -286,11 +296,7 @@ export default function CooperativeQuestMenu() {
           <View className="mt-auto">
             <Card className="mb-4 bg-neutral-200 p-4">
               <View className="flex-row items-start">
-                <Info
-                  size={20}
-                  color="#666"
-                  style={{ marginTop: 2 }}
-                />
+                <Info size={20} color="#666" style={{ marginTop: 2 }} />
                 <View className="ml-3 flex-1">
                   <Text className="mb-1 font-semibold">How it works</Text>
                   <Text className="text-sm text-neutral-600">
@@ -369,11 +375,7 @@ export default function CooperativeQuestMenu() {
         {/* Info Section */}
         <Card className="mb-4 bg-neutral-200 p-4">
           <View className="flex-row items-start">
-            <Info
-              size={20}
-              color="#666"
-              style={{ marginTop: 2 }}
-            />
+            <Info size={20} color="#666" style={{ marginTop: 2 }} />
             <View className="ml-3 flex-1">
               <Text className="mb-1 font-semibold">How it works</Text>
               <Text className="text-sm text-neutral-600">

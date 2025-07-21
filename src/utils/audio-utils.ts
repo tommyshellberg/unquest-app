@@ -8,7 +8,10 @@
  * @param storylineId - The storyline ID (defaults to 'vaedros')
  * @returns The S3 path for the quest audio file
  */
-export function getQuestAudioPath(customId: string, storylineId: string = 'vaedros'): string {
+export function getQuestAudioPath(
+  customId: string,
+  storylineId: string = 'vaedros'
+): string {
   return `storylines/${storylineId}/${customId}.mp3`;
 }
 

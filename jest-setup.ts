@@ -26,8 +26,6 @@ jest.mock('react-native', () => {
   return RN;
 });
 
-
-
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
@@ -72,8 +70,6 @@ jest.mock('expo-notifications', () => ({
     updateDefault: jest.fn(),
   },
 }));
-
-
 
 jest.mock('react-native-bg-actions', () => ({
   start: jest.fn().mockResolvedValue(undefined),
@@ -130,16 +126,16 @@ jest.mock('expo-blur', () => ({
 jest.mock('@gorhom/bottom-sheet', () => {
   const React = jest.requireActual('react');
   const RN = jest.requireActual('react-native');
-  
+
   return {
     BottomSheetModal: jest.fn(({ children }) => children),
     BottomSheetModalProvider: jest.fn(({ children }) => children),
     BottomSheetBackdrop: jest.fn(() => null),
     BottomSheetScrollView: jest.fn(({ children }) => children),
-    BottomSheetFlatList: jest.fn((props) => 
+    BottomSheetFlatList: jest.fn((props) =>
       React.createElement(RN.FlatList, props)
     ),
-    createBottomSheetScrollableComponent: jest.fn(() => 
+    createBottomSheetScrollableComponent: jest.fn(() =>
       jest.fn(({ children }) => children)
     ),
     SCROLLABLE_TYPE: {
@@ -166,11 +162,9 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('@shopify/flash-list', () => {
   const React = jest.requireActual('react');
   const RN = jest.requireActual('react-native');
-  
+
   return {
-    FlashList: jest.fn((props) => 
-      React.createElement(RN.FlatList, props)
-    ),
+    FlashList: jest.fn((props) => React.createElement(RN.FlatList, props)),
   };
 });
 
@@ -178,12 +172,12 @@ jest.mock('@shopify/flash-list', () => {
 jest.mock('react-native-keyboard-controller', () => {
   const React = jest.requireActual('react');
   const RN = jest.requireActual('react-native');
-  
+
   return {
-    KeyboardAwareScrollView: jest.fn((props) => 
+    KeyboardAwareScrollView: jest.fn((props) =>
       React.createElement(RN.ScrollView, props)
     ),
-    KeyboardAvoidingView: jest.fn((props) => 
+    KeyboardAvoidingView: jest.fn((props) =>
       React.createElement(RN.View, props)
     ),
     KeyboardProvider: jest.fn(({ children }) => children),

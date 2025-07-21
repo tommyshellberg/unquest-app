@@ -110,8 +110,8 @@ describe('ChooseCharacterScreen', () => {
     fireEvent.press(getByText('Continue'));
 
     // Step 2: Should now be on character selection step
-    expect(getByText("Hello, Arthur")).toBeTruthy();
-    expect(getByText('It\'s time to choose your hero.')).toBeTruthy();
+    expect(getByText('Hello, Arthur')).toBeTruthy();
+    expect(getByText("It's time to choose your hero.")).toBeTruthy();
 
     // Get the FlatList component and simulate swipe to knight (second character)
     const flatList = getByTestId('character-carousel');
@@ -342,7 +342,7 @@ describe('ChooseCharacterScreen', () => {
     fireEvent.press(continueButton);
 
     // Should be on character selection screen
-    expect(getByText("Hello, A")).toBeTruthy();
+    expect(getByText('Hello, A')).toBeTruthy();
   });
 
   it('should filter out special characters from name input', () => {

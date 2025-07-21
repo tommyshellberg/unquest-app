@@ -79,7 +79,7 @@ appId: com.vaedros.unquest.development
 
 # Try tapping Wake up button - target the button area instead of just text
 - tapOn:
-    point: "50%, 95%"  # Tap near bottom where button is
+    point: '50%, 95%' # Tap near bottom where button is
 - waitForAnimationToEnd
 
 # Wait for navigation with longer timeout
@@ -89,6 +89,5 @@ appId: com.vaedros.unquest.development
 
 - assertVisible: 'Lock your phone to begin your quest'
 - takeScreenshot: 'quest-ready-screen'
-
 # Test complete up to quest ready screen
 # The full test with 2-minute wait can be run separately

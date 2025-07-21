@@ -21,6 +21,7 @@ export interface UserDetails {
   totalQuestsCompleted?: number;
   totalMinutesOffPhone?: number;
   featureFlags?: string[];
+  hasPremiumAccess?: boolean;
   // Legacy fields for backward compatibility
   type?: string;
   level?: number;

@@ -59,7 +59,7 @@ jest.mock('@/store/settings-store', () => ({
 }));
 
 jest.mock('@/store/user-store', () => ({
-  useUserStore: jest.fn((selector) => 
+  useUserStore: jest.fn((selector) =>
     selector({
       user: { email: 'test@example.com' },
       setUser: jest.fn(),

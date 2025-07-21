@@ -21,7 +21,7 @@ export const useNextAvailableQuests = ({
         storylineId,
         includeOptions: includeOptions.toString(),
       });
-      
+
       const response = await apiClient.get(
         `/quest-templates/next-available?${params.toString()}`
       );

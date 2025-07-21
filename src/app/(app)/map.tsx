@@ -26,7 +26,11 @@ export default function MapScreen() {
   const [isMaskLoaded, setIsMaskLoaded] = useState(false);
 
   // Fetch the highest completed quest from the API
-  const { data: highestQuestData, isLoading, error } = useHighestCompletedQuest({
+  const {
+    data: highestQuestData,
+    isLoading,
+    error,
+  } = useHighestCompletedQuest({
     storylineId: 'vaedros', // TODO: Make this dynamic based on current storyline
   });
 
@@ -41,10 +45,14 @@ export default function MapScreen() {
   }, [highestQuestData, error]);
 
   // Fallback to quest-1 if no quests completed or loading
-  const highestQuestId = highestQuestData?.highestCompletedQuest?.customId || 'quest-1';
+  const highestQuestId =
+    highestQuestData?.highestCompletedQuest?.customId || 'quest-1';
 
   // Determine the map to display based on highest quest
-  const mapId = useMemo<MapId>(() => getMapForQuest(highestQuestId), [highestQuestId]);
+  const mapId = useMemo<MapId>(
+    () => getMapForQuest(highestQuestId),
+    [highestQuestId]
+  );
   const mapImage = MAP_IMAGES[mapId];
 
   // Get the appropriate fog mask based on highest completed quest

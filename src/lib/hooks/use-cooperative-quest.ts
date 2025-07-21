@@ -83,7 +83,8 @@ export function useInvitationActions() {
       );
 
       // Handle the response format from the server
-      const questRunId = response.questRunId || (response as any).invitation?.questRunId;
+      const questRunId =
+        response.questRunId || (response as any).invitation?.questRunId;
       if (!questRunId) {
         throw new Error('No questRunId in invitation acceptance response');
       }
@@ -102,9 +103,18 @@ export function useInvitationActions() {
       }
 
       // Create a complete quest object for the invitee
-      const questId = (questRun as any).questId || questRun.quest?.id || questRun.id || `coop-${questRunId}`;
-      console.log('[acceptInvitation] Creating quest with ID:', questId, 'from questRun:', questRun);
-      
+      const questId =
+        (questRun as any).questId ||
+        questRun.quest?.id ||
+        questRun.id ||
+        `coop-${questRunId}`;
+      console.log(
+        '[acceptInvitation] Creating quest with ID:',
+        questId,
+        'from questRun:',
+        questRun
+      );
+
       const completeQuest: any = {
         id: questId,
         title: questRun.quest?.title || 'Cooperative Quest',
@@ -134,7 +144,8 @@ export function useInvitationActions() {
                   : p
               )
             : [],
-          invitationId: questRun.invitationId || (response as any).invitation?.id,
+          invitationId:
+            questRun.invitationId || (response as any).invitation?.id,
           actualStartTime: questRun.actualStartTime,
           scheduledEndTime: questRun.scheduledEndTime,
           createdAt: Date.now(),

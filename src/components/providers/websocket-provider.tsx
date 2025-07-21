@@ -67,7 +67,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     const provisionalToken = getItem('provisionalAccessToken');
     setHasProvisionalToken(!!provisionalToken);
   }, [authStatus]);
-  
+
   // Also check for token changes on every render to catch mock changes in tests
   React.useEffect(() => {
     const provisionalToken = getItem('provisionalAccessToken');
@@ -107,7 +107,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (
-        (appStateRef.current === 'inactive' || appStateRef.current === 'background') &&
+        (appStateRef.current === 'inactive' ||
+          appStateRef.current === 'background') &&
         nextAppState === 'active' &&
         (authStatus === 'signIn' || hasProvisionalToken)
       ) {
@@ -221,7 +222,9 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     const handleParticipantReady = (data: any) => {
       console.log('[WebSocket] Participant ready:', data);
       try {
-        useQuestStore.getState().updateParticipantReady(data.userId, data.ready);
+        useQuestStore
+          .getState()
+          .updateParticipantReady(data.userId, data.ready);
         // Also invalidate quest run query to get latest data
         if (data.questRunId) {
           queryClient.invalidateQueries({

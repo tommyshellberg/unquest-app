@@ -16,6 +16,7 @@ interface QuestCardProps {
   progress: number;
   showProgress?: boolean;
   requiresPremium?: boolean;
+  isCompleted?: boolean;
 }
 
 const imageMap = {
@@ -34,6 +35,7 @@ export default function QuestCard({
   progress = 0,
   showProgress = false,
   requiresPremium = false,
+  isCompleted = false,
 }: QuestCardProps) {
   // Create a reference to control the progress bar
   const progressBarRef = useRef<ProgressBarRef>(null);
@@ -70,13 +72,16 @@ export default function QuestCard({
 
             {/* Quest Title */}
             <Text className="max-w-[90%] text-xl font-bold text-amber-100">
-              {title}
+              {isCompleted ? 'Quest Complete!' : title}
             </Text>
-            
+
             {/* Premium Badge */}
             {requiresPremium && (
               <View className="mt-2">
-                <Chip className="bg-amber-400/30" textClassName="text-amber-100 font-semibold">
+                <Chip
+                  className="bg-amber-400/30"
+                  textClassName="text-amber-100 font-semibold"
+                >
                   ⭐ Premium
                 </Chip>
               </View>
@@ -89,10 +94,16 @@ export default function QuestCard({
               </Text>
             </View>
 
-            {description !== '' && (
+            {isCompleted ? (
               <Text className="text-base text-amber-100 opacity-90">
-                {description}
+                Congratulations! You've completed the entire Vaedros storyline. Your quest history is preserved - start a new adventure to experience different story branches!
               </Text>
+            ) : (
+              description !== '' && (
+                <Text className="text-base text-amber-100 opacity-90">
+                  {description}
+                </Text>
+              )
             )}
           </View>
         </View>
@@ -111,7 +122,7 @@ export default function QuestCard({
                 className="text-sm font-semibold text-amber-100"
                 style={{ fontWeight: '600' }}
               >
-                {Math.round(progress * 100)}%
+                {Math.min(100, Math.round(progress * 100))}%
               </Text>
             </View>
             <ProgressBar

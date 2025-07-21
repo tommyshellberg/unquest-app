@@ -11,14 +11,19 @@ interface InfoCardProps {
   variant?: 'light' | 'solid';
 }
 
-export function InfoCard({ title, description, iconSize = 20, variant = 'light' }: InfoCardProps) {
+export function InfoCard({
+  title,
+  description,
+  iconSize = 20,
+  variant = 'light',
+}: InfoCardProps) {
   const isLight = variant === 'light';
-  
+
   return (
     <View
       className="rounded-lg p-4"
-      style={{ 
-        backgroundColor: isLight ? colors.primary[100] : colors.primary[400]
+      style={{
+        backgroundColor: isLight ? colors.primary[100] : colors.primary[400],
       }}
     >
       <View className="flex-row items-start">
@@ -30,17 +35,17 @@ export function InfoCard({ title, description, iconSize = 20, variant = 'light' 
         <View className="ml-2 flex-1">
           <Text
             className="text-base font-semibold"
-            style={{ 
-              color: isLight ? colors.primary[500] : colors.white, 
-              fontWeight: '700' 
+            style={{
+              color: isLight ? colors.primary[500] : colors.white,
+              fontWeight: '700',
             }}
           >
             {title}
           </Text>
           <Text
             className="mt-1 text-sm"
-            style={{ 
-              color: isLight ? colors.primary[400] : colors.white
+            style={{
+              color: isLight ? colors.primary[400] : colors.white,
             }}
           >
             {description}

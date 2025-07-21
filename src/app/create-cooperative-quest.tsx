@@ -136,11 +136,7 @@ export default function CreateCooperativeQuestScreen() {
           {/* Info Card */}
           <View className="mb-6 rounded-lg bg-primary-100 p-4">
             <View className="flex-row items-start">
-              <Info
-                size={20}
-                color="#7C3AED"
-                style={{ marginTop: 2 }}
-              />
+              <Info size={20} color="#7C3AED" style={{ marginTop: 2 }} />
               <View className="ml-3 flex-1">
                 <Text className="mb-1 font-semibold text-primary-600">
                   Team Challenge

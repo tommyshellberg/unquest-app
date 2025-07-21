@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
-import { View, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
+import RevenueCatUI from 'react-native-purchases-ui';
+import type { CustomerInfo } from 'react-native-purchases';
 
-import { Button } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
-import { Modal } from '@/components/ui/modal';
 import { revenueCatService } from '@/lib/services/revenuecat-service';
 
 interface PremiumPaywallProps {
@@ -21,19 +19,26 @@ export function PremiumPaywall({
   onSuccess,
   featureName = 'this feature',
 }: PremiumPaywallProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  
-  console.log('[PremiumPaywall] Rendered with isVisible:', isVisible);
+  console.log('[PremiumPaywall] Component rendered with isVisible:', isVisible);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
-  const handleShowPaywall = async () => {
-    setIsLoading(true);
+  // Handle purchase started
+  const handlePurchaseStarted = useCallback(() => {
+    console.log('[PremiumPaywall] Purchase started');
+    setIsPurchasing(true);
+  }, []);
+
+  // Handle successful purchase
+  const handlePurchaseCompleted = useCallback(async (customerInfo: { customerInfo: CustomerInfo }) => {
+    console.log('[PremiumPaywall] Purchase completed', customerInfo);
+    setIsPurchasing(false);
     
+    // Immediately refresh premium access from RevenueCat SDK
     try {
-      // Present the RevenueCat paywall
-      const didPurchase = await revenueCatService.presentPaywall();
+      const hasAccess = await revenueCatService.hasPremiumAccess();
+      console.log('[PremiumPaywall] Premium access after purchase:', hasAccess);
       
-      if (didPurchase) {
+      if (hasAccess) {
         showMessage({
           message: 'Welcome to the unQuest Circle!',
           description: 'You now have access to all premium features.',
@@ -41,82 +46,51 @@ export function PremiumPaywall({
           duration: 3000,
         });
         
-        onClose();
-        
-        // Call success callback if provided
+        // Call success callback to trigger any parent updates
         if (onSuccess) {
           onSuccess();
         }
       }
-    } catch (error: any) {
-      console.error('Failed to present paywall:', error);
-      
-      // In development, show a test purchase success for bundle ID mismatch
-      if (__DEV__ && (error.message?.includes('Bundle ID') || error.message?.includes('Test Mode'))) {
-        Alert.alert(
-          'Test Mode Active',
-          'In development, purchases are simulated. Tap OK to simulate a successful purchase.',
-          [
-            { 
-              text: 'Cancel',
-              style: 'cancel'
-            },
-            { 
-              text: 'OK',
-              onPress: () => {
-                showMessage({
-                  message: 'Test Purchase Successful!',
-                  description: 'Premium features are now unlocked (test mode).',
-                  type: 'success',
-                  duration: 3000,
-                });
-                
-                onClose();
-                if (onSuccess) {
-                  onSuccess();
-                }
-              }
-            }
-          ]
-        );
-      } else if (error.message?.includes('offerings') || error.code === 'NoOfferingsFound') {
-        Alert.alert(
-          'Products Not Available',
-          'Premium subscriptions are being set up. Please check back soon!',
-          [{ text: 'OK' }]
-        );
-      } else {
-        Alert.alert(
-          'Unable to Show Subscription Options',
-          'Please try again later or contact support if the issue persists.',
-          [{ text: 'OK' }]
-        );
-      }
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('[PremiumPaywall] Error checking premium access:', error);
     }
-  };
-
-  const handleRestorePurchases = async () => {
-    setIsLoading(true);
     
+    onClose();
+  }, [onSuccess, onClose]);
+
+  // Handle purchase error
+  const handlePurchaseError = useCallback((error: { error: any }) => {
+    console.error('[PremiumPaywall] Purchase error:', error);
+    setIsPurchasing(false);
+    
+    Alert.alert(
+      'Purchase Error',
+      'Unable to complete purchase. Please try again.',
+      [{ text: 'OK' }]
+    );
+  }, []);
+
+  // Handle purchase cancelled
+  const handlePurchaseCancelled = useCallback(() => {
+    console.log('[PremiumPaywall] Purchase cancelled');
+    setIsPurchasing(false);
+  }, []);
+
+  // Handle restore completed
+  const handleRestoreCompleted = useCallback(async (customerInfo: { customerInfo: CustomerInfo }) => {
+    console.log('[PremiumPaywall] Restore completed', customerInfo);
+    
+    // Check if user now has premium access
     try {
-      await revenueCatService.restorePurchases();
-      
-      // Check if user now has premium access
-      const hasPremium = await revenueCatService.hasPremiumAccess();
-      
-      if (hasPremium) {
+      const hasAccess = await revenueCatService.hasPremiumAccess();
+      if (hasAccess) {
         showMessage({
-          message: 'Purchases Restored!',
-          description: 'Your premium access has been restored.',
+          message: 'Premium Access Restored!',
+          description: 'Your premium features have been restored.',
           type: 'success',
           duration: 3000,
         });
         
-        onClose();
-        
-        // Call success callback if provided
         if (onSuccess) {
           onSuccess();
         }
@@ -129,75 +103,106 @@ export function PremiumPaywall({
         });
       }
     } catch (error) {
-      console.error('Failed to restore purchases:', error);
-      Alert.alert(
-        'Restore Failed',
-        'Unable to restore purchases. Please try again later.',
-        [{ text: 'OK' }]
-      );
-    } finally {
-      setIsLoading(false);
+      console.error('[PremiumPaywall] Error checking premium access:', error);
     }
-  };
+    
+    onClose();
+  }, [onSuccess, onClose]);
 
-  return (
-    <Modal
-      isVisible={isVisible}
-      onClose={onClose}
-      title="Join the unQuest Circle"
-    >
-      <View className="space-y-4">
-        <Text className="text-center text-lg text-gray-700 dark:text-gray-300">
-          Unlock {featureName} and all premium features by joining the unQuest Circle!
-        </Text>
-        
-        <View className="space-y-3">
-          <Text className="font-semibold text-lg text-gray-900 dark:text-white">
-            Premium Benefits:
-          </Text>
+  // Handle restore error
+  const handleRestoreError = useCallback((error: { error: any }) => {
+    console.error('[PremiumPaywall] Restore error:', error);
+    
+    Alert.alert(
+      'Restore Error',
+      'Unable to restore purchases. Please try again.',
+      [{ text: 'OK' }]
+    );
+  }, []);
+
+  // Handle paywall dismiss
+  const handleDismiss = useCallback(() => {
+    console.log('[PremiumPaywall] Paywall dismissed');
+    if (!isPurchasing) {
+      onClose();
+    }
+  }, [isPurchasing, onClose]);
+
+  useEffect(() => {
+    if (isVisible) {
+      console.log('[PremiumPaywall] Attempting to present paywall with event listeners...');
+
+      // Present the paywall immediately when visible
+      const presentPaywall = async () => {
+        try {
+          const paywallResult = await RevenueCatUI.presentPaywall();
+          console.log('[PremiumPaywall] Paywall presentation result:', paywallResult);
           
-          <View className="space-y-2">
-            <Text className="text-gray-700 dark:text-gray-300">
-              • Cooperative Quests - Team up with friends
-            </Text>
-            <Text className="text-gray-700 dark:text-gray-300">
-              • Vaedros Storyline - Continue the epic adventure
-            </Text>
-            <Text className="text-gray-700 dark:text-gray-300">
-              • Exclusive Characters & Customization
-            </Text>
-            <Text className="text-gray-700 dark:text-gray-300">
-              • Advanced Statistics & Insights
-            </Text>
-            <Text className="text-gray-700 dark:text-gray-300">
-              • Priority Support
-            </Text>
-          </View>
-        </View>
-        
-        <View className="space-y-3 pt-4">
-          <Button
-            label="View Subscription Options"
-            onPress={handleShowPaywall}
-            loading={isLoading}
-            variant="primary"
-          />
-          
-          <Button
-            label="Restore Purchases"
-            onPress={handleRestorePurchases}
-            loading={isLoading}
-            variant="secondary"
-          />
-          
-          <Button
-            label="Maybe Later"
-            onPress={onClose}
-            disabled={isLoading}
-            variant="ghost"
-          />
-        </View>
-      </View>
-    </Modal>
-  );
+          // Handle any immediate presentation errors
+          if (paywallResult === RevenueCatUI.PAYWALL_RESULT.ERROR) {
+            Alert.alert(
+              'Error',
+              'Unable to show subscription options. Please try again later.',
+              [{ text: 'OK', onPress: onClose }]
+            );
+          } else if (paywallResult === RevenueCatUI.PAYWALL_RESULT.NOT_PRESENTED) {
+            Alert.alert(
+              'Configuration Error',
+              'Unable to show paywall. Please ensure you have an active internet connection.',
+              [{ text: 'OK', onPress: onClose }]
+            );
+          }
+        } catch (error: any) {
+          console.error('[PremiumPaywall] Error presenting paywall:', error);
+
+          // In development, check for common issues
+          if (__DEV__) {
+            if (
+              error.message?.includes('No offerings found') ||
+              error.message?.includes('Bundle ID')
+            ) {
+              Alert.alert(
+                'Development Configuration',
+                'RevenueCat is not configured for this bundle ID. Using test mode.',
+                [
+                  {
+                    text: 'Simulate Purchase',
+                    onPress: async () => {
+                      // Enable test mode
+                      revenueCatService.enableTestMode();
+                      
+                      showMessage({
+                        message: 'Test Purchase Successful!',
+                        description: 'Premium features unlocked (test mode).',
+                        type: 'success',
+                        duration: 3000,
+                      });
+                      
+                      if (onSuccess) {
+                        onSuccess();
+                      }
+                      onClose();
+                    },
+                  },
+                  { text: 'Cancel', onPress: onClose },
+                ]
+              );
+              return;
+            }
+          }
+
+          Alert.alert(
+            'Error',
+            'Unable to show subscription options. Please try again later.',
+            [{ text: 'OK', onPress: onClose }]
+          );
+        }
+      };
+
+      presentPaywall();
+    }
+  }, [isVisible, onClose, onSuccess]);
+
+  // This component doesn't render anything visible
+  return null;
 }

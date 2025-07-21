@@ -9,21 +9,20 @@ export function usePremiumAccess() {
 
   const checkPremiumAccess = useCallback(async () => {
     try {
-      // Wait for RevenueCat to be initialized
-      await revenueCatService.waitForInitialization();
-
       const hasAccess = await revenueCatService.hasPremiumAccess();
       setHasPremiumAccess(hasAccess);
+      return hasAccess;
     } catch (error) {
       console.error('Failed to check premium access:', error);
       setHasPremiumAccess(false);
+      return false;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // checkPremiumAccess();
+    checkPremiumAccess();
   }, [checkPremiumAccess]);
 
   const requirePremium = useCallback(
@@ -45,9 +44,24 @@ export function usePremiumAccess() {
     setShowPaywall(false);
   }, []);
 
-  const handlePaywallSuccess = useCallback(() => {
+  const handlePaywallSuccess = useCallback(async () => {
+    console.log('[usePremiumAccess] Paywall success - updating premium status');
     setShowPaywall(false);
-    checkPremiumAccess(); // Refresh premium status
+    
+    // Immediately check and update premium status
+    const hasAccess = await checkPremiumAccess();
+    
+    // If we now have premium access, update the state immediately
+    if (hasAccess) {
+      console.log('[usePremiumAccess] Premium access confirmed - updating state');
+      setHasPremiumAccess(true);
+    }
+  }, [checkPremiumAccess]);
+
+  // Force refresh premium status (useful for when app returns from background)
+  const refreshPremiumStatus = useCallback(async () => {
+    console.log('[usePremiumAccess] Refreshing premium status...');
+    return checkPremiumAccess();
   }, [checkPremiumAccess]);
 
   return {
@@ -58,5 +72,6 @@ export function usePremiumAccess() {
     handlePaywallClose,
     handlePaywallSuccess,
     checkPremiumAccess,
+    refreshPremiumStatus,
   };
 }

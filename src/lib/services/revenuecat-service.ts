@@ -13,7 +13,6 @@ export class RevenueCatService {
   private isInitialized = false;
   private customerInfo: CustomerInfo | null = null;
   private testModeEnabled = false;
-  private initializationPromise: Promise<void> | null = null;
 
   private constructor() {}
 
@@ -32,67 +31,32 @@ export class RevenueCatService {
     }
   }
 
-  async initialize(userId?: string): Promise<void> {
+  initialize(): void {
     if (this.isInitialized) {
       console.log('RevenueCat already initialized');
       return;
     }
 
-    // If initialization is already in progress, wait for it
-    if (this.initializationPromise) {
-      return this.initializationPromise;
-    }
-
-    // Start initialization
-    this.initializationPromise = this.performInitialization(userId);
-    return this.initializationPromise;
-  }
-
-  private async performInitialization(userId?: string): Promise<void> {
     try {
       // Enable debug logs in development
       if (__DEV__) {
         Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
-        
-        // Enable debug mode for testing
-        // This helps identify sandbox vs production purchases
-        await Purchases.setDebugLogsEnabled(true);
-        
-        // Optional: Set to false to test production-like behavior
-        // await Purchases.setSimulatesAskToBuyInSandbox(true);
       }
 
       // Configure RevenueCat with platform-specific API key
+      // Following documentation: configure without user ID, use logIn() separately
       if (Platform.OS === 'ios') {
-        await Purchases.configure({ apiKey: Env.REVENUECAT_APPLE_API_KEY });
+        Purchases.configure({ apiKey: Env.REVENUECAT_APPLE_API_KEY });
       } else if (Platform.OS === 'android') {
-        await Purchases.configure({ apiKey: Env.REVENUECAT_GOOGLE_API_KEY });
+        Purchases.configure({ apiKey: Env.REVENUECAT_GOOGLE_API_KEY });
       }
-
-      // Log in user if userId is provided
-      if (userId) {
-        await this.loginUser(userId);
-      }
-
-      // Get initial customer info
-      await this.refreshCustomerInfo();
 
       this.isInitialized = true;
-      console.log('RevenueCat initialized successfully');
+      console.log('RevenueCat SDK configured successfully');
     } catch (error) {
-      console.error('Failed to initialize RevenueCat:', error);
-      this.initializationPromise = null; // Reset on error
+      console.error('Failed to configure RevenueCat:', error);
+      this.isInitialized = false;
       throw error;
-    }
-  }
-
-  async waitForInitialization(): Promise<void> {
-    if (this.isInitialized) {
-      return;
-    }
-    
-    if (this.initializationPromise) {
-      await this.initializationPromise;
     }
   }
 
@@ -122,44 +86,99 @@ export class RevenueCatService {
     if (!this.isInitialized) {
       throw new Error('RevenueCat not initialized. Call initialize() first.');
     }
-    
+
     try {
       const customerInfo = await Purchases.getCustomerInfo();
       this.customerInfo = customerInfo;
       return customerInfo;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to get customer info:', error);
+      // If no active account, return empty customer info
+      if (
+        error.message?.includes('No active account') ||
+        error.userInfo?.description?.includes('No active account')
+      ) {
+        console.log(
+          'No active RevenueCat account found - returning default customer info'
+        );
+        return {
+          entitlements: { active: {} },
+          activeSubscriptions: [],
+          allPurchasedProductIdentifiers: [],
+          latestExpirationDate: null,
+          firstSeen: new Date().toISOString(),
+          originalAppUserId: '',
+          requestDate: new Date().toISOString(),
+          allExpirationDates: {},
+          allPurchaseDates: {},
+          originalApplicationVersion: null,
+          originalPurchaseDate: null,
+          managementURL: null,
+          nonSubscriptionTransactions: [],
+        } as CustomerInfo;
+      }
       throw error;
     }
   }
 
   async hasPremiumAccess(): Promise<boolean> {
+    console.log('[RevenueCat] Checking premium access...', {
+      isInitialized: this.isInitialized,
+      testModeEnabled: this.testModeEnabled,
+    });
+
     // If not initialized, return false (no premium access)
     if (!this.isInitialized) {
-      console.log('RevenueCat not initialized, returning no premium access');
+      console.log('[RevenueCat] Not initialized, returning no premium access');
       return false;
     }
 
     // Test mode - always return true for premium access
     if (this.testModeEnabled && __DEV__) {
-      console.log('Test Mode: Premium access granted');
+      console.log('[RevenueCat] Test Mode: Premium access granted');
       return true;
     }
 
     try {
       const customerInfo = await this.refreshCustomerInfo();
+      console.log('[RevenueCat] Customer info:', {
+        hasEntitlements: !!customerInfo?.entitlements,
+        activeEntitlements: customerInfo?.entitlements?.active
+          ? Object.keys(customerInfo.entitlements.active)
+          : [],
+      });
+
+      // If no customer info, return false
+      if (
+        !customerInfo ||
+        !customerInfo.entitlements ||
+        !customerInfo.entitlements.active
+      ) {
+        console.log(
+          '[RevenueCat] No customer info available, returning no premium access'
+        );
+        return false;
+      }
+
       // Check for any active premium entitlement
-      const premiumEntitlements = ['premium', 'premium_monthly', 'premium_yearly', 'pro'];
-      
+      const premiumEntitlements = [
+        'premium',
+        'premium_monthly',
+        'premium_yearly',
+        'pro',
+      ];
+
       for (const entitlement of premiumEntitlements) {
         if (customerInfo.entitlements.active[entitlement]) {
+          console.log(`[RevenueCat] Found active entitlement: ${entitlement}`);
           return true;
         }
       }
-      
+
+      console.log('[RevenueCat] No premium entitlements found');
       return false;
     } catch (error) {
-      console.error('Failed to check premium access:', error);
+      console.error('[RevenueCat] Failed to check premium access:', error);
       return false;
     }
   }
@@ -197,50 +216,60 @@ export class RevenueCatService {
   }
 
   async presentPaywall(): Promise<boolean> {
+    // Ensure SDK is initialized
+    if (!this.isInitialized) {
+      console.error('RevenueCat not initialized. Cannot present paywall.');
+      return false;
+    }
+
     // Test mode - simulate successful purchase
     if (this.testModeEnabled && __DEV__) {
       console.log('Test Mode: Simulating successful purchase');
       // Simulate a delay for realism
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       return true;
     }
 
     try {
-      // First check if we have offerings
-      const offerings = await Purchases.getOfferings();
-      if (!offerings.current) {
-        console.warn('No offerings available, this usually means products are not configured properly');
-        
-        // In development with bundle ID mismatch, fallback to test mode
-        if (__DEV__) {
-          console.log('Development mode: Bundle ID mismatch detected, using test mode');
-          this.testModeEnabled = true;
-          return this.presentPaywall(); // Recursive call with test mode enabled
-        }
-        
-        throw new Error('NoOfferingsFound');
-      }
-
       const paywallResult = await RevenueCatUI.presentPaywall();
-      
-      if (paywallResult === RevenueCatUI.PAYWALL_RESULT.PURCHASED || 
-          paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED) {
-        // Refresh customer info after successful purchase/restore
-        await this.refreshCustomerInfo();
-        return true;
+      console.log('Paywall result:', paywallResult);
+
+      switch (paywallResult) {
+        case RevenueCatUI.PAYWALL_RESULT.PURCHASED:
+        case RevenueCatUI.PAYWALL_RESULT.RESTORED:
+          // Refresh customer info after successful purchase/restore
+          await this.refreshCustomerInfo();
+          return true;
+        case RevenueCatUI.PAYWALL_RESULT.CANCELLED:
+          console.log('User cancelled paywall');
+          return false;
+        case RevenueCatUI.PAYWALL_RESULT.ERROR:
+          console.error('Error presenting paywall');
+          return false;
+        case RevenueCatUI.PAYWALL_RESULT.NOT_PRESENTED:
+          console.log('Paywall not presented');
+          return false;
+        default:
+          return false;
       }
-      
-      return false;
     } catch (error: any) {
       console.error('Failed to present paywall:', error);
-      
-      // If bundle ID mismatch in development, use test mode
-      if (__DEV__ && (error.message?.includes('Bundle ID') || error.userInfo?.readable_error_code === 'CONFIGURATION_ERROR')) {
-        console.log('Development mode: Configuration error detected, using test mode');
-        this.testModeEnabled = true;
-        return this.presentPaywall(); // Recursive call with test mode enabled
+
+      // In development, check for common configuration issues
+      if (__DEV__) {
+        if (
+          error.message?.includes('No offerings found') ||
+          error.message?.includes('Bundle ID') ||
+          error.userInfo?.readable_error_code === 'CONFIGURATION_ERROR'
+        ) {
+          console.log(
+            'Development mode: Configuration issue detected, enabling test mode'
+          );
+          this.testModeEnabled = true;
+          return this.presentPaywall(); // Retry with test mode
+        }
       }
-      
+
       throw error;
     }
   }
@@ -250,14 +279,16 @@ export class RevenueCatService {
       const paywallResult = await RevenueCatUI.presentPaywallIfNeeded({
         requiredEntitlementIdentifier: 'premium',
       });
-      
-      if (paywallResult === RevenueCatUI.PAYWALL_RESULT.PURCHASED || 
-          paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED) {
+
+      if (
+        paywallResult === RevenueCatUI.PAYWALL_RESULT.PURCHASED ||
+        paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED
+      ) {
         // Refresh customer info after successful purchase/restore
         await this.refreshCustomerInfo();
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Failed to present paywall if needed:', error);
@@ -271,6 +302,16 @@ export class RevenueCatService {
 
   isConfigured(): boolean {
     return this.isInitialized;
+  }
+
+  async getManagementURL(): Promise<string | null> {
+    try {
+      const customerInfo = await this.refreshCustomerInfo();
+      return customerInfo.managementURL || null;
+    } catch (error) {
+      console.error('Failed to get management URL:', error);
+      return null;
+    }
   }
 }
 

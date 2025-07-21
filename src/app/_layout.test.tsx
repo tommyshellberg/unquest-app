@@ -25,7 +25,7 @@ const mockPush = jest.fn();
 jest.mock('expo-router', () => {
   const Stack = ({ children }: any) => <div>{children}</div>;
   Stack.Screen = () => null; // Stack.Screen renders nothing
-  
+
   return {
     Stack,
     useRouter: () => ({
@@ -79,15 +79,15 @@ jest.mock('@/lib', () => ({
 }));
 
 jest.mock('@/lib/use-theme-config', () => ({
-  useThemeConfig: jest.fn(() => ({ 
-    dark: false, 
+  useThemeConfig: jest.fn(() => ({
+    dark: false,
     colors: {
       primary: '#51B1A9',
       background: '#FFF1DC',
       text: '#1f0f0c',
       border: '#e7e3d4',
       card: '#F5F5F0',
-    }
+    },
   })),
 }));
 
@@ -165,11 +165,15 @@ jest.mock('@/store/user-store', () => ({
 
 // Mock API and component providers
 jest.mock('@/api', () => ({
-  APIProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  APIProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 jest.mock('@/components/providers/lazy-websocket-provider', () => ({
-  LazyWebSocketProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  LazyWebSocketProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 jest.mock('@/components/providers/posthog-navigation-tracker', () => ({
@@ -177,20 +181,28 @@ jest.mock('@/components/providers/posthog-navigation-tracker', () => ({
 }));
 
 jest.mock('@/components/providers/posthog-provider-wrapper', () => ({
-  PostHogProviderWrapper: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  PostHogProviderWrapper: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 jest.mock('@/components/ui', () => ({
-  SafeAreaView: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  SafeAreaView: ({ children, ...props }: any) => (
+    <div {...props}>{children}</div>
+  ),
   UpdateNotificationBar: () => <div>UpdateNotificationBar</div>,
 }));
 
 jest.mock('@gorhom/bottom-sheet', () => ({
-  BottomSheetModalProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  BottomSheetModalProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 jest.mock('@react-navigation/native', () => ({
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   DarkTheme: {
     colors: {
       primary: '#51B1A9',
@@ -217,11 +229,15 @@ jest.mock('react-native-flash-message', () => ({
 }));
 
 jest.mock('react-native-gesture-handler', () => ({
-  GestureHandlerRootView: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  GestureHandlerRootView: ({ children, ...props }: any) => (
+    <div {...props}>{children}</div>
+  ),
 }));
 
 jest.mock('react-native-keyboard-controller', () => ({
-  KeyboardProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  KeyboardProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 jest.mock('./navigation-gate', () => ({
@@ -244,28 +260,33 @@ describe('RootLayout', () => {
 
   it('should render without crashing', async () => {
     const renderResult = render(<RootLayout />);
-    
-    await waitFor(() => {
-      expect(renderResult.toJSON()).toBeTruthy();
-    }, { timeout: 3000 });
+
+    await waitFor(
+      () => {
+        expect(renderResult.toJSON()).toBeTruthy();
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should initialize OneSignal when ONESIGNAL_APP_ID is provided', async () => {
     const { OneSignal } = require('react-native-onesignal');
-    
+
     render(<RootLayout />);
-    
+
     await waitFor(() => {
-      expect(OneSignal.initialize).toHaveBeenCalledWith('test-onesignal-app-id');
+      expect(OneSignal.initialize).toHaveBeenCalledWith(
+        'test-onesignal-app-id'
+      );
     });
   });
 
   it('should set up LiveActivities on iOS', async () => {
     Platform.OS = 'ios';
     const { OneSignal } = require('react-native-onesignal');
-    
+
     render(<RootLayout />);
-    
+
     await waitFor(() => {
       expect(OneSignal.LiveActivities.setupDefault).toHaveBeenCalled();
     });
@@ -274,9 +295,9 @@ describe('RootLayout', () => {
   it('should not set up LiveActivities on Android', async () => {
     Platform.OS = 'android';
     const { OneSignal } = require('react-native-onesignal');
-    
+
     render(<RootLayout />);
-    
+
     await waitFor(() => {
       expect(OneSignal.LiveActivities.setupDefault).not.toHaveBeenCalled();
     });
@@ -284,9 +305,9 @@ describe('RootLayout', () => {
 
   it('should login user to OneSignal if user exists', async () => {
     const { OneSignal } = require('react-native-onesignal');
-    
+
     render(<RootLayout />);
-    
+
     await waitFor(() => {
       expect(OneSignal.login).toHaveBeenCalledWith('test-user-id');
     });
@@ -294,36 +315,46 @@ describe('RootLayout', () => {
 
   it('should set up notification event listeners', async () => {
     const { OneSignal } = require('react-native-onesignal');
-    
+
     render(<RootLayout />);
-    
+
     await waitFor(() => {
-      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
-      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith('foregroundWillDisplay', expect.any(Function));
+      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith(
+        'click',
+        expect.any(Function)
+      );
+      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith(
+        'foregroundWillDisplay',
+        expect.any(Function)
+      );
     });
   });
 
   it('should initialize timezone sync', async () => {
-    const { initializeTimezoneSync } = require('@/lib/services/timezone-service');
-    
+    const {
+      initializeTimezoneSync,
+    } = require('@/lib/services/timezone-service');
+
     render(<RootLayout />);
-    
+
     await waitFor(() => {
       expect(initializeTimezoneSync).toHaveBeenCalled();
     });
   });
 
   it('should schedule streak warning notification when user has active streak', async () => {
-    const { scheduleStreakWarningNotification } = require('@/lib/services/notifications');
+    const {
+      scheduleStreakWarningNotification,
+    } = require('@/lib/services/notifications');
     const { useCharacterStore } = require('@/store/character-store');
     const { useQuestStore } = require('@/store/quest-store');
-    
+
     // Mock user with active streak but no quest today
     useCharacterStore.getState.mockReturnValue({
       dailyQuestStreak: 3,
       resetStreak: jest.fn(),
     });
-    
+
     // Mock last quest completion from yesterday
     const yesterday = Date.now() - 1000 * 60 * 60 * 25; // 25 hours ago
     useQuestStore.getState.mockReturnValue({
@@ -332,9 +363,9 @@ describe('RootLayout', () => {
       activeQuest: null,
       failQuest: jest.fn(),
     });
-    
+
     render(<RootLayout />);
-    
+
     await waitFor(() => {
       expect(scheduleStreakWarningNotification).toHaveBeenCalled();
     });
@@ -344,12 +375,12 @@ describe('RootLayout', () => {
     const { useCharacterStore } = require('@/store/character-store');
     const { useQuestStore } = require('@/store/quest-store');
     const mockResetStreak = jest.fn();
-    
+
     useCharacterStore.getState.mockReturnValue({
       dailyQuestStreak: 5,
       resetStreak: mockResetStreak,
     });
-    
+
     // Mock last quest completion from 26 hours ago
     const moreThan24HoursAgo = Date.now() - 1000 * 60 * 60 * 26;
     useQuestStore.getState.mockReturnValue({
@@ -358,9 +389,9 @@ describe('RootLayout', () => {
       activeQuest: null,
       failQuest: jest.fn(),
     });
-    
+
     render(<RootLayout />);
-    
+
     await waitFor(() => {
       expect(mockResetStreak).toHaveBeenCalled();
     });
@@ -369,7 +400,7 @@ describe('RootLayout', () => {
   it('should handle app state changes and check quest status', async () => {
     const { getQuestRunStatus } = require('@/lib/services/quest-run-service');
     const { useQuestStore } = require('@/store/quest-store');
-    
+
     // Mock active cooperative quest
     const mockFailQuest = jest.fn();
     useQuestStore.getState.mockReturnValue({
@@ -381,38 +412,40 @@ describe('RootLayout', () => {
       activeQuest: null,
       failQuest: mockFailQuest,
     });
-    
+
     // Mock quest run status as failed
     getQuestRunStatus.mockResolvedValue({
       id: 'test-coop-quest-id',
       status: 'failed',
     });
-    
+
     render(<RootLayout />);
-    
+
     // Wait for initial render
     await waitFor(() => {
       expect(getQuestRunStatus).not.toHaveBeenCalled();
     });
-    
+
     // Simulate app state change
     const mockAppStateEventListener = jest.fn();
     const mockAppStateSubscription = {
       remove: jest.fn(),
     };
-    
+
     // Mock AppState.addEventListener
-    jest.spyOn(AppState, 'addEventListener').mockImplementation((event, callback) => {
-      mockAppStateEventListener.mockImplementation(callback);
-      return mockAppStateSubscription;
-    });
-    
+    jest
+      .spyOn(AppState, 'addEventListener')
+      .mockImplementation((event, callback) => {
+        mockAppStateEventListener.mockImplementation(callback);
+        return mockAppStateSubscription;
+      });
+
     // Re-render to trigger useEffect
     render(<RootLayout />);
-    
+
     // Simulate app coming to foreground
     await mockAppStateEventListener('active');
-    
+
     await waitFor(() => {
       expect(getQuestRunStatus).toHaveBeenCalledWith('test-coop-quest-id');
       expect(mockFailQuest).toHaveBeenCalled();
@@ -421,11 +454,14 @@ describe('RootLayout', () => {
 
   it('should render all required Stack screens', async () => {
     const renderResult = render(<RootLayout />);
-    
-    await waitFor(() => {
-      expect(renderResult.toJSON()).toBeTruthy();
-    }, { timeout: 3000 });
-    
+
+    await waitFor(
+      () => {
+        expect(renderResult.toJSON()).toBeTruthy();
+      },
+      { timeout: 3000 }
+    );
+
     // Check that Stack screens are configured
     // This is a basic test since Stack is mocked
     expect(renderResult.toJSON()).toBeTruthy();
@@ -433,24 +469,24 @@ describe('RootLayout', () => {
 
   it('should return null when hydration is not finished', () => {
     const { hydrateAuth } = require('@/lib');
-    
+
     // Mock hydration as not finished
     hydrateAuth.mockImplementation(() => new Promise(() => {})); // Never resolves
-    
+
     const renderResult = render(<RootLayout />);
-    
+
     // Should render null (empty container)
     expect(renderResult.toJSON()).toBeNull();
   });
 
   it('should return null when auth status is hydrating', () => {
     const { useAuth } = require('@/lib');
-    
+
     // Mock auth as still hydrating
     useAuth.mockImplementation((selector) => selector({ status: 'hydrating' }));
-    
+
     const renderResult = render(<RootLayout />);
-    
+
     // Should render null (empty container)
     expect(renderResult.toJSON()).toBeNull();
   });
@@ -459,20 +495,24 @@ describe('RootLayout', () => {
     const { OneSignal } = require('react-native-onesignal');
     const { useRouter } = require('expo-router');
     const mockPush = jest.fn();
-    
+
     // mockPush is already available from the mock
-    
+
     render(<RootLayout />);
-    
+
     // Wait for OneSignal to be initialized
     await waitFor(() => {
-      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith(
+        'click',
+        expect.any(Function)
+      );
     });
-    
+
     // Get the click handler
-    const clickHandler = (OneSignal.Notifications.addEventListener as jest.Mock).mock.calls
-      .find(call => call[0] === 'click')[1];
-    
+    const clickHandler = (
+      OneSignal.Notifications.addEventListener as jest.Mock
+    ).mock.calls.find((call) => call[0] === 'click')[1];
+
     // Simulate notification click
     const mockEvent = {
       notification: {
@@ -481,20 +521,23 @@ describe('RootLayout', () => {
         },
       },
     };
-    
+
     clickHandler(mockEvent);
-    
+
     // Should navigate to join cooperative quest page after timeout
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/join-cooperative-quest');
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(mockPush).toHaveBeenCalledWith('/join-cooperative-quest');
+      },
+      { timeout: 2000 }
+    );
   });
 
   it('should handle quest failure notifications', async () => {
     const { OneSignal } = require('react-native-onesignal');
     const { useQuestStore } = require('@/store/quest-store');
     const mockFailQuest = jest.fn();
-    
+
     useQuestStore.getState.mockReturnValue({
       lastCompletedQuestTimestamp: Date.now(),
       cooperativeQuestRun: {
@@ -504,18 +547,22 @@ describe('RootLayout', () => {
       activeQuest: null,
       failQuest: mockFailQuest,
     });
-    
+
     render(<RootLayout />);
-    
+
     // Wait for OneSignal to be initialized
     await waitFor(() => {
-      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith(
+        'click',
+        expect.any(Function)
+      );
     });
-    
+
     // Get the click handler
-    const clickHandler = (OneSignal.Notifications.addEventListener as jest.Mock).mock.calls
-      .find(call => call[0] === 'click')[1];
-    
+    const clickHandler = (
+      OneSignal.Notifications.addEventListener as jest.Mock
+    ).mock.calls.find((call) => call[0] === 'click')[1];
+
     // Simulate quest failure notification click
     const mockEvent = {
       notification: {
@@ -525,9 +572,9 @@ describe('RootLayout', () => {
         },
       },
     };
-    
+
     clickHandler(mockEvent);
-    
+
     await waitFor(() => {
       expect(mockFailQuest).toHaveBeenCalled();
     });
@@ -537,7 +584,7 @@ describe('RootLayout', () => {
     const { OneSignal } = require('react-native-onesignal');
     const { useQuestStore } = require('@/store/quest-store');
     const mockFailQuest = jest.fn();
-    
+
     useQuestStore.getState.mockReturnValue({
       lastCompletedQuestTimestamp: Date.now(),
       cooperativeQuestRun: null,
@@ -546,18 +593,22 @@ describe('RootLayout', () => {
       },
       failQuest: mockFailQuest,
     });
-    
+
     render(<RootLayout />);
-    
+
     // Wait for OneSignal to be initialized
     await waitFor(() => {
-      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith('foregroundWillDisplay', expect.any(Function));
+      expect(OneSignal.Notifications.addEventListener).toHaveBeenCalledWith(
+        'foregroundWillDisplay',
+        expect.any(Function)
+      );
     });
-    
+
     // Get the foreground handler
-    const foregroundHandler = (OneSignal.Notifications.addEventListener as jest.Mock).mock.calls
-      .find(call => call[0] === 'foregroundWillDisplay')[1];
-    
+    const foregroundHandler = (
+      OneSignal.Notifications.addEventListener as jest.Mock
+    ).mock.calls.find((call) => call[0] === 'foregroundWillDisplay')[1];
+
     // Simulate foreground notification
     const mockEvent = {
       notification: {
@@ -569,9 +620,9 @@ describe('RootLayout', () => {
       },
       preventDefault: jest.fn(),
     };
-    
+
     foregroundHandler(mockEvent);
-    
+
     await waitFor(() => {
       expect(mockFailQuest).toHaveBeenCalled();
       expect(mockEvent.preventDefault).toHaveBeenCalled();

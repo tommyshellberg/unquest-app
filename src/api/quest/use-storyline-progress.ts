@@ -15,7 +15,9 @@ export const useStorylineProgress = ({
   return useQuery<StorylineProgress>({
     queryKey: ['storyline-progress', storylineId],
     queryFn: async () => {
-      const response = await apiClient.get(`/storylines/${storylineId}/progress`);
+      const response = await apiClient.get(
+        `/storylines/${storylineId}/progress`
+      );
       return response.data;
     },
     enabled,

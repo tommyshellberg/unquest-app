@@ -206,30 +206,24 @@ function RootLayout() {
     }
   }, []);
 
-  // Initialize RevenueCat
+  // Initialize RevenueCat SDK on app launch (following official docs)
   useEffect(() => {
-    async function initializeRevenueCat() {
-      try {
-        // Get the current user from store
-        const { useUserStore } = require('@/store/user-store');
-        const user = useUserStore.getState().user;
+    try {
+      // Enable test mode in development first
+      // Commented out to test actual paywall behavior
+      // if (__DEV__) {
+      //   revenueCatService.enableTestMode();
+      // }
 
-        // Initialize RevenueCat with user ID if available
-        await revenueCatService.initialize(user?.id);
+      // Initialize RevenueCat SDK without user ID (per documentation)
+      revenueCatService.initialize();
 
-        // Enable test mode in development
-        if (__DEV__) {
-          revenueCatService.enableTestMode();
-        }
-
-        console.log('[RevenueCat] Initialized successfully');
-      } catch (error) {
-        console.error('[RevenueCat] Failed to initialize:', error);
-      }
+      console.log('[RevenueCat] SDK configured on app launch');
+    } catch (error) {
+      console.error('[RevenueCat] Failed to configure SDK:', error);
+      // Don't crash the app if RevenueCat fails to initialize
     }
-
-    //initializeRevenueCat();
-  }, []);
+  }, []); // Empty dependency array - only run once on mount
 
   // Handle app state changes to check quest status when app comes to foreground
   useEffect(() => {

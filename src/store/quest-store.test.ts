@@ -153,7 +153,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       lastCompletedQuestTimestamp: null,
       currentLiveActivityId: null,
     });
-    
+
     // Clear all mocks
     jest.clearAllMocks();
     mockUpdateStreak.mockClear();
@@ -324,10 +324,10 @@ describe('QuestStore - refreshAvailableQuests', () => {
       startTime: Date.now(),
       status: 'active' as const,
     };
-    
-    useQuestStore.setState({ 
+
+    useQuestStore.setState({
       activeQuest,
-      currentLiveActivityId: 'live-activity-123' 
+      currentLiveActivityId: 'live-activity-123',
     });
 
     // Import the mocked function
@@ -353,7 +353,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       durationMinutes: 10,
       reward: { xp: 100 },
     };
-    
+
     useQuestStore.setState({ pendingQuest });
 
     // Import the mocked function
@@ -381,7 +381,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       stopTime: Date.now(),
       status: 'failed' as const,
     };
-    
+
     useQuestStore.setState({ failedQuest });
 
     // Act
@@ -404,7 +404,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       stopTime: Date.now(),
       status: 'completed' as const,
     };
-    
+
     useQuestStore.setState({ recentCompletedQuest: completedQuest });
 
     // Act
@@ -421,7 +421,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       createCompletedQuest('quest-1', Date.now() - 2000),
       createCompletedQuest('quest-2', Date.now() - 1000),
     ];
-    
+
     useQuestStore.setState({ completedQuests });
 
     // Act
@@ -482,7 +482,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
   test('should set server available quests', () => {
     // Arrange
     const serverQuests: any[] = [
-      { 
+      {
         customId: 'server-quest-1',
         mode: 'story',
         title: 'Server Quest 1',
@@ -490,7 +490,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
         reward: { xp: 100 },
       },
       {
-        customId: 'server-quest-2', 
+        customId: 'server-quest-2',
         mode: 'custom',
         title: 'Server Quest 2',
         durationMinutes: 15,
@@ -499,7 +499,9 @@ describe('QuestStore - refreshAvailableQuests', () => {
     ];
 
     // Act
-    useQuestStore.getState().setServerAvailableQuests(serverQuests, true, false);
+    useQuestStore
+      .getState()
+      .setServerAvailableQuests(serverQuests, true, false);
 
     // Assert
     const state = useQuestStore.getState();
@@ -527,15 +529,18 @@ describe('QuestStore - refreshAvailableQuests', () => {
         status: 'active' as const,
         poiSlug: 'test-poi',
       };
-      
-      useQuestStore.setState({ 
+
+      useQuestStore.setState({
         activeQuest,
         completedQuests: [],
         lastCompletedQuestTimestamp: null,
       });
 
       const { queryClient } = require('@/api/common');
-      const { cancelStreakWarningNotification, scheduleStreakWarningNotification } = require('@/lib/services/notifications');
+      const {
+        cancelStreakWarningNotification,
+        scheduleStreakWarningNotification,
+      } = require('@/lib/services/notifications');
 
       // Act
       const result = useQuestStore.getState().completeQuest();
@@ -546,7 +551,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
         stopTime: expect.any(Number),
         status: 'completed',
       });
-      
+
       const state = useQuestStore.getState();
       expect(state.activeQuest).toBeNull();
       expect(state.recentCompletedQuest).toEqual(result);
@@ -554,7 +559,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       expect(state.lastCompletedQuestTimestamp).toEqual(result?.stopTime);
       expect(state.currentLiveActivityId).toBeNull();
       expect(state.cooperativeQuestRun).toBeNull();
-      
+
       // Verify side effects
       expect(mockUpdateStreak).toHaveBeenCalledWith(null);
       expect(mockAddXP).toHaveBeenCalledWith(100);
@@ -563,9 +568,9 @@ describe('QuestStore - refreshAvailableQuests', () => {
         queryKey: ['user', 'details'],
       });
       expect(cancelStreakWarningNotification).toHaveBeenCalled();
-      
+
       // Wait for the promise chain to complete
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       expect(scheduleStreakWarningNotification).toHaveBeenCalledWith(true);
     });
 
@@ -581,8 +586,8 @@ describe('QuestStore - refreshAvailableQuests', () => {
         startTime,
         status: 'active' as const,
       };
-      
-      useQuestStore.setState({ 
+
+      useQuestStore.setState({
         activeQuest,
         completedQuests: [],
       });
@@ -611,8 +616,8 @@ describe('QuestStore - refreshAvailableQuests', () => {
         startTime,
         status: 'active' as const,
       };
-      
-      useQuestStore.setState({ 
+
+      useQuestStore.setState({
         activeQuest,
         completedQuests: [],
       });
@@ -635,7 +640,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       const now = new Date();
       const earlierToday = new Date(now);
       earlierToday.setHours(10, 0, 0, 0);
-      
+
       const activeQuest = {
         id: 'quest-2',
         mode: 'story' as const,
@@ -645,14 +650,17 @@ describe('QuestStore - refreshAvailableQuests', () => {
         startTime: Date.now() - 600000,
         status: 'active' as const,
       };
-      
-      useQuestStore.setState({ 
+
+      useQuestStore.setState({
         activeQuest,
         completedQuests: [],
         lastCompletedQuestTimestamp: earlierToday.getTime(),
       });
 
-      const { cancelStreakWarningNotification, scheduleStreakWarningNotification } = require('@/lib/services/notifications');
+      const {
+        cancelStreakWarningNotification,
+        scheduleStreakWarningNotification,
+      } = require('@/lib/services/notifications');
 
       // Act
       useQuestStore.getState().completeQuest();
@@ -673,7 +681,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
         startTime: undefined,
         status: 'active' as const,
       };
-      
+
       useQuestStore.setState({ activeQuest });
 
       // Act
@@ -705,7 +713,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       reward: { xp: 100 },
       category: 'personal' as const,
     };
-    
+
     useQuestStore.setState({
       cooperativeQuestRun: { id: 'coop-1' } as any,
       currentInvitation: { id: 'inv-1' } as any,
@@ -733,10 +741,10 @@ describe('QuestStore - refreshAvailableQuests', () => {
       reward: { xp: 100 },
       category: 'cooperative' as const,
     };
-    
+
     const coopRun = { id: 'coop-1' } as any;
     const invitation = { id: 'inv-1' } as any;
-    
+
     useQuestStore.setState({
       cooperativeQuestRun: coopRun,
       currentInvitation: invitation,
@@ -762,8 +770,8 @@ describe('QuestStore - refreshAvailableQuests', () => {
       reward: { xp: 100 },
       category: 'cooperative' as const,
     };
-    
-    useQuestStore.setState({ 
+
+    useQuestStore.setState({
       pendingQuest,
       cooperativeQuestRun: { id: 'coop-1' } as any,
     });
@@ -791,8 +799,8 @@ describe('QuestStore - refreshAvailableQuests', () => {
       startTime: Date.now(),
       status: 'active' as const,
     };
-    
-    useQuestStore.setState({ 
+
+    useQuestStore.setState({
       activeQuest,
       availableQuests: [],
     });
@@ -813,8 +821,8 @@ describe('QuestStore - refreshAvailableQuests', () => {
         mode: 'custom' as const,
       },
     ];
-    
-    useQuestStore.setState({ 
+
+    useQuestStore.setState({
       completedQuests,
       activeQuest: null,
     });
@@ -1050,7 +1058,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       // Mock AVAILABLE_QUESTS to not have quest-1
       const originalQuests = require('@/app/data/quests').AVAILABLE_QUESTS;
       require('@/app/data/quests').AVAILABLE_QUESTS = [];
-      
+
       useQuestStore.setState({
         activeQuest: null,
         completedQuests: [],
@@ -1061,7 +1069,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
 
       const state = useQuestStore.getState();
       expect(state.availableQuests).toEqual([]);
-      
+
       // Restore original quests
       require('@/app/data/quests').AVAILABLE_QUESTS = originalQuests;
     });
@@ -1093,19 +1101,19 @@ describe('QuestStore - refreshAvailableQuests', () => {
 
     test('should handle storage functions in persist middleware', () => {
       const { getItem, setItem, removeItem } = require('@/lib/storage');
-      
+
       // Reset mock call history
       getItem.mockClear();
       setItem.mockClear();
       removeItem.mockClear();
-      
+
       // Test getItemForStorage by accessing a property that would trigger persist
       getItem.mockReturnValueOnce('test-value');
-      
+
       // These functions are used by the persist middleware when the store is initialized
       // The test just verifies that the mocks are properly set up
       expect(getItem).toHaveBeenCalledTimes(0); // Initially no calls
-      
+
       // Test direct access to verify storage functions work
       const value = getItem('test-key');
       expect(value).toBe('test-value');
@@ -1113,8 +1121,11 @@ describe('QuestStore - refreshAvailableQuests', () => {
     });
 
     test('should handle quest completion notification scheduling', async () => {
-      const { scheduleStreakWarningNotification, cancelStreakWarningNotification } = require('@/lib/services/notifications');
-      
+      const {
+        scheduleStreakWarningNotification,
+        cancelStreakWarningNotification,
+      } = require('@/lib/services/notifications');
+
       const testQuest: Quest = {
         id: 'test-quest',
         mode: 'story',
@@ -1134,13 +1145,13 @@ describe('QuestStore - refreshAvailableQuests', () => {
 
       // Complete the quest
       const completedQuest = useQuestStore.getState().completeQuest();
-      
+
       expect(completedQuest).not.toBeNull();
       expect(cancelStreakWarningNotification).toHaveBeenCalled();
-      
+
       // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 0));
-      
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
       expect(scheduleStreakWarningNotification).toHaveBeenCalled();
     });
 
@@ -1162,7 +1173,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       });
 
       const completedQuest = useQuestStore.getState().completeQuest();
-      
+
       expect(completedQuest).not.toBeNull();
       expect(completedQuest?.status).toBe('completed');
     });
@@ -1195,7 +1206,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       expect(state.failedQuest?.status).toBe('failed');
       expect(state.failedQuest?.title).toBe('Minimal Quest'); // Uses original quest title
       expect(state.failedQuests.length).toBe(1);
-      
+
       // Restore original quests
       require('@/app/data/quests').AVAILABLE_QUESTS = originalQuests;
     });
@@ -1204,7 +1215,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       const { useCharacterStore } = require('@/store/character-store');
       const mockAddXP = jest.fn();
       const mockUpdateStreak = jest.fn();
-      
+
       useCharacterStore.getState = jest.fn(() => ({
         addXP: mockAddXP,
         updateStreak: mockUpdateStreak,
@@ -1228,7 +1239,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       });
 
       const completedQuest = useQuestStore.getState().completeQuest();
-      
+
       expect(completedQuest).not.toBeNull();
       expect(mockAddXP).toHaveBeenCalledWith(150);
       expect(mockUpdateStreak).toHaveBeenCalled();
@@ -1252,7 +1263,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       });
 
       const completedQuest = useQuestStore.getState().completeQuest();
-      
+
       expect(completedQuest).not.toBeNull();
       expect(mockRevealLocation).toHaveBeenCalledWith('test-poi');
     });
@@ -1277,7 +1288,9 @@ describe('QuestStore - refreshAvailableQuests', () => {
       });
 
       // Try to update a participant that doesn't exist
-      useQuestStore.getState().updateParticipantReady('non-existent-user', true);
+      useQuestStore
+        .getState()
+        .updateParticipantReady('non-existent-user', true);
 
       const state = useQuestStore.getState();
       expect(state.cooperativeQuestRun?.participants).toHaveLength(2);

@@ -15,7 +15,7 @@ describe('Timezone Integration', () => {
     Localization.timezone = testTimezone;
 
     const detectedTimezone = getDeviceTimezone();
-    
+
     expect(detectedTimezone).toBe(testTimezone);
   });
 

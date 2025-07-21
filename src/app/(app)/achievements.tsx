@@ -245,9 +245,7 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
 
           <ProgressBar
             initialProgress={progress * 100}
-            progressColor={
-              achievement.isUnlocked ? '#5E8977' : '#D1D5DB'
-            }
+            progressColor={achievement.isUnlocked ? '#5E8977' : '#D1D5DB'}
             backgroundColor="#F3F4F6"
           />
 
@@ -520,19 +518,19 @@ export default function AchievementsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: 20 }}
         >
-        {/* Achievement Sections */}
-        <AchievementSection
-          category="streak"
-          achievements={streakAchievements}
-        />
-        <AchievementSection
-          category="quests"
-          achievements={questAchievements}
-        />
-        <AchievementSection
-          category="minutes"
-          achievements={minutesAchievements}
-        />
+          {/* Achievement Sections */}
+          <AchievementSection
+            category="streak"
+            achievements={streakAchievements}
+          />
+          <AchievementSection
+            category="quests"
+            achievements={questAchievements}
+          />
+          <AchievementSection
+            category="minutes"
+            achievements={minutesAchievements}
+          />
 
           <View className="h-8" />
         </ScrollView>

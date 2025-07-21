@@ -33,13 +33,13 @@ describe('QuestComplete', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Default mock implementations
     (useQuestStore.getState as jest.Mock).mockReturnValue({
       clearRecentCompletedQuest: jest.fn(),
       lastCompletedQuestTimestamp: null,
     });
-    
+
     (useCharacterStore.getState as jest.Mock).mockReturnValue({
       character: { name: 'Test Hero' },
       dailyQuestStreak: 0,
@@ -64,12 +64,12 @@ describe('QuestComplete', () => {
     // 2. Last quest was completed yesterday
     // 3. Haven't shown celebration today
     const yesterday = Date.now() - 24 * 60 * 60 * 1000;
-    
+
     (useQuestStore.getState as jest.Mock).mockReturnValue({
       clearRecentCompletedQuest: jest.fn(),
       lastCompletedQuestTimestamp: yesterday,
     });
-    
+
     (useCharacterStore.getState as jest.Mock).mockReturnValue({
       character: { name: 'Test Hero' },
       dailyQuestStreak: 3, // Has a 3-day streak
@@ -90,12 +90,12 @@ describe('QuestComplete', () => {
     const yesterday = Date.now() - 24 * 60 * 60 * 1000;
     const todayMorning = new Date();
     todayMorning.setHours(8, 0, 0, 0);
-    
+
     (useQuestStore.getState as jest.Mock).mockReturnValue({
       clearRecentCompletedQuest: jest.fn(),
       lastCompletedQuestTimestamp: yesterday,
     });
-    
+
     (useCharacterStore.getState as jest.Mock).mockReturnValue({
       character: { name: 'Test Hero' },
       dailyQuestStreak: 3,
@@ -114,12 +114,12 @@ describe('QuestComplete', () => {
 
   it('should not show streak celebration for second quest of the same day', () => {
     const earlierToday = Date.now() - 2 * 60 * 60 * 1000; // 2 hours ago
-    
+
     (useQuestStore.getState as jest.Mock).mockReturnValue({
       clearRecentCompletedQuest: jest.fn(),
       lastCompletedQuestTimestamp: earlierToday,
     });
-    
+
     (useCharacterStore.getState as jest.Mock).mockReturnValue({
       character: { name: 'Test Hero' },
       dailyQuestStreak: 1,
@@ -138,12 +138,12 @@ describe('QuestComplete', () => {
 
   it('should not show streak celebration if no streak', () => {
     const yesterday = Date.now() - 24 * 60 * 60 * 1000;
-    
+
     (useQuestStore.getState as jest.Mock).mockReturnValue({
       clearRecentCompletedQuest: jest.fn(),
       lastCompletedQuestTimestamp: yesterday,
     });
-    
+
     (useCharacterStore.getState as jest.Mock).mockReturnValue({
       character: { name: 'Test Hero' },
       dailyQuestStreak: 0, // No streak
@@ -162,11 +162,11 @@ describe('QuestComplete', () => {
 
   it('should respect onContinue callback over default navigation', () => {
     const onContinue = jest.fn();
-    
+
     const { getByText } = render(
-      <QuestComplete 
-        quest={mockQuest} 
-        story="Test story" 
+      <QuestComplete
+        quest={mockQuest}
+        story="Test story"
         onContinue={onContinue}
       />
     );

@@ -178,7 +178,9 @@ export default class QuestTimer {
         '[QuestTimer] ERROR: Cooperative quest without quest run ID!',
         questTemplate
       );
-      throw new Error('Cooperative quest must have an existing quest run ID from server');
+      throw new Error(
+        'Cooperative quest must have an existing quest run ID from server'
+      );
     } else {
       // Create a quest run on the server (only for solo quests)
       try {
@@ -482,7 +484,10 @@ export default class QuestTimer {
               );
             }
           } catch (error) {
-            console.error('[QuestTimer] Failed to check quest activation:', error);
+            console.error(
+              '[QuestTimer] Failed to check quest activation:',
+              error
+            );
           }
         } else {
           // For single-player quests, also use phone lock status endpoint
@@ -569,7 +574,9 @@ export default class QuestTimer {
     // Send phone unlock status to server
     if (this.questRunId) {
       try {
-        console.log(`Sending phone unlock status for ${isCooperativeQuest ? 'cooperative' : 'single-player'} quest...`);
+        console.log(
+          `Sending phone unlock status for ${isCooperativeQuest ? 'cooperative' : 'single-player'} quest...`
+        );
         await updatePhoneLockStatus(this.questRunId, false);
         console.log('Phone unlock status sent successfully');
       } catch (error) {

@@ -72,7 +72,6 @@ export default function CustomQuestScreen() {
     posthog.capture('open_custom_quest_screen');
   }, [posthog]);
 
-
   const onSubmit = async (data: FormData) => {
     posthog.capture('trigger_start_custom_quest');
 
@@ -107,7 +106,7 @@ export default function CustomQuestScreen() {
   return (
     <SafeAreaView className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
-      
+
       <ScreenContainer bottomPadding={0}>
         {/* Header */}
         <ScreenHeader
@@ -134,7 +133,6 @@ export default function CustomQuestScreen() {
 
           {/* Category Dropdown */}
           <CategorySelector control={control} questCategory={questCategory} />
-
 
           {/* Continue Button (Large, Full-Width) */}
           <Button

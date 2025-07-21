@@ -149,7 +149,7 @@ export async function updatePhoneLockStatus(
   if (!runId || runId === 'null' || runId === 'undefined') {
     throw new Error('Invalid quest run ID for phone lock status update');
   }
-  
+
   try {
     console.log(
       'Updating phone lock status:',

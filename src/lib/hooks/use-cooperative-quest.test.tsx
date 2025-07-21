@@ -1,7 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { useQuery } from '@tanstack/react-query';
 
-import { useQuestRunStatus, useCooperativeQuest } from './use-cooperative-quest';
+import {
+  useQuestRunStatus,
+  useCooperativeQuest,
+} from './use-cooperative-quest';
 import { getQuestRunStatus } from '@/lib/services/quest-run-service';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -75,7 +78,7 @@ describe('use-cooperative-quest', () => {
         status: 'active',
         quest: { id: 'quest-1', title: 'Test Quest' },
       };
-      
+
       (getQuestRunStatus as jest.Mock).mockResolvedValue(mockQuestRun);
       (useQuery as jest.Mock).mockImplementation(({ queryFn }) => {
         const result = queryFn();
@@ -115,7 +118,9 @@ describe('use-cooperative-quest', () => {
       });
 
       // Mock useQuestStore.getState()
-      (useQuestStore as any).getState = jest.fn().mockReturnValue(mockQuestStore);
+      (useQuestStore as any).getState = jest
+        .fn()
+        .mockReturnValue(mockQuestStore);
 
       // Mock the query to return failed status
       (useQuery as jest.Mock).mockReturnValue({
@@ -202,7 +207,7 @@ describe('use-cooperative-quest', () => {
 
       // Find the call to useQuery for quest run status
       const questRunStatusCall = (useQuery as jest.Mock).mock.calls.find(
-        call => call[0].queryKey?.[0] === 'questRun'
+        (call) => call[0].queryKey?.[0] === 'questRun'
       );
 
       // Assert - should enable polling for pending quest
@@ -238,7 +243,7 @@ describe('use-cooperative-quest', () => {
 
       // Find the call to useQuery for quest run status
       const questRunStatusCall = (useQuery as jest.Mock).mock.calls.find(
-        call => call[0]?.queryKey?.[0] === 'questRun'
+        (call) => call[0]?.queryKey?.[0] === 'questRun'
       );
 
       // Assert - should disable polling for active quest (polling only for 'pending' status)

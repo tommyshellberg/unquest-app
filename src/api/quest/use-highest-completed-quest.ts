@@ -31,7 +31,9 @@ export const useHighestCompletedQuest = ({
         params.append('userId', userId);
       }
 
-      const response = await apiClient.get(`/quest-runs/highest-completed-quest?${params.toString()}`);
+      const response = await apiClient.get(
+        `/quest-runs/highest-completed-quest?${params.toString()}`
+      );
       return response.data;
     },
     enabled: enabled && !!storylineId,

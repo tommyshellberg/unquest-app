@@ -395,7 +395,7 @@ describe('Home Component', () => {
       // Should see the decision text, not the quest titles
       expect(screen.getByText('Stay and investigate the ruins')).toBeTruthy();
       expect(screen.getByText('Continue on before nightfall')).toBeTruthy();
-      
+
       // Should NOT see the quest titles
       expect(screen.queryByText('Unraveling the Inscription')).toBeNull();
       expect(screen.queryByText('Moving Forward Before Nightfall')).toBeNull();
@@ -427,7 +427,7 @@ describe('Home Component', () => {
       // Should see "Continue" as fallback, not the quest titles
       const continueButtons = screen.getAllByText('Continue');
       expect(continueButtons).toHaveLength(2);
-      
+
       // Should NOT see the quest titles
       expect(screen.queryByText('Unraveling the Inscription')).toBeNull();
       expect(screen.queryByText('Moving Forward Before Nightfall')).toBeNull();
@@ -500,7 +500,7 @@ describe('Home Component', () => {
 
       // Should see normal option
       expect(screen.getByText("Learn the King's secret")).toBeTruthy();
-      
+
       // Should see premium option with star
       expect(screen.getByText('⭐ Focus on the power')).toBeTruthy();
     });
@@ -554,7 +554,9 @@ describe('Home Component', () => {
 
       // Should see the single quest with Start Quest button
       expect(screen.getByText('Start Quest')).toBeTruthy();
-      expect(screen.getByText('Discovering the Ancient Arch with Inscriptions')).toBeTruthy();
+      expect(
+        screen.getByText('Discovering the Ancient Arch with Inscriptions')
+      ).toBeTruthy();
     });
 
     it('should show loading state when server quests are loading', () => {

@@ -56,7 +56,7 @@ export function convertLegacyAssetToPath(assetId: number): string | null {
     console.warn(`Unknown legacy asset ID: ${assetId}`);
     return null;
   }
-  
+
   // Return the S3 path using the standard format
   return getQuestAudioPath(questId);
 }

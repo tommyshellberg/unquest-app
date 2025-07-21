@@ -8,10 +8,7 @@ import {
   Users,
 } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-} from 'react-native';
+import { ActivityIndicator, Image } from 'react-native';
 
 import {
   type LeaderboardEntry as ApiLeaderboardEntry,

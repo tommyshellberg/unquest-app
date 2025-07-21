@@ -277,7 +277,7 @@ describe('JoinCooperativeQuest', () => {
     const accessibleElements = screen.root.findAll((node) => {
       return node.props?.accessible === true;
     });
-    
+
     // The first accessible element should be the back button
     if (accessibleElements.length > 0) {
       fireEvent.press(accessibleElements[0]);
