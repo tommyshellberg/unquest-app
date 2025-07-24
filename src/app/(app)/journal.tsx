@@ -396,6 +396,35 @@ export default function JournalScreen() {
                           </View>
                         </View>
 
+                        {/* Reflection preview if available */}
+                        {quest.reflection && (
+                          <View className="mt-2">
+                            {quest.reflection.mood && (
+                              <View className="flex-row items-center">
+                                <Text className="text-sm">
+                                  {quest.reflection.mood === 'great' && '😊'}
+                                  {quest.reflection.mood === 'calm' && '😌'}
+                                  {quest.reflection.mood === 'energized' && '💪'}
+                                  {quest.reflection.mood === 'relaxed' && '😴'}
+                                  {quest.reflection.mood === 'thoughtful' && '🤔'}
+                                  {quest.reflection.mood === 'challenging' && '😕'}
+                                </Text>
+                                <Text className="ml-1 text-sm capitalize text-neutral-600">
+                                  {quest.reflection.mood}
+                                </Text>
+                              </View>
+                            )}
+                            {quest.reflection.text && (
+                              <Text
+                                className="mt-1 text-sm italic text-neutral-600"
+                                numberOfLines={2}
+                              >
+                                "{quest.reflection.text}"
+                              </Text>
+                            )}
+                          </View>
+                        )}
+
                         {/* Stats row */}
                         <View className="mt-2 flex-row items-center">
                           {/* XP - only show for completed quests */}

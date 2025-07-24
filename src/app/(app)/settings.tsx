@@ -482,28 +482,28 @@ export default function Settings() {
               )}
             </View>
 
-            {/* Premium Subscription Section - Only show if user has premium */}
-            {hasPremiumAccess && (
-              <View className="mb-8">
-                <Pressable
-                  className="flex-row items-center justify-between"
-                  onPress={handleManageSubscription}
-                >
-                  <View className="flex-row items-center">
-                    <View
-                      className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
-                    >
-                      <Crown size={24} color={iconColor} />
-                    </View>
-                    <View>
-                      <Text className="text-xl font-medium">UnQuest Premium</Text>
-                      <Text className="text-neutral-600">Manage subscription</Text>
-                    </View>
+            {/* Premium Subscription Section - Always show */}
+            <View className="mb-8">
+              <Pressable
+                className="flex-row items-center justify-between"
+                onPress={handleManageSubscription}
+              >
+                <View className="flex-row items-center">
+                  <View
+                    className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+                  >
+                    <Crown size={24} color={iconColor} />
                   </View>
-                  <Feather name="chevron-right" size={20} color="#888" />
-                </Pressable>
-              </View>
-            )}
+                  <View>
+                    <Text className="text-xl font-medium">UnQuest Premium</Text>
+                    <Text className="text-neutral-600">
+                      {hasPremiumAccess ? 'Manage subscription' : 'View subscription options'}
+                    </Text>
+                  </View>
+                </View>
+                <Feather name="chevron-right" size={20} color="#888" />
+              </Pressable>
+            </View>
 
             {/* Preferences Section */}
             <View className="mb-4">

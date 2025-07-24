@@ -321,6 +321,25 @@ export async function deleteUserAccount(): Promise<{
 }
 
 /**
+ * Force refresh the user's premium status from RevenueCat
+ * This should be called after a successful purchase to sync the server
+ * @returns Response with updated premium status
+ */
+export async function refreshPremiumStatus(): Promise<{
+  success: boolean;
+  hasPremiumAccess: boolean;
+  message: string;
+}> {
+  try {
+    const response = await apiClient.post('/users/me/refresh-premium');
+    return response.data;
+  } catch (error) {
+    console.error('Error refreshing premium status:', error);
+    throw error;
+  }
+}
+
+/**
  * Create a provisional user account with the selected character
  * @param character Character details to associate with the provisional user
  * @returns The created provisional user data

@@ -18,6 +18,7 @@ import {
   type CustomQuestTemplate,
   type Quest,
   type QuestInvitation,
+  type QuestReflection,
   type StoryQuestTemplate,
 } from './types';
 
@@ -65,6 +66,8 @@ interface QuestState {
   setPendingInvitations: (invitations: QuestInvitation[]) => void;
   updateParticipantReady: (userId: string, ready: boolean) => void;
   syncQuestRuns: (questRuns: Quest[]) => void;
+  // Reflection actions
+  addReflectionToQuest: (questId: string, reflection: QuestReflection) => void;
 }
 
 // Create type-safe functions for Zustand's storage
@@ -593,6 +596,29 @@ export const useQuestStore = create<QuestState>()(
         });
         useCharacterStore.getState().resetStreak();
         // Need a way to signal QuestTimer to stop without direct import
+      },
+
+      addReflectionToQuest: (questId: string, reflection: QuestReflection) => {
+        const { completedQuests, recentCompletedQuest } = get();
+
+        // Update the quest in completedQuests array
+        const updatedCompletedQuests = completedQuests.map((quest) => {
+          if (quest.id === questId && quest.status === 'completed') {
+            return { ...quest, reflection };
+          }
+          return quest;
+        });
+
+        // Also update recentCompletedQuest if it matches
+        let updatedRecentCompletedQuest = recentCompletedQuest;
+        if (recentCompletedQuest && recentCompletedQuest.id === questId) {
+          updatedRecentCompletedQuest = { ...recentCompletedQuest, reflection };
+        }
+
+        set({
+          completedQuests: updatedCompletedQuests,
+          recentCompletedQuest: updatedRecentCompletedQuest,
+        });
       },
     }),
     {

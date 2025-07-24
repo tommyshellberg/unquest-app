@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -210,11 +210,47 @@ export default function AppQuestDetailsScreen() {
             <Text className="text-xl font-bold">Quest Details</Text>
           </View>
         </Animated.View>
-        <QuestComplete
-          quest={quest}
-          story={getQuestCompletionText()}
-          showActionButton={from !== 'journal'}
-        />
+        {from === 'journal' ? (
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            <QuestComplete
+              quest={quest}
+              story={getQuestCompletionText()}
+              showActionButton={false}
+            />
+            {/* Show reflection if it exists and we're viewing from journal */}
+            {quest.reflection && (
+              <View className="mx-4 mt-4 mb-6 rounded-lg bg-white p-4 shadow-sm">
+                <Text className="mb-3 text-lg font-semibold">Your Reflection</Text>
+                {quest.reflection.mood && (
+                  <View className="mb-2 flex-row items-center">
+                    <Text className="text-base">
+                      {quest.reflection.mood === 'great' && '😊'}
+                      {quest.reflection.mood === 'calm' && '😌'}
+                      {quest.reflection.mood === 'energized' && '💪'}
+                      {quest.reflection.mood === 'relaxed' && '😴'}
+                      {quest.reflection.mood === 'thoughtful' && '🤔'}
+                      {quest.reflection.mood === 'challenging' && '😕'}
+                    </Text>
+                    <Text className="ml-2 text-base capitalize text-neutral-700">
+                      Feeling {quest.reflection.mood}
+                    </Text>
+                  </View>
+                )}
+                {quest.reflection.text && (
+                  <Text className="text-base text-neutral-700">
+                    {quest.reflection.text}
+                  </Text>
+                )}
+              </View>
+            )}
+          </ScrollView>
+        ) : (
+          <QuestComplete
+            quest={quest}
+            story={getQuestCompletionText()}
+            showActionButton={true}
+          />
+        )}
       </View>
     );
   }

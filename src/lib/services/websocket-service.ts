@@ -24,6 +24,7 @@ class WebSocketService {
   }
 
   connect(): void {
+    console.log('[WebSocket] Connect method called');
     if (this.socket?.connected) {
       console.log('[WebSocket] Already connected');
       return;
@@ -31,7 +32,15 @@ class WebSocketService {
 
     // Get token from the auth store
     const tokenData = getToken();
-    const accessToken = tokenData?.access || getItem('provisionalAccessToken');
+    const provisionalToken = getItem('provisionalAccessToken');
+    const accessToken = tokenData?.access || provisionalToken;
+    
+    console.log('[WebSocket] Token check:', {
+      hasTokenData: !!tokenData,
+      tokenDataAccess: tokenData?.access,
+      hasProvisionalToken: !!provisionalToken,
+      hasAccessToken: !!accessToken,
+    });
 
     if (!accessToken) {
       console.warn(
@@ -39,7 +48,7 @@ class WebSocketService {
       );
       console.log('[WebSocket] Checking stored tokens:', {
         tokenData: tokenData,
-        provisionalAccessToken: getItem('provisionalAccessToken'),
+        provisionalAccessToken: provisionalToken,
       });
       return;
     }
@@ -67,6 +76,8 @@ class WebSocketService {
       // Force new connection
       forceNew: true,
     });
+    
+    console.log('[WebSocket] Socket created, setting up listeners');
 
     this.setupEventListeners();
   }

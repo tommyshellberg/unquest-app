@@ -15,7 +15,7 @@ import {
 } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { InfoCard } from '@/components/ui/info-card';
-import { useWebSocket } from '@/components/providers/websocket-provider';
+import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 import {
   useCooperativeLobbyStore,
   type CooperativeLobby,
@@ -93,11 +93,21 @@ export default function CooperativeQuestLobby() {
   const joinLobby = useCooperativeLobbyStore((state) => state.joinLobby);
   const leaveLobby = useCooperativeLobbyStore((state) => state.leaveLobby);
 
-  const { emit, on, off, joinQuestRoom, leaveQuestRoom } = useWebSocket();
+  const { emit, on, off, joinQuestRoom, leaveQuestRoom, connect: connectWebSocket } = useLazyWebSocket();
   const [isLoading, setIsLoading] = useState(true);
   const [hasTransitioned, setHasTransitioned] = useState(false);
   // For cooperative quests, the lobbyId IS the invitationId
   const invitationId = lobbyId;
+  
+  // Connect WebSocket when entering the lobby
+  useEffect(() => {
+    // Only connect if user is properly authenticated
+    if (currentUser?.id) {
+      connectWebSocket();
+    } else {
+      console.warn('[CooperativeQuestLobby] No authenticated user, skipping WebSocket connection');
+    }
+  }, [connectWebSocket, currentUser?.id]);
 
   // Join the lobby room on mount
   useEffect(() => {
@@ -276,6 +286,21 @@ export default function CooperativeQuestLobby() {
           updateInvitationResponse(data.userId, 'declined');
         }
       };
+      
+      // Add handler for invitationAccepted event (the actual event emitted by server)
+      const handleInvitationAccepted = (data: any) => {
+        console.log('Invitation accepted event received:', data);
+        
+        // Convert to the expected format and call the existing handler
+        handleInvitationResponse({
+          lobbyId: data.invitationId,
+          userId: data.userId,
+          action: data.action || 'accepted',
+          status: data.action || 'accepted',
+          characterName: data.characterName,
+          username: data.username,
+        });
+      };
 
       const handleReadyStatus = (data: LobbyReadyStatusPayload) => {
         console.log('Ready status update:', data);
@@ -288,6 +313,8 @@ export default function CooperativeQuestLobby() {
       on('lobby:participant-updated', handleParticipantUpdated);
       on('lobby:invitation-response', handleInvitationResponse);
       on('invitation:response', handleInvitationResponse); // Server might emit this instead
+      on('invitationAccepted', handleInvitationAccepted); // Actual event emitted by server
+      on(`invitation:${lobbyId}:accepted`, handleInvitationAccepted); // Specific invitation event
       on('lobby:ready-status', handleReadyStatus);
 
       return () => {
@@ -297,6 +324,8 @@ export default function CooperativeQuestLobby() {
         off('lobby:participant-updated', handleParticipantUpdated);
         off('lobby:invitation-response', handleInvitationResponse);
         off('invitation:response', handleInvitationResponse);
+        off('invitationAccepted', handleInvitationAccepted);
+        off(`invitation:${lobbyId}:accepted`, handleInvitationAccepted);
         off('lobby:ready-status', handleReadyStatus);
       };
     }

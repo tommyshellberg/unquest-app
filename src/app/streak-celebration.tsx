@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { Flame, Share } from 'lucide-react-native';
 import React, { useCallback, useRef } from 'react';
@@ -89,6 +89,7 @@ const AnimatedDay = ({
 };
 
 export default function StreakCelebrationScreen() {
+  const router = useRouter();
   const dailyQuestStreak = useCharacterStore((state) => state.dailyQuestStreak);
   const markStreakCelebrationShown = useCharacterStore(
     (state) => state.markStreakCelebrationShown
@@ -226,7 +227,8 @@ export default function StreakCelebrationScreen() {
   const handleContinue = () => {
     // Clear the flag when user clicks continue
     setShouldShowStreakCelebration(false);
-    // Navigation will happen automatically when the flag is cleared
+    // Navigate back to the main app screen
+    router.back();
   };
 
   return (

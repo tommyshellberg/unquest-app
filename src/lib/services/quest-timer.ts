@@ -155,6 +155,16 @@ export default class QuestTimer {
     questTemplate: CustomQuestTemplate | StoryQuestTemplate,
     cooperativeQuestRunId?: string
   ) {
+    console.log('[QuestTimer] prepareQuest called with:', {
+      title: questTemplate.title,
+      id: questTemplate.id,
+      _id: (questTemplate as any)._id,
+      customId: (questTemplate as any).customId,
+      mode: questTemplate.mode,
+      category: (questTemplate as any).category,
+      cooperativeQuestRunId,
+    });
+
     const notificationsEnabled = await areNotificationsEnabled();
     if (notificationsEnabled) {
       await clearAllNotifications();
@@ -185,7 +195,15 @@ export default class QuestTimer {
       // Create a quest run on the server (only for solo quests)
       try {
         console.log('[QuestTimer] Creating quest run for solo quest');
+        console.log('[QuestTimer] About to call createQuestRun with template:', {
+          id: questTemplate.id,
+          _id: (questTemplate as any)._id,
+          customId: (questTemplate as any).customId,
+          mode: questTemplate.mode,
+          title: questTemplate.title,
+        });
         const questRun = await createQuestRun(questTemplate);
+        console.log('[QuestTimer] Quest run created successfully:', questRun.id);
         this.questRunId = questRun.id;
 
         // If this is a cooperative quest, store the cooperative quest run data

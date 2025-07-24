@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Info } from 'lucide-react-native';
+import { ArrowLeft, Info, Users } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 
@@ -12,10 +12,8 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
-  View,
-  ScreenContainer,
-  ScreenHeader,
   TouchableOpacity,
+  View,
 } from '@/components/ui';
 import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
 import { useUserStore } from '@/store/user-store';
@@ -122,7 +120,7 @@ export default function CreateCooperativeQuestScreen() {
       <View className="border-b border-neutral-200 px-5 py-4">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity onPress={() => router.back()}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
+            <ArrowLeft size={24} color="#333" />
           </TouchableOpacity>
           <Text className="text-lg font-semibold">
             Create Cooperative Quest
@@ -138,10 +136,10 @@ export default function CreateCooperativeQuestScreen() {
             <View className="flex-row items-start">
               <Info size={20} color="#7C3AED" style={{ marginTop: 2 }} />
               <View className="ml-3 flex-1">
-                <Text className="mb-1 font-semibold text-primary-600">
+                <Text className="text-primary-600 mb-1 font-semibold">
                   Team Challenge
                 </Text>
-                <Text className="text-sm text-primary-600">
+                <Text className="text-primary-600 text-sm">
                   All participants must keep their phones locked for the entire
                   duration. If anyone unlocks early, everyone fails together!
                 </Text>
@@ -175,11 +173,7 @@ export default function CreateCooperativeQuestScreen() {
           {/* Selected Friends Count */}
           {selectedFriends.length > 0 && (
             <View className="mt-4 flex-row items-center">
-              <MaterialCommunityIcons
-                name="account-group"
-                size={20}
-                color="#666"
-              />
+              <Users size={20} color="#666" />
               <Text className="ml-2 text-sm text-neutral-600">
                 {selectedFriends.length} friend
                 {selectedFriends.length > 1 ? 's' : ''} selected

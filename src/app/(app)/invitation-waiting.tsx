@@ -8,7 +8,7 @@ import {
   useInvitationStatus,
   useQuestRunStatus,
 } from '@/lib/hooks/use-cooperative-quest';
-import { useWebSocket } from '@/components/providers/websocket-provider';
+import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 
 export default function InvitationWaitingScreen() {
   const router = useRouter();
@@ -19,7 +19,13 @@ export default function InvitationWaitingScreen() {
   const setCooperativeQuestRun = useQuestStore(
     (state) => state.setCooperativeQuestRun
   );
-  const { addListener, removeListener } = useWebSocket();
+  const { on: addListener, off: removeListener, connect: connectWebSocket } = useLazyWebSocket();
+  
+  // Connect WebSocket when entering this screen
+  useEffect(() => {
+    // Only connect if we have a proper auth context
+    connectWebSocket();
+  }, [connectWebSocket]);
 
   // Debug logging
   console.log('[InvitationWaiting] cooperativeQuestRun:', cooperativeQuestRun);

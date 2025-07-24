@@ -81,7 +81,7 @@ export const useWebSocket = () => {
 export const LazyWebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { authStatus } = useAuth();
+  const authStatus = useAuth((state) => state.status);
   const [isConnected, setIsConnected] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [hasProvisionalToken, setHasProvisionalToken] = useState(false);
@@ -95,10 +95,13 @@ export const LazyWebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Manual connect function
   const connect = () => {
+    console.log('[LazyWebSocket] Connect called - authStatus:', authStatus, 'hasProvisionalToken:', hasProvisionalToken, 'isEnabled:', isEnabled);
     if ((authStatus === 'signIn' || hasProvisionalToken) && !isEnabled) {
       console.log('[LazyWebSocket] Manually connecting WebSocket...');
       setIsEnabled(true);
       webSocketService.connect();
+    } else {
+      console.log('[LazyWebSocket] Not connecting - conditions not met');
     }
   };
 

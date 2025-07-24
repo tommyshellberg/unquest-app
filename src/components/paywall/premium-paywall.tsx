@@ -5,6 +5,7 @@ import RevenueCatUI from 'react-native-purchases-ui';
 import type { CustomerInfo } from 'react-native-purchases';
 
 import { revenueCatService } from '@/lib/services/revenuecat-service';
+import { refreshPremiumStatus } from '@/lib/services/user';
 
 interface PremiumPaywallProps {
   isVisible: boolean;
@@ -21,6 +22,7 @@ export function PremiumPaywall({
 }: PremiumPaywallProps) {
   console.log('[PremiumPaywall] Component rendered with isVisible:', isVisible);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [hasPresented, setHasPresented] = useState(false);
 
   // Handle purchase started
   const handlePurchaseStarted = useCallback(() => {
@@ -128,9 +130,18 @@ export function PremiumPaywall({
     }
   }, [isPurchasing, onClose]);
 
+  // Reset hasPresented when isVisible changes from true to false
   useEffect(() => {
-    if (isVisible) {
+    if (!isVisible) {
+      console.log('[PremiumPaywall] Resetting hasPresented flag');
+      setHasPresented(false);
+    }
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (isVisible && !hasPresented) {
       console.log('[PremiumPaywall] Attempting to present paywall with event listeners...');
+      setHasPresented(true);
 
       // Present the paywall immediately when visible
       const presentPaywall = async () => {
@@ -151,6 +162,51 @@ export function PremiumPaywall({
               'Unable to show paywall. Please ensure you have an active internet connection.',
               [{ text: 'OK', onPress: onClose }]
             );
+          } else if (paywallResult === RevenueCatUI.PAYWALL_RESULT.CANCELLED) {
+            console.log('[PremiumPaywall] User cancelled the paywall');
+            onClose();
+          } else if (paywallResult === RevenueCatUI.PAYWALL_RESULT.PURCHASED || 
+                     paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED) {
+            console.log('[PremiumPaywall] Purchase/Restore successful:', paywallResult);
+            
+            // Refresh customer info to ensure we have the latest data
+            try {
+              await revenueCatService.refreshCustomerInfo();
+              const hasAccess = await revenueCatService.hasPremiumAccess();
+              console.log('[PremiumPaywall] Premium access after purchase:', hasAccess);
+              
+              if (hasAccess) {
+                showMessage({
+                  message: paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED 
+                    ? 'Premium Access Restored!' 
+                    : 'Welcome to the unQuest Circle!',
+                  description: paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED
+                    ? 'Your premium features have been restored.'
+                    : 'You now have access to all premium features.',
+                  type: 'success',
+                  duration: 3000,
+                });
+                
+                // Sync premium status with server
+                console.log('[PremiumPaywall] Syncing premium status with server...');
+                try {
+                  const serverResponse = await refreshPremiumStatus();
+                  console.log('[PremiumPaywall] Server sync response:', serverResponse);
+                } catch (serverError) {
+                  // Don't fail the purchase flow if server sync fails
+                  console.error('[PremiumPaywall] Failed to sync with server:', serverError);
+                  // The server will eventually sync via webhooks or next API call
+                }
+              }
+            } catch (error) {
+              console.error('[PremiumPaywall] Error checking premium access after purchase:', error);
+            }
+            
+            // Call success callback
+            if (onSuccess) {
+              onSuccess();
+            }
+            onClose();
           }
         } catch (error: any) {
           console.error('[PremiumPaywall] Error presenting paywall:', error);
@@ -201,7 +257,7 @@ export function PremiumPaywall({
 
       presentPaywall();
     }
-  }, [isVisible, onClose, onSuccess]);
+  }, [isVisible, hasPresented, onClose, onSuccess]);
 
   // This component doesn't render anything visible
   return null;

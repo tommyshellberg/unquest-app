@@ -22,16 +22,7 @@ export interface QuestOption {
   id: string;
   text: string;
   nextQuestId: string | null;
-  nextQuest?: {
-    id: string;
-    customId: string;
-    title: string;
-    durationMinutes: number;
-    reward: {
-      xp: number;
-    };
-    isPremium: boolean;
-  };
+  nextQuest?: QuestTemplate;
 }
 
 export interface NextAvailableQuestsResponse {

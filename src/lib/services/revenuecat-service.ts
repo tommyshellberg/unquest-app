@@ -125,7 +125,14 @@ export class RevenueCatService {
     console.log('[RevenueCat] Checking premium access...', {
       isInitialized: this.isInitialized,
       testModeEnabled: this.testModeEnabled,
+      isDev: __DEV__,
     });
+
+    // Override premium access in development mode
+    if (__DEV__) {
+      console.log('[RevenueCat] Development mode: Premium access granted');
+      return true;
+    }
 
     // If not initialized, return false (no premium access)
     if (!this.isInitialized) {
@@ -146,6 +153,8 @@ export class RevenueCatService {
         activeEntitlements: customerInfo?.entitlements?.active
           ? Object.keys(customerInfo.entitlements.active)
           : [],
+        activeSubscriptions: customerInfo?.activeSubscriptions || [],
+        allPurchasedProductIdentifiers: customerInfo?.allPurchasedProductIdentifiers || [],
       });
 
       // If no customer info, return false
@@ -160,19 +169,14 @@ export class RevenueCatService {
         return false;
       }
 
-      // Check for any active premium entitlement
-      const premiumEntitlements = [
-        'premium',
-        'premium_monthly',
-        'premium_yearly',
-        'pro',
-      ];
-
-      for (const entitlement of premiumEntitlements) {
-        if (customerInfo.entitlements.active[entitlement]) {
-          console.log(`[RevenueCat] Found active entitlement: ${entitlement}`);
-          return true;
-        }
+      // Get all active entitlements
+      const activeEntitlementKeys = Object.keys(customerInfo.entitlements.active);
+      
+      // If there are ANY active entitlements, the user has premium access
+      // This approach means you don't need to hardcode entitlement IDs
+      if (activeEntitlementKeys.length > 0) {
+        console.log('[RevenueCat] Found active entitlements:', activeEntitlementKeys);
+        return true;
       }
 
       console.log('[RevenueCat] No premium entitlements found');
@@ -274,10 +278,15 @@ export class RevenueCatService {
     }
   }
 
-  async presentPaywallIfNeeded(): Promise<boolean> {
+  async presentPaywallIfNeeded(requiredEntitlementIdentifier?: string): Promise<boolean> {
     try {
+      // If no specific entitlement is required, just use presentPaywall
+      if (!requiredEntitlementIdentifier) {
+        return this.presentPaywall();
+      }
+
       const paywallResult = await RevenueCatUI.presentPaywallIfNeeded({
-        requiredEntitlementIdentifier: 'premium',
+        requiredEntitlementIdentifier,
       });
 
       if (
