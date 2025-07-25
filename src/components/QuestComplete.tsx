@@ -21,7 +21,10 @@ import { type Quest, type StoryQuestTemplate } from '@/store/types';
 import { StoryNarration } from './StoryNarration';
 
 type QuestCompleteProps = {
-  quest: Quest & { heroName?: string };
+  quest: Quest & {
+    heroName?: string;
+    mode?: 'story' | 'custom' | 'cooperative';
+  };
   story: string;
   onContinue?: () => void;
   continueText?: string;
@@ -29,28 +32,66 @@ type QuestCompleteProps = {
   disableEnteringAnimations?: boolean;
 };
 
+// All POI images mapped statically (React Native doesn't support dynamic requires)
+const POI_IMAGES = {
+  1: require('@/../assets/images/fog-pois/vaedros-poi-img-1.png'),
+  2: require('@/../assets/images/fog-pois/vaedros-poi-img-2.png'),
+  3: require('@/../assets/images/fog-pois/vaedros-poi-img-3.png'),
+  4: require('@/../assets/images/fog-pois/vaedros-poi-img-4.png'),
+  5: require('@/../assets/images/fog-pois/vaedros-poi-img-5.png'),
+  6: require('@/../assets/images/fog-pois/vaedros-poi-img-6.png'),
+  7: require('@/../assets/images/fog-pois/vaedros-poi-img-7.png'),
+  8: require('@/../assets/images/fog-pois/vaedros-poi-img-8.png'),
+  9: require('@/../assets/images/fog-pois/vaedros-poi-img-9.png'),
+  10: require('@/../assets/images/fog-pois/vaedros-poi-img-10.png'),
+  11: require('@/../assets/images/fog-pois/vaedros-poi-img-11.png'),
+  12: require('@/../assets/images/fog-pois/vaedros-poi-img-12.png'),
+  13: require('@/../assets/images/fog-pois/vaedros-poi-img-13.png'),
+  14: require('@/../assets/images/fog-pois/vaedros-poi-img-14.png'),
+  15: require('@/../assets/images/fog-pois/vaedros-poi-img-15.png'),
+  16: require('@/../assets/images/fog-pois/vaedros-poi-img-16.png'),
+  17: require('@/../assets/images/fog-pois/vaedros-poi-img-17.png'),
+  18: require('@/../assets/images/fog-pois/vaedros-poi-img-18.png'),
+  19: require('@/../assets/images/fog-pois/vaedros-poi-img-19.png'),
+  20: require('@/../assets/images/fog-pois/vaedros-poi-img-20.png'),
+  21: require('@/../assets/images/fog-pois/vaedros-poi-img-21.png'),
+  22: require('@/../assets/images/fog-pois/vaedros-poi-img-22.png'),
+  23: require('@/../assets/images/fog-pois/vaedros-poi-img-23.png'),
+  24: require('@/../assets/images/fog-pois/vaedros-poi-img-24.png'),
+  25: require('@/../assets/images/fog-pois/vaedros-poi-img-25.png'),
+  26: require('@/../assets/images/fog-pois/vaedros-poi-img-26.png'),
+  27: require('@/../assets/images/fog-pois/vaedros-poi-img-27.png'),
+  28: require('@/../assets/images/fog-pois/vaedros-poi-img-28.png'),
+  29: require('@/../assets/images/fog-pois/vaedros-poi-img-29.png'),
+  30: require('@/../assets/images/fog-pois/vaedros-poi-img-30.png'),
+  31: require('@/../assets/images/fog-pois/vaedros-poi-img-31.png'),
+} as const;
+
 // Helper function to get the appropriate quest image
-function getQuestImage(questId: string) {
-  // Extract the base quest number from the ID (e.g., "quest-1a" -> "1")
-  const match = questId.match(/quest-(\d+)[a-z]?/);
-  if (!match) {
-    // Fallback to a default image or the first one
-    return require('@/../assets/images/fog-pois/vaedros-poi-img-1.png');
+function getQuestImage(quest: QuestCompleteProps['quest']) {
+  // For story quests, extract the base quest number from the ID (e.g., "quest-1a" -> "1")
+  if (quest.mode === 'story') {
+    // Use customId if available (this is the template ID like 'quest-1'), otherwise use id
+    const questIdToMatch = (quest as any).customId || quest.id;
+    const match = questIdToMatch.match(/quest-(\d+)[a-z]?/);
+    if (match) {
+      const questNumber = parseInt(match[1], 10);
+      // Use the specific image for this quest number if available
+      if (questNumber >= 1 && questNumber <= 31) {
+        return POI_IMAGES[questNumber as keyof typeof POI_IMAGES];
+      }
+    }
   }
 
-  const questNumber = match[1];
+  // For custom/cooperative quests or as fallback, use a hash of the quest ID to pick an image
+  // This ensures the same quest always gets the same image
+  const hash = quest.id.split('').reduce((acc, char) => {
+    return (acc << 5) - acc + char.charCodeAt(0);
+  }, 0);
 
-  // Map quest numbers to their corresponding images
-  const imageMap: { [key: string]: any } = {
-    '1': require('@/../assets/images/fog-pois/vaedros-poi-img-1.png'),
-    '2': require('@/../assets/images/fog-pois/vaedros-poi-img-2.png'),
-  };
-
-  // Return the corresponding image or fallback to the first one
-  return (
-    imageMap[questNumber] ||
-    require('@/../assets/images/fog-pois/vaedros-poi-img-1.png')
-  );
+  // We have 31 images available (1-31)
+  const imageNumber = ((Math.abs(hash) % 31) + 1) as keyof typeof POI_IMAGES;
+  return POI_IMAGES[imageNumber];
 }
 
 export function QuestComplete({
@@ -148,6 +189,8 @@ export function QuestComplete({
 
   // Debug logging
   console.log('[QuestComplete] Quest mode:', quest.mode);
+  console.log('[QuestComplete] Quest ID:', quest.id);
+  console.log('[QuestComplete] Quest customId:', (quest as any).customId);
   console.log('[QuestComplete] isStoryQuest:', isStoryQuest);
   if (quest.mode === 'story') {
     console.log('[QuestComplete] Quest audioFile:', (quest as any).audioFile);
@@ -202,9 +245,9 @@ export function QuestComplete({
                 opacity: 0.8,
               }}
             />
-            {quest.mode === 'story' && quest.id && (
+            {quest.id && (
               <Image
-                source={getQuestImage(quest.id)}
+                source={getQuestImage(quest)}
                 style={{
                   width: 150,
                   height: 150,
@@ -222,19 +265,14 @@ export function QuestComplete({
               ? undefined
               : FadeInDown.delay(200).duration(600)
           }
-          className="my-4 w-full"
-          style={[storyStyle, isStoryQuest ? { flex: 1 } : {}]}
+          className="my-4 w-full flex-1"
+          style={storyStyle}
         >
-          <Card
-            className={`rounded-xl bg-neutral-100 ${
-              isStoryQuest ? 'flex-1' : 'auto-h'
-            }`}
-          >
+          <Card className="flex-1 rounded-xl bg-neutral-100">
             <ScrollView
-              className={`px-4 ${isStoryQuest ? 'flex-1' : 'py-4'}`}
-              contentContainerStyle={
-                !isStoryQuest ? { paddingVertical: 12 } : undefined
-              }
+              className="px-4"
+              contentContainerStyle={{ paddingVertical: 20 }}
+              showsVerticalScrollIndicator={true}
             >
               <Text className="text-base leading-6 text-neutral-800">
                 {displayStory || 'Congratulations on completing your quest!'}

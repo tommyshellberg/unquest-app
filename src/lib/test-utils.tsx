@@ -1,4 +1,3 @@
-import '@shopify/flash-list/jestSetup';
 import '@testing-library/react-native/extend-expect';
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
@@ -15,7 +14,7 @@ const queryClient = new QueryClient({
     queries: {
       // Turn off retries and caching for testing
       retry: false,
-      cacheTime: 0,
+      gcTime: 0,
     },
   },
 });

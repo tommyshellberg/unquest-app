@@ -3,7 +3,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Image as RNImage } from 'react-native';
 
 import { useHighestCompletedQuest } from '@/api/quest';
-import { getMapNameForQuest, getPreRenderedMapForQuest } from '@/app/utils/map-utils';
+import {
+  getMapNameForQuest,
+  getPreRenderedMapForQuest,
+} from '@/app/utils/map-utils';
 import { Image, Text, View } from '@/components/ui';
 import { FocusAwareStatusBar } from '@/components/ui';
 
@@ -12,7 +15,10 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function MapScreen() {
   const zoomableViewRef = useRef<any>(null);
-  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
   // Fetch the highest completed quest from the API
   const {
@@ -22,7 +28,6 @@ export default function MapScreen() {
   } = useHighestCompletedQuest({
     storylineId: 'vaedros', // TODO: Make this dynamic based on current storyline
   });
-
 
   // Fallback to quest-1 if no quests completed or loading
   const highestQuestId =
@@ -38,16 +43,17 @@ export default function MapScreen() {
   useEffect(() => {
     if (mapImageSource) {
       const imageAsset = RNImage.resolveAssetSource(mapImageSource);
-      setImageDimensions({ width: imageAsset.width, height: imageAsset.height });
+      setImageDimensions({
+        width: imageAsset.width,
+        height: imageAsset.height,
+      });
     }
   }, [mapImageSource]);
 
   // Calculate zoom levels based on actual image dimensions
   // Ensure the image height fills the screen height at minimum zoom
-  const minZoom = imageDimensions
-    ? screenHeight / imageDimensions.height
-    : 1;
-    
+  const minZoom = imageDimensions ? screenHeight / imageDimensions.height : 1;
+
   const maxZoom = Math.max(1, minZoom * 2); // Allow zooming in 2x from minimum
   const initialZoom = minZoom; // Start at minimum zoom
 
@@ -70,12 +76,11 @@ export default function MapScreen() {
       <FocusAwareStatusBar />
 
       {/* Map Title */}
-      <View className="absolute left-4 top-10 z-10 rounded-lg bg-white/10 px-3 py-1 backdrop-blur-sm">
-        <Text className="text-xl font-bold text-primary-400">
+      <View className="absolute left-4 top-10 z-10 rounded-lg bg-black/50 px-3 py-1 backdrop-blur-sm">
+        <Text className="text-xl font-bold text-white">
           {getMapNameForQuest(highestQuestId)}
         </Text>
       </View>
-
 
       {/* Zoomable Map */}
       <View style={{ flex: 1 }}>
@@ -98,7 +103,10 @@ export default function MapScreen() {
           <Image
             key={`map-${highestQuestId}`}
             source={mapImageSource}
-            style={{ width: imageDimensions.width, height: imageDimensions.height }}
+            style={{
+              width: imageDimensions.width,
+              height: imageDimensions.height,
+            }}
             contentFit="cover"
             cachePolicy="memory-disk"
           />
