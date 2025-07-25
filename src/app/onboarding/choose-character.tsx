@@ -187,7 +187,8 @@ export default function ChooseCharacterScreen() {
             <Animated.View entering={FadeInDown.delay(2100)}>
               <Text className="mb-2">Character Name</Text>
               <TextInput
-                className="h-12 rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200"
+                className="flex h-14 items-center rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200"
+                style={{ textAlignVertical: 'center' }}
                 value={inputName}
                 onChangeText={(text) => {
                   const filtered = text.replace(/[^a-zA-Z0-9\s]/g, '');

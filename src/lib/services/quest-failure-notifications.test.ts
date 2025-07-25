@@ -21,12 +21,14 @@ jest.mock('expo-router', () => ({
 const handleQuestFailure = (questRunId: string) => {
   console.log('[Push Notification] Handling quest failure for:', questRunId);
   const questStore = useQuestStore.getState();
-  
-  if (questStore.cooperativeQuestRun?.id === questRunId || 
-      questStore.activeQuest?.id === questRunId) {
+
+  if (
+    questStore.cooperativeQuestRun?.id === questRunId ||
+    questStore.activeQuest?.id === questRunId
+  ) {
     console.log('[Push Notification] Marking quest as failed');
     questStore.failQuest();
-    
+
     // Stop Android background service
     if (Platform.OS === 'android' && BackgroundService.isRunning()) {
       console.log('[Push Notification] Stopping Android background service');
@@ -40,14 +42,14 @@ describe('Quest Failure Push Notifications', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup mock quest store
     mockQuestStore = {
       cooperativeQuestRun: null,
       activeQuest: null,
       failQuest: jest.fn(),
     };
-    
+
     (useQuestStore.getState as jest.Mock).mockReturnValue(mockQuestStore);
     (BackgroundService.isRunning as jest.Mock).mockReturnValue(false);
     (BackgroundService.stop as jest.Mock).mockResolvedValue(undefined);
@@ -57,10 +59,10 @@ describe('Quest Failure Push Notifications', () => {
     it('should fail quest when questRunId matches cooperative quest', () => {
       // Arrange
       mockQuestStore.cooperativeQuestRun = { id: 'quest-123' };
-      
+
       // Act
       handleQuestFailure('quest-123');
-      
+
       // Assert
       expect(mockQuestStore.failQuest).toHaveBeenCalled();
     });
@@ -68,10 +70,10 @@ describe('Quest Failure Push Notifications', () => {
     it('should fail quest when questRunId matches active quest', () => {
       // Arrange
       mockQuestStore.activeQuest = { id: 'quest-456' };
-      
+
       // Act
       handleQuestFailure('quest-456');
-      
+
       // Assert
       expect(mockQuestStore.failQuest).toHaveBeenCalled();
     });
@@ -80,10 +82,10 @@ describe('Quest Failure Push Notifications', () => {
       // Arrange
       mockQuestStore.cooperativeQuestRun = { id: 'quest-123' };
       mockQuestStore.activeQuest = { id: 'quest-456' };
-      
+
       // Act
       handleQuestFailure('quest-789');
-      
+
       // Assert
       expect(mockQuestStore.failQuest).not.toHaveBeenCalled();
     });
@@ -93,10 +95,10 @@ describe('Quest Failure Push Notifications', () => {
       Platform.OS = 'android';
       (BackgroundService.isRunning as jest.Mock).mockReturnValue(true);
       mockQuestStore.activeQuest = { id: 'quest-123' };
-      
+
       // Act
       handleQuestFailure('quest-123');
-      
+
       // Assert
       expect(BackgroundService.stop).toHaveBeenCalled();
     });
@@ -105,10 +107,10 @@ describe('Quest Failure Push Notifications', () => {
       // Arrange
       Platform.OS = 'ios';
       mockQuestStore.activeQuest = { id: 'quest-123' };
-      
+
       // Act
       handleQuestFailure('quest-123');
-      
+
       // Assert
       expect(BackgroundService.stop).not.toHaveBeenCalled();
     });
@@ -121,23 +123,26 @@ describe('Quest Failure Push Notifications', () => {
         notification: {
           additionalData: {
             type: 'quest_failed',
-            questRunId: 'quest-123'
-          }
-        }
+            questRunId: 'quest-123',
+          },
+        },
       };
       mockQuestStore.cooperativeQuestRun = { id: 'quest-123' };
-      
+
       // Simulate notification click handler
       const clickHandler = (event: any) => {
         const { additionalData } = event.notification;
-        if (additionalData?.type === 'quest_failed' && additionalData?.questRunId) {
+        if (
+          additionalData?.type === 'quest_failed' &&
+          additionalData?.questRunId
+        ) {
           handleQuestFailure(additionalData.questRunId);
         }
       };
-      
+
       // Act
       clickHandler(mockNotification);
-      
+
       // Assert
       expect(mockQuestStore.failQuest).toHaveBeenCalled();
     });
@@ -148,33 +153,36 @@ describe('Quest Failure Push Notifications', () => {
         notification: {
           additionalData: {
             type: 'quest_failed',
-            questRunId: 'quest-456'
-          }
+            questRunId: 'quest-456',
+          },
         },
         preventDefault: jest.fn(),
         notification: {
           display: jest.fn(),
           additionalData: {
             type: 'quest_failed',
-            questRunId: 'quest-456'
-          }
-        }
+            questRunId: 'quest-456',
+          },
+        },
       };
       mockQuestStore.activeQuest = { id: 'quest-456' };
-      
+
       // Simulate foreground notification handler
       const foregroundHandler = (event: any) => {
         const { additionalData } = event.notification;
-        if (additionalData?.type === 'quest_failed' && additionalData?.questRunId) {
+        if (
+          additionalData?.type === 'quest_failed' &&
+          additionalData?.questRunId
+        ) {
           handleQuestFailure(additionalData.questRunId);
         }
         event.preventDefault();
         event.notification.display();
       };
-      
+
       // Act
       foregroundHandler(mockNotification);
-      
+
       // Assert
       expect(mockQuestStore.failQuest).toHaveBeenCalled();
       expect(mockNotification.preventDefault).toHaveBeenCalled();
@@ -187,22 +195,25 @@ describe('Quest Failure Push Notifications', () => {
         notification: {
           additionalData: {
             type: 'cooperative_quest_invitation',
-            invitationId: 'inv-123'
-          }
-        }
+            invitationId: 'inv-123',
+          },
+        },
       };
-      
+
       // Simulate notification click handler
       const clickHandler = (event: any) => {
         const { additionalData } = event.notification;
-        if (additionalData?.type === 'quest_failed' && additionalData?.questRunId) {
+        if (
+          additionalData?.type === 'quest_failed' &&
+          additionalData?.questRunId
+        ) {
           handleQuestFailure(additionalData.questRunId);
         }
       };
-      
+
       // Act
       clickHandler(mockNotification);
-      
+
       // Assert
       expect(mockQuestStore.failQuest).not.toHaveBeenCalled();
     });
@@ -211,23 +222,34 @@ describe('Quest Failure Push Notifications', () => {
   describe('App Foreground Quest Status Check', () => {
     it('should check quest status when app comes to foreground with active cooperative quest', async () => {
       // Arrange
-      mockQuestStore.cooperativeQuestRun = { 
+      mockQuestStore.cooperativeQuestRun = {
         id: 'quest-789',
-        status: 'active'
+        status: 'active',
       };
-      
+
       (getQuestRunStatus as jest.Mock).mockResolvedValue({
         id: 'quest-789',
-        status: 'failed'
+        status: 'failed',
       });
-      
+
       // Simulate app state change handler
-      const handleAppStateChange = async (nextAppState: string, previousState: string) => {
-        if (previousState.match(/inactive|background/) && nextAppState === 'active') {
+      const handleAppStateChange = async (
+        nextAppState: string,
+        previousState: string
+      ) => {
+        if (
+          previousState.match(/inactive|background/) &&
+          nextAppState === 'active'
+        ) {
           const questStore = useQuestStore.getState();
-          if (questStore.cooperativeQuestRun?.status === 'active' && questStore.cooperativeQuestRun?.id) {
+          if (
+            questStore.cooperativeQuestRun?.status === 'active' &&
+            questStore.cooperativeQuestRun?.id
+          ) {
             try {
-              const status = await getQuestRunStatus(questStore.cooperativeQuestRun.id);
+              const status = await getQuestRunStatus(
+                questStore.cooperativeQuestRun.id
+              );
               if (status.status === 'failed') {
                 handleQuestFailure(status.id);
               }
@@ -237,10 +259,10 @@ describe('Quest Failure Push Notifications', () => {
           }
         }
       };
-      
+
       // Act
       await handleAppStateChange('active', 'background');
-      
+
       // Assert
       expect(getQuestRunStatus).toHaveBeenCalledWith('quest-789');
       expect(mockQuestStore.failQuest).toHaveBeenCalled();
@@ -249,23 +271,34 @@ describe('Quest Failure Push Notifications', () => {
     it('should not check quest status when no active cooperative quest', async () => {
       // Arrange
       mockQuestStore.cooperativeQuestRun = null;
-      
+
       // Simulate app state change handler
-      const handleAppStateChange = async (nextAppState: string, previousState: string) => {
-        if (previousState.match(/inactive|background/) && nextAppState === 'active') {
+      const handleAppStateChange = async (
+        nextAppState: string,
+        previousState: string
+      ) => {
+        if (
+          previousState.match(/inactive|background/) &&
+          nextAppState === 'active'
+        ) {
           const questStore = useQuestStore.getState();
-          if (questStore.cooperativeQuestRun?.status === 'active' && questStore.cooperativeQuestRun?.id) {
-            const status = await getQuestRunStatus(questStore.cooperativeQuestRun.id);
+          if (
+            questStore.cooperativeQuestRun?.status === 'active' &&
+            questStore.cooperativeQuestRun?.id
+          ) {
+            const status = await getQuestRunStatus(
+              questStore.cooperativeQuestRun.id
+            );
             if (status.status === 'failed') {
               handleQuestFailure(status.id);
             }
           }
         }
       };
-      
+
       // Act
       await handleAppStateChange('active', 'background');
-      
+
       // Assert
       expect(getQuestRunStatus).not.toHaveBeenCalled();
       expect(mockQuestStore.failQuest).not.toHaveBeenCalled();
@@ -273,32 +306,43 @@ describe('Quest Failure Push Notifications', () => {
 
     it('should not fail quest if status is still active', async () => {
       // Arrange
-      mockQuestStore.cooperativeQuestRun = { 
+      mockQuestStore.cooperativeQuestRun = {
         id: 'quest-999',
-        status: 'active'
+        status: 'active',
       };
-      
+
       (getQuestRunStatus as jest.Mock).mockResolvedValue({
         id: 'quest-999',
-        status: 'active' // Still active
+        status: 'active', // Still active
       });
-      
+
       // Simulate app state change handler
-      const handleAppStateChange = async (nextAppState: string, previousState: string) => {
-        if (previousState.match(/inactive|background/) && nextAppState === 'active') {
+      const handleAppStateChange = async (
+        nextAppState: string,
+        previousState: string
+      ) => {
+        if (
+          previousState.match(/inactive|background/) &&
+          nextAppState === 'active'
+        ) {
           const questStore = useQuestStore.getState();
-          if (questStore.cooperativeQuestRun?.status === 'active' && questStore.cooperativeQuestRun?.id) {
-            const status = await getQuestRunStatus(questStore.cooperativeQuestRun.id);
+          if (
+            questStore.cooperativeQuestRun?.status === 'active' &&
+            questStore.cooperativeQuestRun?.id
+          ) {
+            const status = await getQuestRunStatus(
+              questStore.cooperativeQuestRun.id
+            );
             if (status.status === 'failed') {
               handleQuestFailure(status.id);
             }
           }
         }
       };
-      
+
       // Act
       await handleAppStateChange('active', 'background');
-      
+
       // Assert
       expect(getQuestRunStatus).toHaveBeenCalledWith('quest-999');
       expect(mockQuestStore.failQuest).not.toHaveBeenCalled();

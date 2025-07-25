@@ -72,7 +72,10 @@ describe('User Service', () => {
       mockApiClient.get.mockRejectedValue(mockError);
 
       await expect(getUserDetails()).rejects.toThrow('Network error');
-      expect(console.error).toHaveBeenCalledWith('Error fetching user details:', mockError);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error fetching user details:',
+        mockError
+      );
     });
 
     it('should handle 401 unauthorized errors', async () => {
@@ -82,7 +85,10 @@ describe('User Service', () => {
       mockApiClient.get.mockRejectedValue(mockError);
 
       await expect(getUserDetails()).rejects.toEqual(mockError);
-      expect(console.error).toHaveBeenCalledWith('Error fetching user details:', mockError);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error fetching user details:',
+        mockError
+      );
     });
 
     it('should handle legacy user data format', async () => {
@@ -122,7 +128,9 @@ describe('User Service', () => {
 
       const result = await updateUserCharacter(mockCharacter);
 
-      expect(mockApiClient.patch).toHaveBeenCalledWith('users/me/', { character: mockCharacter });
+      expect(mockApiClient.patch).toHaveBeenCalledWith('users/me/', {
+        character: mockCharacter,
+      });
       expect(result).toEqual(mockResponse);
     });
 
@@ -138,7 +146,9 @@ describe('User Service', () => {
       const mockError = new Error('Update failed');
       mockApiClient.patch.mockRejectedValue(mockError);
 
-      await expect(updateUserCharacter(mockCharacter)).rejects.toThrow('Update failed');
+      await expect(updateUserCharacter(mockCharacter)).rejects.toThrow(
+        'Update failed'
+      );
     });
   });
 
@@ -219,7 +229,10 @@ describe('User Service', () => {
       mockApiClient.get.mockRejectedValue(mockError);
 
       await expect(getUserFriends()).rejects.toThrow('Failed to fetch friends');
-      expect(console.error).toHaveBeenCalledWith('Error fetching user friends:', mockError);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error fetching user friends:',
+        mockError
+      );
     });
   });
 
@@ -257,8 +270,13 @@ describe('User Service', () => {
       };
       mockApiClient.post.mockRejectedValue(mockError);
 
-      await expect(sendFriendInvite('duplicate@example.com')).rejects.toEqual(mockError);
-      expect(console.error).toHaveBeenCalledWith('Error sending friend invitation:', mockError);
+      await expect(sendFriendInvite('duplicate@example.com')).rejects.toEqual(
+        mockError
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'Error sending friend invitation:',
+        mockError
+      );
     });
 
     it('should handle invalid email format', async () => {
@@ -270,7 +288,9 @@ describe('User Service', () => {
       };
       mockApiClient.post.mockRejectedValue(mockError);
 
-      await expect(sendFriendInvite('invalid-email')).rejects.toEqual(mockError);
+      await expect(sendFriendInvite('invalid-email')).rejects.toEqual(
+        mockError
+      );
     });
   });
 
@@ -307,7 +327,9 @@ describe('User Service', () => {
 
       const result = await getUserInvitations();
 
-      expect(mockApiClient.get).toHaveBeenCalledWith('/users/invites', { params: {} });
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/invites', {
+        params: {},
+      });
       expect(result).toEqual(mockResponse);
     });
 
@@ -353,8 +375,13 @@ describe('User Service', () => {
       const mockError = new Error('Failed to fetch invitations');
       mockApiClient.get.mockRejectedValue(mockError);
 
-      await expect(getUserInvitations()).rejects.toThrow('Failed to fetch invitations');
-      expect(console.error).toHaveBeenCalledWith('Error fetching user invitations:', mockError);
+      await expect(getUserInvitations()).rejects.toThrow(
+        'Failed to fetch invitations'
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'Error fetching user invitations:',
+        mockError
+      );
     });
   });
 
@@ -375,7 +402,9 @@ describe('User Service', () => {
 
       const result = await acceptFriendInvitation('invite-123');
 
-      expect(mockApiClient.patch).toHaveBeenCalledWith('/users/invites/invite-123/accept');
+      expect(mockApiClient.patch).toHaveBeenCalledWith(
+        '/users/invites/invite-123/accept'
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -388,8 +417,13 @@ describe('User Service', () => {
       };
       mockApiClient.patch.mockRejectedValue(mockError);
 
-      await expect(acceptFriendInvitation('invalid-id')).rejects.toEqual(mockError);
-      expect(console.error).toHaveBeenCalledWith('Error accepting friend invitation:', mockError);
+      await expect(acceptFriendInvitation('invalid-id')).rejects.toEqual(
+        mockError
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'Error accepting friend invitation:',
+        mockError
+      );
     });
 
     it('should handle already accepted invitation', async () => {
@@ -401,7 +435,9 @@ describe('User Service', () => {
       };
       mockApiClient.patch.mockRejectedValue(mockError);
 
-      await expect(acceptFriendInvitation('invite-123')).rejects.toEqual(mockError);
+      await expect(acceptFriendInvitation('invite-123')).rejects.toEqual(
+        mockError
+      );
     });
   });
 
@@ -423,7 +459,9 @@ describe('User Service', () => {
 
       const result = await rejectFriendInvitation('invite-123');
 
-      expect(mockApiClient.patch).toHaveBeenCalledWith('/users/invites/invite-123/reject');
+      expect(mockApiClient.patch).toHaveBeenCalledWith(
+        '/users/invites/invite-123/reject'
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -434,7 +472,10 @@ describe('User Service', () => {
       await expect(rejectFriendInvitation('invite-123')).rejects.toThrow(
         'Failed to reject invitation'
       );
-      expect(console.error).toHaveBeenCalledWith('Error rejecting friend invitation:', mockError);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error rejecting friend invitation:',
+        mockError
+      );
     });
   });
 
@@ -449,7 +490,9 @@ describe('User Service', () => {
 
       const result = await removeFriend('friend-123');
 
-      expect(mockApiClient.delete).toHaveBeenCalledWith('/users/friends/friend-123');
+      expect(mockApiClient.delete).toHaveBeenCalledWith(
+        '/users/friends/friend-123'
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -463,7 +506,10 @@ describe('User Service', () => {
       mockApiClient.delete.mockRejectedValue(mockError);
 
       await expect(removeFriend('invalid-friend')).rejects.toEqual(mockError);
-      expect(console.error).toHaveBeenCalledWith('Error removing friend:', mockError);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error removing friend:',
+        mockError
+      );
     });
 
     it('should handle unauthorized removal', async () => {
@@ -490,7 +536,9 @@ describe('User Service', () => {
 
       const result = await rescindInvitation('invite-123');
 
-      expect(mockApiClient.delete).toHaveBeenCalledWith('/users/invites/invite-123/rescind');
+      expect(mockApiClient.delete).toHaveBeenCalledWith(
+        '/users/invites/invite-123/rescind'
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -501,7 +549,10 @@ describe('User Service', () => {
       await expect(rescindInvitation('invite-123')).rejects.toThrow(
         'Failed to rescind invitation'
       );
-      expect(console.error).toHaveBeenCalledWith('Error rescinding invitation:', mockError);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error rescinding invitation:',
+        mockError
+      );
     });
 
     it('should handle already accepted invitation', async () => {
@@ -519,20 +570,28 @@ describe('User Service', () => {
 
   describe('sendBulkFriendInvites', () => {
     it('should send bulk invitations successfully', async () => {
-      const emails = ['friend1@example.com', 'friend2@example.com', 'friend3@example.com'];
+      const emails = [
+        'friend1@example.com',
+        'friend2@example.com',
+        'friend3@example.com',
+      ];
       const mockResponse = {
         message: 'Bulk invitations processed',
         totalSuccessful: 2,
         totalFailed: 1,
         successfulEmails: ['friend1@example.com', 'friend2@example.com'],
-        failedEmails: [{ email: 'friend3@example.com', reason: 'User already a friend' }],
+        failedEmails: [
+          { email: 'friend3@example.com', reason: 'User already a friend' },
+        ],
       };
 
       mockApiClient.post.mockResolvedValue({ data: mockResponse });
 
       const result = await sendBulkFriendInvites(emails);
 
-      expect(mockApiClient.post).toHaveBeenCalledWith('/users/invites/bulk', { emails });
+      expect(mockApiClient.post).toHaveBeenCalledWith('/users/invites/bulk', {
+        emails,
+      });
       expect(result).toEqual(mockResponse);
       expect(result.totalSuccessful).toBe(2);
       expect(result.totalFailed).toBe(1);
@@ -546,8 +605,14 @@ describe('User Service', () => {
         totalFailed: 2,
         successfulEmails: [],
         failedEmails: [
-          { email: 'duplicate1@example.com', reason: 'Invitation already exists' },
-          { email: 'duplicate2@example.com', reason: 'Invitation already exists' },
+          {
+            email: 'duplicate1@example.com',
+            reason: 'Invitation already exists',
+          },
+          {
+            email: 'duplicate2@example.com',
+            reason: 'Invitation already exists',
+          },
         ],
       };
 
@@ -610,8 +675,13 @@ describe('User Service', () => {
       const mockError = new Error('Failed to delete account');
       mockApiClient.delete.mockRejectedValue(mockError);
 
-      await expect(deleteUserAccount()).rejects.toThrow('Failed to delete account');
-      expect(console.error).toHaveBeenCalledWith('Error deleting user account:', mockError);
+      await expect(deleteUserAccount()).rejects.toThrow(
+        'Failed to delete account'
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'Error deleting user account:',
+        mockError
+      );
     });
 
     it('should handle unauthorized deletion', async () => {
@@ -668,7 +738,10 @@ describe('User Service', () => {
         'provisionalEmail',
         `${mockUuid}@unquestapp.com`
       );
-      expect(mockSetItem).toHaveBeenCalledWith('provisionalUserId', 'provisional-user-123');
+      expect(mockSetItem).toHaveBeenCalledWith(
+        'provisionalUserId',
+        'provisional-user-123'
+      );
       expect(mockSetItem).toHaveBeenCalledWith(
         'provisionalAccessToken',
         'provisional-access-token'
@@ -726,8 +799,14 @@ describe('User Service', () => {
       const result = await createProvisionalUser(mockCharacter);
 
       // Should still set provisional email and user ID
-      expect(mockSetItem).toHaveBeenCalledWith('provisionalEmail', 'test-uuid@unquestapp.com');
-      expect(mockSetItem).toHaveBeenCalledWith('provisionalUserId', 'provisional-user-456');
+      expect(mockSetItem).toHaveBeenCalledWith(
+        'provisionalEmail',
+        'test-uuid@unquestapp.com'
+      );
+      expect(mockSetItem).toHaveBeenCalledWith(
+        'provisionalUserId',
+        'provisional-user-456'
+      );
       // Should not call setItem for access token
       expect(mockSetItem).not.toHaveBeenCalledWith(
         'provisionalAccessToken',
@@ -751,7 +830,9 @@ describe('User Service', () => {
       mockUuidv4.mockReturnValue('test-uuid');
       mockApiClient.post.mockRejectedValue(mockError);
 
-      await expect(createProvisionalUser(mockCharacter)).rejects.toThrow('Network error');
+      await expect(createProvisionalUser(mockCharacter)).rejects.toThrow(
+        'Network error'
+      );
 
       // Should still have tried to store the provisional email
       expect(mockSetItem).toHaveBeenCalledWith(
@@ -781,7 +862,9 @@ describe('User Service', () => {
       mockUuidv4.mockReturnValue('test-uuid');
       mockApiClient.post.mockRejectedValue(mockError);
 
-      await expect(createProvisionalUser(mockCharacter)).rejects.toEqual(mockError);
+      await expect(createProvisionalUser(mockCharacter)).rejects.toEqual(
+        mockError
+      );
     });
   });
 });

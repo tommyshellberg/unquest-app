@@ -23,10 +23,10 @@ import QuestTimer from './quest-timer';
 jest.mock('@/lib/services/quest-run-service', () => ({
   createQuestRun: jest.fn().mockResolvedValue({ id: 'mock-quest-run-id' }),
   updateQuestRunStatus: jest.fn().mockResolvedValue({}),
-  updatePhoneLockStatus: jest.fn().mockResolvedValue({ 
-    id: 'mock-quest-run-id', 
+  updatePhoneLockStatus: jest.fn().mockResolvedValue({
+    id: 'mock-quest-run-id',
     status: 'active',
-    participants: []
+    participants: [],
   }),
   getQuestRunStatus: jest.fn().mockResolvedValue({
     id: 'mock-quest-run-id',
@@ -65,7 +65,6 @@ const mockGetItem = jest.fn().mockImplementation((key: string) => {
       recap: 'Test quest recap',
       poiSlug: 'test-poi',
       story: 'Test story content',
-      audioFile: 'test-audio.mp3',
       options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
       reward: { xp: 100 },
     });
@@ -158,7 +157,6 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
         options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
         reward: { xp: 100 },
       };
@@ -168,8 +166,14 @@ describe('QuestTimer', () => {
 
       // Assert
       expect(createQuestRun).toHaveBeenCalledWith(mockQuestTemplate);
-      expect(mockSetItem).toHaveBeenCalledWith('QUEST_TIMER_TEMPLATE', JSON.stringify(mockQuestTemplate));
-      expect(mockSetItem).toHaveBeenCalledWith('QUEST_RUN_ID', 'mock-quest-run-id');
+      expect(mockSetItem).toHaveBeenCalledWith(
+        'QUEST_TIMER_TEMPLATE',
+        JSON.stringify(mockQuestTemplate)
+      );
+      expect(mockSetItem).toHaveBeenCalledWith(
+        'QUEST_RUN_ID',
+        'mock-quest-run-id'
+      );
     });
 
     it('continues with quest preparation even if server request fails', async () => {
@@ -182,20 +186,24 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
         options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
         reward: { xp: 100 },
       };
 
       // Mock server failure
-      (createQuestRun as jest.Mock).mockRejectedValue(new Error('Server error'));
+      (createQuestRun as jest.Mock).mockRejectedValue(
+        new Error('Server error')
+      );
 
       // Act
       await QuestTimer.prepareQuest(mockQuestTemplate);
 
       // Assert - should continue with quest preparation despite server error
       expect(createQuestRun).toHaveBeenCalledWith(mockQuestTemplate);
-      expect(mockSetItem).toHaveBeenCalledWith('QUEST_TIMER_TEMPLATE', JSON.stringify(mockQuestTemplate));
+      expect(mockSetItem).toHaveBeenCalledWith(
+        'QUEST_TIMER_TEMPLATE',
+        JSON.stringify(mockQuestTemplate)
+      );
     });
   });
 
@@ -210,7 +218,6 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
         options: [],
         reward: { xp: 100 },
       };
@@ -233,10 +240,10 @@ describe('QuestTimer', () => {
       // Arrange
       // @ts-ignore
       QuestTimer.isPhoneLocked = true;
-      
+
       // Act
       await QuestTimer.onPhoneLocked();
-      
+
       // Assert
       expect(updatePhoneLockStatus).not.toHaveBeenCalled();
     });
@@ -253,7 +260,6 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
         options: [],
         reward: { xp: 100 },
       };
@@ -296,14 +302,13 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
         options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
         reward: { xp: 100 },
       };
 
       // Prepare quest first
       await QuestTimer.prepareQuest(mockQuestTemplate);
-      
+
       // Mock the quest as started
       // @ts-ignore
       QuestTimer.questStartTime = Date.now() - 10000; // Started 10 seconds ago
@@ -334,7 +339,6 @@ describe('QuestTimer', () => {
         recap: 'Test cooperative quest',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
         options: [],
         reward: { xp: 100 },
       };
@@ -344,9 +348,9 @@ describe('QuestTimer', () => {
         id: 'mock-quest-run-id',
         questId: 'test-quest-id',
         status: 'active',
-        participants: []
+        participants: [],
       };
-      
+
       (useQuestStore.getState as jest.Mock).mockReturnValue({
         ...useQuestStore.getState(),
         cooperativeQuestRun: mockCooperativeQuestRun,
@@ -354,7 +358,7 @@ describe('QuestTimer', () => {
         activeQuest: {
           id: 'test-quest-id',
           startTime: 0,
-        }
+        },
       });
 
       // Prepare quest first
@@ -383,17 +387,16 @@ describe('QuestTimer', () => {
         recap: 'Test cooperative quest',
         poiSlug: 'test-poi',
         story: 'Test story',
-        audioFile: 'test.mp3',
         options: [],
         reward: { xp: 200 },
       };
-      
+
       // Act & Assert
       await expect(QuestTimer.prepareQuest(cooperativeQuest)).rejects.toThrow(
         'Cooperative quest must have an existing quest run ID from server'
       );
     });
-    
+
     it('should use provided cooperativeQuestRunId for cooperative quests', async () => {
       // Arrange
       const cooperativeQuest: StoryQuestTemplate = {
@@ -405,17 +408,19 @@ describe('QuestTimer', () => {
         recap: 'Test cooperative quest',
         poiSlug: 'test-poi',
         story: 'Test story',
-        audioFile: 'test.mp3',
         options: [],
         reward: { xp: 200 },
       };
-      
+
       // Act
       await QuestTimer.prepareQuest(cooperativeQuest, 'existing-coop-run-id');
-      
+
       // Assert
       expect(createQuestRun).not.toHaveBeenCalled(); // Should not create new quest run
-      expect(mockSetItem).toHaveBeenCalledWith('QUEST_RUN_ID', 'existing-coop-run-id');
+      expect(mockSetItem).toHaveBeenCalledWith(
+        'QUEST_RUN_ID',
+        'existing-coop-run-id'
+      );
     });
   });
 
@@ -423,7 +428,7 @@ describe('QuestTimer', () => {
     beforeEach(() => {
       Platform.OS = 'android';
     });
-    
+
     it('should use BackgroundService for Android', async () => {
       // Arrange
       const BackgroundService = require('react-native-bg-actions');
@@ -435,14 +440,13 @@ describe('QuestTimer', () => {
         recap: 'Test quest recap',
         poiSlug: 'test-poi',
         story: 'Test story content',
-        audioFile: 'test-audio.mp3',
         options: [],
         reward: { xp: 100 },
       };
-      
+
       // Act
       await QuestTimer.prepareQuest(mockQuestTemplate);
-      
+
       // Assert
       expect(BackgroundService.start).toHaveBeenCalledWith(
         expect.any(Function),

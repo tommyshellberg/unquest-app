@@ -9,12 +9,14 @@ import { Modal, Pressable, Text, View } from '@/components/ui';
 // Category options with icons
 const categoryOptions = [
   { id: 'fitness', label: 'Fitness', icon: 'heart' },
-  { id: 'reading', label: 'Reading', icon: 'book-open' },
-  { id: 'meditation', label: 'Meditation', icon: 'eye-off' },
-  { id: 'social', label: 'Social', icon: 'coffee' },
-  { id: 'learning', label: 'Learning', icon: 'edit-2' },
-  { id: 'commuting', label: 'Commuting', icon: 'navigation' },
-  { id: 'other', label: 'Other', icon: 'clock' },
+  { id: 'work', label: 'Work', icon: 'briefcase' },
+  { id: 'self-care', label: 'Self-care', icon: 'smile' },
+  { id: 'social', label: 'Social', icon: 'users' },
+  { id: 'learning', label: 'Learning', icon: 'book-open' },
+  { id: 'creative', label: 'Creative', icon: 'edit-3' },
+  { id: 'household', label: 'Household', icon: 'home' },
+  { id: 'outdoors', label: 'Outdoors', icon: 'sun' },
+  { id: 'other', label: 'Other', icon: 'more-horizontal' },
 ];
 
 type CategorySelectorProps = {

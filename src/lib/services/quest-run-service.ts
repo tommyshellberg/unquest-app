@@ -37,8 +37,16 @@ const generateQuestRunBodyCustom = (questTemplate: CustomQuestTemplate) => {
   // Remove both id and inviteeIds from the quest object
   const { id: _id, inviteeIds, ...rest } = questTemplate;
 
-  // Build the request body
-  const body: any = { quest: rest };
+  // Ensure mode is set
+  if (!rest.mode) {
+    rest.mode = 'custom';
+  }
+
+  // Build the request body with participants
+  const body: any = { 
+    quest: rest,
+    participants: [] // Will be filled by server with current user
+  };
 
   // Add inviteeIds if this is a cooperative quest
   if (inviteeIds && inviteeIds.length > 0) {
@@ -51,29 +59,71 @@ const generateQuestRunBodyCustom = (questTemplate: CustomQuestTemplate) => {
 };
 
 const generateQuestRunBodyStory = (questTemplate: StoryQuestTemplate) => {
-  const { id } = questTemplate;
-  return { quest: { questTemplateId: id } };
+  // Check if this is a server quest template with _id
+  const questTemplateId = (questTemplate as any)._id;
+  
+  if (questTemplateId) {
+    // Server quest template - use questTemplateId
+    console.log('[generateQuestRunBodyStory] Using server questTemplateId:', questTemplateId);
+    return { questTemplateId };
+  } else {
+    // Local quest template - send full quest object
+    console.log('[generateQuestRunBodyStory] Using local quest template, sending full quest object');
+    const { id: _id, inviteeIds, ...rest } = questTemplate;
+    
+    // Ensure mode is set
+    if (!rest.mode) {
+      rest.mode = 'story';
+    }
+    
+    return { 
+      quest: rest,
+      participants: [] // Will be filled by server with current user
+    };
+  }
 };
 
 export async function createQuestRun(
   questTemplate: CustomQuestTemplate | StoryQuestTemplate
 ): Promise<QuestRunResponse> {
+  console.log('[createQuestRun] Called with template:', {
+    id: questTemplate.id,
+    _id: (questTemplate as any)._id,
+    customId: (questTemplate as any).customId,
+    mode: questTemplate.mode,
+    title: questTemplate.title,
+  });
+
+  // Determine mode - if undefined, check for story-specific fields
+  const mode = questTemplate.mode || 
+    ((questTemplate as any).poiSlug || (questTemplate as any).story ? 'story' : 'custom');
+  
   const body =
-    questTemplate.mode === 'story'
+    mode === 'story'
       ? generateQuestRunBodyStory(questTemplate)
       : generateQuestRunBodyCustom(questTemplate);
+
+  console.log('[createQuestRun] Generated body for API call:', JSON.stringify(body, null, 2));
 
   try {
     // Check if we're using a provisional user
     const hasProvisionalToken = !!getItem('provisionalAccessToken');
+    console.log('[createQuestRun] Using provisional token:', hasProvisionalToken);
 
     // Use the appropriate client
     const client = hasProvisionalToken ? provisionalApiClient : apiClient;
 
+    console.log('[createQuestRun] Making POST request to /quest-runs/');
     const response = await client.post<QuestRunResponse>('/quest-runs/', body);
+    console.log('[createQuestRun] Response received:', response.data.id);
     return response.data;
   } catch (error) {
-    console.error('Failed to create quest run:', error);
+    console.error('[createQuestRun] Failed to create quest run:', error);
+    console.error('[createQuestRun] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      response: (error as any).response?.data,
+      status: (error as any).response?.status,
+    });
     throw error;
   }
 }
@@ -149,7 +199,7 @@ export async function updatePhoneLockStatus(
   if (!runId || runId === 'null' || runId === 'undefined') {
     throw new Error('Invalid quest run ID for phone lock status update');
   }
-  
+
   try {
     console.log(
       'Updating phone lock status:',

@@ -1,12 +1,15 @@
 # OneSignal Android Push Notification Setup Guide
 
 ## Issue
+
 You're experiencing "Invalid Google Project Number" error in OneSignal, preventing Android push notifications from working.
 
 ## Root Cause
+
 The OneSignal Expo plugin wasn't configured in your app.config.ts, and Firebase configuration needs to be properly linked.
 
 ## What I've Done
+
 1. ✅ Installed `onesignal-expo-plugin` package
 2. ✅ Added the plugin to your app.config.ts with proper configuration
 
@@ -35,12 +38,14 @@ According to OneSignal's documentation, you need to upload your Firebase credent
    - The Project Number should show as 122930798648 (matching your Firebase project)
 
 ### 4. Rebuild Your App
+
 After making these changes:
+
 ```bash
 # For development build
 pnpm run build:development:android
 
-# For staging build  
+# For staging build
 pnpm run build:staging:android
 
 # For production build
@@ -48,13 +53,16 @@ pnpm run build:production:android
 ```
 
 ### 5. Test Push Notifications
+
 After rebuilding:
+
 1. Install the new build on your Android device/simulator
 2. Open the app and grant notification permissions
 3. Check the debug logs in the app for OneSignal subscription status
 4. In OneSignal Dashboard, verify your device appears as subscribed
 
 ## Important Notes
+
 - You do NOT need to add google-services.json to your project - OneSignal handles this through their dashboard
 - The OneSignal Expo plugin automatically configures your app during the build process
 - You must rebuild the app after adding the plugin configuration
@@ -62,7 +70,9 @@ After rebuilding:
 - If you're using a simulator, ensure it has Google Play Services installed
 
 ## Debugging
+
 If issues persist after following these steps:
+
 1. Check EAS build logs for any OneSignal related errors
 2. Verify in OneSignal dashboard that FCM configuration shows as "Valid"
 3. Use the debug buttons in Settings screen to check OneSignal subscription status

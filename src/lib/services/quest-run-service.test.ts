@@ -45,7 +45,6 @@ describe('quest-run-service', () => {
         recap: 'Test recap',
         poiSlug: 'test-poi',
         story: 'Test story',
-        audioFile: 'test-audio.mp3',
         options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
         reward: { xp: 100 },
       };
@@ -73,7 +72,6 @@ describe('quest-run-service', () => {
         recap: 'Test recap',
         poiSlug: 'test-poi',
         story: 'Test story',
-        audioFile: 'test-audio.mp3',
         options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
         reward: { xp: 100 },
       };

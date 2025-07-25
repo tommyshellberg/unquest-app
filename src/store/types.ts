@@ -26,7 +26,6 @@ export interface StoryQuestTemplate extends BaseQuestTemplate {
   poiSlug: string;
   mode: 'story';
   story: string;
-  audioFile: string | any; // Can be a string path (from server) or required asset (from local data)
   recap: string;
   options: QuestOption[];
 }
@@ -39,10 +38,27 @@ export interface CustomQuestTemplate extends BaseQuestTemplate {
 
 export type QuestStatus = 'active' | 'completed' | 'failed' | 'cancelled';
 
+export type ReflectionMood =
+  | 'great'
+  | 'calm'
+  | 'energized'
+  | 'relaxed'
+  | 'thoughtful'
+  | 'challenging';
+
+export interface QuestReflection {
+  mood?: ReflectionMood;
+  text?: string;
+  createdAt: number;
+  prompt?: string; // Which prompt was shown to the user
+}
+
 export type Quest = (StoryQuestTemplate | CustomQuestTemplate) & {
   startTime: number;
   stopTime?: number; // When the quest ended, for any reason
   status: QuestStatus;
+  customId?: string; // Preserve the original quest template ID (e.g., 'quest-1', 'quest-4')
+  reflection?: QuestReflection; // Optional reflection data
 };
 
 export interface Character {

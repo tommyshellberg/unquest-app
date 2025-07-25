@@ -16,10 +16,11 @@ import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
 
 export default function AppQuestDetailsScreen() {
-  const { id, timestamp, from } = useLocalSearchParams<{
+  const { id, timestamp, from, questData } = useLocalSearchParams<{
     id: string;
     timestamp?: string;
     from?: string;
+    questData?: string;
   }>();
 
   const completedQuests = useQuestStore((state) => state.completedQuests);
@@ -75,6 +76,34 @@ export default function AppQuestDetailsScreen() {
   };
 
   const quest = useMemo(() => {
+    // Priority 1: Use quest data passed from journal (includes story field)
+    if (questData) {
+      try {
+        const parsedQuest = JSON.parse(questData);
+        console.log('[QuestDetails] Using quest data from params');
+        return parsedQuest;
+      } catch (e) {
+        console.error('[QuestDetails] Failed to parse quest data:', e);
+      }
+    }
+
+    // Priority 2: Check recent completed quest (for post-completion flow)
+    if (recentCompletedQuest && recentCompletedQuest.id === id) {
+      console.log('[QuestDetails] Using recent completed quest');
+      return recentCompletedQuest;
+    }
+
+    // Priority 3: Check current failed quest (for failure flow)
+    if (
+      failedQuest &&
+      failedQuest.id === id &&
+      failedQuest.status === 'failed'
+    ) {
+      console.log('[QuestDetails] Using current failed quest');
+      return failedQuest;
+    }
+
+    // Priority 4: Search in completed quests (fallback)
     if (timestamp) {
       const completedMatch = completedQuests.find(
         (q) =>
@@ -82,33 +111,47 @@ export default function AppQuestDetailsScreen() {
           q.stopTime?.toString() === timestamp &&
           q.status === 'completed'
       );
-      if (completedMatch) return completedMatch;
+      if (completedMatch) {
+        console.log(
+          '[QuestDetails] Found quest in completed quests with timestamp'
+        );
+        return completedMatch;
+      }
     }
+
+    // Priority 5: Search without timestamp
     const completedMatchNoTimestamp = completedQuests.find(
       (q) => q.id === id && q.status === 'completed'
     );
-    if (completedMatchNoTimestamp) return completedMatchNoTimestamp;
-
-    // Check if the current global failedQuest is the one for this screen
-    if (
-      failedQuest &&
-      failedQuest.id === id &&
-      failedQuest.status === 'failed'
-    ) {
-      return failedQuest;
+    if (completedMatchNoTimestamp) {
+      console.log(
+        '[QuestDetails] Found quest in completed quests without timestamp'
+      );
+      return completedMatchNoTimestamp;
     }
 
-    // Check in failedQuests history from the store if you have one
+    // Priority 6: Check failed quests history
     const failedQuestsHistory = useQuestStore.getState().failedQuests;
     if (failedQuestsHistory) {
       const failedMatchInHistory = failedQuestsHistory.find(
         (q) => q.id === id && q.status === 'failed'
       );
-      if (failedMatchInHistory) return failedMatchInHistory;
+      if (failedMatchInHistory) {
+        console.log('[QuestDetails] Found quest in failed quests history');
+        return failedMatchInHistory;
+      }
     }
 
+    console.log('[QuestDetails] Quest not found');
     return null;
-  }, [id, timestamp, completedQuests, failedQuest]);
+  }, [
+    id,
+    timestamp,
+    completedQuests,
+    failedQuest,
+    questData,
+    recentCompletedQuest,
+  ]);
 
   if (!quest) {
     return (
@@ -167,11 +210,21 @@ export default function AppQuestDetailsScreen() {
             <Text className="text-xl font-bold">Quest Details</Text>
           </View>
         </Animated.View>
-        <QuestComplete
-          quest={quest}
-          story={getQuestCompletionText()}
-          showActionButton={from !== 'journal'}
-        />
+        {from === 'journal' ? (
+          <QuestComplete
+            quest={quest}
+            story={getQuestCompletionText()}
+            showActionButton={false}
+            disableEnteringAnimations={true}
+          />
+        ) : (
+          <QuestComplete
+            quest={quest}
+            story={getQuestCompletionText()}
+            showActionButton={true}
+            disableEnteringAnimations={false}
+          />
+        )}
       </View>
     );
   }

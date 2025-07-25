@@ -80,20 +80,20 @@ appId: com.vaedros.unquest.development
       - assertVisible: 'Begin New Journey'
       - tapOn: 'Begin New Journey'
       - waitForAnimationToEnd
-      
+
       # Character Name Screen
       - assertVisible: 'Your Character'
       - tapOn: 'Enter character name'
       - inputText: 'MaestroHero'
       - tapOn: 'Continue'
       - waitForAnimationToEnd
-      
+
       # Character Type Selection
       - assertVisible: 'Select the character that speaks to you'
       - assertVisible: 'ALCHEMIST'
       - tapOn: 'Create Character'
       - waitForAnimationToEnd
-      
+
       # Handle possible intro screens after character creation
       - runFlow:
           when:
@@ -101,7 +101,7 @@ appId: com.vaedros.unquest.development
           commands:
             - tapOn: 'Got it'
             - waitForAnimationToEnd
-      
+
       # Handle notifications screen if it appears
       - runFlow:
           when:
@@ -115,7 +115,7 @@ appId: com.vaedros.unquest.development
                   visible: '.*Allow.*'
                 commands:
                   - tapOn: 'Allow'
-      
+
       # Should now be at quest screen
       - assertVisible: 'Your Journey Begins'
       - tapOn: 'Wake up'
@@ -191,7 +191,6 @@ appId: com.vaedros.unquest.development
 # Verify email verification screen
 - assertVisible: 'Check your email'
 - assertVisible: 'testquester@example.com'
-
 # =============================================================================
 # TEST COMPLETE
 # =============================================================================

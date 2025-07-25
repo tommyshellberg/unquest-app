@@ -65,6 +65,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.FOREGROUND_SERVICE',
       'android.permission.FOREGROUND_SERVICE_DATA_SYNC',
       'android.permission.WAKE_LOCK',
+      'com.android.vending.BILLING',
     ],
     // use the last digit of semver
     versionCode: parseInt(Env.VERSION.split('.').pop() || '0'),

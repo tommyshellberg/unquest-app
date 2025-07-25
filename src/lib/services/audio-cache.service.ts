@@ -1,8 +1,13 @@
 import * as FileSystem from 'expo-file-system';
 
 import { apiClient } from '@/api/common/client';
+import { provisionalApiClient } from '@/api/common/provisional-client';
+import { getToken } from '@/lib/auth/utils';
 import { getItem, setItem } from '@/lib/storage';
-import { convertLegacyAssetToPath, isLegacyAssetId } from '@/utils/legacyAudioMapping';
+import {
+  convertLegacyAssetToPath,
+  isLegacyAssetId,
+} from '@/utils/legacyAudioMapping';
 
 interface CachedAudio {
   path: string;
@@ -50,12 +55,16 @@ class AudioCacheService {
 
   private async loadCacheIndex() {
     try {
-      const savedIndex = getItem<Array<[string, AudioCacheEntry]>>(this.CACHE_INDEX_KEY);
+      const savedIndex = getItem<Array<[string, AudioCacheEntry]>>(
+        this.CACHE_INDEX_KEY
+      );
       if (!savedIndex || !Array.isArray(savedIndex)) {
         return;
       }
 
-      console.log(`Loading ${savedIndex.length} cached audio entries from storage`);
+      console.log(
+        `Loading ${savedIndex.length} cached audio entries from storage`
+      );
       const now = Date.now();
 
       // Restore cache entries and verify they still exist
@@ -123,10 +132,12 @@ class AudioCacheService {
         }
       }
 
-      expiredKeys.forEach(key => this.cache.delete(key));
+      expiredKeys.forEach((key) => this.cache.delete(key));
 
       if (filesDeleted > 0 || expiredKeys.length > 0) {
-        console.log(`Cleaned up ${filesDeleted} expired files and ${expiredKeys.length} cache entries`);
+        console.log(
+          `Cleaned up ${filesDeleted} expired files and ${expiredKeys.length} cache entries`
+        );
         this.saveCacheIndex();
       }
     } catch (error) {
@@ -140,8 +151,17 @@ class AudioCacheService {
 
   private async downloadAudioFile(audioPath: string): Promise<string | null> {
     try {
+      // Choose the appropriate client based on authentication state
+      const hasRegularToken = !!getToken();
+      const hasProvisionalToken = !!getItem('provisionalAccessToken');
+      const client = hasRegularToken
+        ? apiClient
+        : hasProvisionalToken
+          ? provisionalApiClient
+          : apiClient;
+
       // Get signed URL from server
-      const response = await apiClient.get('audio/file', {
+      const response = await client.get('audio/file', {
         params: { path: audioPath },
       });
 
@@ -169,8 +189,17 @@ class AudioCacheService {
 
   private async downloadToMemory(audioPath: string): Promise<string | null> {
     try {
+      // Choose the appropriate client based on authentication state
+      const hasRegularToken = !!getToken();
+      const hasProvisionalToken = !!getItem('provisionalAccessToken');
+      const client = hasRegularToken
+        ? apiClient
+        : hasProvisionalToken
+          ? provisionalApiClient
+          : apiClient;
+
       // Get signed URL from server
-      const response = await apiClient.get('/audio/file', {
+      const response = await client.get('/audio/file', {
         params: { path: audioPath },
       });
 
@@ -186,7 +215,9 @@ class AudioCacheService {
     }
   }
 
-  async getAudioSource(audioPath: string | number): Promise<{ uri: string } | null> {
+  async getAudioSource(
+    audioPath: string | number
+  ): Promise<{ uri: string } | null> {
     if (!audioPath) {
       return null;
     }
@@ -199,7 +230,9 @@ class AudioCacheService {
         console.warn(`Could not convert legacy asset ID: ${audioPath}`);
         return null;
       }
-      console.log(`Converted legacy asset ID ${audioPath} to path: ${convertedPath}`);
+      console.log(
+        `Converted legacy asset ID ${audioPath} to path: ${convertedPath}`
+      );
       actualPath = convertedPath;
     } else {
       actualPath = audioPath;
@@ -300,7 +333,7 @@ class AudioCacheService {
   async preloadAudio(audioPaths: (string | number)[]): Promise<void> {
     // Preload next 3 quests' audio files in the background
     const preloadPromises = audioPaths
-      .filter(path => typeof path === 'string') // Skip legacy asset IDs
+      .filter((path) => typeof path === 'string') // Skip legacy asset IDs
       .slice(0, 3)
       .map(async (audioPath) => {
         try {

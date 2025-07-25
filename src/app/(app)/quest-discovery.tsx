@@ -93,49 +93,46 @@ export default function QuestDiscoveryScreen() {
 
       <ScreenContainer>
         {/* Header */}
-        <ScreenHeader
-          title="Join a Quest"
-          showBackButton
-        />
+        <ScreenHeader title="Join a Quest" showBackButton />
 
-      {/* Content */}
-      <ScrollView
-        className="flex-1"
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
-        }
-      >
-        <View className="p-5">
-          {/* Pending Invitations Section */}
-          <View className="mb-6">
-            <Text className="mb-3 text-lg font-semibold">
-              Pending Invitations
-            </Text>
+        {/* Content */}
+        <ScrollView
+          className="flex-1"
+          refreshControl={
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          }
+        >
+          <View className="p-5">
+            {/* Pending Invitations Section */}
+            <View className="mb-6">
+              <Text className="mb-3 text-lg font-semibold">
+                Pending Invitations
+              </Text>
 
-            {isLoading ? (
-              <ActivityIndicator className="py-8" />
-            ) : invitations && invitations.length > 0 ? (
-              invitations.map(renderInvitation)
-            ) : (
+              {isLoading ? (
+                <ActivityIndicator className="py-8" />
+              ) : invitations && invitations.length > 0 ? (
+                invitations.map(renderInvitation)
+              ) : (
+                <View className="rounded-lg bg-gray-50 p-6">
+                  <Text className="text-center text-gray-500">
+                    No pending invitations at the moment
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Future: Public Quests Section */}
+            <View>
+              <Text className="mb-3 text-lg font-semibold">Public Quests</Text>
               <View className="rounded-lg bg-gray-50 p-6">
                 <Text className="text-center text-gray-500">
-                  No pending invitations at the moment
+                  Public quest discovery coming soon!
                 </Text>
               </View>
-            )}
-          </View>
-
-          {/* Future: Public Quests Section */}
-          <View>
-            <Text className="mb-3 text-lg font-semibold">Public Quests</Text>
-            <View className="rounded-lg bg-gray-50 p-6">
-              <Text className="text-center text-gray-500">
-                Public quest discovery coming soon!
-              </Text>
             </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
       </ScreenContainer>
     </View>
   );

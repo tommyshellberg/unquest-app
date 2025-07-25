@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
@@ -34,12 +40,16 @@ interface LazyWebSocketContextValue {
   forceReconnect: () => void;
 }
 
-const LazyWebSocketContext = createContext<LazyWebSocketContextValue | null>(null);
+const LazyWebSocketContext = createContext<LazyWebSocketContextValue | null>(
+  null
+);
 
 export const useLazyWebSocket = () => {
   const context = useContext(LazyWebSocketContext);
   if (!context) {
-    throw new Error('useLazyWebSocket must be used within LazyWebSocketProvider');
+    throw new Error(
+      'useLazyWebSocket must be used within LazyWebSocketProvider'
+    );
   }
   return context;
 };
@@ -47,12 +57,12 @@ export const useLazyWebSocket = () => {
 // Compatibility layer for existing components
 export const useWebSocket = () => {
   const lazyContext = useLazyWebSocket();
-  
+
   // Auto-connect for components that expect an active connection
   useEffect(() => {
     lazyContext.connect();
   }, [lazyContext]);
-  
+
   // Return interface compatible with old WebSocketProvider
   return {
     isConnected: lazyContext.isConnected,
@@ -71,7 +81,7 @@ export const useWebSocket = () => {
 export const LazyWebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { authStatus } = useAuth();
+  const authStatus = useAuth((state) => state.status);
   const [isConnected, setIsConnected] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [hasProvisionalToken, setHasProvisionalToken] = useState(false);
@@ -85,10 +95,13 @@ export const LazyWebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Manual connect function
   const connect = () => {
+    console.log('[LazyWebSocket] Connect called - authStatus:', authStatus, 'hasProvisionalToken:', hasProvisionalToken, 'isEnabled:', isEnabled);
     if ((authStatus === 'signIn' || hasProvisionalToken) && !isEnabled) {
       console.log('[LazyWebSocket] Manually connecting WebSocket...');
       setIsEnabled(true);
       webSocketService.connect();
+    } else {
+      console.log('[LazyWebSocket] Not connecting - conditions not met');
     }
   };
 

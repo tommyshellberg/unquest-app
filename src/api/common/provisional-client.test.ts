@@ -38,17 +38,21 @@ describe('Provisional API Client', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup interceptor capture
-    mockAxiosInstance.interceptors.request.use.mockImplementation((success, error) => {
-      requestInterceptor = success;
-      return success;
-    });
-    
-    mockAxiosInstance.interceptors.response.use.mockImplementation((success, error) => {
-      responseInterceptor = success;
-      return success;
-    });
+    mockAxiosInstance.interceptors.request.use.mockImplementation(
+      (success, error) => {
+        requestInterceptor = success;
+        return success;
+      }
+    );
+
+    mockAxiosInstance.interceptors.response.use.mockImplementation(
+      (success, error) => {
+        responseInterceptor = success;
+        return success;
+      }
+    );
 
     // Reset console.log mock
     jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -65,7 +69,7 @@ describe('Provisional API Client', () => {
   describe('Client Configuration', () => {
     it('should create axios instance with correct configuration', () => {
       const axios = require('axios');
-      
+
       expect(axios.create).toHaveBeenCalledWith({
         baseURL: 'https://api.example.com',
         headers: {
@@ -93,7 +97,9 @@ describe('Provisional API Client', () => {
       const result = await requestInterceptor(config);
 
       expect(mockGetItem).toHaveBeenCalledWith('provisionalAccessToken');
-      expect(result.headers.Authorization).toBe('Bearer test-provisional-token');
+      expect(result.headers.Authorization).toBe(
+        'Bearer test-provisional-token'
+      );
     });
 
     it('should not attach authorization header when no token exists', async () => {
@@ -125,13 +131,21 @@ describe('Provisional API Client', () => {
 
       await requestInterceptor(config);
 
-      expect(consoleSpy).toHaveBeenCalledWith('========================================');
-      expect(consoleSpy).toHaveBeenCalledWith('[Provisional API Client] Invitation Request');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '========================================'
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Provisional API Client] Invitation Request'
+      );
       expect(consoleSpy).toHaveBeenCalledWith('Method:', 'POST');
       expect(consoleSpy).toHaveBeenCalledWith('URL:', '/invitations/send');
-      expect(consoleSpy).toHaveBeenCalledWith('Data:', { email: 'test@example.com' });
+      expect(consoleSpy).toHaveBeenCalledWith('Data:', {
+        email: 'test@example.com',
+      });
       expect(consoleSpy).toHaveBeenCalledWith('Timestamp:', expect.any(String));
-      expect(consoleSpy).toHaveBeenCalledWith('========================================');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '========================================'
+      );
     });
 
     it('should not log non-invitation requests', async () => {
@@ -147,7 +161,9 @@ describe('Provisional API Client', () => {
 
       await requestInterceptor(config);
 
-      expect(consoleSpy).not.toHaveBeenCalledWith('[Provisional API Client] Invitation Request');
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        '[Provisional API Client] Invitation Request'
+      );
     });
 
     it('should handle invitation URL patterns correctly', async () => {
@@ -164,22 +180,27 @@ describe('Provisional API Client', () => {
 
       for (const url of invitationUrls) {
         consoleSpy.mockClear();
-        
+
         await requestInterceptor({
           headers: {},
           url,
           method: 'post',
         });
 
-        expect(consoleSpy).toHaveBeenCalledWith('[Provisional API Client] Invitation Request');
+        expect(consoleSpy).toHaveBeenCalledWith(
+          '[Provisional API Client] Invitation Request'
+        );
       }
     });
 
     it('should handle request errors properly', async () => {
-      const requestErrorHandler = mockAxiosInstance.interceptors.request.use.mock.calls[0][1];
+      const requestErrorHandler =
+        mockAxiosInstance.interceptors.request.use.mock.calls[0][1];
       const error = new Error('Request configuration error');
-      
-      await expect(requestErrorHandler(error)).rejects.toThrow('Request configuration error');
+
+      await expect(requestErrorHandler(error)).rejects.toThrow(
+        'Request configuration error'
+      );
     });
   });
 
@@ -197,13 +218,22 @@ describe('Provisional API Client', () => {
 
       const result = await responseInterceptor(response);
 
-      expect(consoleSpy).toHaveBeenCalledWith('========================================');
-      expect(consoleSpy).toHaveBeenCalledWith('[Provisional API Client] Invitation Response');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '========================================'
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Provisional API Client] Invitation Response'
+      );
       expect(consoleSpy).toHaveBeenCalledWith('Status:', 200);
       expect(consoleSpy).toHaveBeenCalledWith('URL:', '/invitations/send');
-      expect(consoleSpy).toHaveBeenCalledWith('Response Data:', { success: true, invitationId: '123' });
+      expect(consoleSpy).toHaveBeenCalledWith('Response Data:', {
+        success: true,
+        invitationId: '123',
+      });
       expect(consoleSpy).toHaveBeenCalledWith('Timestamp:', expect.any(String));
-      expect(consoleSpy).toHaveBeenCalledWith('========================================');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '========================================'
+      );
       expect(result).toBe(response);
     });
 
@@ -220,7 +250,9 @@ describe('Provisional API Client', () => {
 
       const result = await responseInterceptor(response);
 
-      expect(consoleSpy).not.toHaveBeenCalledWith('[Provisional API Client] Invitation Response');
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        '[Provisional API Client] Invitation Response'
+      );
       expect(result).toBe(response);
     });
 
@@ -236,22 +268,27 @@ describe('Provisional API Client', () => {
 
       for (const url of invitationUrls) {
         consoleSpy.mockClear();
-        
+
         await responseInterceptor({
           status: 200,
           config: { url },
           data: { success: true },
         });
 
-        expect(consoleSpy).toHaveBeenCalledWith('[Provisional API Client] Invitation Response');
+        expect(consoleSpy).toHaveBeenCalledWith(
+          '[Provisional API Client] Invitation Response'
+        );
       }
     });
 
     it('should handle response errors properly', async () => {
-      const responseErrorHandler = mockAxiosInstance.interceptors.response.use.mock.calls[0][1];
+      const responseErrorHandler =
+        mockAxiosInstance.interceptors.response.use.mock.calls[0][1];
       const error = new Error('Response error');
-      
-      await expect(responseErrorHandler(error)).rejects.toThrow('Response error');
+
+      await expect(responseErrorHandler(error)).rejects.toThrow(
+        'Response error'
+      );
     });
 
     it('should handle responses with different status codes', async () => {
@@ -260,7 +297,7 @@ describe('Provisional API Client', () => {
 
       for (const status of statusCodes) {
         consoleSpy.mockClear();
-        
+
         await responseInterceptor({
           status,
           config: { url: '/invitations/test' },
@@ -286,7 +323,9 @@ describe('Provisional API Client', () => {
 
       const result = await requestInterceptor(config);
 
-      expect(consoleSpy).not.toHaveBeenCalledWith('[Provisional API Client] Invitation Request');
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        '[Provisional API Client] Invitation Request'
+      );
       expect(result).toBe(config);
     });
 
@@ -303,7 +342,9 @@ describe('Provisional API Client', () => {
 
       const result = await responseInterceptor(response);
 
-      expect(consoleSpy).not.toHaveBeenCalledWith('[Provisional API Client] Invitation Response');
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        '[Provisional API Client] Invitation Response'
+      );
       expect(result).toBe(response);
     });
 

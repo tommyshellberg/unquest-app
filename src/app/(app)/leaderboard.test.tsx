@@ -41,7 +41,7 @@ global.Pressable = RNGlobal.TouchableOpacity;
 jest.mock('@/components/ui', () => {
   const React = jest.requireActual('react');
   const RN = jest.requireActual('react-native');
-  
+
   return {
     useModal: () => ({
       ref: { current: null },
@@ -57,21 +57,28 @@ jest.mock('@/components/ui', () => {
     ScrollView: RN.ScrollView,
     SafeAreaView: RN.SafeAreaView,
     Pressable: RN.TouchableOpacity, // Add Pressable mock
-    Card: ({ children, className, style }: any) => 
+    Card: ({ children, className, style }: any) =>
       React.createElement(RN.View, { style, className }, children),
-    ScreenContainer: ({ children, className }: any) => 
+    ScreenContainer: ({ children, className }: any) =>
       React.createElement(RN.View, { className }, children),
-    ScreenHeader: ({ title, subtitle, showBackButton, onBackPress }: any) => 
+    ScreenHeader: ({ title, subtitle, showBackButton, onBackPress }: any) =>
       React.createElement(RN.View, {}, [
-        showBackButton && React.createElement(RN.TouchableOpacity, { 
-          key: 'back-button', 
-          onPress: onBackPress 
-        }, React.createElement(RN.Text, {}, 'Back')),
+        showBackButton &&
+          React.createElement(
+            RN.TouchableOpacity,
+            {
+              key: 'back-button',
+              onPress: onBackPress,
+            },
+            React.createElement(RN.Text, {}, 'Back')
+          ),
         React.createElement(RN.Text, { key: 'title' }, title),
-        subtitle && React.createElement(RN.Text, { key: 'subtitle' }, subtitle)
+        subtitle && React.createElement(RN.Text, { key: 'subtitle' }, subtitle),
       ]),
-    Button: ({ label, onPress, disabled, variant, className }: any) => 
-      React.createElement(RN.TouchableOpacity, { onPress, disabled }, 
+    Button: ({ label, onPress, disabled, variant, className }: any) =>
+      React.createElement(
+        RN.TouchableOpacity,
+        { onPress, disabled },
         React.createElement(RN.Text, {}, label)
       ),
   };

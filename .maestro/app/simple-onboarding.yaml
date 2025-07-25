@@ -27,18 +27,18 @@ appId: com.vaedros.unquest.development
       visible: 'unQuest'
     commands:
       - tapOn:
-          point: "95%, 10%"  # Tap near the X button in top right
+          point: '95%, 10%' # Tap near the X button in top right
       - waitForAnimationToEnd
 
 # Now wait for the actual app content
 - extendedWaitUntil:
-    visible: "Wake up"
+    visible: 'Wake up'
     timeout: 10000
 
-- tapOn: "Wake up"
+- tapOn: 'Wake up'
 
 # Wait and see what screen appears next
 - waitForAnimationToEnd
 
 # Take a screenshot to see where we are
-- takeScreenshot: "after-wake-up"
+- takeScreenshot: 'after-wake-up'

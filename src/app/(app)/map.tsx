@@ -1,191 +1,115 @@
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
-import MaskedView from '@react-native-masked-view/masked-view';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Platform } from 'react-native';
+import { Dimensions, Image as RNImage } from 'react-native';
 
-import { MAP_IMAGES, type MapId } from '@/app/data/maps';
+import { useHighestCompletedQuest } from '@/api/quest';
 import {
-  getFogMaskForQuest,
-  getMapForQuest,
   getMapNameForQuest,
+  getPreRenderedMapForQuest,
 } from '@/app/utils/map-utils';
 import { Image, Text, View } from '@/components/ui';
 import { FocusAwareStatusBar } from '@/components/ui';
-import { useQuestStore } from '@/store/quest-store';
 
-// Original map dimensions
-const IMAGE_WIDTH = 1434;
-const IMAGE_HEIGHT = 1434;
 // Get device screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function MapScreen() {
   const zoomableViewRef = useRef<any>(null);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const [isMaskLoaded, setIsMaskLoaded] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
-  // Get the last completed quest
-  const completedQuests = useQuestStore((state) => state.getCompletedQuests());
-  const lastCompletedQuest = completedQuests[completedQuests.length - 1];
+  // Fetch the highest completed quest from the API
+  const {
+    data: highestQuestData,
+    isLoading,
+    error,
+  } = useHighestCompletedQuest({
+    storylineId: 'vaedros', // TODO: Make this dynamic based on current storyline
+  });
 
-  // Determine the map to display
-  const mapId = useMemo<MapId>(
-    () => getMapForQuest(lastCompletedQuest?.id || ''),
-    [lastCompletedQuest]
+  // Fallback to quest-1 if no quests completed or loading
+  const highestQuestId =
+    highestQuestData?.highestCompletedQuest?.customId || 'quest-1';
+
+  // Get the pre-rendered map image based on highest completed quest
+  const mapImageSource = useMemo(
+    () => getPreRenderedMapForQuest(highestQuestId),
+    [highestQuestId]
   );
-  const mapImage = MAP_IMAGES[mapId];
 
-  console.log('lastCompletedQuest', lastCompletedQuest);
+  // Get actual image dimensions
+  useEffect(() => {
+    if (mapImageSource) {
+      const imageAsset = RNImage.resolveAssetSource(mapImageSource);
+      setImageDimensions({
+        width: imageAsset.width,
+        height: imageAsset.height,
+      });
+    }
+  }, [mapImageSource]);
 
-  // Get the appropriate fog mask based on quest progression
-  const currentMask = getFogMaskForQuest(lastCompletedQuest?.id);
+  // Calculate zoom levels based on actual image dimensions
+  // Ensure the image height fills the screen height at minimum zoom
+  const minZoom = imageDimensions ? screenHeight / imageDimensions.height : 1;
 
-  // Calculate initial zoom to ensure the map covers the screen
-  const initialZoom = Math.max(
-    screenWidth / IMAGE_WIDTH,
-    screenHeight / IMAGE_HEIGHT
-  );
+  const maxZoom = Math.max(1, minZoom * 2); // Allow zooming in 2x from minimum
+  const initialZoom = minZoom; // Start at minimum zoom
 
   // Calculate initial offset to show bottom-right corner
   const initialOffsetX = 0;
   const initialOffsetY = 0;
 
-  // Android-specific: Force reload images
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      // Reset load states to force re-render
-      setIsImageLoaded(false);
-      setIsMaskLoaded(false);
-
-      // Small delay to ensure proper loading
-      const timer = setTimeout(() => {
-        setIsImageLoaded(true);
-        setIsMaskLoaded(true);
-      }, 100);
-
-      return () => clearTimeout(timer);
-    } else {
-      setIsImageLoaded(true);
-      setIsMaskLoaded(true);
-    }
-  }, [mapImage, currentMask]);
+  // Show loading state while fetching highest quest or image dimensions
+  if (isLoading || !imageDimensions) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[rgba(61,73,78,0.92)]">
+        <FocusAwareStatusBar />
+        <Text className="text-lg text-primary-300">Loading map...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-[rgba(61,73,78,0.92)]">
       <FocusAwareStatusBar />
 
       {/* Map Title */}
-      <View className="absolute left-4 top-10 z-10 rounded-lg bg-white/10 px-3 py-1 backdrop-blur-sm">
-        <Text className="text-xl font-bold text-primary-400">
-          {getMapNameForQuest(lastCompletedQuest?.id || '')}
+      <View className="absolute left-4 top-10 z-10 rounded-lg bg-black/50 px-3 py-1 backdrop-blur-sm">
+        <Text className="text-xl font-bold text-white">
+          {getMapNameForQuest(highestQuestId)}
         </Text>
       </View>
 
-      {/* Zoomable Map with mask */}
+      {/* Zoomable Map */}
       <View style={{ flex: 1 }}>
         <ReactNativeZoomableView
           ref={zoomableViewRef}
-          maxZoom={2}
-          minZoom={initialZoom}
+          maxZoom={maxZoom}
+          minZoom={minZoom}
           initialZoom={initialZoom}
           initialOffsetX={initialOffsetX}
           initialOffsetY={initialOffsetY}
           bindToBorders={true}
-          contentWidth={IMAGE_WIDTH}
-          contentHeight={IMAGE_HEIGHT}
+          contentWidth={imageDimensions.width}
+          contentHeight={imageDimensions.height}
           panBoundaryPadding={0}
           style={{ flex: 1 }}
           doubleTapDelay={300}
           movementSensibility={3}
           longPressDuration={700}
         >
-          <View style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
-            {Platform.OS === 'android' ? (
-              // Android: Use inverted mask approach for better compatibility
-              <View style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
-                {/* Fog/unexplored area as base layer */}
-                <View
-                  style={{
-                    position: 'absolute',
-                    width: IMAGE_WIDTH,
-                    height: IMAGE_HEIGHT,
-                    backgroundColor: '#1a1a1a', // Dark fog color
-                    top: 0,
-                    left: 0,
-                  }}
-                />
-                {/* Map visible through mask areas */}
-                <MaskedView
-                  style={{
-                    position: 'absolute',
-                    width: IMAGE_WIDTH,
-                    height: IMAGE_HEIGHT,
-                    top: 0,
-                    left: 0,
-                  }}
-                  maskElement={
-                    <View
-                      style={{
-                        backgroundColor: 'transparent',
-                        width: IMAGE_WIDTH,
-                        height: IMAGE_HEIGHT,
-                      }}
-                    >
-                      <Image
-                        source={currentMask}
-                        style={{
-                          width: IMAGE_WIDTH,
-                          height: IMAGE_HEIGHT,
-                          tintColor: 'white', // Ensure mask is treated as alpha channel
-                        }}
-                        contentFit="cover"
-                        onLoad={() => setIsMaskLoaded(true)}
-                        cachePolicy="memory-disk"
-                      />
-                    </View>
-                  }
-                >
-                  <Image
-                    source={mapImage}
-                    style={{
-                      width: IMAGE_WIDTH,
-                      height: IMAGE_HEIGHT,
-                    }}
-                    contentFit="cover"
-                    onLoad={() => setIsImageLoaded(true)}
-                    cachePolicy="memory-disk"
-                  />
-                </MaskedView>
-              </View>
-            ) : (
-              // iOS: Use MaskedView for better fog effect
-              <MaskedView
-                style={{ flex: 1, width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
-                maskElement={
-                  <View
-                    style={{
-                      flex: 1,
-                      backgroundColor: 'transparent',
-                      width: IMAGE_WIDTH,
-                      height: IMAGE_HEIGHT,
-                    }}
-                  >
-                    <Image
-                      source={currentMask}
-                      style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
-                      contentFit="cover"
-                    />
-                  </View>
-                }
-              >
-                <Image
-                  source={mapImage}
-                  style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
-                  contentFit="cover"
-                />
-              </MaskedView>
-            )}
-          </View>
+          <Image
+            key={`map-${highestQuestId}`}
+            source={mapImageSource}
+            style={{
+              width: imageDimensions.width,
+              height: imageDimensions.height,
+            }}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+          />
         </ReactNativeZoomableView>
       </View>
     </View>

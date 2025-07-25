@@ -18,21 +18,30 @@ jest.mock('@/../assets/images/background/active-quest.jpg', () => ({}));
 jest.mock('@/components/quest', () => {
   const React = jest.requireActual('react');
   const RN = jest.requireActual('react-native');
-  
+
   return {
-    QuestCard: ({ title, duration, children, ...props }: any) => (
-      React.createElement(RN.View, { testID: "quest-card", ...props }, [
+    QuestCard: ({ title, duration, children, ...props }: any) =>
+      React.createElement(RN.View, { testID: 'quest-card', ...props }, [
         React.createElement(RN.Text, { key: 'title' }, title),
-        React.createElement(RN.Text, { key: 'duration' }, `${duration} minutes`),
-        children
-      ])
-    ),
-    CompassAnimation: ({ size, delay }: any) => (
-      React.createElement(RN.View, { testID: "compass-animation", size, delay })
-    ),
-    LockInstructions: ({ variant, delay }: any) => (
-      React.createElement(RN.View, { testID: "lock-instructions", variant, delay })
-    ),
+        React.createElement(
+          RN.Text,
+          { key: 'duration' },
+          `${duration} minutes`
+        ),
+        children,
+      ]),
+    CompassAnimation: ({ size, delay }: any) =>
+      React.createElement(RN.View, {
+        testID: 'compass-animation',
+        size,
+        delay,
+      }),
+    LockInstructions: ({ variant, delay }: any) =>
+      React.createElement(RN.View, {
+        testID: 'lock-instructions',
+        variant,
+        delay,
+      }),
   };
 });
 
@@ -50,7 +59,6 @@ describe('PendingQuestScreen', () => {
     mode: 'story' as const,
     poiSlug: 'tavern',
     story: 'Your adventure begins...',
-    audioFile: 'quest-1.mp3',
     recap: 'You started your journey',
     options: [],
     reward: { xp: 20 },

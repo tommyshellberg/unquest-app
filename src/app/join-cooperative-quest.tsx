@@ -1,11 +1,5 @@
 import { useRouter } from 'expo-router';
-import {
-  ArrowLeft,
-  Clock,
-  Inbox,
-  User,
-  Users,
-} from 'lucide-react-native';
+import { ArrowLeft, Clock, Inbox, User, Users } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -73,7 +67,9 @@ function InvitationCard({
       style={{ backgroundColor: colors.cardBackground }}
     >
       <View className="mb-3">
-        <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>{questTitle}</Text>
+        <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>
+          {questTitle}
+        </Text>
         <View className="mt-2 flex-row items-center">
           <User size={16} color={colors.neutral[400]} />
           <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
@@ -104,7 +100,10 @@ function InvitationCard({
           className="flex-1 rounded-lg px-4 py-3"
           style={{ backgroundColor: colors.neutral[300] }}
         >
-          <Text className="text-center font-semibold text-neutral-700" style={{ fontWeight: '700' }}>
+          <Text
+            className="text-center font-semibold text-neutral-700"
+            style={{ fontWeight: '700' }}
+          >
             Decline
           </Text>
         </TouchableOpacity>
@@ -113,7 +112,12 @@ function InvitationCard({
           disabled={isProcessing}
           className="flex-1 rounded-lg bg-primary-400 px-4 py-3"
         >
-          <Text className="text-center font-semibold text-white" style={{ fontWeight: '700' }}>Accept</Text>
+          <Text
+            className="text-center font-semibold text-white"
+            style={{ fontWeight: '700' }}
+          >
+            Accept
+          </Text>
         </TouchableOpacity>
       </View>
     </Card>
@@ -301,7 +305,12 @@ export default function JoinCooperativeQuest() {
             {/* No Invitations */}
             <View className="items-center py-10">
               <Inbox size={48} color={colors.neutral[400]} />
-              <Text className="mt-3 text-lg font-semibold" style={{ fontWeight: '700' }}>No Invitations</Text>
+              <Text
+                className="mt-3 text-lg font-semibold"
+                style={{ fontWeight: '700' }}
+              >
+                No Invitations
+              </Text>
               <Text
                 className="mt-2 text-center text-base"
                 style={{ color: colors.neutral[500] }}
@@ -313,7 +322,12 @@ export default function JoinCooperativeQuest() {
             {/* Public Quests Section - Coming Soon */}
             <View className="mt-8">
               <View className="mb-4 flex-row items-center justify-between">
-                <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>Public Quests</Text>
+                <Text
+                  className="text-lg font-semibold"
+                  style={{ fontWeight: '700' }}
+                >
+                  Public Quests
+                </Text>
                 <View
                   className="rounded-full px-3 py-1"
                   style={{ backgroundColor: colors.secondary[100] }}
@@ -344,7 +358,10 @@ export default function JoinCooperativeQuest() {
                     style={{ backgroundColor: colors.cardBackground }}
                   >
                     <View className="mb-3">
-                      <Text className="text-base font-semibold" style={{ fontWeight: '700' }}>
+                      <Text
+                        className="text-base font-semibold"
+                        style={{ fontWeight: '700' }}
+                      >
                         {quest.title}
                       </Text>
                       <View className="mt-2 flex-row items-center">
@@ -379,7 +396,10 @@ export default function JoinCooperativeQuest() {
                       </View>
                       <Text
                         className="text-sm font-semibold"
-                        style={{ color: colors.primary[400], fontWeight: '600' }}
+                        style={{
+                          color: colors.primary[400],
+                          fontWeight: '600',
+                        }}
                       >
                         {quest.startTime}
                       </Text>
@@ -392,7 +412,10 @@ export default function JoinCooperativeQuest() {
                     >
                       <Text
                         className="text-center text-sm font-semibold"
-                        style={{ color: colors.neutral[400], fontWeight: '600' }}
+                        style={{
+                          color: colors.neutral[400],
+                          fontWeight: '600',
+                        }}
                       >
                         Join (Coming Soon)
                       </Text>
@@ -410,7 +433,10 @@ export default function JoinCooperativeQuest() {
         ) : (
           <>
             {/* Pending Invitations Section */}
-            <Text className="mb-4 text-lg font-semibold" style={{ fontWeight: '700' }}>
+            <Text
+              className="mb-4 text-lg font-semibold"
+              style={{ fontWeight: '700' }}
+            >
               Pending Invitations ({invitations.length})
             </Text>
             {invitations.map((invitation) => (

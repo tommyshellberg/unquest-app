@@ -12,7 +12,6 @@ export interface QuestTemplate {
   isPremium?: boolean;
   requiresPremium?: boolean;
   poiSlug?: string;
-  audioFile?: string;
   story?: string;
   recap?: string;
   options?: QuestOption[];
@@ -23,16 +22,7 @@ export interface QuestOption {
   id: string;
   text: string;
   nextQuestId: string | null;
-  nextQuest?: {
-    id: string;
-    customId: string;
-    title: string;
-    durationMinutes: number;
-    reward: {
-      xp: number;
-    };
-    isPremium: boolean;
-  };
+  nextQuest?: QuestTemplate;
 }
 
 export interface NextAvailableQuestsResponse {
@@ -52,11 +42,17 @@ export interface NextAvailableQuestsResponse {
 
 export interface QuestRun {
   _id: string;
+  id: string;
   status: 'pending' | 'active' | 'completed' | 'failed' | 'cancelled';
   startedAt?: string;
   expiresAt?: string;
+  completedAt?: string;
+  actualStartTime?: string;
+  actualEndTime?: string;
+  scheduledEndTime?: string;
   quest: {
     id: string;
+    customId?: string; // The original quest template ID (e.g., 'quest-1', 'quest-4')
     title: string;
     durationMinutes: number;
     reward: {
@@ -64,11 +60,11 @@ export interface QuestRun {
     };
     mode: 'story' | 'custom' | 'cooperative';
     poiSlug?: string;
-    audioFile?: string;
     story?: string;
     recap?: string;
     options?: QuestOption[];
     category?: string;
+    storylineId?: string;
   };
   participants: Array<{
     userId: string;

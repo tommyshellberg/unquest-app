@@ -142,7 +142,7 @@ appId: com.vaedros.unquest.development
     commands:
       # Try tapping the button area directly
       - tapOn:
-          point: "50%, 87%"
+          point: '50%, 87%'
       - waitForAnimationToEnd
 
 # =============================================================================
@@ -224,7 +224,6 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 - assertVisible: 'Check your email'
 - assertVisible: 'testquester@example.com'
-
 # =============================================================================
 # TEST COMPLETE
 # =============================================================================

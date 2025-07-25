@@ -20,9 +20,15 @@ import { useCharacterStore } from '@/store/character-store';
 // Setup mock implementations
 const mockGetItem = getItem as jest.MockedFunction<typeof getItem>;
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const mockUseOnboardingStore = useOnboardingStore as jest.MockedFunction<typeof useOnboardingStore>;
-const mockUseCharacterStore = useCharacterStore as jest.MockedFunction<typeof useCharacterStore>;
-const mockUseQuestStore = useQuestStore as jest.MockedFunction<typeof useQuestStore> & {
+const mockUseOnboardingStore = useOnboardingStore as jest.MockedFunction<
+  typeof useOnboardingStore
+>;
+const mockUseCharacterStore = useCharacterStore as jest.MockedFunction<
+  typeof useCharacterStore
+>;
+const mockUseQuestStore = useQuestStore as jest.MockedFunction<
+  typeof useQuestStore
+> & {
   getState: jest.MockedFunction<() => any>;
   subscribe: jest.MockedFunction<(listener: any) => () => void>;
 };
@@ -63,13 +69,17 @@ beforeEach(() => {
 
   // Reset mock implementations
   mockGetItem.mockReturnValue(null);
-  
+
   mockUseAuth.mockImplementation((selector) => selector(mockAuthState));
-  
-  mockUseOnboardingStore.mockImplementation((selector) => selector(mockOnboardingState));
-  
-  mockUseCharacterStore.mockImplementation((selector) => selector(mockCharacterState));
-  
+
+  mockUseOnboardingStore.mockImplementation((selector) =>
+    selector(mockOnboardingState)
+  );
+
+  mockUseCharacterStore.mockImplementation((selector) =>
+    selector(mockCharacterState)
+  );
+
   mockUseQuestStore.mockImplementation((selector) => {
     if (typeof selector === 'function') {
       return selector(mockQuestState);
@@ -89,7 +99,7 @@ beforeEach(() => {
   mockQuestState.completedQuests = [];
   mockQuestState.resetFailedQuest.mockClear();
   mockQuestState.clearRecentCompletedQuest.mockClear();
-  
+
   // Reset getState mock
   mockUseQuestStore.getState.mockReturnValue(mockQuestState);
 });
@@ -377,7 +387,9 @@ describe('Navigation State Resolver', () => {
     renderHook(() => useNavigationTarget());
 
     // Should have called setCurrentStep to mark onboarding as complete
-    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
+    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(
+      OnboardingStep.COMPLETED
+    );
   });
 
   it('automatically synchronizes onboarding state for users with completed quests', () => {
@@ -390,7 +402,9 @@ describe('Navigation State Resolver', () => {
     renderHook(() => useNavigationTarget());
 
     // Should have called setCurrentStep to mark onboarding as complete
-    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
+    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(
+      OnboardingStep.COMPLETED
+    );
   });
 
   it('does not synchronize onboarding state for truly new users', () => {
@@ -425,7 +439,9 @@ describe('Navigation State Resolver', () => {
     renderHook(() => useNavigationTarget());
 
     // Should have called setCurrentStep to mark onboarding as complete for verified user
-    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(OnboardingStep.COMPLETED);
+    expect(mockOnboardingState.setCurrentStep).toHaveBeenCalledWith(
+      OnboardingStep.COMPLETED
+    );
   });
 
   it('does not synchronize onboarding state for users with provisional data', () => {

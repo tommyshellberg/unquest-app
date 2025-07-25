@@ -64,6 +64,10 @@ export default function NavigationGate() {
         console.log('[NavigationGate] Redirecting to app');
         router.replace('/(app)');
         break;
+      case 'streak-celebration':
+        console.log('[NavigationGate] Redirecting to streak-celebration');
+        router.replace('/streak-celebration');
+        break;
       case 'loading':
         console.log('[NavigationGate] Target is loading, waiting...');
         break;

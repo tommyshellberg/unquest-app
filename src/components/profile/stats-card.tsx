@@ -18,15 +18,15 @@ type StatsCardProps = {
 };
 
 // Custom component for animated number
-function AnimatedNumber({ 
-  value, 
-  duration = 1500, 
+function AnimatedNumber({
+  value,
+  duration = 1500,
   delay = 0,
   style,
-  className 
-}: { 
-  value: number; 
-  duration?: number; 
+  className,
+}: {
+  value: number;
+  duration?: number;
   delay?: number;
   style?: any;
   className?: string;
@@ -73,11 +73,11 @@ export function StatsCard({
             duration={1200}
             delay={100}
             className="text-2xl font-bold text-teal-700"
-            style={{ 
-              fontSize: 24, 
+            style={{
+              fontSize: 24,
               fontWeight: '700',
               color: '#2E948D',
-              textAlign: 'center'
+              textAlign: 'center',
             }}
           />
           <Text className="text-gray-600">Quests</Text>
@@ -91,11 +91,11 @@ export function StatsCard({
             duration={1500}
             delay={300}
             className="text-2xl font-bold text-teal-700"
-            style={{ 
-              fontSize: 24, 
+            style={{
+              fontSize: 24,
               fontWeight: '700',
               color: '#2E948D',
-              textAlign: 'center'
+              textAlign: 'center',
             }}
           />
           <Text className="text-gray-600">Minutes Saved</Text>
@@ -113,11 +113,11 @@ export function StatsCard({
               duration={1000}
               delay={500}
               className="text-2xl font-bold text-teal-700"
-              style={{ 
-                fontSize: 24, 
+              style={{
+                fontSize: 24,
                 fontWeight: '700',
                 color: '#2E948D',
-                textAlign: 'center'
+                textAlign: 'center',
               }}
             />
           </View>

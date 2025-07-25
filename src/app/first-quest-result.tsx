@@ -62,12 +62,6 @@ export default function FirstQuestResultScreen() {
       '[FirstQuestResult] Quest mode:',
       completedQuestForDisplay.mode
     );
-    console.log(
-      '[FirstQuestResult] Quest audioFile:',
-      completedQuestForDisplay.mode === 'story'
-        ? completedQuestForDisplay.audioFile
-        : 'N/A (custom quest)'
-    );
 
     return (
       <View className="flex-1 bg-background">

@@ -121,10 +121,10 @@ describe('apiClient', () => {
 
   describe('response interceptor', () => {
     it('should pass through successful responses', () => {
-      const response = { 
-        data: 'success', 
+      const response = {
+        data: 'success',
         status: 200,
-        config: { url: '/api/test' }
+        config: { url: '/api/test' },
       };
       const result = responseInterceptor.onFulfilled(response);
       expect(result).toEqual(response);

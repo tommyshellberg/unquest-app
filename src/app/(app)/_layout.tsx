@@ -174,6 +174,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="quest/reflection"
+        options={{
+          href: null, // Doesn't show in the tab bar
+        }}
+      />
+      <Tabs.Screen
         name="leaderboard"
         options={{
           href: null,

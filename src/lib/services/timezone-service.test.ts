@@ -99,12 +99,12 @@ describe('timezone-service', () => {
     it('should handle API errors gracefully', async () => {
       // Reset the timezone tracking to ensure this is treated as a new sync
       await syncTimezoneWithDevice(); // First sync to establish lastKnownTimezone
-      
+
       // Change timezone to trigger another sync
       const newTimezone = 'America/Los_Angeles';
       // @ts-ignore
       Localization.timezone = newTimezone;
-      
+
       // @ts-ignore
       notificationAPI.getNotificationSettings.mockRejectedValue(
         new Error('API Error')
@@ -136,9 +136,12 @@ describe('timezone-service', () => {
       initializeTimezoneSync();
 
       // Get the callback that was registered
-      expect(mockAddEventListener).toHaveBeenCalledWith('change', expect.any(Function));
+      expect(mockAddEventListener).toHaveBeenCalledWith(
+        'change',
+        expect.any(Function)
+      );
       const callback = mockAddEventListener.mock.calls[0][1];
-      
+
       // Simulate app coming to foreground
       callback('active');
 

@@ -21,6 +21,7 @@ export interface UserDetails {
   totalQuestsCompleted?: number;
   totalMinutesOffPhone?: number;
   featureFlags?: string[];
+  hasPremiumAccess?: boolean;
   // Legacy fields for backward compatibility
   type?: string;
   level?: number;
@@ -315,6 +316,25 @@ export async function deleteUserAccount(): Promise<{
     return response.data;
   } catch (error) {
     console.error('Error deleting user account:', error);
+    throw error;
+  }
+}
+
+/**
+ * Force refresh the user's premium status from RevenueCat
+ * This should be called after a successful purchase to sync the server
+ * @returns Response with updated premium status
+ */
+export async function refreshPremiumStatus(): Promise<{
+  success: boolean;
+  hasPremiumAccess: boolean;
+  message: string;
+}> {
+  try {
+    const response = await apiClient.post('/users/me/refresh-premium');
+    return response.data;
+  } catch (error) {
+    console.error('Error refreshing premium status:', error);
     throw error;
   }
 }

@@ -82,6 +82,8 @@ const client = z.object({
   API_URL: z.string(),
   ONESIGNAL_APP_ID: z.string(),
   POSTHOG_API_KEY: z.string(),
+  REVENUECAT_APPLE_API_KEY: z.string(),
+  REVENUECAT_GOOGLE_API_KEY: z.string(),
 });
 
 const buildTime = z.object({
@@ -105,6 +107,8 @@ const _clientEnv = {
   ONESIGNAL_APP_ID: process.env.ONESIGNAL_APP_ID,
   API_URL: process.env.API_URL,
   POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
+  REVENUECAT_APPLE_API_KEY: process.env.REVENUECAT_APPLE_API_KEY,
+  REVENUECAT_GOOGLE_API_KEY: process.env.REVENUECAT_GOOGLE_API_KEY,
 };
 
 /**

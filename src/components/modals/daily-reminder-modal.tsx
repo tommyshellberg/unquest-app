@@ -84,9 +84,7 @@ export function DailyReminderModal({ defaultTime, onClose }: Props) {
 
           {wantsReminder && (
             <View className="my-4 items-center">
-              <Text className="mb-2 text-neutral-500">
-                at
-              </Text>
+              <Text className="mb-2 text-neutral-500">at</Text>
               <View className="w-full rounded-xl bg-neutral-200 p-2">
                 <DateTimePicker
                   value={reminderTime}

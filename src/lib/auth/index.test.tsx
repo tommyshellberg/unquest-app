@@ -14,9 +14,9 @@ jest.mock('expo-constants', () => ({
   __esModule: true,
   default: {
     expoConfig: {
-      extra: {}
-    }
-  }
+      extra: {},
+    },
+  },
 }));
 
 jest.mock('react-native-onesignal', () => ({
@@ -57,7 +57,7 @@ jest.mock('@/store/character-store', () => {
     updateCharacter: mockUpdateCharacter,
     setStreak: mockSetStreak,
   }));
-  
+
   return {
     useCharacterStore: {
       getState: mockGetState,
@@ -84,12 +84,12 @@ const characterStoreMocks = require('@/store/character-store').__mocks;
 beforeEach(() => {
   jest.useFakeTimers();
   jest.clearAllMocks();
-  
+
   // Reset mock functions
   characterStoreMocks.mockCreateCharacter.mockClear();
   characterStoreMocks.mockUpdateCharacter.mockClear();
   characterStoreMocks.mockSetStreak.mockClear();
-  
+
   // Reset character store to default state
   characterStoreMocks.mockGetState.mockReturnValue({
     character: null,
@@ -263,7 +263,10 @@ describe('Auth Store', () => {
 
       await useAuth.getState().hydrate();
 
-      expect(characterStoreMocks.mockCreateCharacter).toHaveBeenCalledWith('warrior', 'TestChar');
+      expect(characterStoreMocks.mockCreateCharacter).toHaveBeenCalledWith(
+        'warrior',
+        'TestChar'
+      );
       expect(characterStoreMocks.mockUpdateCharacter).toHaveBeenCalledWith({
         type: 'warrior',
         name: 'TestChar',
@@ -295,7 +298,10 @@ describe('Auth Store', () => {
 
       await useAuth.getState().hydrate();
 
-      expect(characterStoreMocks.mockCreateCharacter).toHaveBeenCalledWith('druid', 'LegacyChar');
+      expect(characterStoreMocks.mockCreateCharacter).toHaveBeenCalledWith(
+        'druid',
+        'LegacyChar'
+      );
       expect(characterStoreMocks.mockUpdateCharacter).toHaveBeenCalledWith({
         type: 'druid',
         name: 'LegacyChar',
@@ -317,7 +323,9 @@ describe('Auth Store', () => {
 
     it('should sign out when user details fetch fails', async () => {
       (getToken as jest.Mock).mockReturnValue({ access: 'token' });
-      (getUserDetails as jest.Mock).mockRejectedValue(new Error('Network error'));
+      (getUserDetails as jest.Mock).mockRejectedValue(
+        new Error('Network error')
+      );
 
       const signOutSpy = jest.spyOn(useAuth.getState(), 'signOut');
 

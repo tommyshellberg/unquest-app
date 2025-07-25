@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
+
 import { useNextAvailableQuests } from '@/api/quest/use-next-available-quests';
 import { audioCacheService } from '@/lib/services/audio-cache.service';
-import type { StoryQuestTemplate } from '@/store/types';
+import { getQuestAudioPath } from '@/utils/audio-utils';
 
 interface UseAudioPreloaderOptions {
   storylineId?: string;
@@ -27,30 +28,34 @@ export const useAudioPreloader = ({
       try {
         // Collect audio files from available quests
         const audioFiles: string[] = [];
-        
+
         // Add main quest audio files
         if (questsData.quests) {
           for (const quest of questsData.quests) {
-            if (quest.audioFile) {
-              audioFiles.push(quest.audioFile);
+            if (quest.customId) {
+              audioFiles.push(getQuestAudioPath(quest.customId, storylineId));
             }
           }
         }
-        
+
         // Add option quest audio files
         if (questsData.options) {
           for (const option of questsData.options) {
-            if (option.nextQuest?.audioFile) {
-              audioFiles.push(option.nextQuest.audioFile);
+            if (option.nextQuest?.customId) {
+              audioFiles.push(
+                getQuestAudioPath(option.nextQuest.customId, storylineId)
+              );
             }
           }
         }
 
         // Filter out duplicates
         const uniqueAudioFiles = [...new Set(audioFiles)];
-        
+
         if (uniqueAudioFiles.length > 0) {
-          console.log(`Preloading ${uniqueAudioFiles.length} audio files for ${storylineId}`);
+          console.log(
+            `Preloading ${uniqueAudioFiles.length} audio files for ${storylineId}`
+          );
           await audioCacheService.preloadAudio(uniqueAudioFiles);
         }
       } catch (error) {

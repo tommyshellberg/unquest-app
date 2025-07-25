@@ -71,26 +71,4 @@ describe('Map Utils', () => {
       expect(getMapNameForQuest('quest-99')).toBe('Vaedros Kingdom');
     });
   });
-
-  describe('getFogMaskForQuest', () => {
-    it('should return the same fog level as the quest', () => {
-      expect(getFogMaskForQuest('quest-3')).toBe('fog-03');
-      expect(getFogMaskForQuest('quest-3a')).toBe('fog-03');
-      expect(getFogMaskForQuest('quest-1b')).toBe('fog-01');
-    });
-
-    it('should handle undefined/empty quest IDs', () => {
-      expect(getFogMaskForQuest(undefined)).toBe('fog-01');
-      expect(getFogMaskForQuest('')).toBe('fog-01');
-    });
-
-    it('should handle unusual quest ID formats', () => {
-      // Should still extract the number part and subtract 1
-      expect(getFogMaskForQuest('quest-2-special')).toBe('fog-02');
-      expect(getFogMaskForQuest('quest-3abc')).toBe('fog-03');
-
-      // Should default when no valid number found
-      expect(getFogMaskForQuest('not-a-quest')).toBe('fog-01');
-    });
-  });
 });

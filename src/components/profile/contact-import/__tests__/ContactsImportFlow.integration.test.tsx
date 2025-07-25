@@ -23,11 +23,10 @@ jest.mock('react-native/Libraries/Alert/Alert', () => ({
 jest.mock('@/components/ui', () => {
   const React = jest.requireActual('react');
   const RN = jest.requireActual('react-native');
-  
+
   return {
-    Modal: ({ children, title }: any) => (
-      React.createElement('div', { testID: 'modal', title }, children)
-    ),
+    Modal: ({ children, title }: any) =>
+      React.createElement('div', { testID: 'modal', title }, children),
     useModal: () => ({
       ref: { current: null },
       present: jest.fn(),
@@ -39,8 +38,10 @@ jest.mock('@/components/ui', () => {
     ActivityIndicator: RN.ActivityIndicator,
     FlatList: RN.FlatList,
     ScrollView: RN.ScrollView,
-    Button: ({ title, label, onPress }: any) => 
-      React.createElement(RN.TouchableOpacity, { onPress }, 
+    Button: ({ title, label, onPress }: any) =>
+      React.createElement(
+        RN.TouchableOpacity,
+        { onPress },
         React.createElement(RN.Text, {}, title || label)
       ),
   };

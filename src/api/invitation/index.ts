@@ -35,12 +35,9 @@ export const invitationApi = {
     invitationId: string,
     status: 'accepted' | 'declined'
   ): Promise<any> => {
-    const response = await apiClient.patch(
-      `/invitations/${invitationId}`,
-      {
-        action: status === 'accepted' ? 'accept' : 'decline',
-      }
-    );
+    const response = await apiClient.patch(`/invitations/${invitationId}`, {
+      action: status === 'accepted' ? 'accept' : 'decline',
+    });
     return response.data;
   },
 

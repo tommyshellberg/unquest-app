@@ -86,7 +86,7 @@ describe('CooperativeQuestLobby', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Set up store mocks
     useCooperativeLobbyStore.setState({
       currentLobby: mockLobby,
@@ -123,7 +123,9 @@ describe('CooperativeQuestLobby', () => {
   it('should show Start Now button for creator when there are accepted participants', () => {
     render(<CooperativeQuestLobby />);
 
-    const startNowButton = screen.getByText('Start Now (Skip waiting for remaining invites)');
+    const startNowButton = screen.getByText(
+      'Start Now (Skip waiting for remaining invites)'
+    );
     expect(startNowButton).toBeTruthy();
   });
 
@@ -172,7 +174,11 @@ describe('CooperativeQuestLobby', () => {
     render(<CooperativeQuestLobby />);
 
     // Should show the "all responded" message
-    expect(screen.getByText('All players have responded! Preparing to start quest...')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'All players have responded! Preparing to start quest...'
+      )
+    ).toBeTruthy();
 
     // Should transition after delay
     await waitFor(
@@ -186,7 +192,9 @@ describe('CooperativeQuestLobby', () => {
   it('should handle Start Now button click', () => {
     render(<CooperativeQuestLobby />);
 
-    const startNowButton = screen.getByText('Start Now (Skip waiting for remaining invites)');
+    const startNowButton = screen.getByText(
+      'Start Now (Skip waiting for remaining invites)'
+    );
     fireEvent.press(startNowButton);
 
     expect(mockReplace).toHaveBeenCalledWith('/cooperative-quest-ready');
@@ -210,9 +218,7 @@ describe('CooperativeQuestLobby', () => {
       currentLobby: {
         ...mockLobby,
         participants: mockLobby.participants.map((p) =>
-          p.id === 'invitee-123'
-            ? { ...p, invitationStatus: 'pending' }
-            : p
+          p.id === 'invitee-123' ? { ...p, invitationStatus: 'pending' } : p
         ),
       },
     });

@@ -35,9 +35,9 @@ jest.mock('lucide-react-native', () => ({
 jest.mock('@expo/vector-icons', () => {
   const React = jest.requireActual('react');
   const RN = jest.requireActual('react-native');
-  
+
   return {
-    MaterialCommunityIcons: ({ name, ...props }: any) => 
+    MaterialCommunityIcons: ({ name, ...props }: any) =>
       React.createElement(RN.Text, { ...props }, name),
   };
 });
@@ -45,17 +45,19 @@ jest.mock('@expo/vector-icons', () => {
 // Make MaterialCommunityIcons globally available (component seems to use it without import)
 const ReactGlobal = require('react');
 const RNGlobal = require('react-native');
-global.MaterialCommunityIcons = ({ name, ...props }: any) => 
+global.MaterialCommunityIcons = ({ name, ...props }: any) =>
   ReactGlobal.createElement(RNGlobal.Text, { ...props }, name);
 
 // Mock UI components
 jest.mock('@/components/ui', () => {
   const React = jest.requireActual('react');
   const RN = jest.requireActual('react-native');
-  
+
   return {
-    Button: ({ label, onPress, disabled }: any) => 
-      React.createElement(RN.TouchableOpacity, { onPress, disabled }, 
+    Button: ({ label, onPress, disabled }: any) =>
+      React.createElement(
+        RN.TouchableOpacity,
+        { onPress, disabled },
         React.createElement(RN.Text, {}, label)
       ),
     FocusAwareStatusBar: 'FocusAwareStatusBar',
@@ -63,11 +65,12 @@ jest.mock('@/components/ui', () => {
     ScrollView: RN.ScrollView,
     Text: RN.Text,
     View: RN.View,
-    ScreenContainer: ({ children }: any) => React.createElement(RN.View, {}, children),
-    ScreenHeader: ({ title, subtitle }: any) => 
+    ScreenContainer: ({ children }: any) =>
+      React.createElement(RN.View, {}, children),
+    ScreenHeader: ({ title, subtitle }: any) =>
       React.createElement(RN.View, {}, [
         React.createElement(RN.Text, { key: 'title' }, title),
-        subtitle && React.createElement(RN.Text, { key: 'subtitle' }, subtitle)
+        subtitle && React.createElement(RN.Text, { key: 'subtitle' }, subtitle),
       ]),
     TouchableOpacity: RN.TouchableOpacity,
   };
@@ -131,10 +134,23 @@ jest.mock('@/components/QuestForm/friend-selector', () => {
     FriendSelector: ({ onSelectionChange }: any) => {
       // Simulate selecting friends for testing
       React.useEffect(() => {
-        onSelectionChange(['friend-1', 'friend-2'], [
-          { _id: 'friend-1', character: { name: 'Friend One', type: 'druid' }, displayName: 'Friend 1', email: 'friend1@example.com' },
-          { _id: 'friend-2', character: { name: 'Friend Two', type: 'wizard' }, displayName: 'Friend 2', email: 'friend2@example.com' }
-        ]);
+        onSelectionChange(
+          ['friend-1', 'friend-2'],
+          [
+            {
+              _id: 'friend-1',
+              character: { name: 'Friend One', type: 'druid' },
+              displayName: 'Friend 1',
+              email: 'friend1@example.com',
+            },
+            {
+              _id: 'friend-2',
+              character: { name: 'Friend Two', type: 'wizard' },
+              displayName: 'Friend 2',
+              email: 'friend2@example.com',
+            },
+          ]
+        );
       }, []);
       return null;
     },

@@ -28,8 +28,10 @@ import {
   TouchableOpacity,
   View,
 } from '@/components/ui';
+import { PremiumPaywall } from '@/components/paywall';
 import { useAuth } from '@/lib';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
+import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import { getUserFriends } from '@/lib/services/user';
 import { useUserStore } from '@/store/user-store';
 import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
@@ -78,7 +80,8 @@ export default function CooperativeQuestMenu() {
   const userEmail = currentUser?.email || '';
   const user = useUserStore((state) => state.user);
   const { connect: connectWebSocket } = useLazyWebSocket();
-  
+  const [showPaywallModal, setShowPaywallModal] = React.useState(false);
+
   // Connect WebSocket when entering cooperative quest flow
   React.useEffect(() => {
     connectWebSocket();
@@ -91,7 +94,15 @@ export default function CooperativeQuestMenu() {
   });
 
   const hasFriends = friendsData?.friends && friendsData.friends.length > 0;
-  const hasCoopFeature = user?.featureFlags?.includes('coop_mode') || false;
+
+  // Premium access check
+  const {
+    hasPremiumAccess,
+    isLoading: isPremiumLoading,
+    showPaywall,
+    handlePaywallClose,
+    handlePaywallSuccess,
+  } = usePremiumAccess();
 
   // Friend management hook for bulk invites
   const { sendBulkInvites } = useFriendManagement(userEmail, contactsModalRef);
@@ -109,8 +120,17 @@ export default function CooperativeQuestMenu() {
     }
   };
 
-  // Show loading state while checking friends
-  if (isLoading) {
+  // Add debug logging
+  React.useEffect(() => {
+    console.log('[CooperativeQuestMenu] Premium status:', {
+      hasPremiumAccess,
+      isPremiumLoading,
+      showPaywallModal,
+    });
+  }, [hasPremiumAccess, isPremiumLoading, showPaywallModal]);
+
+  // Show loading state while checking friends or premium status
+  if (isLoading || isPremiumLoading) {
     return (
       <SafeAreaView className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
@@ -122,8 +142,8 @@ export default function CooperativeQuestMenu() {
     );
   }
 
-  // Check if user has the coop_mode feature flag
-  if (!hasCoopFeature) {
+  // Check if user has premium access
+  if (!hasPremiumAccess) {
     return (
       <SafeAreaView className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
@@ -189,11 +209,27 @@ export default function CooperativeQuestMenu() {
               </View>
             </Card>
 
-            <Text className="mt-6 text-center text-sm text-neutral-500">
-              Premium subscription details coming soon!
-            </Text>
+            <TouchableOpacity
+              onPress={() => setShowPaywallModal(true)}
+              className="mt-6 rounded-lg bg-primary-500 px-6 py-3"
+            >
+              <Text className="text-center text-lg font-semibold text-white">
+                View Subscription Options
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScreenContainer>
+
+        {/* Premium Paywall Modal */}
+        <PremiumPaywall
+          isVisible={showPaywallModal}
+          onClose={() => setShowPaywallModal(false)}
+          onSuccess={() => {
+            setShowPaywallModal(false);
+            handlePaywallSuccess();
+          }}
+          featureName="Cooperative Quests"
+        />
       </SafeAreaView>
     );
   }
@@ -260,11 +296,7 @@ export default function CooperativeQuestMenu() {
           <View className="mt-auto">
             <Card className="mb-4 bg-neutral-200 p-4">
               <View className="flex-row items-start">
-                <Info
-                  size={20}
-                  color="#666"
-                  style={{ marginTop: 2 }}
-                />
+                <Info size={20} color="#666" style={{ marginTop: 2 }} />
                 <View className="ml-3 flex-1">
                   <Text className="mb-1 font-semibold">How it works</Text>
                   <Text className="text-sm text-neutral-600">
@@ -343,11 +375,7 @@ export default function CooperativeQuestMenu() {
         {/* Info Section */}
         <Card className="mb-4 bg-neutral-200 p-4">
           <View className="flex-row items-start">
-            <Info
-              size={20}
-              color="#666"
-              style={{ marginTop: 2 }}
-            />
+            <Info size={20} color="#666" style={{ marginTop: 2 }} />
             <View className="ml-3 flex-1">
               <Text className="mb-1 font-semibold">How it works</Text>
               <Text className="text-sm text-neutral-600">

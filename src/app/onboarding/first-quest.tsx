@@ -12,8 +12,10 @@ import Animated, {
 
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { Button, Card, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { audioCacheService } from '@/lib/services/audio-cache.service';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
+import { getQuestAudioPath } from '@/utils/audio-utils';
 
 export default function FirstQuestScreen() {
   const router = useRouter();
@@ -37,6 +39,25 @@ export default function FirstQuestScreen() {
 
   useEffect(() => {
     posthog.capture('onboarding_open_first_quest_screen');
+
+    // Preload audio for the first quest
+    const preloadFirstQuestAudio = async () => {
+      try {
+        const firstStoryQuest = AVAILABLE_QUESTS.find(
+          (quest) => quest.mode === 'story'
+        );
+
+        if (firstStoryQuest && firstStoryQuest.id) {
+          const audioPath = getQuestAudioPath(firstStoryQuest.id, 'vaedros');
+          console.log('Preloading audio for first quest:', audioPath);
+          await audioCacheService.preloadAudio([audioPath]);
+        }
+      } catch (error) {
+        console.warn('Failed to preload first quest audio:', error);
+      }
+    };
+
+    preloadFirstQuestAudio();
   }, [posthog]);
 
   // Check if we already have a pending quest - if so, navigate to pending-quest screen

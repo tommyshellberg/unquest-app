@@ -15,7 +15,7 @@ import {
 } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { InfoCard } from '@/components/ui/info-card';
-import { useWebSocket } from '@/components/providers/websocket-provider';
+import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 import {
   useCooperativeLobbyStore,
   type CooperativeLobby,
@@ -49,7 +49,10 @@ function ParticipantRow({ participant, isCurrentUser }: ParticipantRowProps) {
   };
 
   return (
-    <View className="mb-3 flex-row items-center rounded-lg p-4" style={{ backgroundColor: colors.cardBackground }}>
+    <View
+      className="mb-3 flex-row items-center rounded-lg p-4"
+      style={{ backgroundColor: colors.cardBackground }}
+    >
       <View className="mr-3">{getStatusIcon()}</View>
       <View className="flex-1">
         <Text className="font-semibold" style={{ fontWeight: '700' }}>
@@ -90,11 +93,21 @@ export default function CooperativeQuestLobby() {
   const joinLobby = useCooperativeLobbyStore((state) => state.joinLobby);
   const leaveLobby = useCooperativeLobbyStore((state) => state.leaveLobby);
 
-  const { emit, on, off, joinQuestRoom, leaveQuestRoom } = useWebSocket();
+  const { emit, on, off, joinQuestRoom, leaveQuestRoom, connect: connectWebSocket } = useLazyWebSocket();
   const [isLoading, setIsLoading] = useState(true);
   const [hasTransitioned, setHasTransitioned] = useState(false);
   // For cooperative quests, the lobbyId IS the invitationId
   const invitationId = lobbyId;
+  
+  // Connect WebSocket when entering the lobby
+  useEffect(() => {
+    // Only connect if user is properly authenticated
+    if (currentUser?.id) {
+      connectWebSocket();
+    } else {
+      console.warn('[CooperativeQuestLobby] No authenticated user, skipping WebSocket connection');
+    }
+  }, [connectWebSocket, currentUser?.id]);
 
   // Join the lobby room on mount
   useEffect(() => {
@@ -273,6 +286,21 @@ export default function CooperativeQuestLobby() {
           updateInvitationResponse(data.userId, 'declined');
         }
       };
+      
+      // Add handler for invitationAccepted event (the actual event emitted by server)
+      const handleInvitationAccepted = (data: any) => {
+        console.log('Invitation accepted event received:', data);
+        
+        // Convert to the expected format and call the existing handler
+        handleInvitationResponse({
+          lobbyId: data.invitationId,
+          userId: data.userId,
+          action: data.action || 'accepted',
+          status: data.action || 'accepted',
+          characterName: data.characterName,
+          username: data.username,
+        });
+      };
 
       const handleReadyStatus = (data: LobbyReadyStatusPayload) => {
         console.log('Ready status update:', data);
@@ -285,6 +313,8 @@ export default function CooperativeQuestLobby() {
       on('lobby:participant-updated', handleParticipantUpdated);
       on('lobby:invitation-response', handleInvitationResponse);
       on('invitation:response', handleInvitationResponse); // Server might emit this instead
+      on('invitationAccepted', handleInvitationAccepted); // Actual event emitted by server
+      on(`invitation:${lobbyId}:accepted`, handleInvitationAccepted); // Specific invitation event
       on('lobby:ready-status', handleReadyStatus);
 
       return () => {
@@ -294,6 +324,8 @@ export default function CooperativeQuestLobby() {
         off('lobby:participant-updated', handleParticipantUpdated);
         off('lobby:invitation-response', handleInvitationResponse);
         off('invitation:response', handleInvitationResponse);
+        off('invitationAccepted', handleInvitationAccepted);
+        off(`invitation:${lobbyId}:accepted`, handleInvitationAccepted);
         off('lobby:ready-status', handleReadyStatus);
       };
     }
@@ -317,12 +349,13 @@ export default function CooperativeQuestLobby() {
   const isReady = currentParticipant?.isReady || false;
 
   // Check if all invited have responded
-  const allResponded = currentLobby?.participants.every(
-    (p) => p.invitationStatus !== 'pending'
-  ) || false;
-  const acceptedParticipants = currentLobby?.participants.filter(
-    (p) => p.invitationStatus === 'accepted'
-  ) || [];
+  const allResponded =
+    currentLobby?.participants.every((p) => p.invitationStatus !== 'pending') ||
+    false;
+  const acceptedParticipants =
+    currentLobby?.participants.filter(
+      (p) => p.invitationStatus === 'accepted'
+    ) || [];
 
   const allReady =
     acceptedParticipants.length > 0 &&
@@ -331,7 +364,7 @@ export default function CooperativeQuestLobby() {
   // All hooks must be called before any conditional returns
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
-    
+
     if (hasTransitioned && currentLobby) {
       // Navigate after the flag is set
       console.log('Transitioning to ready screen...');
@@ -339,7 +372,7 @@ export default function CooperativeQuestLobby() {
         router.replace('/cooperative-quest-ready');
       }, 1500);
     }
-    
+
     return () => {
       if (timer) {
         clearTimeout(timer);
@@ -424,20 +457,20 @@ export default function CooperativeQuestLobby() {
       if (!invitationId || !currentUser) return;
 
       try {
-      await invitationApi.respondToInvitation(
-        invitationId,
-        accept ? 'accepted' : 'declined'
-      );
-      updateInvitationResponse(
-        currentUser!.id,
-        accept ? 'accepted' : 'declined'
-      );
+        await invitationApi.respondToInvitation(
+          invitationId,
+          accept ? 'accepted' : 'declined'
+        );
+        updateInvitationResponse(
+          currentUser!.id,
+          accept ? 'accepted' : 'declined'
+        );
 
-      if (!accept) {
-        // Clear lobby state when declining
-        leaveLobby();
-        router.back();
-      }
+        if (!accept) {
+          // Clear lobby state when declining
+          leaveLobby();
+          router.back();
+        }
       } catch (error) {
         console.error('Error responding to invitation:', error);
       }
@@ -458,7 +491,15 @@ export default function CooperativeQuestLobby() {
 
     emit(newReadyState ? 'lobby:ready' : 'lobby:unready', { lobbyId });
     markUserReady(currentUser.id, newReadyState);
-  }, [currentUser, currentLobby, isReady, emit, lobbyId, markUserReady, posthog]);
+  }, [
+    currentUser,
+    currentLobby,
+    isReady,
+    emit,
+    lobbyId,
+    markUserReady,
+    posthog,
+  ]);
 
   const handleStartNow = useCallback(async () => {
     if (!isCreator) return;
@@ -492,16 +533,24 @@ export default function CooperativeQuestLobby() {
   console.log('Current lobby participants:', currentLobby.participants);
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+    <SafeAreaView
+      className="flex-1"
+      style={{ backgroundColor: colors.background }}
+    >
       <FocusAwareStatusBar />
 
       {/* Header */}
-      <View className="border-b px-5 pb-4" style={{ borderBottomColor: colors.neutral[200] }}>
+      <View
+        className="border-b px-5 pb-4"
+        style={{ borderBottomColor: colors.neutral[200] }}
+      >
         <View className="flex-row items-center justify-between">
           <TouchableOpacity onPress={handleBackPress}>
             <ArrowLeft size={24} color={colors.black} />
           </TouchableOpacity>
-          <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>Quest Lobby</Text>
+          <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>
+            Quest Lobby
+          </Text>
           <View className="w-6" />
         </View>
       </View>
@@ -509,20 +558,34 @@ export default function CooperativeQuestLobby() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="p-5">
           {/* Quest Info */}
-          <View className="mb-6 rounded-lg p-4" style={{ backgroundColor: colors.cardBackground }}>
-            <Text className="mb-2 text-xl font-bold" style={{ fontWeight: '700' }}>
+          <View
+            className="mb-6 rounded-lg p-4"
+            style={{ backgroundColor: colors.cardBackground }}
+          >
+            <Text
+              className="mb-2 text-xl font-bold"
+              style={{ fontWeight: '700' }}
+            >
               {currentLobby.questTitle}
             </Text>
             <View className="flex-row items-center">
               <Clock size={16} color={colors.neutral[400]} />
-              <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
+              <Text
+                className="ml-1 text-sm"
+                style={{ color: colors.neutral[500] }}
+              >
                 {currentLobby.questDuration} minutes
               </Text>
             </View>
           </View>
 
           {/* Participants */}
-          <Text className="mb-3 text-lg font-semibold" style={{ fontWeight: '700' }}>Participants</Text>
+          <Text
+            className="mb-3 text-lg font-semibold"
+            style={{ fontWeight: '700' }}
+          >
+            Participants
+          </Text>
           {currentLobby.participants.map((participant) => (
             <ParticipantRow
               key={participant.id}
@@ -533,8 +596,14 @@ export default function CooperativeQuestLobby() {
 
           {/* Status Messages */}
           {!allResponded && (
-            <View className="mt-4 rounded-lg p-4" style={{ backgroundColor: colors.secondary[100] }}>
-              <Text className="text-sm" style={{ color: colors.secondary[500] }}>
+            <View
+              className="mt-4 rounded-lg p-4"
+              style={{ backgroundColor: colors.secondary[100] }}
+            >
+              <Text
+                className="text-sm"
+                style={{ color: colors.secondary[500] }}
+              >
                 Waiting for all invitations to be responded to...
               </Text>
             </View>
@@ -549,8 +618,14 @@ export default function CooperativeQuestLobby() {
           )}
 
           {allReady && (
-            <View className="mt-4 rounded-lg p-4" style={{ backgroundColor: colors.primary[100] }}>
-              <Text className="text-base font-semibold" style={{ color: colors.primary[500], fontWeight: '700' }}>
+            <View
+              className="mt-4 rounded-lg p-4"
+              style={{ backgroundColor: colors.primary[100] }}
+            >
+              <Text
+                className="text-base font-semibold"
+                style={{ color: colors.primary[500], fontWeight: '700' }}
+              >
                 All players ready! Quest will start soon...
               </Text>
             </View>
@@ -559,7 +634,10 @@ export default function CooperativeQuestLobby() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View className="border-t p-5" style={{ borderTopColor: colors.neutral[200] }}>
+      <View
+        className="border-t p-5"
+        style={{ borderTopColor: colors.neutral[200] }}
+      >
         {!hasAccepted && currentParticipant?.invitationStatus === 'pending' && (
           <View className="flex-row gap-3">
             <Button
@@ -587,8 +665,14 @@ export default function CooperativeQuestLobby() {
         )}
 
         {allResponded && acceptedParticipants.length > 1 && (
-          <View className="rounded-lg p-4" style={{ backgroundColor: colors.primary[100] }}>
-            <Text className="text-center text-base font-semibold" style={{ color: colors.primary[500], fontWeight: '700' }}>
+          <View
+            className="rounded-lg p-4"
+            style={{ backgroundColor: colors.primary[100] }}
+          >
+            <Text
+              className="text-center text-base font-semibold"
+              style={{ color: colors.primary[500], fontWeight: '700' }}
+            >
               All players have responded! Preparing to start quest...
             </Text>
           </View>

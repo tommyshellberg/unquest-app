@@ -5,17 +5,17 @@ import { format } from 'date-fns';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import * as Updates from 'expo-updates';
-import { Flame, Globe } from 'lucide-react-native';
+import { Crown, Flame, Globe } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, Switch } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, Switch } from 'react-native';
 import * as Localize from 'react-native-localize';
 import { OneSignal } from 'react-native-onesignal';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   BottomSheetKeyboardAwareScrollView,
@@ -30,6 +30,7 @@ import { background } from '@/components/ui/colors';
 import { Modal, useModal } from '@/components/ui/modal';
 import { useNotificationSettings } from '@/hooks/use-notification-settings';
 import { useAuth } from '@/lib';
+import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import { TIMEZONES } from '@/lib/constants/timezones';
 import {
   areNotificationsEnabled,
@@ -38,6 +39,7 @@ import {
   requestNotificationPermissions,
   scheduleDailyReminderNotification,
 } from '@/lib/services/notifications';
+import { revenueCatService } from '@/lib/services/revenuecat-service';
 import { deleteUserAccount, getUserDetails } from '@/lib/services/user';
 import { getItem, setItem } from '@/lib/storage';
 import { useSettingsStore } from '@/store/settings-store';
@@ -67,6 +69,7 @@ export default function Settings() {
     updateSettings,
     isLoading: isLoadingSettings,
   } = useNotificationSettings();
+  const { hasPremiumAccess } = usePremiumAccess();
 
   // Animation value for header
   const headerOpacity = useSharedValue(0);
@@ -403,6 +406,29 @@ export default function Settings() {
     updateSettings({ timezone });
   };
 
+  // Handle manage subscription
+  const handleManageSubscription = async () => {
+    try {
+      const managementUrl = await revenueCatService.getManagementURL();
+      if (managementUrl) {
+        Linking.openURL(managementUrl);
+      } else {
+        // Fallback to platform-specific subscription management
+        if (Platform.OS === 'ios') {
+          Linking.openURL('https://apps.apple.com/account/subscriptions');
+        } else {
+          Linking.openURL('https://play.google.com/store/account/subscriptions');
+        }
+      }
+    } catch (error) {
+      console.error('Error opening subscription management:', error);
+      Alert.alert(
+        'Error',
+        'Unable to open subscription management. Please try again later.'
+      );
+    }
+  };
+
   // In your render method, handle loading state
   if (isLoading || isLoadingSettings) {
     return (
@@ -454,6 +480,29 @@ export default function Settings() {
                   </Text>
                 </View>
               )}
+            </View>
+
+            {/* Premium Subscription Section - Always show */}
+            <View className="mb-8">
+              <Pressable
+                className="flex-row items-center justify-between"
+                onPress={handleManageSubscription}
+              >
+                <View className="flex-row items-center">
+                  <View
+                    className={`mr-4 size-14 ${iconBgColor} items-center justify-center rounded-full`}
+                  >
+                    <Crown size={24} color={iconColor} />
+                  </View>
+                  <View>
+                    <Text className="text-xl font-medium">UnQuest Premium</Text>
+                    <Text className="text-neutral-600">
+                      {hasPremiumAccess ? 'Manage subscription' : 'View subscription options'}
+                    </Text>
+                  </View>
+                </View>
+                <Feather name="chevron-right" size={20} color="#888" />
+              </Pressable>
             </View>
 
             {/* Preferences Section */}

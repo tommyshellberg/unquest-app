@@ -22,7 +22,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(3),
     reward: { xp: 100 },
     poiSlug: 'darkwood-awakening',
-    audioFile: require('../../../assets/audio/quest-1.mp3'),
     story: `
      I wake up lying on my back, the earth cold and damp beneath me. The trees stretch high, their gnarled limbs tangled overhead, blotting out the sky. For a long moment, I don't move. Not because I'm afraid—though maybe I should be—but because I don't know who I am.
     No name. No memory. Just a dull ache behind my eyes, pulsing like the aftermath of a long-forgotten dream.
@@ -49,7 +48,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(3),
     reward: { xp: calculateRewardFromDuration(3) },
     poiSlug: 'darkwood-awakening',
-    audioFile: require('../../../assets/audio/quest-1a.mp3'), // @todo: add audio file
     story: `
       Then, a weight in my pocket—a piece of folded parchment. I pull it free, fingers stiff with cold. It's a map. Or part of one.
       Most of it is blank, save for a crude drawing of trees, a stretch of forest that looks too much like the one around me to be a coincidence. The rest of the map is covered in a shifting black fog, writhing at the edges of my vision, like ink that refuses to dry. I blink, shake my head. The image stays.
@@ -72,7 +70,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(3),
     reward: { xp: calculateRewardFromDuration(3) },
     poiSlug: 'darkwood-awakening',
-    audioFile: require('../../../assets/audio/quest-1b.mp3'), // @todo: add audio file
     story: `
       I push myself to my feet, the damp chill of the earth clinging to my skin. The silence is thick—too thick. No birds. No rustling leaves. Just my own breath, too loud in my ears.
       I step forward, careful, scanning the trees for movement. If someone—or something—is out here, I need to know before it knows me.
@@ -97,7 +94,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(6),
     reward: { xp: calculateRewardFromDuration(6) },
     poiSlug: 'hut-of-whispers',
-    audioFile: require('../../../assets/audio/quest-2.mp3'),
     story: `
     I move through the undergrowth, the brittle branches snapping beneath my boots. The hut appears through the mist like something forgotten—leaning slightly, its wooden door swaying on rusted hinges.
     I step inside. The air is stale, thick with dust and old wood. Whoever was here didn't take much when they left. There's no sign of struggle, no overturned furniture. Just absence.
@@ -126,7 +122,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(6),
     reward: { xp: calculateRewardFromDuration(6) },
     poiSlug: 'modest-hut',
-    audioFile: require('../../../assets/audio/quest-2a.mp3'),
     story: `
       The map can wait. I need something real—food, tools, anything useful.
       I rummage through the hut, kicking aside broken furniture, prying open cabinets. Most of it is worthless—crumbled parchment, rusted tools—but in the corner, propped against the wall, I spot something unexpected.
@@ -150,7 +145,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(6),
     reward: { xp: calculateRewardFromDuration(6) },
     poiSlug: 'modest-hut',
-    audioFile: require('../../../assets/audio/quest-2b.mp3'),
     story: `
       I kneel by the fireplace, rubbing my hands together for warmth. The map rests on the floor beside me, catching the candlelight. I run my fingers over its shifting ink, tracing the barely visible lines beneath. A phrase emerges, faint but deliberate.
       Balance must be restored.
@@ -174,7 +168,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(9),
     reward: { xp: calculateRewardFromDuration(9) },
     poiSlug: 'weary-crossing',
-    audioFile: require('../../../assets/audio/quest-3.mp3'),
     story: `
       By morning, it's clear—I'm trapped. The river coils around this stretch of land like a noose, its current fast and merciless. The trees behind me stand thick, an impassable wall of roots and thorns. No trails. No way forward. Except through the water.
       The river churns, dark and fast, cutting me off from whatever lies beyond. I kneel at the bank, testing the water with my fingertips. Ice-cold. Deep. No chance of wading through.
@@ -204,7 +197,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(9),
     reward: { xp: calculateRewardFromDuration(9) },
     poiSlug: 'riverbank-crossing',
-    audioFile: require('../../../assets/audio/quest-3a.mp3'),
     story: `
       I search the remains of the hut, scavenging planks, frayed rope, anything that might hold together long enough to keep me from drowning. My hands work without hesitation, lashing wood with knots that feel second nature. Maybe I was a sailor. Maybe I wasn't. Doesn't matter. I need to cross.
       The raft groans as I push it into the shallows. Water swirls around my boots. I step on, crouching low as the current catches hold. The river doesn't carry—it drags. The world tilts with every surge, the raft lurching beneath me, threatening to come undone.
@@ -229,7 +221,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(9),
     reward: { xp: calculateRewardFromDuration(9) },
     poiSlug: 'riverbank-crossing',
-    audioFile: require('../../../assets/audio/quest-3b.mp3'),
     story: `
       At the river's edge lies a hollowed-out log—rotted and cracked, barely sturdy enough to hold my weight. I drag it into the shallows, water immediately seeping through its splintered sides. No time for second thoughts.
       I climbed in, crouched low, using a splintered plank to paddle furiously against the relentless current. The log spins and bobs, water rushing through widening cracks, soaking me to the bone. Halfway across, it dips sharply, nearly capsizing. Frantic, I scooped out water, fighting for every inch.
@@ -252,7 +243,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(12),
     reward: { xp: calculateRewardFromDuration(12) },
     poiSlug: 'ruined-archway',
-    audioFile: require('../../../assets/audio/quest-4.mp3'),
     story: `
       The land changes beyond the river. The trees thin, giving way to ruins—broken stones half-swallowed by the earth, the remains of something old, something lost. I followed the path between them, stepping over shattered pillars and roots tangled with the bones of the past. Then, through the mist, I see it.
       A massive arch. Carved from stone so ancient it looks like it was born from the land itself. The surface is worn, cracked by time, but the inscriptions remain—faint spirals and twisting shapes, two forces entwined. One bright as fire, the other deep as a starless void. Opposites, locked together.
@@ -284,7 +274,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(12),
     reward: { xp: calculateRewardFromDuration(12) },
     poiSlug: 'ruined-archway',
-    audioFile: require('../../../assets/audio/quest-4a.mp3'),
     story: `
       I stayed. The ruins stretched wide around me, an old skeleton of something once grand.
       The arch's carvings are worn, their edges softened by centuries of wind and rain. I knelt, tracing the stone, pressing dirt-streaked fingers into the grooves, willing them to give me something. Anything.
@@ -312,7 +301,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(12),
     reward: { xp: calculateRewardFromDuration(12) },
     poiSlug: 'ruined-archway',
-    audioFile: require('../../../assets/audio/quest-4b.mp3'),
     story: `
       The sun dipped lower, stretching the ruins into long shadows. I didn't know what the arch meant. I didn't know what *I* meant. But staying here won't help me survive.
       I pressed on, following the remnants of an old road. The ruins thinned, giving way to wind-worn hills. The air smelled of water before I saw it—the faint glimmer of a lake in the distance, its surface smooth as glass.
@@ -335,7 +323,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(15),
     reward: { xp: calculateRewardFromDuration(15) },
     poiSlug: 'lake-overlook',
-    audioFile: require('../../../assets/audio/quest-5.mp3'),
     story: `
       The land rose into a craggy overlook, the jagged rock breaking into a sheer drop where the world fell away into black water. A lake stretched wide and still, swallowing the horizon. It offered no clear way forward.
       In the distance, a statue jutted from the shallows, its face weathered, its body half-swallowed by the water. Time had not been kind to it. The details were eroded, but something about it—its presence, its sheer weight—felt important.
@@ -365,7 +352,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(15),
     reward: { xp: calculateRewardFromDuration(15) },
     poiSlug: 'rugged-outcropping',
-    audioFile: require('../../../assets/audio/quest-5a.mp3'),
     story: `
       The map left my hand with a snap of motion—spinning once, then dropping into the lake with barely a ripple. It sank quickly, disappearing beneath the surface like it was never there. No glow. No resistance. Just gone.
       For a moment, I felt relief. Then dread crept in behind it, slow and unwelcome. I stared at the water a few seconds longer, then turned and walked along the shoreline, headed back the way I came.
@@ -391,7 +377,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(15),
     reward: { xp: calculateRewardFromDuration(15) },
     poiSlug: 'rugged-outcropping',
-    audioFile: require('../../../assets/audio/quest-5b.mp3'),
     story: `
       I made my way down the slope, stone biting into my palms as I lowered myself toward the water's edge. Up close, the statue was massive, its features all but lost to erosion and time. What remained was haunting: a bent crown, the shape of a robe, the trace of something once worshipped—or feared.
       At its base, nearly worn smooth, I found a line carved in jagged script: *All kings fall.*
@@ -416,7 +401,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(18),
     reward: { xp: calculateRewardFromDuration(18) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-6.mp3'),
     story: `
       At the edge of dusk, the village rose before me, skeletal houses crouching beside the water's edge. Doors hung open, windows empty, the whole place forgotten by time. As I stepped carefully between buildings, the silence seemed to watch me back, unblinking.
       Ahead was a large house, doors cracked and inviting exploration. To my right, the silhouette of stables, sagging and abandoned. Night crept closer, and I knew I'll have only enough time to search one before darkness fully descended.
@@ -443,7 +427,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(18),
     reward: { xp: calculateRewardFromDuration(18) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-6a.mp3'),
     story: `
       I stepped into the nearest house, floorboards creaking beneath my weight. Dust blanketed every surface, and a table stood overturned. Beside it, a sheet of parchment caught my eye, ink faded but readable:
       *We must leave before the soldiers come back… We've heard rumors the King can—*
@@ -468,7 +451,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(18),
     reward: { xp: calculateRewardFromDuration(18) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-6b.mp3'),
     story: `
       I pushed open the creaking stable doors, the smell of rotted wood and mold heavy in the air. Straw littered the floor, undisturbed for years. As I stepped further in, my boot caught on something—a trapdoor, hidden beneath loose hay.
       The wood groaned as I lifted it, revealing a shallow cellar. In the faint twilight, shapes resolved slowly: bones, huddled together in a desperate embrace. A family—fathers, mothers, children—all hiding from something that found them anyway.
@@ -492,7 +474,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(21),
     reward: { xp: calculateRewardFromDuration(21) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-7.mp3'),
     story: `
       The stranger walked behind me, close enough that I could hear his breath, the scrape of boots against stone. The sword stayed at my back—not digging, not threatening, just there. A warning.
       We moved north through barren stone and shifting sand, following forgotten trails beneath a crescent moon. I tried speaking, my voice rough in the quiet.
@@ -525,7 +506,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(21),
     reward: { xp: calculateRewardFromDuration(21) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-7a.mp3'),
     story: `
       My muscles tense, adrenaline surging—I saw my chance. Without another thought, I lunged toward the narrow gap between pillars, gravel kicking up behind me. I almost reached the shadows before Rowan grabbed my arm, twisting me sharply but without causing real harm.
       "Enough," he said softly, frustration clear in his voice but no violence behind it. "Running won't help either of us."
@@ -551,7 +531,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(21),
     reward: { xp: calculateRewardFromDuration(21) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-7b.mp3'),
     story: `
       Rowan nudged me forward with quiet urgency, sword lowered but still close enough to discourage resistance. We stepped through the temple's weathered entrance, the air thick with dust and echoes of time. 
       Without a word, Rowan kneeled, lighting several candles scattered across the stone floor, their flames weak but enough to cast flickering light across his tired face. He gestures silently, urging me to speak.
@@ -576,7 +555,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(24),
     reward: { xp: calculateRewardFromDuration(24) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-8.mp3'),
     story: `
   I woke to a dusty sunbeam passing over my eyes. A shadow moved in the doorway. Rowan. He jerks his chin toward the outside, a silent command.
   We climbed a wooded path, damp with morning mist, the temple fading behind. Ahead, a stone shrine appeared—small, ancient, edges worn smooth by countless seasons. Rowan crouched by a shallow fire pit, coaxing weak flames to life.
@@ -606,7 +584,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(24),
     reward: { xp: calculateRewardFromDuration(24) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-8a.mp3'),
     story: `
   I gathered fallen branches from beneath hollow trees, wondering again if I should run. But Rowan's words held me—something about them rings true. I'm not ready to leave yet.
   When I returned, Rowan fed the fire slowly, sparks rising into the cool air. He sat back and continued, "Now Vaedros is broken. Fading. And no one knows how to fix it." He met my eyes steadily. "I've seen you before."
@@ -631,7 +608,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(24),
     reward: { xp: calculateRewardFromDuration(24) },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-8b.mp3'),
     story: `
   I filled a dented pot from a nearby stream, water trickling gently over moss-covered stones. It occurred to me briefly—I could run, disappear now—but something held me here. Rowan seemed to know more than he was saying.
   Back at the shrine, Rowan hung the pot above the fire, the water hissing softly as it warmed. He leaned back and spoke again.
@@ -657,7 +633,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(27),
     reward: { xp: 100 },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-9.mp3'),
     story: `
   I woke to a hand clamped over my mouth.
   Rowan's face loomed close, eyes sharp, body coiled tight. He jerks his head toward the trees, and I heard it seconds later—the heavy tread of boots, the scrape of armor.
@@ -690,7 +665,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(27),
     reward: { xp: 50 },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-9a.mp3'),
     story: `
   I gripped the candleholder, its iron base thick with years of melted wax, its weight unfamiliar in my hands.
   "Why don't we just run?" I whispered. "We can't survive this."
@@ -714,7 +688,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(27),
     reward: { xp: 50 },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-9b.mp3'),
     story: `
   I gripped the table leg, splintered wood rough against my palm, its heft oddly comforting despite our odds.
   "Why don't we just run?" I whispered. "We can't survive this."
@@ -738,7 +711,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(30),
     reward: { xp: 100 },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-10.mp3'),
     story: `
       I gripped my makeshift weapon tighter, knuckles white. The soldiers entered cautiously, eyes scanning the shadows.  
       Rowan lunged first, driving his sword into one soldier's side—but the blade caught, trapped in armor. I swung wildly at another, the impact jarring up my arm as the man stumbled, stunned but not down.
@@ -768,7 +740,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(30),
     reward: { xp: 100 },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-10a.mp3'),
     story: `
       The soldier raised his blade behind Rowan, poised for a killing blow.  
       "Rowan, behind you!" I shouted, my voice raw.
@@ -798,7 +769,6 @@ export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [
     durationMinutes: questDuration(30),
     reward: { xp: 100 },
     poiSlug: '', // @todo: add slug when map has 10 POIs
-    audioFile: require('../../../assets/audio/quest-10b.mp3'),
     story: `
       Without thinking, I shoved Rowan aside, feeling the sting of a blade grazing my shoulder. Warmth spread down my sleeve—blood, sharp and real—but I'm alive.
       The soldier snarled, repositioning himself, blade raised to finish what he started. Fear twisted into defiance—I lifted my hand, feeling something ignite within me.
@@ -839,7 +809,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: "The River's Reflection",
     story:
       "You knelt at the river's edge, the water so still it mirrored the sky like glass. Breathing deep, you let the hush of the forest quiet your thoughts, the chaos of your journey settling into stillness. When you opened your eyes, the reflection had shifted—a faint figure watching from the reeds, gone in the next blink. Whether spirit or trick of the light, you rose feeling lighter, as if something unseen had granted you peace.",
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'L9VnQ3XpK7YB',
@@ -881,7 +851,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: 'The Still Pool',
     story:
       'At the heart of the glade, a pool so still it reflected the stars at midday. You knelt at its edge, listening to the wind carry voices too faint to understand. As you breathed in the cool air, the world seemed to hold itself in perfect balance. In that moment, you understood why silence mattered.',
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'M7XPQ9VNLK3T',
@@ -902,7 +872,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: "The Healer's Meditation",
     story:
       "The old woman handed you a steaming cup of herbal tea and told you to breathe. 'Too much weight on your shoulders, traveler,' she murmured, watching the fire crackle. You closed your eyes, inhaling the earthy scent, and for the first time in days, your thoughts slowed. When you finally spoke, your voice felt clearer, lighter.",
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'LXP9Q7NMTV3K',
@@ -944,7 +914,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: 'The Mirror of Stillness',
     story:
       'A placid lake stretched before you, the surface unmoving, mirroring the sky. You sat at the edge, watching your own reflection stare back, patient and expectant. In the silence, your breath slowed, your thoughts softened, and the tension in your chest unwound. When you finally rose, the lake was still—but something in you had shifted.',
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'L7XKQ9NVP3MT',
@@ -972,7 +942,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: "The Elder's Silence",
     story:
       "An old monk sat beneath the temple's ruined archway, eyes closed, hands resting lightly on his knees. You sat beside him, waiting for wisdom, for a parable, for anything—but he only breathed. Minutes passed, then hours, until something within you shifted. When you finally stood to leave, the monk spoke only two words: 'You understand.'",
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'L9X7VPQK3NMT',
@@ -1014,7 +984,7 @@ export const AVAILABLE_CUSTOM_QUEST_STORIES = [
     title: 'The Tower of Echoes',
     story:
       'At the top of a long-abandoned bell tower, you called out into the abyss. The wind carried your voice, stretching it into something both familiar and strange. A second later, your words returned, but they were not your own. Some places, it seemed, did not forget the voices of those who came before.',
-    category: 'Meditation',
+    category: 'self-care',
   },
   {
     id: 'M9X7VPQLK3NT',

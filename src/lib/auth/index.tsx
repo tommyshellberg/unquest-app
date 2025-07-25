@@ -1,11 +1,12 @@
 import Constants from 'expo-constants';
-import { create } from 'zustand';
 import { OneSignal } from 'react-native-onesignal';
+import { create } from 'zustand';
 
 import { storeTokens } from '@/api/token';
+import { revenueCatService } from '@/lib/services/revenuecat-service';
 import { getUserDetails } from '@/lib/services/user';
-import { useUserStore } from '@/store/user-store';
 import { useCharacterStore } from '@/store/character-store';
+import { useUserStore } from '@/store/user-store';
 
 import { createSelectors } from '../utils';
 import type { TokenType, UserLoginResponse } from './utils';
@@ -22,7 +23,7 @@ interface AuthState {
 const _useAuth = create<AuthState>((set, get) => ({
   status: 'idle',
   token: null,
-  signIn: (loginResponse) => {
+  signIn: async (loginResponse) => {
     setToken({
       access: loginResponse.token.access,
       refresh: loginResponse.token.refresh,
@@ -35,9 +36,23 @@ const _useAuth = create<AuthState>((set, get) => ({
         refresh: loginResponse.token.refresh,
       },
     });
+
+    // Login to RevenueCat with user ID
+    if (loginResponse.user?.id) {
+      try {
+        await revenueCatService.loginUser(loginResponse.user.id);
+        console.log(
+          '[Auth] Logged into RevenueCat with user ID:',
+          loginResponse.user.id
+        );
+      } catch (error) {
+        console.error('[Auth] Failed to login to RevenueCat:', error);
+        // Don't fail auth if RevenueCat login fails
+      }
+    }
   },
 
-  signOut: () => {
+  signOut: async () => {
     removeToken();
     set({
       status: 'signOut',
@@ -46,6 +61,15 @@ const _useAuth = create<AuthState>((set, get) => ({
 
     // Clear user store
     useUserStore.getState().clearUser();
+
+    // Logout from RevenueCat
+    try {
+      await revenueCatService.logoutUser();
+      console.log('[Auth] Logged out from RevenueCat');
+    } catch (error) {
+      console.error('[Auth] Failed to logout from RevenueCat:', error);
+      // Don't fail signOut if RevenueCat logout fails
+    }
 
     // Logout from OneSignal (only if initialized)
     if ((global as any).isOneSignalInitialized) {
@@ -133,6 +157,23 @@ const _useAuth = create<AuthState>((set, get) => ({
             console.log(
               '[Auth] OneSignal not initialized yet, will login later'
             );
+          }
+
+          // Login to RevenueCat with user ID
+          if (user.id) {
+            try {
+              await revenueCatService.loginUser(user.id);
+              console.log(
+                '[Auth] Logged into RevenueCat during hydration with user ID:',
+                user.id
+              );
+            } catch (error) {
+              console.error(
+                '[Auth] Failed to login to RevenueCat during hydration:',
+                error
+              );
+              // Don't fail hydration if RevenueCat login fails
+            }
           }
 
           // Sync character data if available

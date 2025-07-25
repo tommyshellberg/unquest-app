@@ -24,6 +24,7 @@ import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { getQuestRunStatus } from '@/lib/services/quest-run-service';
+import { revenueCatService } from '@/lib/services/revenuecat-service';
 import { initializeTimezoneSync } from '@/lib/services/timezone-service';
 import { useThemeConfig } from '@/lib/use-theme-config';
 import { useCharacterStore } from '@/store/character-store';
@@ -205,13 +206,33 @@ function RootLayout() {
     }
   }, []);
 
+  // Initialize RevenueCat SDK on app launch (following official docs)
+  useEffect(() => {
+    try {
+      // Enable test mode in development first
+      // Commented out to test actual paywall behavior
+      // if (__DEV__) {
+      //   revenueCatService.enableTestMode();
+      // }
+
+      // Initialize RevenueCat SDK without user ID (per documentation)
+      revenueCatService.initialize();
+
+      console.log('[RevenueCat] SDK configured on app launch');
+    } catch (error) {
+      console.error('[RevenueCat] Failed to configure SDK:', error);
+      // Don't crash the app if RevenueCat fails to initialize
+    }
+  }, []); // Empty dependency array - only run once on mount
+
   // Handle app state changes to check quest status when app comes to foreground
   useEffect(() => {
     const subscription = AppState.addEventListener(
       'change',
       async (nextAppState) => {
         if (
-          (appStateRef.current === 'inactive' || appStateRef.current === 'background') &&
+          (appStateRef.current === 'inactive' ||
+            appStateRef.current === 'background') &&
           nextAppState === 'active'
         ) {
           // App has come to foreground

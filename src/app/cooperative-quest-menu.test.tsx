@@ -31,7 +31,7 @@ jest.mock('@/lib/hooks/use-friend-management', () => ({
 
 // Mock user store
 jest.mock('@/store/user-store', () => ({
-  useUserStore: jest.fn((selector) => 
+  useUserStore: jest.fn((selector) =>
     selector({
       user: {
         featureFlags: ['coop_mode'],
@@ -42,11 +42,9 @@ jest.mock('@/store/user-store', () => ({
 
 // Mock user services
 jest.mock('@/lib/services/user', () => ({
-  getUserFriends: jest.fn(() => 
+  getUserFriends: jest.fn(() =>
     Promise.resolve({
-      friends: [
-        { id: 1, name: 'Test Friend', email: 'friend@example.com' }
-      ],
+      friends: [{ id: 1, name: 'Test Friend', email: 'friend@example.com' }],
     })
   ),
 }));
@@ -66,8 +64,6 @@ jest.mock('@/components/providers/lazy-websocket-provider', () => ({
     forceReconnect: jest.fn(),
   })),
 }));
-
-
 
 // Import the component
 import CooperativeQuestMenu from './cooperative-quest-menu';

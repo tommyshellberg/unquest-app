@@ -6,7 +6,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  FadeIn,
 } from 'react-native-reanimated';
 
 import { Text, View } from './index';
@@ -56,20 +55,15 @@ export function ScreenHeader({
 
   return (
     <HeaderWrapper style={animate ? animatedStyle : undefined} className="mb-4">
-      {showBackButton && (
-        <TouchableOpacity
-          onPress={handleBackPress}
-          className="mb-4 flex-row items-center"
-        >
-          <ArrowLeft size={24} color="#333" />
-          <Text className="ml-2 text-lg">Back</Text>
-        </TouchableOpacity>
-      )}
-      
-      <Text className="mb-2 mt-6 text-3xl font-bold">{title}</Text>
-      {subtitle && (
-        <Text className="text-neutral-600">{subtitle}</Text>
-      )}
+      <View className="mb-2 mt-4 flex-row items-center">
+        {showBackButton && (
+          <TouchableOpacity onPress={handleBackPress} className="mr-3 p-1">
+            <ArrowLeft size={24} color="#333" />
+          </TouchableOpacity>
+        )}
+        <Text className="flex-1 text-3xl font-bold">{title}</Text>
+      </View>
+      {subtitle && <Text className="text-sm text-neutral-600">{subtitle}</Text>}
     </HeaderWrapper>
   );
 }
