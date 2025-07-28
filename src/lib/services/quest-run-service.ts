@@ -42,10 +42,9 @@ const generateQuestRunBodyCustom = (questTemplate: CustomQuestTemplate) => {
     rest.mode = 'custom';
   }
 
-  // Build the request body with participants
+  // Build the request body
   const body: any = { 
-    quest: rest,
-    participants: [] // Will be filled by server with current user
+    quest: rest
   };
 
   // Add inviteeIds if this is a cooperative quest
@@ -77,8 +76,7 @@ const generateQuestRunBodyStory = (questTemplate: StoryQuestTemplate) => {
     }
     
     return { 
-      quest: rest,
-      participants: [] // Will be filled by server with current user
+      quest: rest
     };
   }
 };

@@ -5,6 +5,7 @@ import { create } from 'zustand';
 import { storeTokens } from '@/api/token';
 import { revenueCatService } from '@/lib/services/revenuecat-service';
 import { getUserDetails } from '@/lib/services/user';
+import { getItem, removeItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
 
@@ -54,6 +55,13 @@ const _useAuth = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     removeToken();
+
+    // Also clear provisional tokens
+    removeItem('provisionalAccessToken');
+    removeItem('provisionalRefreshToken');
+    removeItem('provisionalUserId');
+    removeItem('provisionalEmail');
+
     set({
       status: 'signOut',
       token: null,
@@ -120,6 +128,11 @@ const _useAuth = create<AuthState>((set, get) => ({
     try {
       const userToken = getToken();
       console.log('userToken', userToken);
+
+      // Check for provisional tokens if no regular token
+      const provisionalToken = getItem('provisionalAccessToken');
+      const provisionalRefreshToken = getItem('provisionalRefreshToken');
+
       if (userToken !== null) {
         set({ token: userToken });
 
@@ -227,14 +240,33 @@ const _useAuth = create<AuthState>((set, get) => ({
             'Failed to fetch user details during hydration:',
             fetchError
           );
-          get().signOut();
+          // Don't sign out on user fetch failure - might just be network issue
+          // Keep the token and let the user continue
+          console.log('[Auth] Keeping user signed in despite fetch failure');
         }
+      } else if (provisionalToken) {
+        // Handle provisional users
+        console.log('[Auth] Found provisional token during hydration');
+
+        // Create a token structure for provisional users
+        const provisionalTokenData: TokenType = {
+          access: provisionalToken,
+          refresh: provisionalRefreshToken || provisionalToken, // Use access token as fallback
+        };
+
+        set({ status: 'signIn', token: provisionalTokenData });
+
+        // Note: We don't fetch user details for provisional users yet
+        // They will be fetched after quest completion when converting to full user
+        console.log('[Auth] Provisional user hydrated successfully');
       } else {
         get().signOut();
       }
     } catch (e) {
       console.error('Error during hydration process:', e);
-      get().signOut();
+      // Don't sign out on hydration errors - let the user continue if possible
+      // They might just have network issues or other temporary problems
+      set({ status: 'signOut' }); // Set to signOut state but don't clear tokens
     }
   },
 }));

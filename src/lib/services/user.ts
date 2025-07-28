@@ -374,6 +374,15 @@ export async function createProvisionalUser(
       setItem('provisionalAccessToken', response.data.tokens.access.token);
     }
 
+    // Store refresh token if provided
+    if (response.data.tokens?.refresh?.token) {
+      console.log(
+        'setting provisional refresh token',
+        response.data.tokens.refresh.token
+      );
+      setItem('provisionalRefreshToken', response.data.tokens.refresh.token);
+    }
+
     return response.data.user;
   } catch (error: unknown) {
     // If email is taken, we can indicate it for special handling

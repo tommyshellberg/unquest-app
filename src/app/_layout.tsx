@@ -22,6 +22,7 @@ import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-
 import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
+import { useTokenRefreshErrorHandler } from '@/lib/hooks/use-token-refresh-error-handler';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { getQuestRunStatus } from '@/lib/services/quest-run-service';
 import { revenueCatService } from '@/lib/services/revenuecat-service';
@@ -333,6 +334,9 @@ function RootLayout() {
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
+  
+  // Handle token refresh exhaustion
+  useTokenRefreshErrorHandler();
 
   // Return null until hydration promise is done AND auth status is final
   if (!hydrationFinished || authStatus === 'hydrating') {

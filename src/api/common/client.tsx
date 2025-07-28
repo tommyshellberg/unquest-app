@@ -22,6 +22,12 @@ let failedQueue: {
   reject: (reason?: any) => void;
 }[] = [];
 
+// Track refresh attempts and failures
+let refreshAttempts = 0;
+let lastRefreshAttempt = 0;
+const MAX_REFRESH_ATTEMPTS = 3;
+const REFRESH_ATTEMPT_WINDOW = 5 * 60 * 1000; // 5 minutes
+
 // Extend the AxiosRequestConfig type to include our custom properties
 interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -37,6 +43,24 @@ const processQueue = (error: Error | null, token: string | null = null) => {
     }
   });
   failedQueue = [];
+};
+
+// Check if we should attempt token refresh
+const shouldAttemptRefresh = (): boolean => {
+  const now = Date.now();
+
+  // Reset counter if outside the time window
+  if (now - lastRefreshAttempt > REFRESH_ATTEMPT_WINDOW) {
+    refreshAttempts = 0;
+  }
+
+  return refreshAttempts < MAX_REFRESH_ATTEMPTS;
+};
+
+// Record a refresh attempt
+const recordRefreshAttempt = () => {
+  refreshAttempts++;
+  lastRefreshAttempt = Date.now();
 };
 
 // SIMPLIFIED Request Interceptor: Only attach the token
@@ -92,6 +116,26 @@ apiClient.interceptors.response.use(
     }
 
     if (error.response.status === 401 && !originalRequest._retry) {
+      // Check if we've exceeded refresh attempts
+      if (!shouldAttemptRefresh()) {
+        console.error(
+          `[API Client] Exceeded max refresh attempts (${MAX_REFRESH_ATTEMPTS})`
+        );
+
+        // Create a custom error for the UI to handle
+        const exhaustedError = new Error('TOKEN_REFRESH_EXHAUSTED');
+        (exhaustedError as any).code = 'TOKEN_REFRESH_EXHAUSTED';
+        (exhaustedError as any).attempts = refreshAttempts;
+
+        // Try to handle the error through our global handler
+        import('@/lib/hooks/use-token-refresh-error-handler').then(({ handleTokenRefreshExhaustion }) => {
+          handleTokenRefreshExhaustion(exhaustedError);
+        }).catch(console.error);
+
+        // Don't sign out immediately - let the UI decide what to do
+        return Promise.reject(exhaustedError);
+      }
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -108,15 +152,22 @@ apiClient.interceptors.response.use(
 
       originalRequest._retry = true;
       isRefreshing = true;
+      recordRefreshAttempt();
 
       try {
-        console.log('Refreshing token');
+        console.log(
+          `[API Client] Refreshing token (attempt ${refreshAttempts}/${MAX_REFRESH_ATTEMPTS})`
+        );
         const newTokens = await refreshAccessToken();
 
         if (newTokens?.access?.token) {
           originalRequest.headers.Authorization = `Bearer ${newTokens.access.token}`;
 
           processQueue(null, newTokens.access.token);
+
+          // Reset refresh attempts on success
+          refreshAttempts = 0;
+          console.log('[API Client] Token refresh successful, attempts reset');
 
           return apiClient(originalRequest);
         } else {
@@ -127,13 +178,31 @@ apiClient.interceptors.response.use(
             'Token refresh failed: No new access token string received.'
           );
           processQueue(refreshError);
-          signOut();
+
+          // Check if this is a provisional user before signing out
+          const hasProvisionalToken = !!getItem('provisionalAccessToken');
+          if (!hasProvisionalToken) {
+            signOut();
+          } else {
+            console.log(
+              '[API Client] Not signing out provisional user on token refresh failure'
+            );
+          }
           return Promise.reject(refreshError);
         }
       } catch (refreshError) {
         console.error('Token refresh failed catastrophically:', refreshError);
         processQueue(refreshError as Error);
-        signOut();
+
+        // Check if this is a provisional user before signing out
+        const hasProvisionalToken = !!getItem('provisionalAccessToken');
+        if (!hasProvisionalToken) {
+          signOut();
+        } else {
+          console.log(
+            '[API Client] Not signing out provisional user on catastrophic token refresh failure'
+          );
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

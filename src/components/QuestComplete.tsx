@@ -222,17 +222,34 @@ export function QuestComplete({
       <View className="bg-background-light/80 absolute inset-0" />
 
       {/* Content */}
-      <ScreenContainer className="items-center justify-between px-6">
-        <Animated.View className="mb-4 mt-6 items-center" style={headerStyle}>
-          <Text className="text-cream text-center text-2xl font-bold drop-shadow-md">
-            Well done, {characterName}!
-          </Text>
-          <Text className="text-cream text-lg drop-shadow-md">
-            You've completed the quest!
+      <ScreenContainer className="items-center justify-between px-4">
+        <Animated.View className="mb-3 mt-4 w-full" style={headerStyle}>
+          <Text className="text-cream mb-2 text-center text-2xl font-bold drop-shadow-md">
+            Quest Complete!
           </Text>
 
-          {/* Quest Image with Lottie Animation */}
-          <View className="relative mt-6 h-[150px] w-full items-center justify-center">
+          {quest.title && (
+            <Text className="text-cream mb-4 text-center text-lg font-medium italic drop-shadow-md">
+              {quest.title}
+            </Text>
+          )}
+
+          {/* Quest card with background image */}
+          <View className="relative mx-auto h-[160px] w-[160px] overflow-hidden rounded-xl shadow-lg">
+            {/* Background image */}
+            {quest.id && (
+              <Image
+                source={getQuestImage(quest)}
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                }}
+                resizeMode="cover"
+              />
+            )}
+
+            {/* Lottie animation overlay */}
             <LottieView
               ref={lottieRef}
               source={require('@/../assets/animations/congrats.json')}
@@ -240,22 +257,20 @@ export function QuestComplete({
               loop={false}
               style={{
                 position: 'absolute',
-                width: '150%',
-                height: '150%',
-                opacity: 0.8,
+                width: '100%',
+                height: '100%',
+                opacity: 0.3,
               }}
             />
-            {quest.id && (
-              <Image
-                source={getQuestImage(quest)}
-                style={{
-                  width: 150,
-                  height: 150,
-                  opacity: 0.8,
-                }}
-                resizeMode="contain"
-              />
-            )}
+
+            {/* XP badge positioned at bottom center */}
+            <View className="absolute bottom-2 left-0 right-0 items-center">
+              <View className="rounded-full bg-white/90 px-3 py-1 shadow-md">
+                <Text className="text-sm font-bold text-neutral-800">
+                  +{quest.reward.xp} XP
+                </Text>
+              </View>
+            </View>
           </View>
         </Animated.View>
 
@@ -265,16 +280,16 @@ export function QuestComplete({
               ? undefined
               : FadeInDown.delay(200).duration(600)
           }
-          className="my-4 w-full flex-1"
+          className="my-2 w-full flex-1"
           style={storyStyle}
         >
-          <Card className="flex-1 rounded-xl bg-neutral-100">
+          <Card className="flex-1 rounded-xl bg-white/90">
             <ScrollView
               className="px-4"
-              contentContainerStyle={{ paddingVertical: 20 }}
+              contentContainerStyle={{ paddingVertical: 16 }}
               showsVerticalScrollIndicator={true}
             >
-              <Text className="text-base leading-6 text-neutral-800">
+              <Text className="text-sm leading-6 text-neutral-800">
                 {displayStory || 'Congratulations on completing your quest!'}
               </Text>
             </ScrollView>
@@ -292,19 +307,34 @@ export function QuestComplete({
               ? undefined
               : FadeInDown.delay(400).duration(600)
           }
+          className="mb-4"
         >
-          <View className="mb-6 items-center">
-            <Text className="text-lg font-bold">
-              Reward: {quest.reward.xp} XP
-            </Text>
-          </View>
-
           {showActionButton && (
-            <Button
-              label={continueText}
-              onPress={handleContinue}
-              accessibilityLabel={continueText}
-            />
+            <>
+              <Button
+                label={continueText}
+                onPress={handleContinue}
+                accessibilityLabel={continueText}
+              />
+              {quest.questRunId && (
+                <Button
+                  label="Add Reflection"
+                  variant="secondary"
+                  onPress={() => {
+                    router.push({
+                      pathname: '/(app)/quest/reflection',
+                      params: {
+                        questId: quest.id,
+                        questRunId: quest.questRunId,
+                        duration: quest.durationMinutes,
+                      },
+                    });
+                  }}
+                  className="mt-3"
+                  accessibilityLabel="Reflect on quest"
+                />
+              )}
+            </>
           )}
         </Animated.View>
       </ScreenContainer>

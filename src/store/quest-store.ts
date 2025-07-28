@@ -108,7 +108,7 @@ export const useQuestStore = create<QuestState>()(
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
         const currentCooperativeQuestRun = get().cooperativeQuestRun;
         // Only clear cooperative quest data when preparing a non-cooperative quest
-        const shouldClearCooperativeData = quest.category !== 'cooperative';
+        const shouldClearCooperativeData = quest.mode !== 'custom' || quest.category !== 'cooperative';
 
         set({
           pendingQuest: quest,
@@ -142,6 +142,7 @@ export const useQuestStore = create<QuestState>()(
               ...activeQuest,
               stopTime: completionTime,
               status: 'completed' as const,
+              questRunId: QuestTimer.getQuestRunId() || undefined,
             };
 
             // Track cooperative quest success
@@ -279,8 +280,8 @@ export const useQuestStore = create<QuestState>()(
             currentLiveActivityId: null,
             // Clear cooperative quest run if this was a cooperative quest
             cooperativeQuestRun:
-              pendingQuest?.category === 'cooperative' ||
-              activeQuest?.category === 'cooperative'
+              (pendingQuest?.mode === 'custom' && pendingQuest?.category === 'cooperative') ||
+              (activeQuest?.mode === 'custom' && 'category' in activeQuest && activeQuest?.category === 'cooperative')
                 ? null
                 : cooperativeQuestRun,
           });
@@ -316,6 +317,7 @@ export const useQuestStore = create<QuestState>()(
             durationMinutes: failedQuestDetails.durationMinutes ?? 0,
             title: failedQuestDetails.title ?? 'Unknown Quest',
             id: questId,
+            questRunId: QuestTimer.getQuestRunId() || undefined,
             // Add any other required fields here
           };
 
