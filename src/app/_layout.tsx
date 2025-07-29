@@ -33,7 +33,7 @@ import { useQuestStore } from '@/store/quest-store';
 
 import NavigationGate from './navigation-gate';
 
-export { ErrorBoundary } from 'expo-router';
+export { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const integrations =
   Env.APP_ENV === 'production'

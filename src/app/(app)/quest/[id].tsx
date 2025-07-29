@@ -14,7 +14,6 @@ import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
 import { FailedQuest } from '@/components/failed-quest';
 import { QuestComplete } from '@/components/QuestComplete';
 import { FocusAwareStatusBar, Text, View } from '@/components/ui';
-import { Button } from '@/components/ui/button';
 import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -71,7 +70,7 @@ export default function AppQuestDetailsScreen() {
       // Clear the recent completed quest if it matches this quest
       if (recentCompletedQuest && recentCompletedQuest.id === id) {
         console.log(
-          '[QuestDetails] Clearing recent completed quest on navigation:',
+          '[QuestDetails] Clearing recent completed quest on back navigation:',
           id
         );
         clearRecentCompletedQuest();
@@ -241,18 +240,18 @@ export default function AppQuestDetailsScreen() {
                   className="flex-row items-center justify-between rounded-lg border border-neutral-200 bg-transparent p-3"
                 >
                   <View className="flex-row items-center">
-                    <Notebook size={20} color={colors.neutral[600]} />
+                    <Notebook size={20} color={colors.neutral[500]} />
                     <Text className="ml-2 text-base font-semibold text-neutral-700">
                       Reflection
                     </Text>
                     <View className="ml-2 rounded-full bg-primary-100 px-2 py-0.5">
-                      <Text className="text-xs text-primary-600">Added</Text>
+                      <Text className="text-primary-600 text-xs">Added</Text>
                     </View>
                   </View>
                   {isReflectionExpanded ? (
-                    <ChevronUp size={20} color={colors.neutral[600]} />
+                    <ChevronUp size={20} color={colors.neutral[500]} />
                   ) : (
-                    <ChevronDown size={20} color={colors.neutral[600]} />
+                    <ChevronDown size={20} color={colors.neutral[500]} />
                   )}
                 </TouchableOpacity>
 
@@ -298,7 +297,7 @@ export default function AppQuestDetailsScreen() {
                               key={activity}
                               className="mb-1 mr-1 rounded-full bg-primary-100 px-2 py-1"
                             >
-                              <Text className="text-xs capitalize text-primary-600">
+                              <Text className="text-primary-600 text-xs capitalize">
                                 {activity.replace('-', ' ')}
                               </Text>
                             </View>

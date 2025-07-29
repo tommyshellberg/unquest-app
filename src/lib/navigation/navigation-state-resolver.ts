@@ -10,6 +10,7 @@ export type NavigationTarget =
   | { type: 'pending-quest'; questId: string }
   | { type: 'quest-result'; questId: string; outcome: 'completed' | 'failed' }
   | { type: 'first-quest-result'; outcome: 'completed' | 'failed' }
+  | { type: 'quest-completed-signup' }
   | { type: 'streak-celebration' }
   | { type: 'onboarding' }
   | { type: 'login' }
@@ -179,9 +180,13 @@ export function useNavigationTarget(): NavigationTarget {
       useQuestStore.getState().resetFailedQuest();
       return { type: 'app' };
     }
-    if (failedQuest.id === 'quest-1' && !isOnboardingComplete) {
+    
+    // During onboarding (not authenticated), any failed quest should go to first-quest-result
+    if (!isOnboardingComplete && authStatus === 'signOut') {
+      console.log('🧭 Quest failed during onboarding, showing first-quest-result');
       return { type: 'first-quest-result', outcome: 'failed' };
     }
+    
     return { type: 'quest-result', questId: failedQuest.id, outcome: 'failed' };
   }
 
@@ -194,9 +199,13 @@ export function useNavigationTarget(): NavigationTarget {
       useQuestStore.getState().clearRecentCompletedQuest();
       return { type: 'app' };
     }
-    if (recentCompletedQuest.id === 'quest-1' && !isOnboardingComplete) {
+    
+    // During onboarding (not authenticated), any completed quest should go to first-quest-result
+    if (!isOnboardingComplete && authStatus === 'signOut') {
+      console.log('🧭 Quest completed during onboarding, showing first-quest-result');
       return { type: 'first-quest-result', outcome: 'completed' };
     }
+    
     return {
       type: 'quest-result',
       questId: recentCompletedQuest.id,
@@ -213,6 +222,15 @@ export function useNavigationTarget(): NavigationTarget {
     console.log(
       '🧭 Onboarding not complete (or no character data for legacy users)'
     );
+    
+    // Special case: If we're at VIEWING_SIGNUP_PROMPT, it means the user completed quest-1
+    // but hasn't signed up yet. They should see the signup prompt, not go back to onboarding.
+    if (currentStep === OnboardingStep.VIEWING_SIGNUP_PROMPT) {
+      console.log('🧭 User completed first quest but not signed up, showing quest-completed-signup');
+      // Navigate directly to the signup prompt screen
+      return { type: 'quest-completed-signup' };
+    }
+    
     return { type: 'onboarding' };
   }
 

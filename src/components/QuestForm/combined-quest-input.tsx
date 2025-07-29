@@ -63,7 +63,7 @@ export const CombinedQuestInput = ({
   };
 
   return (
-    <View className="my-5 rounded-xl bg-[#F5F5F0] p-5 shadow-sm">
+    <View className="mb-4 rounded-xl bg-cardBackground p-5">
       <View className="mb-2.5">
         <View className="flex-row items-center">
           <Text className="text-2xl font-medium text-[#333]">I want to</Text>
@@ -100,19 +100,21 @@ export const CombinedQuestInput = ({
 
       {/* Slider with separate handlers for value change and sliding complete */}
       <View className="mt-5">
-        <Slider
-          testID="duration-slider"
-          style={{ width: '100%', height: 40 }}
-          minimumValue={5}
-          maximumValue={240}
-          step={5}
-          value={duration}
-          onValueChange={handleSliderValueChange}
-          onSlidingComplete={handleSlidingComplete}
-          minimumTrackTintColor="#3B7A57" // Forest green
-          maximumTrackTintColor="#EAEAE5"
-          thumbTintColor="#3B7A57"
-        />
+        <View style={{ height: 40 }}>
+          <Slider
+            testID="duration-slider"
+            style={{ width: '100%', height: 40 }}
+            minimumValue={5}
+            maximumValue={240}
+            step={5}
+            value={duration}
+            onValueChange={handleSliderValueChange}
+            onSlidingComplete={handleSlidingComplete}
+            minimumTrackTintColor="#3B7A57" // Forest green
+            maximumTrackTintColor="#EAEAE5"
+            thumbTintColor="#3B7A57"
+          />
+        </View>
 
         <View className="mt-4 flex-row justify-between">
           <View className="w-[48%] items-center rounded-lg bg-[#EAEAE5] p-3">

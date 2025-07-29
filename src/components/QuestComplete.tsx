@@ -316,7 +316,7 @@ export function QuestComplete({
                 onPress={handleContinue}
                 accessibilityLabel={continueText}
               />
-              {quest.questRunId && (
+              {quest.questRunId && quest.id !== 'quest-1' && (
                 <Button
                   label="Add Reflection"
                   variant="secondary"

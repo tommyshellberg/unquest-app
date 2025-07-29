@@ -1,10 +1,15 @@
 import { Feather } from '@expo/vector-icons';
-import { type BottomSheetModal } from '@gorhom/bottom-sheet';
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import { type Control, Controller } from 'react-hook-form';
+import { LayoutAnimation, Platform, UIManager } from 'react-native';
 
 // Import UI components from project
-import { Modal, Pressable, Text, View } from '@/components/ui';
+import { Pressable, Text, View } from '@/components/ui';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // Category options with icons
 const categoryOptions = [
@@ -28,23 +33,20 @@ export const CategorySelector = ({
   control,
   questCategory,
 }: CategorySelectorProps) => {
-  const modalRef = useRef<BottomSheetModal>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Get the selected category label
   const selectedCategory = categoryOptions.find(
     (cat) => cat.id === questCategory
   );
 
-  const openModal = () => {
-    modalRef.current?.present();
-  };
-
-  const closeModal = () => {
-    modalRef.current?.dismiss();
+  const toggleExpanded = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsExpanded(!isExpanded);
   };
 
   return (
-    <View className="bg-cardBackground my-2.5 rounded-xl p-4 shadow-sm">
+    <View className="mb-4 rounded-xl bg-cardBackground p-4">
       <Text className="mb-2 text-base text-[#666]">What type of activity?</Text>
       <Controller
         control={control}
@@ -53,7 +55,11 @@ export const CategorySelector = ({
             <Pressable
               testID="category-selector"
               className="flex-row items-center justify-between py-2.5"
-              onPress={openModal}
+              onPress={toggleExpanded}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Select category"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <View className="flex-row items-center">
                 {selectedCategory && (
@@ -68,27 +74,38 @@ export const CategorySelector = ({
                   {selectedCategory?.label || 'Select a category'}
                 </Text>
               </View>
-              <Feather name="chevron-down" size={20} color="#666" />
+              <Feather 
+                name={isExpanded ? "chevron-up" : "chevron-down"} 
+                size={20} 
+                color="#666" 
+              />
             </Pressable>
 
-            {/* Bottom Sheet Modal for Categories */}
-            <Modal ref={modalRef} snapPoints={['60%']} title="Select Category">
-              <View className="p-4">
-                {categoryOptions.map((category) => (
+            {/* Collapsible category list */}
+            {isExpanded && (
+              <View className="mt-2 overflow-hidden rounded-lg border border-[#F0F0F0]">
+                {categoryOptions.map((category, index) => (
                   <Pressable
                     key={category.id}
                     testID={`category-option-${category.id}`}
-                    className={`flex-row items-center border-b border-[#F0F0F0] py-3 ${
-                      value === category.id ? 'bg-[#F8F8F8]' : ''
+                    className={`flex-row items-center px-3 py-3 ${
+                      value === category.id ? 'bg-[#F8F8F8]' : 'bg-white'
+                    } ${
+                      index !== categoryOptions.length - 1 ? 'border-b border-[#F0F0F0]' : ''
                     }`}
                     onPress={() => {
                       onChange(category.id);
-                      closeModal();
+                      setIsExpanded(false);
+                      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                     }}
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${category.label}`}
+                    hitSlop={{ top: 5, bottom: 5, left: 10, right: 10 }}
                   >
                     <Feather
                       name={category.icon as any}
-                      size={24}
+                      size={20}
                       color={value === category.id ? '#3B7A57' : '#666'}
                       className="mr-3"
                     />
@@ -96,18 +113,18 @@ export const CategorySelector = ({
                       className={`flex-1 text-base ${
                         value === category.id
                           ? 'font-medium text-[#3B7A57]'
-                          : ''
+                          : 'text-[#333]'
                       }`}
                     >
                       {category.label}
                     </Text>
                     {value === category.id && (
-                      <Feather name="check" size={20} color="#3B7A57" />
+                      <Feather name="check" size={16} color="#3B7A57" />
                     )}
                   </Pressable>
                 ))}
               </View>
-            </Modal>
+            )}
           </View>
         )}
         name="questCategory"

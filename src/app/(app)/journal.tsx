@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { router } from 'expo-router';
+import { Notebook } from 'lucide-react-native';
 import React, { useCallback, useMemo, useState } from 'react';
 import Animated, {
   useAnimatedStyle,
@@ -23,7 +24,6 @@ import {
 } from '@/components/ui';
 import { Chip } from '@/components/ui/chip';
 import colors from '@/components/ui/colors';
-import { useQuestStore } from '@/store/quest-store';
 
 type FilterType = 'all' | 'story' | 'custom' | 'cooperative';
 type StatusFilter = 'all' | 'completed' | 'failed';
@@ -115,7 +115,8 @@ export default function JournalScreen() {
         }
 
         return {
-          id: run.quest.id || run.quest.customId || `quest-${run._id || run.id}`, // Use customId as fallback for custom quests
+          id:
+            run.quest.id || run.quest.customId || `quest-${run._id || run.id}`, // Use customId as fallback for custom quests
           questRunId: run._id || run.id, // Add quest run ID for reflection tracking
           customId: run.quest.customId, // Preserve the original quest template ID
           title: run.quest.title,
