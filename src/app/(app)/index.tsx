@@ -503,6 +503,27 @@ export default function Home() {
     );
   };
 
+  // Track premium CTA view
+  const PremiumCTATracker = ({ questId, type }: { questId?: string; type: 'storyline' | 'cooperative' }) => {
+    useEffect(() => {
+      if (type === 'storyline') {
+        posthog.capture('premium_upsell_cta_viewed', {
+          upsell_type: 'storyline_quest',
+          trigger_location: 'home_storyline',
+          quest_type: 'story',
+          quest_id: questId,
+        });
+      } else {
+        posthog.capture('premium_upsell_cta_viewed', {
+          upsell_type: 'cooperative_quest',
+          trigger_location: 'home_carousel',
+          quest_type: 'cooperative',
+        });
+      }
+    }, [questId, type]);
+    return null;
+  };
+
   // Render story quest option buttons
   const renderStoryOptions = () => {
     if (activeIndex !== 0) return null; // Only show for story mode
@@ -519,6 +540,7 @@ export default function Home() {
           entering={FadeIn.duration(600).delay(200)}
           className="w-full items-center px-4"
         >
+          {quest.isPremium && !hasPremiumAccess && <PremiumCTATracker questId={quest.customId} type="storyline" />}
           <Animated.View
             entering={FadeInDown.duration(600).delay(400)}
             style={{
@@ -554,6 +576,12 @@ export default function Home() {
                   console.log(
                     '[Story Quest Button] Setting showPaywallModal to true'
                   );
+                  posthog.capture('premium_upsell_cta_clicked', {
+                    upsell_type: 'storyline_quest',
+                    trigger_location: 'home_storyline',
+                    quest_type: 'story',
+                    quest_id: quest.customId,
+                  });
                   setShowPaywallModal(true);
                 }
               }}
@@ -610,6 +638,12 @@ export default function Home() {
               }
               onPress={() => {
                 if (questIsPremium && !hasPremiumAccess) {
+                  posthog.capture('premium_upsell_cta_clicked', {
+                    upsell_type: 'storyline_quest',
+                    trigger_location: 'home_storyline_options',
+                    quest_type: 'story',
+                    quest_id: option.nextQuestId,
+                  });
                   setShowPaywallModal(true);
                 } else {
                   handleQuestOptionSelect(option.nextQuestId);
@@ -702,6 +736,7 @@ export default function Home() {
                   elevation: 6,
                 }}
               >
+                {questIsPremium && !hasPremiumAccess && <PremiumCTATracker questId={option.nextQuestId || undefined} type="storyline" />}
                 <Button
                   label={
                     (questIsPremium && !hasPremiumAccess)
@@ -712,6 +747,12 @@ export default function Home() {
                   }
                   onPress={() => {
                     if (questIsPremium && !hasPremiumAccess) {
+                      posthog.capture('premium_upsell_cta_clicked', {
+                        upsell_type: 'storyline_quest',
+                        trigger_location: 'home_storyline_options',
+                        quest_type: 'story',
+                        quest_id: option.nextQuestId,
+                      });
                       setShowPaywallModal(true);
                     } else {
                       handleQuestOptionSelect(option.nextQuestId);
@@ -845,6 +886,7 @@ export default function Home() {
                 entering={FadeIn.duration(600).delay(200)}
                 className="w-full items-center px-4"
               >
+                {!hasCoopAccess && <PremiumCTATracker type="cooperative" />}
                 <Animated.View
                   entering={FadeInDown.duration(600).delay(400)}
                   style={{
@@ -876,6 +918,11 @@ export default function Home() {
                         console.log(
                           '[Coop Button] Setting showPaywallModal to true'
                         );
+                        posthog.capture('premium_upsell_cta_clicked', {
+                          upsell_type: 'cooperative_quest',
+                          trigger_location: 'home_carousel',
+                          quest_type: 'cooperative',
+                        });
                         setShowPaywallModal(true);
                       }
                     }}

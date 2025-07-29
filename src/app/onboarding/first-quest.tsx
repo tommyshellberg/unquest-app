@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -11,16 +11,25 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
+import { useNextAvailableQuests } from '@/api/quest';
 import { Button, Card, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { ActivityIndicator } from '@/components/ui';
 import { audioCacheService } from '@/lib/services/audio-cache.service';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
+import type { StoryQuestTemplate } from '@/store/types';
 import { getQuestAudioPath } from '@/utils/audio-utils';
 
 export default function FirstQuestScreen() {
   const router = useRouter();
   const prepareQuest = useQuestStore((state) => state.prepareQuest);
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
+  const setServerAvailableQuests = useQuestStore(
+    (state) => state.setServerAvailableQuests
+  );
+
+  // Fetch the first quest from server
+  const { data: questData, isLoading } = useNextAvailableQuests();
 
   // Animation values for a smooth sequential fade-in effect
   const headerOpacity = useSharedValue(0);
@@ -119,23 +128,41 @@ export default function FirstQuestScreen() {
     transform: [{ translateY: buttonTranslateY.value }],
   }));
 
+  // Update store when server quests are loaded
+  useEffect(() => {
+    if (questData?.quests) {
+      setServerAvailableQuests(
+        questData.quests,
+        questData.hasMoreQuests || false,
+        questData.storylineComplete || false
+      );
+    }
+  }, [questData, setServerAvailableQuests]);
+
   // Handle starting the first quest
   const handleStartQuest = async () => {
     try {
       posthog.capture('onboarding_trigger_start_first_quest');
-      // Find the first story quest
-      const firstStoryQuest = AVAILABLE_QUESTS.find(
-        (quest) => quest.mode === 'story'
-      );
+
+      // Use the first quest from server if available
+      const firstStoryQuest = questData?.quests?.[0];
 
       if (firstStoryQuest) {
+        // Convert server quest to client format
+        const clientQuest: StoryQuestTemplate = {
+          ...firstStoryQuest,
+          id: firstStoryQuest.customId, // Use customId as the primary ID for client
+          _id: firstStoryQuest._id, // Preserve MongoDB ID for questTemplateId
+          mode: 'story' as const,
+        };
+
         // Prepare the quest in the store
         posthog.capture('onboarding_prepare_first_quest');
-        prepareQuest(firstStoryQuest);
+        prepareQuest(clientQuest);
 
         // Prepare the quest timer - wrap in try/catch to prevent errors
         try {
-          await QuestTimer.prepareQuest(firstStoryQuest);
+          await QuestTimer.prepareQuest(clientQuest);
           posthog.capture('onboarding_success_start_first_quest');
         } catch (error) {
           console.error('Error preparing quest timer:', error);

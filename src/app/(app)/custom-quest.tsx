@@ -3,22 +3,17 @@ import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { CategorySelector } from '@/components/QuestForm/category-selector';
+import { CategorySlider } from '@/components/QuestForm/category-slider';
 // Import our new components with appropriate paths
 import { CombinedQuestInput } from '@/components/QuestForm/combined-quest-input';
-import { PaperPlanes } from '@/components/QuestForm/paper-planes';
-import { StreakCounter } from '@/components/StreakCounter';
 // Import UI components from our project
 import {
   Button,
   FocusAwareStatusBar,
   SafeAreaView,
-  ScrollView,
-  Text,
-  View,
-  ScreenContainer,
   ScreenHeader,
-  TouchableOpacity,
+  ScrollView,
+  View,
 } from '@/components/ui';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
@@ -104,50 +99,50 @@ export default function CustomQuestScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
+    <SafeAreaView className="flex-1 bg-neutral-100 px-4">
       <FocusAwareStatusBar />
 
-      <ScreenContainer bottomPadding={0}>
-        {/* Header */}
-        <ScreenHeader
-          title="Custom Quest"
-          subtitle="Create your own quest with a personalized name and duration"
-          showBackButton
+      <ScreenHeader
+        title="Custom Quest"
+        subtitle="Create your own quest with a personalized name and duration"
+        showBackButton
+      />
+
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 80 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="mb-4">
+          {/* Paper planes illustration */}
+          {/* <PaperPlanes /> */}
+        </View>
+
+        {/* Quest Input with improved slider handling */}
+        <CombinedQuestInput
+          initialQuestName={questName}
+          initialDuration={questDuration}
+          onQuestNameChange={handleQuestNameChange}
+          onDurationChange={handleDurationChange}
         />
 
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="mb-4">
-            {/* Paper planes illustration */}
-            <PaperPlanes />
-          </View>
+        {/* Category Slider */}
+        <CategorySlider control={control} questCategory={questCategory} />
 
-          {/* Quest Input with improved slider handling */}
-          <CombinedQuestInput
-            initialQuestName={questName}
-            initialDuration={questDuration}
-            onQuestNameChange={handleQuestNameChange}
-            onDurationChange={handleDurationChange}
-          />
-
-          <View className="my-3 h-px bg-[#EEEEEE]" />
-
-          {/* Category Dropdown */}
-          <CategorySelector control={control} questCategory={questCategory} />
-
-          {/* Continue Button (Large, Full-Width) */}
-          <Button
-            label="Start Quest"
-            variant="default"
-            size="lg"
-            disabled={!canContinue}
-            onPress={handleSubmit(onSubmit)}
-            className={`mt-4 mb-4 rounded-md bg-primary-400 py-3 ${
-              canContinue ? 'opacity-100' : 'opacity-50'
-            }`}
-            textClassName="text-lg font-semibold text-white"
-          />
-        </ScrollView>
-      </ScreenContainer>
+        {/* Continue Button (Large, Full-Width) */}
+        <Button
+          label="Start Quest"
+          variant="default"
+          size="lg"
+          disabled={!canContinue}
+          onPress={handleSubmit(onSubmit)}
+          className={`rounded-md bg-primary-400 py-3 ${
+            canContinue ? 'opacity-100' : 'opacity-50'
+          }`}
+          textClassName="text-lg font-semibold text-white"
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 }

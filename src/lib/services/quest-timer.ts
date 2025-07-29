@@ -195,15 +195,21 @@ export default class QuestTimer {
       // Create a quest run on the server (only for solo quests)
       try {
         console.log('[QuestTimer] Creating quest run for solo quest');
-        console.log('[QuestTimer] About to call createQuestRun with template:', {
-          id: questTemplate.id,
-          _id: (questTemplate as any)._id,
-          customId: (questTemplate as any).customId,
-          mode: questTemplate.mode,
-          title: questTemplate.title,
-        });
+        console.log(
+          '[QuestTimer] About to call createQuestRun with template:',
+          {
+            id: questTemplate.id,
+            _id: (questTemplate as any)._id,
+            customId: (questTemplate as any).customId,
+            mode: questTemplate.mode,
+            title: questTemplate.title,
+          }
+        );
         const questRun = await createQuestRun(questTemplate);
-        console.log('[QuestTimer] Quest run created successfully:', questRun.id);
+        console.log(
+          '[QuestTimer] Quest run created successfully:',
+          questRun.id
+        );
         this.questRunId = questRun.id;
 
         // If this is a cooperative quest, store the cooperative quest run data
@@ -607,7 +613,86 @@ export default class QuestTimer {
       const elapsedTime = Date.now() - this.questStartTime;
       const questDurationMs = this.questTemplate.durationMinutes * 60 * 1000;
 
-      if (elapsedTime < questDurationMs) {
+      // Check if quest duration has been completed
+      if (elapsedTime >= questDurationMs) {
+        console.log('Quest duration completed, marking quest as successful');
+
+        // Check if quest is already completed to avoid double completion
+        const activeQuest = questStore.activeQuest;
+        const pendingQuest = questStore.pendingQuest;
+
+        if (activeQuest?.id === this.questTemplate.id) {
+          console.log('Completing active quest:', activeQuest.id);
+          questStore.completeQuest(true);
+        } else if (pendingQuest?.id === this.questTemplate.id) {
+          console.log(
+            'Completing quest that was stuck in pending state:',
+            pendingQuest.id
+          );
+
+          // Manually transition to completed
+          const completedQuest = {
+            ...pendingQuest,
+            id: pendingQuest.id || this.questTemplate.id || 'unknown',
+            startTime:
+              this.questStartTime ||
+              Date.now() - pendingQuest.durationMinutes * 60 * 1000,
+            stopTime: Date.now(),
+            status: 'completed' as const,
+            questRunId: this.questRunId || undefined,
+          };
+
+          // Update the store state
+          questStore.reset();
+          useQuestStore.setState({
+            activeQuest: null,
+            pendingQuest: null,
+            recentCompletedQuest: completedQuest,
+            lastCompletedQuestTimestamp: Date.now(),
+            completedQuests: [...questStore.completedQuests, completedQuest],
+            currentLiveActivityId: null,
+            cooperativeQuestRun: null,
+            availableQuests: [],
+            failedQuest: null,
+            failedQuests: questStore.failedQuests,
+            currentInvitation: null,
+            pendingInvitations: [],
+          });
+
+          // Update character XP and streak
+          const characterStore = useCharacterStore.getState();
+          characterStore.addXP(completedQuest.reward.xp);
+          characterStore.updateStreak(questStore.lastCompletedQuestTimestamp);
+        }
+
+        // Update OneSignal Live Activity with completed status
+        if (Platform.OS === 'ios' && this.oneSignalActivityId) {
+          try {
+            console.log(
+              `Updating OneSignal Live Activity ${this.oneSignalActivityId} with completed status`
+            );
+            const completedAttributes = {
+              title: 'Quest Complete',
+              description: 'Congratulations on finishing your quest!',
+            };
+            const completedContent = {
+              durationMinutes: this.questTemplate.durationMinutes,
+              status: 'completed',
+            };
+            OneSignal.LiveActivities.startDefault(
+              this.oneSignalActivityId,
+              completedAttributes,
+              completedContent
+            );
+          } catch (error) {
+            console.error('Failed to update OneSignal Live Activity:', error);
+          }
+        }
+
+        // Clear quest data and stop background service
+        await this.stopQuest();
+        return;
+      } else if (elapsedTime < questDurationMs) {
         console.log('Quest interrupted due to phone unlock during progress.');
 
         if (!isCooperativeQuest) {
@@ -979,5 +1064,9 @@ export default class QuestTimer {
 
   static isRunning(): boolean {
     return BackgroundService.isRunning();
+  }
+
+  static getQuestRunId(): string | null {
+    return this.questRunId;
   }
 }

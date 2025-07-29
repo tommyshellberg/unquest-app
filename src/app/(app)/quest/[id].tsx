@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo } from 'react';
+import { ChevronDown, ChevronUp, Notebook } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -8,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useQuestReflection } from '@/api/quest-reflection';
 import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
 import { FailedQuest } from '@/components/failed-quest';
 import { QuestComplete } from '@/components/QuestComplete';
@@ -23,6 +25,14 @@ export default function AppQuestDetailsScreen() {
     questData?: string;
   }>();
 
+  console.log('[QuestDetails] Received params:', {
+    id,
+    timestamp,
+    from,
+    hasQuestData: !!questData,
+    questDataLength: questData?.length,
+  });
+
   const completedQuests = useQuestStore((state) => state.completedQuests);
   const failedQuest = useQuestStore((state) => state.failedQuest); // Global failed quest state
   const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
@@ -34,6 +44,7 @@ export default function AppQuestDetailsScreen() {
   );
 
   const headerOpacity = useSharedValue(0);
+  const [isReflectionExpanded, setIsReflectionExpanded] = useState(false);
 
   useEffect(() => {
     headerOpacity.value = withTiming(1, { duration: 800 });
@@ -59,7 +70,7 @@ export default function AppQuestDetailsScreen() {
       // Clear the recent completed quest if it matches this quest
       if (recentCompletedQuest && recentCompletedQuest.id === id) {
         console.log(
-          '[QuestDetails] Clearing recent completed quest on navigation:',
+          '[QuestDetails] Clearing recent completed quest on back navigation:',
           id
         );
         clearRecentCompletedQuest();
@@ -153,6 +164,10 @@ export default function AppQuestDetailsScreen() {
     recentCompletedQuest,
   ]);
 
+  // Fetch reflection from server if questRunId is available
+  const questRunId = quest?.questRunId;
+  const { data: serverReflection } = useQuestReflection(questRunId);
+
   if (!quest) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
@@ -191,6 +206,9 @@ export default function AppQuestDetailsScreen() {
   };
 
   if (quest.status === 'completed' && quest.stopTime) {
+    // Check if quest has a reflection (either from server or local)
+    const hasReflection = serverReflection || quest.reflection;
+
     return (
       <View className="flex-1 bg-background">
         <FocusAwareStatusBar />
@@ -210,6 +228,120 @@ export default function AppQuestDetailsScreen() {
             <Text className="text-xl font-bold">Quest Details</Text>
           </View>
         </Animated.View>
+
+        {/* Show reflection section - only for completed quests */}
+        {from === 'journal' && quest.status === 'completed' && (
+          <View className="mx-4 mb-4">
+            {serverReflection || quest.reflection ? (
+              <>
+                {/* Collapsible reflection header */}
+                <TouchableOpacity
+                  onPress={() => setIsReflectionExpanded(!isReflectionExpanded)}
+                  className="flex-row items-center justify-between rounded-lg border border-neutral-200 bg-transparent p-3"
+                >
+                  <View className="flex-row items-center">
+                    <Notebook size={20} color={colors.neutral[500]} />
+                    <Text className="ml-2 text-base font-semibold text-neutral-700">
+                      Reflection
+                    </Text>
+                    <View className="ml-2 rounded-full bg-primary-100 px-2 py-0.5">
+                      <Text className="text-primary-600 text-xs">Added</Text>
+                    </View>
+                  </View>
+                  {isReflectionExpanded ? (
+                    <ChevronUp size={20} color={colors.neutral[500]} />
+                  ) : (
+                    <ChevronDown size={20} color={colors.neutral[500]} />
+                  )}
+                </TouchableOpacity>
+
+                {/* Expandable reflection content */}
+                {isReflectionExpanded && (
+                  <View className="mt-2 rounded-lg border border-neutral-200 p-4">
+                    {/* Mood display */}
+                    {(serverReflection?.mood || quest.reflection?.mood) && (
+                      <View className="mb-2 flex-row items-center">
+                        <Text className="text-lg">
+                          {(serverReflection?.mood ||
+                            quest.reflection?.mood) === 1 && '😡'}
+                          {(serverReflection?.mood ||
+                            quest.reflection?.mood) === 2 && '😕'}
+                          {(serverReflection?.mood ||
+                            quest.reflection?.mood) === 3 && '😐'}
+                          {(serverReflection?.mood ||
+                            quest.reflection?.mood) === 4 && '😊'}
+                          {(serverReflection?.mood ||
+                            quest.reflection?.mood) === 5 && '😄'}
+                        </Text>
+                        <Text className="ml-2 text-sm text-neutral-600">
+                          Mood:{' '}
+                          {serverReflection?.mood || quest.reflection?.mood}/5
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Activities */}
+                    {serverReflection?.activities?.length ||
+                    quest.reflection?.activities?.length ? (
+                      <View className="mb-2">
+                        <Text className="mb-1 text-sm font-medium text-neutral-600">
+                          Activities:
+                        </Text>
+                        <View className="flex-row flex-wrap">
+                          {(
+                            serverReflection?.activities ||
+                            quest.reflection?.activities ||
+                            []
+                          ).map((activity: string) => (
+                            <View
+                              key={activity}
+                              className="mb-1 mr-1 rounded-full bg-primary-100 px-2 py-1"
+                            >
+                              <Text className="text-primary-600 text-xs capitalize">
+                                {activity.replace('-', ' ')}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    ) : null}
+
+                    {/* Reflection text */}
+                    {(serverReflection?.text || quest.reflection?.text) && (
+                      <Text className="text-sm italic text-neutral-600">
+                        "{serverReflection?.text || quest.reflection?.text}"
+                      </Text>
+                    )}
+                  </View>
+                )}
+              </>
+            ) : (
+              // Show "Add Reflection" button if no reflection exists
+              quest.questRunId && (
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push({
+                      pathname: '/(app)/quest/reflection',
+                      params: {
+                        questId: quest.id,
+                        questRunId: quest.questRunId,
+                        duration: quest.durationMinutes,
+                        from: 'quest-detail',
+                      },
+                    });
+                  }}
+                  className="flex-row items-center justify-center rounded-lg bg-primary-500 px-4 py-3"
+                >
+                  <Notebook size={20} color={colors.white} />
+                  <Text className="ml-2 font-semibold text-white">
+                    Add Reflection
+                  </Text>
+                </TouchableOpacity>
+              )
+            )}
+          </View>
+        )}
+
         {from === 'journal' ? (
           <QuestComplete
             quest={quest}

@@ -24,7 +24,6 @@ import {
 } from '@/components/ui';
 import { Chip } from '@/components/ui/chip';
 import colors from '@/components/ui/colors';
-import { useQuestStore } from '@/store/quest-store';
 
 type FilterType = 'all' | 'story' | 'custom' | 'cooperative';
 type StatusFilter = 'all' | 'completed' | 'failed';
@@ -116,7 +115,9 @@ export default function JournalScreen() {
         }
 
         return {
-          id: run.quest.id,
+          id:
+            run.quest.id || run.quest.customId || `quest-${run._id || run.id}`, // Use customId as fallback for custom quests
+          questRunId: run._id || run.id, // Add quest run ID for reflection tracking
           customId: run.quest.customId, // Preserve the original quest template ID
           title: run.quest.title,
           mode: run.quest.mode,
@@ -325,11 +326,20 @@ export default function JournalScreen() {
                     onPress={
                       isCompleted
                         ? () => {
+                            console.log(
+                              '[Journal] Navigating to quest details:',
+                              {
+                                questId: quest.id,
+                                questMode: quest.mode,
+                                questTitle: quest.title,
+                                hasStopTime: !!quest.stopTime,
+                              }
+                            );
                             // Store the quest data temporarily for the detail view
+                            // Use template literal navigation like quest completion does
                             router.push({
-                              pathname: '/(app)/quest/[id]',
+                              pathname: `/(app)/quest/${quest.id}`,
                               params: {
-                                id: quest.id,
                                 timestamp: quest.stopTime?.toString(),
                                 from: 'journal',
                                 questData: JSON.stringify(quest), // Pass the full quest data
@@ -395,35 +405,6 @@ export default function JournalScreen() {
                             </Chip>
                           </View>
                         </View>
-
-                        {/* Reflection preview if available */}
-                        {quest.reflection && (
-                          <View className="mt-2">
-                            {quest.reflection.mood && (
-                              <View className="flex-row items-center">
-                                <Text className="text-sm">
-                                  {quest.reflection.mood === 'great' && '😊'}
-                                  {quest.reflection.mood === 'calm' && '😌'}
-                                  {quest.reflection.mood === 'energized' && '💪'}
-                                  {quest.reflection.mood === 'relaxed' && '😴'}
-                                  {quest.reflection.mood === 'thoughtful' && '🤔'}
-                                  {quest.reflection.mood === 'challenging' && '😕'}
-                                </Text>
-                                <Text className="ml-1 text-sm capitalize text-neutral-600">
-                                  {quest.reflection.mood}
-                                </Text>
-                              </View>
-                            )}
-                            {quest.reflection.text && (
-                              <Text
-                                className="mt-1 text-sm italic text-neutral-600"
-                                numberOfLines={2}
-                              >
-                                "{quest.reflection.text}"
-                              </Text>
-                            )}
-                          </View>
-                        )}
 
                         {/* Stats row */}
                         <View className="mt-2 flex-row items-center">

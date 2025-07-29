@@ -64,6 +64,10 @@ export default function NavigationGate() {
         console.log('[NavigationGate] Redirecting to app');
         router.replace('/(app)');
         break;
+      case 'quest-completed-signup':
+        console.log('[NavigationGate] Redirecting to quest-completed-signup');
+        router.replace('/quest-completed-signup');
+        break;
       case 'streak-celebration':
         console.log('[NavigationGate] Redirecting to streak-celebration');
         router.replace('/streak-celebration');

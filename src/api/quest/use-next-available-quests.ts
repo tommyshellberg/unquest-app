@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { apiClient } from '../common';
+import { provisionalApiClient } from '../common/provisional-client';
+import { getItem } from '@/lib/storage';
 import type { NextAvailableQuestsResponse } from './types';
 
 interface UseNextAvailableQuestsOptions {
@@ -22,7 +24,11 @@ export const useNextAvailableQuests = ({
         includeOptions: includeOptions.toString(),
       });
 
-      const response = await apiClient.get(
+      // Check if we're using a provisional user
+      const hasProvisionalToken = !!getItem('provisionalAccessToken');
+      const client = hasProvisionalToken ? provisionalApiClient : apiClient;
+
+      const response = await client.get(
         `/quest-templates/next-available?${params.toString()}`
       );
       return response.data;
@@ -30,5 +36,7 @@ export const useNextAvailableQuests = ({
     enabled,
     staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    retry: 3, // Limit retries to 3 attempts
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   });
 };

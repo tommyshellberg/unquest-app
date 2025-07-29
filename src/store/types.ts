@@ -10,6 +10,7 @@ export interface Reward {
 
 export interface BaseQuestTemplate {
   id: string;
+  _id?: string; // MongoDB ObjectId for server quests
   title: string;
   durationMinutes: number;
   reward: Reward;
@@ -38,17 +39,10 @@ export interface CustomQuestTemplate extends BaseQuestTemplate {
 
 export type QuestStatus = 'active' | 'completed' | 'failed' | 'cancelled';
 
-export type ReflectionMood =
-  | 'great'
-  | 'calm'
-  | 'energized'
-  | 'relaxed'
-  | 'thoughtful'
-  | 'challenging';
-
 export interface QuestReflection {
-  mood?: ReflectionMood;
+  mood?: number; // 1-5 scale (1=angry, 2=frown, 3=meh, 4=smile, 5=laugh)
   text?: string;
+  activities?: string[]; // Activity categories selected
   createdAt: number;
   prompt?: string; // Which prompt was shown to the user
 }
@@ -58,6 +52,7 @@ export type Quest = (StoryQuestTemplate | CustomQuestTemplate) & {
   stopTime?: number; // When the quest ended, for any reason
   status: QuestStatus;
   customId?: string; // Preserve the original quest template ID (e.g., 'quest-1', 'quest-4')
+  questRunId?: string; // Server quest run ID for reflection tracking
   reflection?: QuestReflection; // Optional reflection data
 };
 
