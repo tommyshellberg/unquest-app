@@ -3,6 +3,7 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 import { signOut } from '@/lib/auth';
 import { getToken } from '@/lib/auth/utils';
+import { getItem } from '@/lib/storage';
 
 import { refreshAccessToken } from '../auth';
 
@@ -212,5 +213,11 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Export for testing purposes
+export const __resetRefreshAttempts = () => {
+  refreshAttempts = 0;
+  lastRefreshAttempt = 0;
+};
 
 export { apiClient };

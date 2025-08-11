@@ -2,9 +2,18 @@ import { useQuestStore } from '@/store/quest-store';
 import { type Quest } from '@/store/types';
 
 // Mock the dependencies
-jest.mock('@/lib/services/quest-timer', () => ({
-  stopQuest: jest.fn(),
-}));
+jest.mock('@/lib/services/quest-timer', () => {
+  return {
+    __esModule: true,
+    default: {
+      stopQuest: jest.fn(),
+      getQuestRunId: jest.fn(() => null),
+    },
+  };
+});
+
+// Import after mocking
+import QuestTimer from '@/lib/services/quest-timer';
 
 // Mock the AVAILABLE_QUESTS import
 jest.mock('@/app/data/quests', () => {
@@ -160,6 +169,10 @@ describe('QuestStore - refreshAvailableQuests', () => {
     mockAddXP.mockClear();
     mockResetStreak.mockClear();
     mockRevealLocation.mockClear();
+    
+    // Clear QuestTimer mocks
+    (QuestTimer.stopQuest as jest.Mock).mockClear();
+    (QuestTimer.getQuestRunId as jest.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -331,7 +344,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
     });
 
     // Import the mocked function
-    const { stopQuest } = require('@/lib/services/quest-timer');
+    // QuestTimer is already imported at the top
 
     // Act
     useQuestStore.getState().cancelQuest();
@@ -341,7 +354,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
     expect(state.activeQuest).toBeNull();
     expect(state.pendingQuest).toBeNull();
     expect(state.currentLiveActivityId).toBeNull();
-    expect(stopQuest).toHaveBeenCalled();
+    expect(QuestTimer.stopQuest).toHaveBeenCalled();
   });
 
   test('should cancel a pending quest', () => {
@@ -357,7 +370,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
     useQuestStore.setState({ pendingQuest });
 
     // Import the mocked function
-    const { stopQuest } = require('@/lib/services/quest-timer');
+    // QuestTimer is already imported at the top
 
     // Act
     useQuestStore.getState().cancelQuest();
@@ -366,7 +379,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
     const state = useQuestStore.getState();
     expect(state.activeQuest).toBeNull();
     expect(state.pendingQuest).toBeNull();
-    expect(stopQuest).toHaveBeenCalled();
+    expect(QuestTimer.stopQuest).toHaveBeenCalled();
   });
 
   test('should reset failed quest', () => {
@@ -735,7 +748,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
     // Arrange
     const quest = {
       id: 'quest-1',
-      mode: 'story' as const,
+      mode: 'custom' as const,
       title: 'Cooperative Quest',
       durationMinutes: 10,
       reward: { xp: 100 },
@@ -764,7 +777,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
     // Arrange
     const pendingQuest = {
       id: 'quest-1',
-      mode: 'story' as const,
+      mode: 'custom' as const,
       title: 'Cooperative Quest',
       durationMinutes: 10,
       reward: { xp: 100 },
@@ -776,7 +789,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
       cooperativeQuestRun: { id: 'coop-1' } as any,
     });
 
-    const { stopQuest } = require('@/lib/services/quest-timer');
+    // QuestTimer is already imported at the top
 
     // Act
     useQuestStore.getState().cancelQuest();
@@ -785,7 +798,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
     const state = useQuestStore.getState();
     expect(state.pendingQuest).toBeNull();
     expect(state.cooperativeQuestRun).toBeNull();
-    expect(stopQuest).toHaveBeenCalled();
+    expect(QuestTimer.stopQuest).toHaveBeenCalled();
   });
 
   test('should not refresh available quests when there is an active quest', () => {

@@ -1019,6 +1019,15 @@ export default class QuestTimer {
             characterStore.updateStreak(
               questStoreState.lastCompletedQuestTimestamp
             );
+
+            // Invalidate queries to fetch fresh data
+            const { queryClient } = require('@/api/common');
+            queryClient.invalidateQueries({
+              queryKey: ['user', 'details'] as const,
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['next-available-quests'] as const,
+            });
           }
           // for now only schedule for Android
           if (Platform.OS === 'android') {

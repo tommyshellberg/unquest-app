@@ -9,6 +9,12 @@ import { refreshAccessToken } from '../auth';
 jest.mock('@/lib/auth');
 jest.mock('@/lib/auth/utils');
 jest.mock('../auth');
+jest.mock('@/lib/storage');
+
+// Mock the token refresh error handler
+jest.mock('@/lib/hooks/use-token-refresh-error-handler', () => ({
+  handleTokenRefreshExhaustion: jest.fn(),
+}));
 
 // We'll capture the interceptors when the module loads
 let requestInterceptor: {
@@ -59,7 +65,7 @@ jest.mock('axios', () => ({
 }));
 
 // Import after mocks are set up
-import { apiClient } from './client';
+import { apiClient, __resetRefreshAttempts } from './client';
 
 // Mock console methods
 const originalConsoleError = console.error;
@@ -76,6 +82,8 @@ afterAll(() => {
 describe('apiClient', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset refresh attempts counter for each test
+    __resetRefreshAttempts();
   });
 
   describe('request interceptor', () => {

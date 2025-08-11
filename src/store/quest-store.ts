@@ -242,6 +242,12 @@ export const useQuestStore = create<QuestState>()(
               queryKey: ['user', 'details'] as const,
             });
 
+            // Invalidate next available quests to fetch fresh quest options
+            // This ensures we get the correct next quest after completing one
+            queryClient.invalidateQueries({
+              queryKey: ['next-available-quests'] as const,
+            });
+
             // If this is the first quest completed today, cancel today's warning
             // and schedule tomorrow's warning
             if (isFirstQuestOfTheDay) {

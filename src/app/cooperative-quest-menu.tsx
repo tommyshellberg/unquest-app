@@ -14,10 +14,12 @@ import { usePostHog } from 'posthog-react-native';
 import React, { useRef } from 'react';
 import { ActivityIndicator } from 'react-native';
 
+import { PremiumPaywall } from '@/components/paywall';
 import {
   ContactsImportModal,
   type ContactsImportModalRef,
 } from '@/components/profile/contact-import';
+import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 import {
   Card,
   FocusAwareStatusBar,
@@ -28,13 +30,11 @@ import {
   TouchableOpacity,
   View,
 } from '@/components/ui';
-import { PremiumPaywall } from '@/components/paywall';
 import { useAuth } from '@/lib';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import { getUserFriends } from '@/lib/services/user';
 import { useUserStore } from '@/store/user-store';
-import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 
 interface MenuOption {
   id: string;

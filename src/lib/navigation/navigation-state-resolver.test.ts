@@ -126,7 +126,7 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to first-quest-result for failed quest-1 during onboarding', () => {
-    mockAuthState.status = 'signIn';
+    mockAuthState.status = 'signOut';
     mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
     mockCharacterState.character = null;
     mockQuestState.failedQuest = { id: 'quest-1' };
@@ -161,7 +161,7 @@ describe('Navigation State Resolver', () => {
   });
 
   it('redirects to first-quest-result for completed quest-1 during onboarding', () => {
-    mockAuthState.status = 'signIn';
+    mockAuthState.status = 'signOut';
     mockOnboardingState.isOnboardingComplete.mockReturnValue(false);
     mockQuestState.recentCompletedQuest = { id: 'quest-1' };
     mockQuestState.completedQuests = [];

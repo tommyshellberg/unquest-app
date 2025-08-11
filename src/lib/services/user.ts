@@ -383,6 +383,16 @@ export async function createProvisionalUser(
       setItem('provisionalRefreshToken', response.data.tokens.refresh.token);
     }
 
+    // Set OneSignal external ID for provisional user
+    if (response.data.user?.id && (global as any).isOneSignalInitialized) {
+      console.log(
+        '[OneSignal] Setting external ID for newly created provisional user:',
+        response.data.user.id
+      );
+      const { OneSignal } = require('react-native-onesignal');
+      OneSignal.login(response.data.user.id);
+    }
+
     return response.data.user;
   } catch (error: unknown) {
     // If email is taken, we can indicate it for special handling
