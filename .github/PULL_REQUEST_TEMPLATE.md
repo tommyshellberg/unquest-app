@@ -1,23 +1,42 @@
-## What does this do?
+## Description
+Brief description of what this PR does.
 
-<!---
-_Describe what your changes **do**; did you add a $COOL_FEATURE? Write about it here._
--->
+## Type of Change
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+- [ ] Performance improvement
+- [ ] Code refactoring
 
-## Why did you do this?
+## Related Issues
+Closes #(issue number)
 
-<!---
-_**Why** did you make these changes? This is your opportunity to provide the rationale that drove the design of your solution._
--->
+## Changes Made
+- Change 1
+- Change 2
+- Change 3
 
-## Who/what does this impact?
+## Testing
+- [ ] Unit tests pass locally (`pnpm test`)
+- [ ] Linting passes (`pnpm lint`)
+- [ ] Type checking passes (`pnpm type-check`)
+- [ ] All checks pass (`pnpm check-all`)
+- [ ] Tested on iOS
+- [ ] Tested on Android
 
-<!---
-_Does your code affect something downstream? Are there side effects people should know about? Tag any developers that should be kept abreast of this change._
--->
+## Screenshots/Videos
+If applicable, add screenshots or videos to demonstrate the changes.
 
-## How did you test this?
+## Checklist
+- [ ] My code follows the project's code style guidelines
+- [ ] I have performed a self-review of my own code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have made corresponding changes to the documentation
+- [ ] My changes generate no new warnings
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] New and existing unit tests pass locally with my changes
+- [ ] Any dependent changes have been merged and published
 
-<!---
-_How did you test your change? Document it here._
--->
+## Additional Notes
+Any additional information that reviewers should know.
