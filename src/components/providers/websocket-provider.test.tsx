@@ -126,7 +126,10 @@ describe('WebSocketProvider', () => {
   afterEach(() => {
     jest.runOnlyPendingTimers();
     jest.useRealTimers();
-    jest.useFakeTimers();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
   });
 
   describe('Authentication-based Connection', () => {

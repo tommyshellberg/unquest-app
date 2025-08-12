@@ -119,13 +119,25 @@ function RootLayout() {
 
       // If we have a logged-in user, set their external ID now
       const { useUserStore } = require('@/store/user-store');
+      const { getItem } = require('@/lib/storage');
       const user = useUserStore.getState().user;
+      
       if (user?.id) {
         console.log(
           '[OneSignal] Setting external ID for existing user:',
           user.id
         );
         OneSignal.login(user.id);
+      } else {
+        // Check for provisional user
+        const provisionalUserId = getItem('provisionalUserId');
+        if (provisionalUserId) {
+          console.log(
+            '[OneSignal] Setting external ID for provisional user:',
+            provisionalUserId
+          );
+          OneSignal.login(provisionalUserId);
+        }
       }
 
       // Debug: Check current OneSignal user state

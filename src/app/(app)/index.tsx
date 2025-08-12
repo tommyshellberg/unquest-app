@@ -163,23 +163,37 @@ export default function Home() {
       return;
     }
 
-    // Prefer server options if available
-    if (serverOptions.length > 0) {
-      console.log('🔄 Using server options:', serverOptions);
-      setStoryOptions(serverOptions);
-      return;
-    }
-
-    // If we have server quests with decisionText, create options from them
-    if (serverQuests.length > 0 && serverQuests[0].decisionText) {
-      console.log('🔄 Creating options from server quests with decisionText');
+    // If we have multiple server quests, create options from their decisionText
+    // This represents branching paths where each quest has its own decision text
+    if (serverQuests.length > 1) {
+      console.log('🔄 Creating options from multiple server quests with decisionText');
       const optionsFromQuests = serverQuests.map((quest, index) => ({
         id: `option-${index}`,
-        text: quest.decisionText || 'Continue', // Fallback to Continue if no decisionText
+        text: quest.decisionText || 'Continue', // Use each quest's decisionText
         nextQuestId: quest.customId,
         nextQuest: quest,
       }));
       setStoryOptions(optionsFromQuests);
+      return;
+    }
+
+    // If we have a single server quest with decisionText, create a single option
+    if (serverQuests.length === 1 && serverQuests[0].decisionText) {
+      console.log('🔄 Creating single option from server quest with decisionText');
+      const optionsFromQuest = [{
+        id: 'option-0',
+        text: serverQuests[0].decisionText,
+        nextQuestId: serverQuests[0].customId,
+        nextQuest: serverQuests[0],
+      }];
+      setStoryOptions(optionsFromQuest);
+      return;
+    }
+
+    // Only use serverOptions as a fallback if no quests with decisionText
+    if (serverOptions.length > 0) {
+      console.log('🔄 Using server options as fallback:', serverOptions);
+      setStoryOptions(serverOptions);
       return;
     }
 

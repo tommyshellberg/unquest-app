@@ -208,16 +208,33 @@ describe('CooperativePendingQuestScreen', () => {
 
   it('shows main quest screen after countdown', async () => {
     jest.useFakeTimers();
-    const { getByText, getByTestId } = render(
+    const { getByText, getByTestId, queryByText } = render(
       <CooperativePendingQuestScreen />
     );
 
-    // Fast forward through countdown
-    act(() => {
-      jest.advanceTimersByTime(6000);
+    // Verify countdown starts
+    expect(getByText('5')).toBeTruthy();
+
+    // Fast forward through countdown - need to advance in steps to trigger React updates
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    }
+
+    // Wait for countdown to show 0
+    await waitFor(() => {
+      expect(getByText('0')).toBeTruthy();
     });
 
+    // Advance timer for the transition delay
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    // Now the main screen should be visible
     await waitFor(() => {
+      expect(queryByText('Get Ready!')).toBeFalsy();
       expect(getByText('Cooperative Quest')).toBeTruthy();
       expect(getByTestId('quest-card')).toBeTruthy();
       expect(getByText('Test Cooperative Quest')).toBeTruthy();
@@ -231,9 +248,16 @@ describe('CooperativePendingQuestScreen', () => {
     jest.useFakeTimers();
     const { getByText } = render(<CooperativePendingQuestScreen />);
 
-    // Fast forward through countdown
+    // Fast forward through countdown in steps
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    }
+
+    // Advance timer for the transition delay
     act(() => {
-      jest.advanceTimersByTime(6000);
+      jest.advanceTimersByTime(500);
     });
 
     await waitFor(() => {
@@ -283,9 +307,16 @@ describe('CooperativePendingQuestScreen', () => {
 
     const { getByText } = render(<CooperativePendingQuestScreen />);
 
-    // Fast forward through countdown
+    // Fast forward through countdown in steps
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    }
+
+    // Advance timer for the transition delay
     act(() => {
-      jest.advanceTimersByTime(6000);
+      jest.advanceTimersByTime(500);
     });
 
     await waitFor(() => {
@@ -343,9 +374,16 @@ describe('CooperativePendingQuestScreen', () => {
 
     const { getByText } = render(<CooperativePendingQuestScreen />);
 
-    // Fast forward through countdown
+    // Fast forward through countdown in steps
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    }
+
+    // Advance timer for the transition delay
     act(() => {
-      jest.advanceTimersByTime(6000);
+      jest.advanceTimersByTime(500);
     });
 
     await waitFor(() => {

@@ -1,3 +1,30 @@
+// Mock react-native-purchases FIRST - before any code that might import it
+jest.mock('react-native-purchases', () => ({
+  LOG_LEVEL: {
+    VERBOSE: 'VERBOSE',
+    DEBUG: 'DEBUG',
+    INFO: 'INFO',
+    WARN: 'WARN',
+    ERROR: 'ERROR',
+  },
+  configure: jest.fn(),
+  setLogLevel: jest.fn(),
+  logIn: jest.fn().mockResolvedValue({ customerInfo: {} }),
+  logOut: jest.fn().mockResolvedValue({ customerInfo: {} }),
+  getCustomerInfo: jest.fn().mockResolvedValue({}),
+  syncPurchases: jest.fn().mockResolvedValue({ customerInfo: {} }),
+  isAnonymous: jest.fn().mockResolvedValue(true),
+  purchasePackage: jest.fn().mockResolvedValue({ customerInfo: {} }),
+  restorePurchases: jest.fn().mockResolvedValue({ customerInfo: {} }),
+  getOfferings: jest.fn().mockResolvedValue({ all: {} }),
+  checkTrialOrIntroDiscountEligibility: jest.fn().mockResolvedValue({}),
+}));
+
+jest.mock('react-native-purchases-ui', () => ({
+  presentPaywallIfNeeded: jest.fn().mockResolvedValue({ result: 'CANCELLED' }),
+  presentPaywall: jest.fn().mockResolvedValue({ result: 'CANCELLED' }),
+}));
+
 // react-hook form setup for testing
 // @ts-ignore
 global.window = {};

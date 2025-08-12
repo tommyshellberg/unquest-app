@@ -52,9 +52,53 @@ describe('quest-run-service', () => {
       // Act
       const result = await createQuestRun(mockStoryQuest);
 
-      // Assert
+      // Assert - without _id, it should send the full quest object
       expect(apiClient.post).toHaveBeenCalledWith('/quest-runs/', {
-        quest: { questTemplateId: 'test-quest-id' },
+        quest: {
+          title: 'Test Quest',
+          durationMinutes: 15,
+          mode: 'story',
+          recap: 'Test recap',
+          poiSlug: 'test-poi',
+          story: 'Test story',
+          options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
+          reward: { xp: 100 },
+        },
+      });
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it('should create a quest run with questTemplateId when _id is present', async () => {
+      // Arrange
+      const mockResponse = {
+        data: {
+          id: 'quest-run-123',
+          questId: 'test-quest-id',
+          status: 'active',
+        },
+      };
+
+      (apiClient.post as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+      const mockStoryQuest: StoryQuestTemplate & { _id: string } = {
+        _id: 'server-quest-id',
+        id: 'test-quest-id',
+        title: 'Test Quest',
+        durationMinutes: 15,
+        mode: 'story',
+        recap: 'Test recap',
+        poiSlug: 'test-poi',
+        story: 'Test story',
+        options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
+        reward: { xp: 100 },
+      };
+
+      // Act
+      const result = await createQuestRun(mockStoryQuest);
+
+      // Assert - with _id, it should use questTemplateId
+      expect(apiClient.post).toHaveBeenCalledWith('/quest-runs/', {
+        questTemplateId: 'server-quest-id',
       });
       expect(result).toEqual(mockResponse.data);
     });
@@ -78,8 +122,18 @@ describe('quest-run-service', () => {
 
       // Act & Assert
       await expect(createQuestRun(mockStoryQuest)).rejects.toThrow('API error');
+      // Without _id, it should send the full quest object
       expect(apiClient.post).toHaveBeenCalledWith('/quest-runs/', {
-        quest: { questTemplateId: 'test-quest-id' },
+        quest: {
+          title: 'Test Quest',
+          durationMinutes: 15,
+          mode: 'story',
+          recap: 'Test recap',
+          poiSlug: 'test-poi',
+          story: 'Test story',
+          options: [{ id: 'option1', text: 'Option 1', nextQuestId: null }],
+          reward: { xp: 100 },
+        },
       });
     });
   });

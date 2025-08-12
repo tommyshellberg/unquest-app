@@ -44,25 +44,18 @@ export const useServerQuests = () => {
   // Memoize arrays to ensure referential stability
   const serverQuests = useMemo(() => data?.quests || [], [data?.quests]);
 
-  // Create options from multiple available quests (branching paths)
+  // Create options from server data
   const options = useMemo(() => {
-    // If server explicitly provides options, use them
+    // Only return explicitly provided options from the server
+    // Don't create options from quests - let the component handle that
+    // based on the decisionText in each quest
     if (data?.options && data.options.length > 0) {
       return data.options;
     }
 
-    // If there are multiple available quests, they represent branching options
-    if (serverQuests.length > 1) {
-      return serverQuests.map((quest, index) => ({
-        id: `option-${index + 1}`,
-        text: quest.decisionText || 'Continue', // Use decisionText if available, fallback to Continue
-        nextQuestId: quest.customId,
-        nextQuest: quest,
-      }));
-    }
-
+    // Return empty array - the component will use decisionText from quests
     return [];
-  }, [data?.options, serverQuests]);
+  }, [data?.options]);
 
   return {
     isLoading,

@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React from 'react';
 
 import { AVAILABLE_QUESTS } from '@/app/data/quests'; // Assuming quest-1 details come from here
@@ -15,12 +16,14 @@ export default function FirstQuestResultScreen() {
   }>();
   const setOnboardingStep = useOnboardingStore((state) => state.setCurrentStep);
   const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
+  const posthog = usePostHog();
 
   // Find quest-1 details (assuming it has a fixed ID like 'quest-1')
   const firstQuestData = AVAILABLE_QUESTS.find((q) => q.id === 'quest-1');
 
   React.useEffect(() => {
     if (outcome === 'completed') {
+      posthog.capture('onboarding_trigger_completed_first_quest');
       setOnboardingStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
     }
     // No specific onboarding step for failure here, as retrying might loop back

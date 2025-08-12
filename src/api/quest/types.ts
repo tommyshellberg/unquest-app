@@ -16,6 +16,7 @@ export interface QuestTemplate {
   recap?: string;
   options?: QuestOption[];
   category?: string;
+  decisionText?: string;
 }
 
 export interface QuestOption {

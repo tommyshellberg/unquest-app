@@ -116,20 +116,8 @@ describe('useServerQuests', () => {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.options).toEqual([
-      {
-        id: 'option-1',
-        text: 'Stay and investigate the ruins',
-        nextQuestId: 'quest-4a',
-        nextQuest: mockQuests[0],
-      },
-      {
-        id: 'option-2',
-        text: 'Continue on before nightfall',
-        nextQuestId: 'quest-4b',
-        nextQuest: mockQuests[1],
-      },
-    ]);
+    // Should return empty array - component will handle creating options from decisionText
+    expect(result.current.options).toEqual([]);
   });
 
   it('should use Continue as fallback when decisionText is missing', () => {
@@ -161,20 +149,8 @@ describe('useServerQuests', () => {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.options).toEqual([
-      {
-        id: 'option-1',
-        text: 'Continue', // Fallback
-        nextQuestId: 'quest-4a',
-        nextQuest: mockQuests[0],
-      },
-      {
-        id: 'option-2',
-        text: 'Continue', // Fallback
-        nextQuestId: 'quest-4b',
-        nextQuest: mockQuests[1],
-      },
-    ]);
+    // Should return empty array - component will handle creating options from decisionText
+    expect(result.current.options).toEqual([]);
   });
 
   it('should not create options from single quest', () => {
@@ -308,25 +284,7 @@ describe('useServerQuests', () => {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.options).toEqual([
-      {
-        id: 'option-1',
-        text: 'Choose path A',
-        nextQuestId: 'quest-4a',
-        nextQuest: mockQuests[0],
-      },
-      {
-        id: 'option-2',
-        text: 'Continue', // Fallback for missing decisionText
-        nextQuestId: 'quest-4b',
-        nextQuest: mockQuests[1],
-      },
-      {
-        id: 'option-3',
-        text: 'Choose path C',
-        nextQuestId: 'quest-4c',
-        nextQuest: mockQuests[2],
-      },
-    ]);
+    // Should return empty array - component will handle creating options from decisionText
+    expect(result.current.options).toEqual([]);
   });
 });
