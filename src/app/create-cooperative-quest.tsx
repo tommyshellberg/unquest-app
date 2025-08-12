@@ -14,6 +14,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  showErrorMessage,
 } from '@/components/ui';
 import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
 import { useUserStore } from '@/store/user-store';
@@ -106,7 +107,7 @@ export default function CreateCooperativeQuestScreen() {
       router.replace(`/cooperative-quest-lobby/${response.lobbyId}`);
     } catch (error) {
       console.error('Error creating cooperative quest:', error);
-      // TODO: Show error toast
+      showErrorMessage('Failed to create cooperative quest. Please try again.');
     } finally {
       setIsCreating(false);
     }

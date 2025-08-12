@@ -16,6 +16,7 @@ import {
   ScrollView,
   Text,
   View,
+  showErrorMessage,
 } from '@/components/ui';
 import colors from '@/components/ui/colors.js';
 import { InfoCard } from '@/components/ui/info-card';
@@ -211,7 +212,7 @@ export default function JoinCooperativeQuest() {
       router.replace(`/cooperative-quest-lobby/${lobbyId}`);
     } catch (error) {
       console.error('Error accepting invitation:', error);
-      // TODO: Show error toast
+      showErrorMessage('Failed to accept invitation. Please try again.');
     } finally {
       setProcessingId(null);
     }
@@ -251,7 +252,7 @@ export default function JoinCooperativeQuest() {
       setInvitations(invitations.filter((inv) => inv.id !== invitation.id));
     } catch (error) {
       console.error('Error declining invitation:', error);
-      // TODO: Show error toast
+      showErrorMessage('Failed to decline invitation. Please try again.');
     } finally {
       setProcessingId(null);
     }
