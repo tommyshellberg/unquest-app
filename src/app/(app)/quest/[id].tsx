@@ -232,86 +232,85 @@ export default function AppQuestDetailsScreen() {
         {/* Show reflection section - only for completed quests */}
         {from === 'journal' && quest.status === 'completed' && (
           <View className="mx-4 mb-4">
-            {serverReflection || quest.reflection ? (
+            {hasReflection ? (
               <>
                 {/* Collapsible reflection header */}
                 <TouchableOpacity
                   onPress={() => setIsReflectionExpanded(!isReflectionExpanded)}
-                  className="flex-row items-center justify-between rounded-lg border border-neutral-200 bg-transparent p-3"
+                  className="flex-row items-center justify-between rounded-lg bg-cardBackground p-4 shadow-md"
                 >
                   <View className="flex-row items-center">
-                    <Notebook size={20} color={colors.neutral[500]} />
-                    <Text className="ml-2 text-base font-semibold text-neutral-700">
+                    <Notebook size={22} color={colors.primary[300]} />
+                    <Text className="ml-3 text-base font-semibold text-emerald-800">
                       Reflection
                     </Text>
-                    <View className="ml-2 rounded-full bg-primary-100 px-2 py-0.5">
-                      <Text className="text-primary-600 text-xs">Added</Text>
+                    <View className="ml-3 rounded-full bg-emerald-100 px-3 py-1">
+                      <Text className="text-xs font-medium text-emerald-700">
+                        Added
+                      </Text>
                     </View>
                   </View>
                   {isReflectionExpanded ? (
-                    <ChevronUp size={20} color={colors.neutral[500]} />
+                    <ChevronUp
+                      size={20}
+                      color={colors.primary[300] || '#059669'}
+                    />
                   ) : (
-                    <ChevronDown size={20} color={colors.neutral[500]} />
+                    <ChevronDown
+                      size={20}
+                      color={colors.primary[300] || '#059669'}
+                    />
                   )}
                 </TouchableOpacity>
 
                 {/* Expandable reflection content */}
                 {isReflectionExpanded && (
-                  <View className="mt-2 rounded-lg border border-neutral-200 p-4">
-                    {/* Mood display */}
-                    {(serverReflection?.mood || quest.reflection?.mood) && (
-                      <View className="mb-2 flex-row items-center">
-                        <Text className="text-lg">
-                          {(serverReflection?.mood ||
-                            quest.reflection?.mood) === 1 && '😡'}
-                          {(serverReflection?.mood ||
-                            quest.reflection?.mood) === 2 && '😕'}
-                          {(serverReflection?.mood ||
-                            quest.reflection?.mood) === 3 && '😐'}
-                          {(serverReflection?.mood ||
-                            quest.reflection?.mood) === 4 && '😊'}
-                          {(serverReflection?.mood ||
-                            quest.reflection?.mood) === 5 && '😄'}
-                        </Text>
-                        <Text className="ml-2 text-sm text-neutral-600">
-                          Mood:{' '}
-                          {serverReflection?.mood || quest.reflection?.mood}/5
-                        </Text>
-                      </View>
-                    )}
+                  <View className="mt-2 rounded-lg bg-cardBackground p-4 shadow-md">
+                    <View className="flex-row">
+                      {/* Left side: Mood emoji */}
+                      {(serverReflection?.mood || quest.reflection?.mood) && (
+                        <View className="mr-4 items-center justify-center">
+                          <Text className="text-4xl">
+                            {(serverReflection?.mood ||
+                              quest.reflection?.mood) === 1 && '😡'}
+                            {(serverReflection?.mood ||
+                              quest.reflection?.mood) === 2 && '😕'}
+                            {(serverReflection?.mood ||
+                              quest.reflection?.mood) === 3 && '😐'}
+                            {(serverReflection?.mood ||
+                              quest.reflection?.mood) === 4 && '😊'}
+                            {(serverReflection?.mood ||
+                              quest.reflection?.mood) === 5 && '😄'}
+                          </Text>
+                        </View>
+                      )}
 
-                    {/* Activities */}
-                    {serverReflection?.activities?.length ||
-                    quest.reflection?.activities?.length ? (
-                      <View className="mb-2">
-                        <Text className="mb-1 text-sm font-medium text-neutral-600">
-                          Activities:
-                        </Text>
-                        <View className="flex-row flex-wrap">
-                          {(
-                            serverReflection?.activities ||
-                            quest.reflection?.activities ||
-                            []
-                          ).map((activity: string) => (
-                            <View
-                              key={activity}
-                              className="mb-1 mr-1 rounded-full bg-primary-100 px-2 py-1"
-                            >
-                              <Text className="text-primary-600 text-xs capitalize">
+                      {/* Right side: Activities and Note */}
+                      <View className="flex-1">
+                        {/* Activities as title */}
+                        {(serverReflection?.activities?.length ||
+                          quest.reflection?.activities?.length) && (
+                          <View className="mb-2 flex-row flex-wrap">
+                            {(
+                              serverReflection?.activities ||
+                              quest.reflection?.activities ||
+                              []
+                            ).map((activity: string) => (
+                              <Text className="font-bold capitalize">
                                 {activity.replace('-', ' ')}
                               </Text>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
-                    ) : null}
+                            ))}
+                          </View>
+                        )}
 
-                    {/* Reflection text */}
-                    {(serverReflection?.text || quest.reflection?.text) && (
-                      <Text className="text-sm italic text-neutral-600">
-                        "{serverReflection?.text || quest.reflection?.text}"
-                      </Text>
-                    )}
+                        {/* Note underneath */}
+                        {(serverReflection?.text || quest.reflection?.text) && (
+                          <Text className="text-sm leading-relaxed text-neutral-600">
+                            {serverReflection?.text || quest.reflection?.text}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
                   </View>
                 )}
               </>
@@ -330,10 +329,18 @@ export default function AppQuestDetailsScreen() {
                       },
                     });
                   }}
-                  className="flex-row items-center justify-center rounded-lg bg-primary-500 px-4 py-3"
+                  className="flex-row items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 shadow-lg"
+                  style={{
+                    backgroundColor: colors.emerald?.[500] || '#10b981',
+                    shadowColor: colors.emerald?.[500] || '#10b981',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8,
+                  }}
                 >
-                  <Notebook size={20} color={colors.white} />
-                  <Text className="ml-2 font-semibold text-white">
+                  <Notebook size={22} color={colors.white} />
+                  <Text className="ml-3 text-base font-semibold text-white">
                     Add Reflection
                   </Text>
                 </TouchableOpacity>

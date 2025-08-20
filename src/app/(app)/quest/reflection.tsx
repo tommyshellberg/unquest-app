@@ -1,8 +1,8 @@
-import { Angry, Frown, Laugh, Meh, Smile } from 'lucide-react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, TextInput } from 'react-native';
 import Slider from '@react-native-community/slider';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Angry, Frown, Laugh, Meh, Smile } from 'lucide-react-native';
+import React, { useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, TextInput } from 'react-native';
 
 import { useCreateQuestReflection } from '@/api/quest-reflection';
 import {
@@ -16,7 +16,6 @@ import {
 import { Button } from '@/components/ui/button';
 import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
-import type { QuestReflection } from '@/store/types';
 
 const ACTIVITY_CATEGORIES = [
   { id: 'fitness', label: 'Fitness' },
@@ -39,10 +38,9 @@ const MOOD_ICONS = [
 ];
 
 export default function ReflectionScreen() {
-  const { questId, questRunId, duration, from } = useLocalSearchParams<{
+  const { questId, questRunId, from } = useLocalSearchParams<{
     questId: string;
     questRunId: string;
-    duration: string;
     from?: string;
   }>();
   const addReflectionToQuest = useQuestStore(
@@ -61,8 +59,12 @@ export default function ReflectionScreen() {
     setSelectedActivities([]);
   }, [questId, questRunId]);
 
-  const currentMoodIcon =
-    MOOD_ICONS.find((m) => m.value === Math.round(moodValue)) || MOOD_ICONS[2];
+  const currentMoodIcon = useMemo(
+    () =>
+      MOOD_ICONS.find((m) => m.value === Math.round(moodValue)) ||
+      MOOD_ICONS[2],
+    [moodValue]
+  );
 
   const handleSaveReflection = async () => {
     if (!questRunId || createReflectionMutation.isPending) return;
@@ -161,7 +163,7 @@ export default function ReflectionScreen() {
                     minimumValue={1}
                     maximumValue={5}
                     value={moodValue}
-                    onValueChange={setMoodValue}
+                    onSlidingComplete={setMoodValue}
                     minimumTrackTintColor={currentMoodIcon.color}
                     maximumTrackTintColor={colors.neutral[300]}
                     thumbTintColor={currentMoodIcon.color}
@@ -231,7 +233,7 @@ export default function ReflectionScreen() {
                       minHeight: 80,
                       textAlignVertical: 'top',
                       fontSize: 16,
-                      color: colors.neutral[800],
+                      color: colors.neutral[500],
                     }}
                   />
                   <Text className="mt-2 text-right text-sm text-neutral-500">
@@ -243,7 +245,7 @@ export default function ReflectionScreen() {
           </ScrollView>
 
           {/* Action Buttons */}
-          <View className="border-t border-neutral-200 bg-white px-4 py-4">
+          <View className="border-t border-neutral-200 bg-white p-4">
             <Button
               label={
                 createReflectionMutation.isPending
