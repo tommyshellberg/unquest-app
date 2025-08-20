@@ -235,7 +235,7 @@ export function QuestComplete({
           )}
 
           {/* Quest card with background image */}
-          <View className="relative mx-auto h-[160px] w-[160px] overflow-hidden rounded-xl shadow-lg">
+          <View className="relative mx-auto size-[160px] overflow-hidden rounded-xl shadow-lg">
             {/* Background image */}
             {quest.id && (
               <Image
@@ -264,7 +264,7 @@ export function QuestComplete({
             />
 
             {/* XP badge positioned at bottom center */}
-            <View className="absolute bottom-2 left-0 right-0 items-center">
+            <View className="absolute inset-x-0 bottom-2 items-center">
               <View className="rounded-full bg-white/90 px-3 py-1 shadow-md">
                 <Text className="text-sm font-bold text-neutral-800">
                   +{quest.reward.xp} XP
@@ -310,16 +310,17 @@ export function QuestComplete({
           className="mb-4"
         >
           {showActionButton && (
-            <>
+            <View className="flex-row gap-8">
               <Button
                 label={continueText}
                 onPress={handleContinue}
                 accessibilityLabel={continueText}
+                className="bg-secondary-400"
               />
               {quest.questRunId && quest.id !== 'quest-1' && (
                 <Button
+                  className="bg-primary-400"
                   label="Add Reflection"
-                  variant="secondary"
                   onPress={() => {
                     router.push({
                       pathname: '/(app)/quest/reflection',
@@ -330,11 +331,10 @@ export function QuestComplete({
                       },
                     });
                   }}
-                  className="mt-3"
                   accessibilityLabel="Reflect on quest"
                 />
               )}
-            </>
+            </View>
           )}
         </Animated.View>
       </ScreenContainer>

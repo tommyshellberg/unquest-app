@@ -296,9 +296,11 @@ export default function AppQuestDetailsScreen() {
                               quest.reflection?.activities ||
                               []
                             ).map((activity: string) => (
-                              <Text className="font-bold capitalize">
-                                {activity.replace('-', ' ')}
-                              </Text>
+                              <View className="mr-2 rounded-xl border-primary-500 bg-primary-200 px-2 py-1 shadow-sm">
+                                <Text className="font-bold capitalize text-black">
+                                  {activity}{' '}
+                                </Text>
+                              </View>
                             ))}
                           </View>
                         )}
@@ -329,14 +331,14 @@ export default function AppQuestDetailsScreen() {
                       },
                     });
                   }}
-                  className="flex-row items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 shadow-lg"
+                  className="flex-row items-center justify-center rounded-lg px-6 py-4 shadow-lg"
                   style={{
-                    backgroundColor: colors.emerald?.[500] || '#10b981',
-                    shadowColor: colors.emerald?.[500] || '#10b981',
+                    backgroundColor: colors.primary[400],
+                    shadowColor: colors.primary[400],
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8,
+                    shadowRadius: 3,
+                    elevation: 3,
                   }}
                 >
                   <Notebook size={22} color={colors.white} />

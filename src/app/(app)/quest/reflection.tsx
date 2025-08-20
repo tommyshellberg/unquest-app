@@ -245,28 +245,26 @@ export default function ReflectionScreen() {
           </ScrollView>
 
           {/* Action Buttons */}
-          <View className="border-t border-neutral-200 bg-white p-4">
-            <Button
-              label={
-                createReflectionMutation.isPending
-                  ? 'Saving...'
-                  : 'Save Reflection'
-              }
-              onPress={handleSaveReflection}
-              disabled={
-                createReflectionMutation.isPending ||
-                (!moodValue &&
-                  !reflectionText.trim() &&
-                  selectedActivities.length === 0)
-              }
-              className="mb-2"
-            />
-            <TouchableOpacity onPress={handleSkip} className="py-2">
-              <Text className="text-center text-base text-neutral-600">
-                Skip for now
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Button
+            label={
+              createReflectionMutation.isPending
+                ? 'Saving...'
+                : 'Save Reflection'
+            }
+            onPress={handleSaveReflection}
+            disabled={
+              createReflectionMutation.isPending ||
+              (!moodValue &&
+                !reflectionText.trim() &&
+                selectedActivities.length === 0)
+            }
+            className="mb-2"
+          />
+          <TouchableOpacity onPress={handleSkip} className="py-2">
+            <Text className="text-center text-base text-neutral-600">
+              Skip for now
+            </Text>
+          </TouchableOpacity>
         </ScreenContainer>
       </KeyboardAvoidingView>
     </View>
