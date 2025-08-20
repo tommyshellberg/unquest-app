@@ -296,7 +296,10 @@ export default function AppQuestDetailsScreen() {
                               quest.reflection?.activities ||
                               []
                             ).map((activity: string) => (
-                              <View className="mr-2 rounded-xl border-primary-500 bg-primary-200 px-2 py-1 shadow-sm">
+                              <View
+                                className="mr-2 rounded-xl border-primary-500 bg-primary-200 px-2 py-1 shadow-sm"
+                                key={activity}
+                              >
                                 <Text className="font-bold capitalize text-black">
                                   {activity}{' '}
                                 </Text>
