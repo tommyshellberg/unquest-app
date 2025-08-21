@@ -260,7 +260,9 @@ const _useAuth = create<AuthState>((set, get) => ({
         // They will be fetched after quest completion when converting to full user
         console.log('[Auth] Provisional user hydrated successfully');
       } else {
-        get().signOut();
+        // No tokens found - set signOut status without calling logout methods
+        // since the user was never logged in
+        set({ status: 'signOut', token: null });
       }
     } catch (e) {
       console.error('Error during hydration process:', e);
