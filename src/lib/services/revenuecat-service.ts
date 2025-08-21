@@ -1,12 +1,12 @@
+import { Env } from '@env';
+import { Platform } from 'react-native';
 import Purchases, {
+  type CustomerInfo,
   LOG_LEVEL,
-  CustomerInfo,
-  PurchasesPackage,
-  PurchasesOffering,
+  type PurchasesOffering,
+  type PurchasesPackage,
 } from 'react-native-purchases';
 import RevenueCatUI from 'react-native-purchases-ui';
-import { Platform } from 'react-native';
-import { Env } from '@env';
 
 export class RevenueCatService {
   private static instance: RevenueCatService;
@@ -73,8 +73,7 @@ export class RevenueCatService {
 
   async logoutUser(): Promise<void> {
     try {
-      const { customerInfo } = await Purchases.logOut();
-      this.customerInfo = customerInfo;
+      this.customerInfo = await Purchases.logOut();
       console.log('RevenueCat user logged out');
     } catch (error) {
       console.error('Failed to log out user from RevenueCat:', error);
@@ -154,7 +153,8 @@ export class RevenueCatService {
           ? Object.keys(customerInfo.entitlements.active)
           : [],
         activeSubscriptions: customerInfo?.activeSubscriptions || [],
-        allPurchasedProductIdentifiers: customerInfo?.allPurchasedProductIdentifiers || [],
+        allPurchasedProductIdentifiers:
+          customerInfo?.allPurchasedProductIdentifiers || [],
       });
 
       // If no customer info, return false
@@ -170,12 +170,17 @@ export class RevenueCatService {
       }
 
       // Get all active entitlements
-      const activeEntitlementKeys = Object.keys(customerInfo.entitlements.active);
-      
+      const activeEntitlementKeys = Object.keys(
+        customerInfo.entitlements.active
+      );
+
       // If there are ANY active entitlements, the user has premium access
       // This approach means you don't need to hardcode entitlement IDs
       if (activeEntitlementKeys.length > 0) {
-        console.log('[RevenueCat] Found active entitlements:', activeEntitlementKeys);
+        console.log(
+          '[RevenueCat] Found active entitlements:',
+          activeEntitlementKeys
+        );
         return true;
       }
 
@@ -278,7 +283,9 @@ export class RevenueCatService {
     }
   }
 
-  async presentPaywallIfNeeded(requiredEntitlementIdentifier?: string): Promise<boolean> {
+  async presentPaywallIfNeeded(
+    requiredEntitlementIdentifier?: string
+  ): Promise<boolean> {
     try {
       // If no specific entitlement is required, just use presentPaywall
       if (!requiredEntitlementIdentifier) {

@@ -5,7 +5,8 @@ import { Env } from '@env';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { Stack, useRouter } from 'expo-router';
+import { isRunningInExpoGo } from 'expo';
+import { Stack, useNavigationContainerRef, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
 import { AppState, type AppStateStatus, Platform, View } from 'react-native';
@@ -21,8 +22,8 @@ import { PostHogNavigationTracker } from '@/components/providers/posthog-navigat
 import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
-import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useTokenRefreshErrorHandler } from '@/lib/hooks/use-token-refresh-error-handler';
+import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { scheduleStreakWarningNotification } from '@/lib/services/notifications';
 import { getQuestRunStatus } from '@/lib/services/quest-run-service';
 import { revenueCatService } from '@/lib/services/revenuecat-service';
@@ -35,6 +36,10 @@ import NavigationGate from './navigation-gate';
 
 export { ErrorBoundary } from '@/components/ErrorBoundary';
 
+const navigationIntegration = Sentry.reactNavigationIntegration({
+  enableTimeToInitialDisplay: !isRunningInExpoGo(),
+});
+
 const integrations =
   Env.APP_ENV === 'production'
     ? [
@@ -44,14 +49,17 @@ const integrations =
           maskAllImages: false,
           maskAllVectors: false,
         }),
+        Sentry.reactNativeTracingIntegration(),
+        navigationIntegration,
       ]
-    : [];
+    : [Sentry.reactNativeTracingIntegration(), navigationIntegration];
 
 Sentry.init({
   dsn: 'https://6d85dbe3783d343a049b93fa8afaf144@o4508966745997312.ingest.us.sentry.io/4508966747570176',
   replaysSessionSampleRate: 1.0,
   replaysOnErrorSampleRate: 1.0,
   integrations: integrations,
+  tracesSampleRate: 1.0,
 });
 
 // Keep the splash screen visible until we explicitly hide it
@@ -103,6 +111,13 @@ function RootLayout() {
     prepare();
   }, []);
 
+  const ref = useNavigationContainerRef();
+  React.useEffect(() => {
+    if (ref) {
+      navigationIntegration.registerNavigationContainer(ref);
+    }
+  }, [ref]);
+
   useEffect(() => {
     if (Env.ONESIGNAL_APP_ID) {
       // Enable verbose logging for debugging (can be removed for production)
@@ -121,7 +136,7 @@ function RootLayout() {
       const { useUserStore } = require('@/store/user-store');
       const { getItem } = require('@/lib/storage');
       const user = useUserStore.getState().user;
-      
+
       if (user?.id) {
         console.log(
           '[OneSignal] Setting external ID for existing user:',
@@ -167,9 +182,7 @@ function RootLayout() {
         }
       };
 
-      // Check immediately and after a delay to catch any changes
       debugCheckOneSignalUser();
-      setTimeout(debugCheckOneSignalUser, 5000);
 
       // Handle notification opens for cooperative quest invitations
       OneSignal.Notifications.addEventListener('click', (event) => {
@@ -217,7 +230,7 @@ function RootLayout() {
         }
       );
     }
-  }, []);
+  }, [router]);
 
   // Initialize RevenueCat SDK on app launch (following official docs)
   useEffect(() => {
@@ -346,7 +359,7 @@ function RootLayout() {
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
-  
+
   // Handle token refresh exhaustion
   useTokenRefreshErrorHandler();
 

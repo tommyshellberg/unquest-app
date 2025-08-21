@@ -104,6 +104,19 @@ export default function ChooseCharacterScreen() {
     CharacterStep.INTRO_AND_NAME
   );
 
+  useEffect(() => {
+    console.log('Choose Character screen is mounting');
+    return () => {
+      console.log('[ChooseCharacter] Component unmounting');
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log(
+      `[ChooseCharacter] currentStep changed: ${currentStep} (type: ${typeof currentStep})`
+    );
+  }, [currentStep]);
+
   // Initialize with the first character selected
   const [selectedCharacter, setSelectedCharacter] = useState<string>(
     CHARACTERS[0].id
@@ -138,7 +151,7 @@ export default function ChooseCharacterScreen() {
     if (error) {
       setError(null);
     }
-  }, [debouncedName, selectedCharacter]);
+  }, [debouncedName, error, selectedCharacter]);
 
   // Handle step progression
   const handleStepForward = () => {
@@ -154,113 +167,122 @@ export default function ChooseCharacterScreen() {
     }
   };
 
+  const renderIntroAndName = () => {
+    console.log('[ChooseCharacter] renderIntroAndName called');
+    return (
+      <View key="intro-and-name">
+        <Animated.View entering={FadeInLeft.delay(100)}>
+          <Text className="text-3xl font-bold">Your Character</Text>
+        </Animated.View>
+        <Animated.View entering={FadeInDown.delay(600)}>
+          <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
+            Your companion on this journey
+          </Text>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(1100)}>
+          <Text className="mb-4">
+            Choose a character that reflects your personality. Each character
+            offers a different approach to mindfulness and balance.
+          </Text>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(1600)}>
+          <Text className="mb-6">
+            In future updates, characters will gain unique abilities to help
+            complete quests and earn rewards.
+          </Text>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(2100)}>
+          <Text className="mb-2">Character Name</Text>
+          <TextInput
+            className="flex h-14 items-center rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200"
+            style={{ textAlignVertical: 'center' }}
+            value={inputName}
+            onChangeText={(text) => {
+              const filtered = text.replace(/[^a-zA-Z0-9\s]/g, '');
+              setInputName(filtered);
+            }}
+            placeholder="Enter character name"
+            testID="character-name-input"
+            autoFocus
+          />
+        </Animated.View>
+      </View>
+    );
+  };
+
+  const renderCharacterSelection = () => {
+    return (
+      <View key="character-selection" className="flex-1">
+        <Animated.View entering={FadeInLeft.delay(100)}>
+          <Text className="text-3xl font-bold">Hello, {debouncedName}</Text>
+        </Animated.View>
+        <Animated.View entering={FadeInLeft.delay(600)}>
+          <Text className="mt-1 text-lg font-bold leading-relaxed">
+            It's time to choose your hero.
+          </Text>
+        </Animated.View>
+        <Animated.View entering={FadeInDown.delay(1000)}>
+          <Text className="mt-6 text-base leading-relaxed">
+            Each hero brings unique strengths.
+          </Text>
+          <Text className="mb-6 text-base leading-relaxed">
+            Future updates will unlock special abilities and perks.
+          </Text>
+        </Animated.View>
+
+        <Animated.View className="-mx-6 flex-1" entering={FadeIn.delay(1100)}>
+          <FlatList
+            data={CHARACTERS}
+            horizontal
+            testID="character-carousel"
+            snapToInterval={snapInterval}
+            decelerationRate="fast"
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id}
+            initialScrollIndex={0}
+            getItemLayout={(_data, index) => ({
+              length: snapInterval,
+              offset: snapInterval * index,
+              index,
+            })}
+            contentContainerStyle={{
+              paddingHorizontal: (screenWidth - cardWidth - cardSpacing) / 2,
+            }}
+            ItemSeparatorComponent={() => (
+              <View style={{ width: cardSpacing }} />
+            )}
+            onMomentumScrollEnd={(event) => {
+              const offsetX = event.nativeEvent.contentOffset.x;
+              const newIndex = Math.round(offsetX / snapInterval);
+              setSelectedCharacter(CHARACTERS[newIndex].id);
+            }}
+            renderItem={renderItem}
+            removeClippedSubviews={true}
+          />
+        </Animated.View>
+      </View>
+    );
+  };
+
   // Render content based on current step
   const renderStepContent = () => {
+    console.log(
+      `[ChooseCharacter] renderStepContent called with currentStep: ${currentStep}`
+    );
     switch (currentStep) {
       case CharacterStep.INTRO_AND_NAME:
-        return (
-          <View key="intro-and-name">
-            <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-3xl font-bold">Your Character</Text>
-            </Animated.View>
-            <Animated.View entering={FadeInDown.delay(600)}>
-              <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
-                Your companion on this journey
-              </Text>
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(1100)}>
-              <Text className="mb-4">
-                Choose a character that reflects your personality. Each
-                character offers a different approach to mindfulness and
-                balance.
-              </Text>
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(1600)}>
-              <Text className="mb-6">
-                In future updates, characters will gain unique abilities to help
-                complete quests and earn rewards.
-              </Text>
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(2100)}>
-              <Text className="mb-2">Character Name</Text>
-              <TextInput
-                className="flex h-14 items-center rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200"
-                style={{ textAlignVertical: 'center' }}
-                value={inputName}
-                onChangeText={(text) => {
-                  const filtered = text.replace(/[^a-zA-Z0-9\s]/g, '');
-                  setInputName(filtered);
-                }}
-                placeholder="Enter character name"
-                testID="character-name-input"
-                autoFocus
-              />
-            </Animated.View>
-          </View>
-        );
+        console.log('[ChooseCharacter] Rendering INTRO_AND_NAME');
+        return renderIntroAndName();
 
       case CharacterStep.CHARACTER_SELECTION:
-        return (
-          <View key="character-selection" className="flex-1">
-            <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-3xl font-bold">Hello, {debouncedName}</Text>
-            </Animated.View>
-            <Animated.View entering={FadeInLeft.delay(600)}>
-              <Text className="mt-1 text-lg font-bold leading-relaxed">
-                It's time to choose your hero.
-              </Text>
-            </Animated.View>
-            <Animated.View entering={FadeInDown.delay(1000)}>
-              <Text className="mt-6 text-base leading-relaxed">
-                Each hero brings unique strengths.
-              </Text>
-              <Text className="mb-6 text-base leading-relaxed">
-                Future updates will unlock special abilities and perks.
-              </Text>
-            </Animated.View>
-
-            <Animated.View
-              className="-mx-6 flex-1"
-              entering={FadeIn.delay(1100)}
-            >
-              <FlatList
-                data={CHARACTERS}
-                horizontal
-                testID="character-carousel"
-                snapToInterval={snapInterval}
-                decelerationRate="fast"
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(item) => item.id}
-                initialScrollIndex={0}
-                getItemLayout={(_data, index) => ({
-                  length: snapInterval,
-                  offset: snapInterval * index,
-                  index,
-                })}
-                contentContainerStyle={{
-                  paddingHorizontal:
-                    (screenWidth - cardWidth - cardSpacing) / 2,
-                }}
-                ItemSeparatorComponent={() => (
-                  <View style={{ width: cardSpacing }} />
-                )}
-                onMomentumScrollEnd={(event) => {
-                  const offsetX = event.nativeEvent.contentOffset.x;
-                  const newIndex = Math.round(offsetX / snapInterval);
-                  setSelectedCharacter(CHARACTERS[newIndex].id);
-                }}
-                renderItem={renderItem}
-                removeClippedSubviews={true}
-              />
-            </Animated.View>
-          </View>
-        );
-
+        console.log('[ChooseCharacter] Rendering CHARACTER_SELECTION');
+        return renderCharacterSelection();
       default:
-        return null;
+        console.error('unexpected CharacterStep value: ', currentStep);
+        return renderIntroAndName();
     }
   };
 
