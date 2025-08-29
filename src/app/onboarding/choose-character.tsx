@@ -104,19 +104,6 @@ export default function ChooseCharacterScreen() {
     CharacterStep.INTRO_AND_NAME
   );
 
-  useEffect(() => {
-    console.log('Choose Character screen is mounting');
-    return () => {
-      console.log('[ChooseCharacter] Component unmounting');
-    };
-  }, []);
-
-  useEffect(() => {
-    console.log(
-      `[ChooseCharacter] currentStep changed: ${currentStep} (type: ${typeof currentStep})`
-    );
-  }, [currentStep]);
-
   // Initialize with the first character selected
   const [selectedCharacter, setSelectedCharacter] = useState<string>(
     CHARACTERS[0].id
@@ -168,7 +155,6 @@ export default function ChooseCharacterScreen() {
   };
 
   const renderIntroAndName = () => {
-    console.log('[ChooseCharacter] renderIntroAndName called');
     return (
       <View key="intro-and-name">
         <Animated.View entering={FadeInLeft.delay(100)}>
@@ -269,16 +255,11 @@ export default function ChooseCharacterScreen() {
 
   // Render content based on current step
   const renderStepContent = () => {
-    console.log(
-      `[ChooseCharacter] renderStepContent called with currentStep: ${currentStep}`
-    );
     switch (currentStep) {
       case CharacterStep.INTRO_AND_NAME:
-        console.log('[ChooseCharacter] Rendering INTRO_AND_NAME');
         return renderIntroAndName();
 
       case CharacterStep.CHARACTER_SELECTION:
-        console.log('[ChooseCharacter] Rendering CHARACTER_SELECTION');
         return renderCharacterSelection();
       default:
         console.error('unexpected CharacterStep value: ', currentStep);

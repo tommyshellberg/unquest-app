@@ -80,9 +80,6 @@ export function useNavigationTarget(): NavigationTarget {
   // Synchronize onboarding state when user is signed in but onboarding appears incomplete
   useEffect(() => {
     if (authStatus === 'signIn' && !isOnboardingComplete) {
-      const hasCharacter = !!character;
-      const hasCompletedQuests = completedQuests && completedQuests.length > 0;
-
       // Check if user has provisional data (indicating they're a new user going through onboarding)
       const hasProvisionalData = !!(
         getItem('provisionalUserId') ||
@@ -90,17 +87,7 @@ export function useNavigationTarget(): NavigationTarget {
         getItem('provisionalEmail')
       );
 
-      if (hasCharacter || hasCompletedQuests) {
-        console.log(
-          '🧭 Detected inconsistent onboarding state - user has completed onboarding but store shows incomplete'
-        );
-        console.log('🧭 Synchronizing onboarding state to COMPLETED');
-
-        // Mark onboarding as complete
-        setCurrentStep(OnboardingStep.COMPLETED);
-
-        console.log('🧭 Onboarding state synchronized successfully');
-      } else if (!hasProvisionalData) {
+      if (!hasProvisionalData) {
         // User is signed in with no provisional data and no local data
         // This indicates they're a verified user logging in on a fresh install
         console.log(

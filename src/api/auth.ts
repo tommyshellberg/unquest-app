@@ -5,6 +5,7 @@ import { OneSignal } from 'react-native-onesignal';
 import { signIn } from '@/lib/auth';
 import { getUserDetails } from '@/lib/services/user';
 import { getItem, removeItem } from '@/lib/storage';
+import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
 
 import * as tokenService from './token';
@@ -36,23 +37,13 @@ export interface RegisterResponse {
  */
 export const requestMagicLink = async (email: string): Promise<void> => {
   try {
-    const provisionalIdFromStorage = getItem('provisionalUserId');
     const provisionalToken = getItem('provisionalAccessToken');
 
-    console.log('provisionalId from storage:', provisionalIdFromStorage);
     console.log('provisionalToken exists:', !!provisionalToken);
 
-    const body: { email: string; provisionalId?: string } = { email };
+    const body = { email };
 
-    // Only add provisionalId if it's a non-empty string
-    if (
-      typeof provisionalIdFromStorage === 'string' &&
-      provisionalIdFromStorage.length > 0
-    ) {
-      body.provisionalId = provisionalIdFromStorage;
-    }
-
-    // Prepare headers - manually add Authorization for provisional token
+    // Prepare headers - add Authorization for provisional token if available
     const headers: { [key: string]: string } = {
       'Content-Type': 'application/json',
     };
@@ -69,6 +60,7 @@ export const requestMagicLink = async (email: string): Promise<void> => {
     const response = await authClient.post('/auth/magiclink', body, {
       headers,
     });
+    console.log('magiclink response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Magic link request error:', error);
@@ -83,6 +75,7 @@ export const verifyMagicLink = async (
   token: string
 ): Promise<tokenService.AuthTokens> => {
   try {
+    console.log('[VERIFY MAGIC LINK] - token: ', token);
     // throw error if token is not a string
     if (typeof token !== 'string') {
       throw new Error('Token is not a string');
@@ -92,6 +85,7 @@ export const verifyMagicLink = async (
     );
     // Expect the API to return tokens in the nested format:
     // { access: { token: string, expires: string }, refresh: { token: string, expires: string } }
+    console.log('[VERIFY MAGIC LINK] - response data: ', response.data);
     tokenService.storeTokens(response.data);
 
     // Clear provisional user data after successful authentication
@@ -117,6 +111,7 @@ export const verifyMagicLinkAndSignIn = async (
   try {
     // Step 1: Verify the magic link and store tokens
     const tokens = await verifyMagicLink(token);
+    console.log('[verifyMagicLinkAndSignIn] - tokens: ', tokens);
 
     // Step 2: Update auth store with proper signIn call
     signIn({
@@ -136,11 +131,7 @@ export const verifyMagicLinkAndSignIn = async (
 
       // Store user data in user store
       if (userResponse && userResponse.id && userResponse.email) {
-        useUserStore.getState().setUser({
-          id: userResponse.id,
-          email: userResponse.email,
-          name: userResponse.name,
-        });
+        useUserStore.getState().setUser(userResponse);
 
         // Link OneSignal with the user's MongoDB ID
         if ((global as any).isOneSignalInitialized) {
@@ -173,15 +164,11 @@ export const verifyMagicLinkAndSignIn = async (
 
         // If user has character data from server, store it in character store
         // Check both nested character object and top-level properties
-        if (
-          userResponse.character ||
-          ((userResponse as any).type && (userResponse as any).name)
-        ) {
-          const { useCharacterStore } = await import('@/store/character-store');
+        if (userResponse?.type && userResponse?.name) {
           const characterStore = useCharacterStore.getState();
 
           // Handle both formats: nested character object or top-level properties
-          const characterData = userResponse.character || {
+          const characterData = {
             type: (userResponse as any).type,
             name: (userResponse as any).name,
             level: (userResponse as any).level || 1,

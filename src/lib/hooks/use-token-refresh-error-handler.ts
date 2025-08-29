@@ -1,10 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Alert, AppState } from 'react-native';
-import * as Updates from 'expo-updates';
 
 import { signOut } from '@/lib/auth';
-import { getItem } from '@/lib/storage';
 
 // Store the error handler globally so it can be called from anywhere
 let globalErrorHandler: ((error: any) => void) | null = null;
@@ -26,54 +24,21 @@ export function useTokenRefreshErrorHandler() {
         console.log('[TokenRefreshErrorHandler] Token refresh exhausted');
         alertShownRef.current = true;
 
-        const isProvisionalUser = !!getItem('provisionalAccessToken');
-
-        if (isProvisionalUser) {
-          // For provisional users, show a friendly message and offer to retry
-          Alert.alert(
-            'Connection Issue',
-            "We're having trouble connecting to the server. This might be a temporary network issue.",
-            [
-              {
-                text: 'Try Again',
-                onPress: async () => {
-                  alertShownRef.current = false;
-                  // In React Native, we can reload the app using expo-updates
-                  if (Updates.isAvailable) {
-                    await Updates.reloadAsync();
-                  }
-                },
+        Alert.alert(
+          'Session Expired',
+          'Your session has expired. Please sign in again to continue.',
+          [
+            {
+              text: 'Sign In',
+              onPress: () => {
+                alertShownRef.current = false;
+                signOut();
+                router.replace('/login');
               },
-              {
-                text: 'Start Over',
-                onPress: async () => {
-                  alertShownRef.current = false;
-                  await signOut();
-                  router.replace('/login');
-                },
-                style: 'destructive',
-              },
-            ],
-            { cancelable: false }
-          );
-        } else {
-          // For regular users, offer to sign in again
-          Alert.alert(
-            'Session Expired',
-            'Your session has expired. Please sign in again to continue.',
-            [
-              {
-                text: 'Sign In',
-                onPress: async () => {
-                  alertShownRef.current = false;
-                  await signOut();
-                  router.replace('/login');
-                },
-              },
-            ],
-            { cancelable: false }
-          );
-        }
+            },
+          ],
+          { cancelable: false }
+        );
       }
     };
 

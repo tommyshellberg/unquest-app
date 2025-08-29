@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { storeTokens } from '@/api/token';
 import { revenueCatService } from '@/lib/services/revenuecat-service';
 import { getUserDetails } from '@/lib/services/user';
-import { getItem, removeItem } from '@/lib/storage';
+import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
 
@@ -55,12 +55,6 @@ const _useAuth = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     removeToken();
-
-    // Also clear provisional tokens
-    removeItem('provisionalAccessToken');
-    removeItem('provisionalRefreshToken');
-    removeItem('provisionalUserId');
-    removeItem('provisionalEmail');
 
     set({
       status: 'signOut',
@@ -191,11 +185,11 @@ const _useAuth = create<AuthState>((set, get) => ({
 
           // Sync character data if available
           // Check both nested character object and top-level properties
-          if (user.character || ((user as any).type && (user as any).name)) {
+          if (user.name) {
             const characterStore = useCharacterStore.getState();
 
             // Handle both formats: nested character object or top-level properties
-            const characterData = user.character || {
+            const characterData = {
               type: (user as any).type,
               name: (user as any).name,
               level: (user as any).level || 1,
@@ -212,9 +206,6 @@ const _useAuth = create<AuthState>((set, get) => ({
 
             // Then update with the server data
             const level = characterData.level || (user as any).level || 1;
-            const calculateXPForLevel = (level: number): number => {
-              return Math.floor(100 * Math.pow(1.5, level - 1));
-            };
 
             characterStore.updateCharacter({
               type: characterData.type || (user as any).type,
