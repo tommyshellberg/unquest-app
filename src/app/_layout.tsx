@@ -15,6 +15,7 @@ import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
+import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated';
 
 import { APIProvider } from '@/api';
 import { LazyWebSocketProvider } from '@/components/providers/lazy-websocket-provider';
@@ -414,6 +415,10 @@ function RootLayout() {
           name="cooperative-quest-ready"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="auth/magiclink/verify"
+          options={{ headerShown: false }}
+        />
       </Stack>
     </Providers>
   );
@@ -448,6 +453,7 @@ function Providers({
                 <APIProvider>
                   <LazyWebSocketProvider>
                     <BottomSheetModalProvider>
+                      <ReducedMotionConfig mode={ReduceMotion.Never} />
                       <UpdateNotificationBar />
                       {children}
                       <FlashMessage position="top" />

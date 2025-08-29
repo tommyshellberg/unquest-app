@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { Image } from 'react-native';
 import Animated, {
   FadeIn,
@@ -20,18 +20,7 @@ import { OnboardingStep } from '@/store/onboarding-store';
 
 export default function QuestCompletedSignupScreen() {
   const setOnboardingStep = useOnboardingStore((state) => state.setCurrentStep);
-  const currentStep = useOnboardingStore((state) => state.currentStep);
   const posthog = usePostHog();
-
-  useEffect(() => {
-    // set the current step to VIEWING_SIGNUP_PROMPT if it's not already VIEWING_SIGNUP_PROMPT or COMPLETED
-    if (
-      currentStep !== OnboardingStep.VIEWING_SIGNUP_PROMPT &&
-      currentStep !== OnboardingStep.COMPLETED
-    ) {
-      setOnboardingStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
-    }
-  }, [currentStep, setOnboardingStep]);
 
   const handleCreateAccount = useCallback(() => {
     posthog.capture('onboarding_trigger_try_create_account');

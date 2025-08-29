@@ -12,9 +12,9 @@ import * as z from 'zod';
 
 import { requestMagicLink } from '@/api/auth';
 import { Button, Image, Text, View } from '@/components/ui';
-import { useOnboardingStore } from '@/store/onboarding-store';
-import { removeItem } from '@/lib/storage';
 import { useAuth } from '@/lib/auth';
+import { removeItem } from '@/lib/storage';
+import { useOnboardingStore } from '@/store/onboarding-store';
 
 const schema = z.object({
   email: z
@@ -73,6 +73,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
     setSendAttempts((prev) => prev + 1);
 
     try {
+      console.log('calling requestMagicLink with email', email);
       await requestMagicLink(email);
       posthog.capture('magic_link_sent_success', { email });
       setEmailSent(true);
@@ -237,6 +238,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
               signOut();
 
               // Clear provisional data
+              removeItem('provisionalRefreshToken');
               removeItem('provisionalAccessToken');
               removeItem('provisionalUserId');
               removeItem('provisionalEmail');

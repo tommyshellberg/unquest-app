@@ -30,6 +30,7 @@ export default function FirstQuestResultScreen() {
   }, [outcome, setOnboardingStep]);
 
   const handleCompletedContinue = () => {
+    setOnboardingStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
     router.push('/quest-completed-signup');
   };
 

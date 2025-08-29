@@ -2,11 +2,11 @@ import { Feather } from '@expo/vector-icons';
 import { Redirect, Tabs, useRootNavigationState } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { white } from '@/components/ui/colors';
 import { useAuth } from '@/lib/auth';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
+import { useUserStore } from '@/store/user-store';
 
 // Tab icon component
 function TabBarIcon({
@@ -57,11 +57,23 @@ export default function TabLayout() {
   useLockStateDetection();
 
   const authStatus = useAuth((state) => state.status);
+  const { user } = useUserStore.getState();
+  console.log(
+    ' 👤 [AppLayout] the user is a provisional user: ',
+    user?.isProvisional
+  );
 
   // Auth protection
   if (authStatus === 'signOut') {
     console.log('[AppLayout] Redirecting to login - not authenticated');
     return <Redirect href="/login" />;
+  }
+
+  // provisional users shouldn't be here, cause a login so they can create an account
+  if (user && user?.isProvisional) {
+    console.log(
+      '[AppLayout] Redirecting to login - provisional user trying to access protected app route.'
+    );
   }
 
   // Check if navigation is ready

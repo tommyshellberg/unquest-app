@@ -1,7 +1,7 @@
+import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
-import axios from 'axios';
 
 import { verifyMagicLinkAndSignIn } from '@/api/auth';
 import { Text, View } from '@/components/ui';
@@ -11,7 +11,6 @@ export default function VerifyMagicLinkScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const token = params.token as string;
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,22 +59,11 @@ export default function VerifyMagicLinkScreen() {
             error: errorMessage,
           },
         });
-      } finally {
-        setLoading(false);
       }
     }
 
     verifyToken();
   }, [token, router, params]);
-
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-        <Text className="mt-4">Verifying your login...</Text>
-      </View>
-    );
-  }
 
   if (error) {
     return (
@@ -85,6 +73,10 @@ export default function VerifyMagicLinkScreen() {
       </View>
     );
   }
-
-  return null;
+  return (
+    <View className="flex-1 items-center justify-center">
+      <ActivityIndicator size="large" />
+      <Text className="mt-4">Verifying your login...</Text>
+    </View>
+  );
 }

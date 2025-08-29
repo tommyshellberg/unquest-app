@@ -6,27 +6,24 @@ import type { Character } from '@/store/types';
 
 export interface UserDetails {
   id: string;
-  name: string;
   email: string;
   role: string;
-  character?: {
-    type: string;
-    name: string;
-    level: number;
-    currentXP: number;
-    xpToNextLevel: number;
-    _id?: string;
-  };
-  dailyQuestStreak?: number;
+  type: string;
+  name: string;
+  level: number;
+  xp: number;
+  dailyQuestStreak: number;
   totalQuestsCompleted?: number;
   totalMinutesOffPhone?: number;
-  featureFlags?: string[];
-  hasPremiumAccess?: boolean;
-  // Legacy fields for backward compatibility
-  type?: string;
-  level?: number;
-  xp?: number;
-  // Add other user fields as needed
+  featureFlags: string[];
+  hasPremiumAccess: boolean;
+  isProvisional: boolean;
+  createdAt: Date;
+  completedQuests: any[];
+  friends: any[];
+  pendingFriends: any[];
+  blockedUsers: any[];
+  inventory: any[];
 }
 
 export interface FriendCharacter {
