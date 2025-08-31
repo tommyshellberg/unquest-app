@@ -1,8 +1,10 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
+
 import { cooperativeQuestApi } from '@/api/cooperative-quest';
-import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
-import { useUserStore } from '@/store/user-store';
+import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
+
+// Import the component
+import CreateCooperativeQuestScreen from './create-cooperative-quest';
 
 // Mock the router
 const mockReplace = jest.fn();
@@ -61,7 +63,6 @@ jest.mock('@/components/ui', () => {
         React.createElement(RN.Text, {}, label)
       ),
     FocusAwareStatusBar: 'FocusAwareStatusBar',
-    SafeAreaView: RN.SafeAreaView,
     ScrollView: RN.ScrollView,
     Text: RN.Text,
     View: RN.View,
@@ -156,9 +157,6 @@ jest.mock('@/components/QuestForm/friend-selector', () => {
     },
   };
 });
-
-// Import the component
-import CreateCooperativeQuestScreen from './create-cooperative-quest';
 
 describe('CreateCooperativeQuestScreen', () => {
   beforeEach(() => {

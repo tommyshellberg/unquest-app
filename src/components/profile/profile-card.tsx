@@ -84,7 +84,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
     <Card className="mx-4 mt-4 overflow-hidden">
       <ImageBackground
         source={characterDetails?.profileImage}
-        className="aspect-[1.2] w-full"
+        className="aspect-[1.2] w-full bg-[rgba(47,129,142,0.9)] opacity-80"
         resizeMode="cover"
         imageStyle={{
           position: 'absolute',

@@ -71,7 +71,10 @@
     </array>
     <key>UIAppFonts</key>
     <array>
-      <string>Inter.ttf</string>
+      <string>CanelaTrial-Regular.otf</string>
+      <string>Inter-Regular.ttf</string>
+      <string>Inter-SemiBold.ttf</string>
+      <string>CanelaTrial-Bold.otf</string>
     </array>
     <key>UIBackgroundModes</key>
     <array>

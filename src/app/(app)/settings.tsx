@@ -7,7 +7,13 @@ import { useRouter } from 'expo-router';
 import * as Updates from 'expo-updates';
 import { Crown, Flame, Globe } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, Switch } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  Switch,
+} from 'react-native';
 import * as Localize from 'react-native-localize';
 import { OneSignal } from 'react-native-onesignal';
 import {
@@ -30,8 +36,8 @@ import { background } from '@/components/ui/colors';
 import { Modal, useModal } from '@/components/ui/modal';
 import { useNotificationSettings } from '@/hooks/use-notification-settings';
 import { useAuth } from '@/lib';
-import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import { TIMEZONES } from '@/lib/constants/timezones';
+import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import {
   areNotificationsEnabled,
   cancelDailyReminderNotification,
@@ -417,7 +423,9 @@ export default function Settings() {
         if (Platform.OS === 'ios') {
           Linking.openURL('https://apps.apple.com/account/subscriptions');
         } else {
-          Linking.openURL('https://play.google.com/store/account/subscriptions');
+          Linking.openURL(
+            'https://play.google.com/store/account/subscriptions'
+          );
         }
       }
     } catch (error) {
@@ -497,7 +505,9 @@ export default function Settings() {
                   <View>
                     <Text className="text-xl font-medium">UnQuest Premium</Text>
                     <Text className="text-neutral-600">
-                      {hasPremiumAccess ? 'Manage subscription' : 'View subscription options'}
+                      {hasPremiumAccess
+                        ? 'Manage subscription'
+                        : 'View subscription options'}
                     </Text>
                   </View>
                 </View>
@@ -534,7 +544,7 @@ export default function Settings() {
                   </Text>
                 </View>
               </View>
-              <Feather name="chevron-right" size={24} color="#86939e" />
+              <Feather name="chevron-right" size={20} color="#86939e" />
             </Pressable>
 
             {/* Notifications */}

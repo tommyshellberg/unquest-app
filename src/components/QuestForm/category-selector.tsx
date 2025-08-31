@@ -7,7 +7,10 @@ import { LayoutAnimation, Platform, UIManager } from 'react-native';
 import { Pressable, Text, View } from '@/components/ui';
 
 // Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -74,10 +77,10 @@ export const CategorySelector = ({
                   {selectedCategory?.label || 'Select a category'}
                 </Text>
               </View>
-              <Feather 
-                name={isExpanded ? "chevron-up" : "chevron-down"} 
-                size={20} 
-                color="#666" 
+              <Feather
+                name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                size={20}
+                color="#666"
               />
             </Pressable>
 
@@ -88,15 +91,19 @@ export const CategorySelector = ({
                   <Pressable
                     key={category.id}
                     testID={`category-option-${category.id}`}
-                    className={`flex-row items-center px-3 py-3 ${
+                    className={`flex-row items-center p-3 ${
                       value === category.id ? 'bg-[#F8F8F8]' : 'bg-white'
                     } ${
-                      index !== categoryOptions.length - 1 ? 'border-b border-[#F0F0F0]' : ''
+                      index !== categoryOptions.length - 1
+                        ? 'border-b border-[#F0F0F0]'
+                        : ''
                     }`}
                     onPress={() => {
                       onChange(category.id);
                       setIsExpanded(false);
-                      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                      LayoutAnimation.configureNext(
+                        LayoutAnimation.Presets.easeInEaseOut
+                      );
                     }}
                     accessible={true}
                     accessibilityRole="button"

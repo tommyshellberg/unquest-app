@@ -4,6 +4,7 @@ import {
   type BottomSheetModal,
 } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
+import { ChevronDown } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
 import type { FieldValues } from 'react-hook-form';
@@ -15,7 +16,6 @@ import Svg, { Path } from 'react-native-svg';
 import { tv } from 'tailwind-variants';
 
 import colors from '@/components/ui/colors';
-import { CaretDown } from '@/components/ui/icons';
 
 import type { InputControllerType } from './input';
 import { useModal } from './modal';
@@ -25,7 +25,7 @@ import { Text } from './text';
 const selectTv = tv({
   slots: {
     container: 'mb-4',
-    label: 'text-muted-400 mb-1 text-lg',
+    label: 'mb-1 text-lg text-muted-400',
     input:
       'mt-0 flex-row items-center justify-center rounded-xl border-[0.5px] border-neutral-300 p-3',
     inputValue: 'text-neutral-400',
@@ -205,7 +205,7 @@ export const Select = (props: SelectProps) => {
           <View className="flex-1">
             <Text className={styles.inputValue()}>{textValue}</Text>
           </View>
-          <CaretDown />
+          <ChevronDown />
         </Pressable>
         {error && (
           <Text testID={`${testID}-error`} className="text-sm text-red-300">

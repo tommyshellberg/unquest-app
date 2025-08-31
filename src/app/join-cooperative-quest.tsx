@@ -12,11 +12,10 @@ import { invitationApi } from '@/api/invitation';
 import {
   Card,
   FocusAwareStatusBar,
-  SafeAreaView,
   ScrollView,
+  showErrorMessage,
   Text,
   View,
-  showErrorMessage,
 } from '@/components/ui';
 import colors from '@/components/ui/colors.js';
 import { InfoCard } from '@/components/ui/info-card';
@@ -259,10 +258,7 @@ export default function JoinCooperativeQuest() {
   };
 
   return (
-    <SafeAreaView
-      className="flex-1"
-      style={{ backgroundColor: colors.background }}
-    >
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <FocusAwareStatusBar />
 
       {/* Header */}
@@ -452,6 +448,6 @@ export default function JoinCooperativeQuest() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

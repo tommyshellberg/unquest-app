@@ -50,8 +50,8 @@ const CHARACTERS: Character[] = [
     type: 'Knight',
     title: 'Paragon of Discipline',
     description: 'Builds strength and honor through dedication and restraint.',
-    image: require('@/../assets/images/characters/knight-full.jpg'),
-    profileImage: require('@/../assets/images/characters/knight-profile.jpg'),
+    image: require('@/../assets/images/characters/knight-full-alt.png'),
+    profileImage: require('@/../assets/images/characters/knight-profile-alt.png'),
   },
   {
     id: 'bard',

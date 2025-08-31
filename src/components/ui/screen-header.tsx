@@ -61,7 +61,9 @@ export function ScreenHeader({
             <ArrowLeft size={24} color="#333" />
           </TouchableOpacity>
         )}
-        <Text className="flex-1 text-3xl font-bold">{title}</Text>
+        <Text className="flex-1 font-canela-bold text-3xl text-black">
+          {title}
+        </Text>
       </View>
       {subtitle && <Text className="text-sm text-neutral-600">{subtitle}</Text>}
     </HeaderWrapper>

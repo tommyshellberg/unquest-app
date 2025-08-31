@@ -20,9 +20,9 @@ interface QuestCardProps {
 }
 
 const imageMap = {
-  story: require('@/../assets/images/characters/knight-full.jpg'),
-  custom: require('@/../assets/images/characters/druid-full.jpg'),
-  cooperative: require('@/../assets/images/characters/wizard-full.jpg'),
+  story: require('@/../assets/images/background/card-background.jpeg'),
+  custom: require('@/../assets/images/background/custom-quest-background.jpeg'),
+  cooperative: require('@/../assets/images/background/coop-quest-background.png'),
 };
 
 export default function QuestCard({
@@ -48,7 +48,7 @@ export default function QuestCard({
   }, [progress]);
 
   return (
-    <Card className="elevation-0 w-full aspect-[3/4]">
+    <Card className="elevation-0 aspect-[3/4] w-full">
       <ImageBackground
         source={imageMap[mode]}
         className="size-full"
@@ -96,7 +96,9 @@ export default function QuestCard({
 
             {isCompleted ? (
               <Text className="text-base text-amber-100 opacity-90">
-                Congratulations! You've completed the entire Vaedros storyline. Your quest history is preserved - start a new adventure to experience different story branches!
+                Congratulations! You've completed the entire Vaedros storyline.
+                Your quest history is preserved - start a new adventure to
+                experience different story branches!
               </Text>
             ) : (
               description !== '' && (

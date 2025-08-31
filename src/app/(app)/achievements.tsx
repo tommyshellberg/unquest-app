@@ -25,14 +25,11 @@ import Animated, {
 import {
   Card,
   FocusAwareStatusBar,
-  Pressable,
   ProgressBar,
-  SafeAreaView,
   ScreenContainer,
   ScreenHeader,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from '@/components/ui';
 import { useCharacterStore } from '@/store/character-store';
@@ -501,7 +498,7 @@ export default function AchievementsScreen() {
   const unlockedAchievements = achievements.filter((a) => a.isUnlocked).length;
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
+    <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       <ScreenContainer>
@@ -514,7 +511,7 @@ export default function AchievementsScreen() {
         />
 
         <ScrollView
-          className="flex-1 -mx-4"
+          className="-mx-4 flex-1"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: 20 }}
         >
@@ -535,6 +532,6 @@ export default function AchievementsScreen() {
           <View className="h-8" />
         </ScrollView>
       </ScreenContainer>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -1,7 +1,7 @@
 module.exports = {
   white: '#FFF1DC',
   cardBackground: '#F5F5F0',
-  black: '#1f0f0c',
+  black: '#1D2017',
   background: '#e7e3d4',
 
   primary: {

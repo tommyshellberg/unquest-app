@@ -221,11 +221,11 @@ export default function AppQuestDetailsScreen() {
             >
               <Feather
                 name="arrow-left"
-                size={24}
+                size={20}
                 color={colors.neutral[500]}
               />
             </TouchableOpacity>
-            <Text className="text-xl font-bold">Quest Details</Text>
+            <Text className="text-lg">Quest Details</Text>
           </View>
         </Animated.View>
 
@@ -386,11 +386,11 @@ export default function AppQuestDetailsScreen() {
             >
               <Feather
                 name="arrow-left"
-                size={24}
+                size={20}
                 color={colors.neutral[500]}
               />
             </TouchableOpacity>
-            <Text className="mt-6 text-xl font-bold">Quest Details</Text>
+            <Text className="mt-6 text-xl">Quest Details</Text>
           </View>
         </Animated.View>
         <FailedQuest

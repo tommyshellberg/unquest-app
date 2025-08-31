@@ -23,7 +23,6 @@ import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider
 import {
   Card,
   FocusAwareStatusBar,
-  SafeAreaView,
   ScreenContainer,
   ScreenHeader,
   Text,
@@ -132,20 +131,20 @@ export default function CooperativeQuestMenu() {
   // Show loading state while checking friends or premium status
   if (isLoading || isPremiumLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-100">
+      <View className="flex-1">
         <FocusAwareStatusBar />
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" />
           <Text className="mt-4 text-neutral-600">Loading...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Check if user has premium access
   if (!hasPremiumAccess) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-100">
+      <View className="flex-1">
         <FocusAwareStatusBar />
 
         <ScreenContainer className="px-4">
@@ -230,14 +229,14 @@ export default function CooperativeQuestMenu() {
           }}
           featureName="Cooperative Quests"
         />
-      </SafeAreaView>
+      </View>
     );
   }
 
   // If user has no friends, show only the Add Friends option
   if (!hasFriends) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-100">
+      <View className="flex-1">
         <FocusAwareStatusBar />
 
         <ScreenContainer className="px-4">
@@ -317,13 +316,13 @@ export default function CooperativeQuestMenu() {
           friends={friendsData?.friends || []}
           userEmail={userEmail}
         />
-      </SafeAreaView>
+      </View>
     );
   }
 
   // If user has friends, show all options
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
+    <View className="flex-1">
       <FocusAwareStatusBar />
 
       <View className="flex-1 px-4">
@@ -395,6 +394,6 @@ export default function CooperativeQuestMenu() {
         friends={friendsData?.friends || []}
         userEmail={userEmail}
       />
-    </SafeAreaView>
+    </View>
   );
 }

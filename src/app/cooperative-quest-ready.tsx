@@ -8,7 +8,6 @@ import { useWebSocket } from '@/components/providers/websocket-provider';
 import {
   Button,
   FocusAwareStatusBar,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -172,9 +171,9 @@ export default function CooperativeQuestReady() {
 
   if (!currentLobby || !currentUser) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -337,10 +336,7 @@ export default function CooperativeQuestReady() {
   };
 
   return (
-    <SafeAreaView
-      className="flex-1"
-      style={{ backgroundColor: colors.background }}
-    >
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <FocusAwareStatusBar />
 
       {/* Header */}
@@ -433,6 +429,6 @@ export default function CooperativeQuestReady() {
           textClassName={`font-bold text-lg ${isReady ? 'text-neutral-700' : 'text-white'}`}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

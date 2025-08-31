@@ -1,12 +1,13 @@
-import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import React from 'react';
+
+import { useLeaderboardStats } from '@/api/stats';
+import { useFriendManagement } from '@/lib/hooks/use-friend-management';
+import { useProfileData } from '@/lib/hooks/use-profile-data';
+import { getItem } from '@/lib/storage';
 
 import LeaderboardScreen from './leaderboard';
-import { useProfileData } from '@/lib/hooks/use-profile-data';
-import { useFriendManagement } from '@/lib/hooks/use-friend-management';
-import { useLeaderboardStats } from '@/api/stats';
-import { getItem } from '@/lib/storage';
 
 // Mock dependencies
 jest.mock('expo-router');
@@ -55,7 +56,6 @@ jest.mock('@/components/ui', () => {
     ActivityIndicator: RN.ActivityIndicator,
     FlatList: RN.FlatList,
     ScrollView: RN.ScrollView,
-    SafeAreaView: RN.SafeAreaView,
     Pressable: RN.TouchableOpacity, // Add Pressable mock
     Card: ({ children, className, style }: any) =>
       React.createElement(RN.View, { style, className }, children),

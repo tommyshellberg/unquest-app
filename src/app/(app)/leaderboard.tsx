@@ -22,14 +22,12 @@ import {
   Button,
   Card,
   FocusAwareStatusBar,
-  SafeAreaView,
-  Text,
+  Pressable,
   ScreenContainer,
   ScreenHeader,
-  View,
   ScrollView,
-  TouchableOpacity,
-  Pressable,
+  Text,
+  View,
 } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
@@ -392,7 +390,7 @@ export default function LeaderboardScreen() {
   // Handle loading state
   if (isLoadingStats || isLoadingFriends) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-100">
+      <View className="flex-1 bg-neutral-100">
         <FocusAwareStatusBar />
         <ScreenContainer>
           {/* Header */}
@@ -407,14 +405,14 @@ export default function LeaderboardScreen() {
             <Text className="mt-2 text-gray-600">Loading leaderboard...</Text>
           </View>
         </ScreenContainer>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Handle error state
   if (statsError) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-100">
+      <View className="flex-1 ">
         <FocusAwareStatusBar />
         <ScreenContainer>
           {/* Header */}
@@ -436,12 +434,12 @@ export default function LeaderboardScreen() {
             />
           </View>
         </ScreenContainer>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
+    <View className="flex-1 bg-neutral-100">
       <FocusAwareStatusBar />
 
       <ScreenContainer>
@@ -650,6 +648,6 @@ export default function LeaderboardScreen() {
         friends={friendsData?.friends || []}
         userEmail={userEmail}
       />
-    </SafeAreaView>
+    </View>
   );
 }
