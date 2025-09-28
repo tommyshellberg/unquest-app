@@ -1,6 +1,6 @@
 # Maestro E2E Test Suite
 
-This directory contains comprehensive end-to-end tests for the unQuest app using Maestro.
+This directory contains comprehensive end-to-end tests for the emberglow app using Maestro.
 
 ## Test Organization
 

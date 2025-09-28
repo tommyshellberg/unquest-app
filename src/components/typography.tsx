@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Text, View } from '@/components/ui';
 
-import { Title } from './title';
+import { Title } from './ui/title';
 
 export const Typography = () => {
   return (

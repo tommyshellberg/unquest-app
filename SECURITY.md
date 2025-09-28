@@ -2,7 +2,7 @@
 
 ## Reporting Security Vulnerabilities
 
-We take the security of UnQuest seriously. If you discover a security vulnerability, please follow these steps:
+We take the security of emberglow seriously. If you discover a security vulnerability, please follow these steps:
 
 ### Do NOT
 
@@ -28,7 +28,7 @@ We take the security of UnQuest seriously. If you discover a security vulnerabil
 
 ## Security Best Practices
 
-When contributing to UnQuest, please follow these security best practices:
+When contributing to emberglow, please follow these security best practices:
 
 ### Environment Variables
 
@@ -68,7 +68,7 @@ When contributing to UnQuest, please follow these security best practices:
 
 ## Security Features
 
-UnQuest implements several security features:
+emberglow implements several security features:
 
 - **JWT Authentication**: Secure token-based authentication
 - **Secure Storage**: Sensitive data encrypted using platform-specific secure storage
@@ -98,4 +98,4 @@ When we receive a security report:
 
 For security concerns, please contact the maintainers directly through private channels rather than public issue trackers.
 
-Thank you for helping keep UnQuest and its users safe!
+Thank you for helping keep emberglow and its users safe!

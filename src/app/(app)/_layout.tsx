@@ -3,7 +3,7 @@ import { Redirect, Tabs, useRootNavigationState } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 
-import { white } from '@/components/ui/colors';
+import { background, muted, white } from '@/components/ui/colors';
 import { useAuth } from '@/lib/auth';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useUserStore } from '@/store/user-store';
@@ -41,7 +41,7 @@ function CenterButton({
     <View className="-mt-5 items-center justify-center">
       <View
         className={`size-14 items-center justify-center rounded-full ${
-          focused ? 'bg-secondary-400' : 'bg-secondary-300'
+          focused ? 'bg-secondary-300' : 'bg-secondary-400'
         }`}
       >
         <Feather name="compass" size={28} color={white} />
@@ -86,10 +86,10 @@ export default function TabLayout() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: '#334738', // Forest color
-        tabBarInactiveTintColor: '#666666',
+        tabBarActiveTintColor: white, // Forest color
+        tabBarInactiveTintColor: muted[100],
         tabBarStyle: {
-          backgroundColor: white,
+          backgroundColor: background,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
           height: 120,

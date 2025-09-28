@@ -7,13 +7,7 @@ import { useRouter } from 'expo-router';
 import * as Updates from 'expo-updates';
 import { Crown, Flame, Globe } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  Pressable,
-  Switch,
-} from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Switch } from 'react-native';
 import * as Localize from 'react-native-localize';
 import { OneSignal } from 'react-native-onesignal';
 import {
@@ -45,11 +39,15 @@ import {
   requestNotificationPermissions,
   scheduleDailyReminderNotification,
 } from '@/lib/services/notifications';
-import { revenueCatService } from '@/lib/services/revenuecat-service';
-import { deleteUserAccount, getUserDetails } from '@/lib/services/user';
+import { getUserDetails } from '@/lib/services/user';
 import { getItem, setItem } from '@/lib/storage';
 import { useSettingsStore } from '@/store/settings-store';
 import { useUserStore } from '@/store/user-store';
+
+import {
+  handleDeleteAccount,
+  handleManageSubscription,
+} from '../utils/account';
 
 // Constants
 const APP_VERSION = Env.VERSION || '1.0.0';
@@ -279,79 +277,6 @@ export default function Settings() {
     return format(date, 'h:mm a');
   };
 
-  // Add this handler function
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? Your account will be made inactive and your personal data will be anonymized. This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'View Terms',
-          onPress: () => Linking.openURL('https://unquestapp.com/terms'),
-        },
-        {
-          text: 'Delete Account',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Show loading indicator
-              setIsLoading(true);
-
-              // Call API to delete the account
-              await deleteUserAccount();
-
-              // On success, show confirmation and logout
-              Alert.alert(
-                'Account Scheduled for Deletion',
-                'Your account has been scheduled for deletion. You will now be logged out.',
-                [
-                  {
-                    text: 'OK',
-                    onPress: async () => {
-                      // Log the user out and redirect to login screen
-                      await signOut();
-                      router.replace('/login');
-                    },
-                  },
-                ]
-              );
-            } catch (error) {
-              // On error, show error message
-              setIsLoading(false);
-
-              let errorMessage = 'An unexpected error occurred.';
-              if (error instanceof Error) {
-                errorMessage = error.message;
-              }
-
-              Alert.alert(
-                'Account Deletion Failed',
-                `We couldn't process your deletion request automatically. Please contact hello@unquestapp.com or visit unquestapp.com/contact for assistance with manual account deletion.`,
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Email Support',
-                    onPress: () =>
-                      Linking.openURL(
-                        'mailto:hello@unquestapp.com?subject=Account%20Deletion%20Request'
-                      ),
-                  },
-                  {
-                    text: 'Visit Website',
-                    onPress: () =>
-                      Linking.openURL('https://unquestapp.com/contact'),
-                  },
-                ]
-              );
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
-  };
-
   const handleToggleStreakWarning = async (value: boolean) => {
     // Default time if none set
     const hour = streakWarning.time?.hour || 18;
@@ -412,35 +337,10 @@ export default function Settings() {
     updateSettings({ timezone });
   };
 
-  // Handle manage subscription
-  const handleManageSubscription = async () => {
-    try {
-      const managementUrl = await revenueCatService.getManagementURL();
-      if (managementUrl) {
-        Linking.openURL(managementUrl);
-      } else {
-        // Fallback to platform-specific subscription management
-        if (Platform.OS === 'ios') {
-          Linking.openURL('https://apps.apple.com/account/subscriptions');
-        } else {
-          Linking.openURL(
-            'https://play.google.com/store/account/subscriptions'
-          );
-        }
-      }
-    } catch (error) {
-      console.error('Error opening subscription management:', error);
-      Alert.alert(
-        'Error',
-        'Unable to open subscription management. Please try again later.'
-      );
-    }
-  };
-
   // In your render method, handle loading state
   if (isLoading || isLoadingSettings) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
+      <View className="flex-1 items-center justify-center">
         <FocusAwareStatusBar />
         <ActivityIndicator size="large" color="#5E8977" />
         <Text className="mt-4">Loading settings...</Text>
@@ -449,7 +349,7 @@ export default function Settings() {
   }
 
   return (
-    <View className="flex-1 flex-col bg-background">
+    <View className="flex-1 flex-col">
       <FocusAwareStatusBar />
 
       <ScreenContainer>
@@ -503,7 +403,9 @@ export default function Settings() {
                     <Crown size={24} color={iconColor} />
                   </View>
                   <View>
-                    <Text className="text-xl font-medium">UnQuest Premium</Text>
+                    <Text className="text-xl font-medium">
+                      emberglow Premium
+                    </Text>
                     <Text className="text-neutral-600">
                       {hasPremiumAccess
                         ? 'Manage subscription'

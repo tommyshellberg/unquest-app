@@ -233,7 +233,7 @@ export const scheduleDailyReminderNotification = async (
       identifier: 'daily-reminder',
       content: {
         title: 'Time for a mindful break',
-        body: 'Start a new quest in unQuest to take a break from your phone',
+        body: 'Start a new quest in emberglow to take a break from your phone',
         sound: true,
       },
       trigger: {

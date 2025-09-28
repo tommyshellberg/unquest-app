@@ -1,12 +1,12 @@
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable } from 'react-native';
-import { router } from 'expo-router';
-import Animated, {
+import {
+  Easing,
+  runOnJS,
+  useAnimatedReaction,
   useSharedValue,
   withTiming,
-  Easing,
-  useAnimatedReaction,
-  runOnJS,
 } from 'react-native-reanimated';
 
 import { Card, Text, View } from '@/components/ui';
@@ -72,36 +72,34 @@ export function StatsCard({
             value={questCount}
             duration={1200}
             delay={100}
-            className="text-2xl font-bold text-teal-700"
+            className="text-2xl font-bold text-secondary-100"
             style={{
               fontSize: 24,
               fontWeight: '700',
-              color: '#2E948D',
               textAlign: 'center',
             }}
           />
-          <Text className="text-gray-600">Quests</Text>
+          <Text className="text-secondary-200">Quests</Text>
         </View>
 
-        <View className="h-4/5 w-px bg-gray-300" />
+        <View className="h-4/5 w-px bg-secondary-200" />
 
         <View className="items-center">
           <AnimatedNumber
             value={minutesSaved}
             duration={1500}
             delay={300}
-            className="text-2xl font-bold text-teal-700"
+            className="text-2xl font-bold text-secondary-100"
             style={{
               fontSize: 24,
               fontWeight: '700',
-              color: '#2E948D',
               textAlign: 'center',
             }}
           />
-          <Text className="text-gray-600">Minutes Saved</Text>
+          <Text className="text-secondary-200">Minutes Saved</Text>
         </View>
 
-        <View className="h-4/5 w-px bg-gray-300" />
+        <View className="h-4/5 w-px bg-secondary-200" />
 
         <Pressable
           className="items-center"
@@ -112,16 +110,15 @@ export function StatsCard({
               value={streakCount}
               duration={1000}
               delay={500}
-              className="text-2xl font-bold text-teal-700"
+              className="text-2xl font-bold text-secondary-100"
               style={{
                 fontSize: 24,
                 fontWeight: '700',
-                color: '#2E948D',
                 textAlign: 'center',
               }}
             />
           </View>
-          <Text className="text-gray-600">Day Streak</Text>
+          <Text className="text-secondary-200">Day Streak</Text>
         </Pressable>
       </View>
     </Card>

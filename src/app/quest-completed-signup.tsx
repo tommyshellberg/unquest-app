@@ -42,7 +42,7 @@ export default function QuestCompletedSignupScreen() {
 
       <View className="absolute inset-0">
         <Image
-          source={require('@/../assets/images/background/onboarding.jpg')}
+          source={require('@/../assets/images/background/onboarding-bg.png')}
           className="size-full"
           resizeMode="cover"
         />

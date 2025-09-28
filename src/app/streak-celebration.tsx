@@ -65,7 +65,7 @@ const AnimatedDay = ({
 
   return (
     <View className="items-center">
-      <Text className="mb-2 text-sm font-medium" style={{ color: muted[500] }}>
+      <Text className="mb-2 text-sm font-medium" style={{ color: '#8FA5B2' }}>
         {day.name}
       </Text>
       <Animated.View
@@ -208,11 +208,11 @@ export default function StreakCelebrationScreen() {
 
   const handleShare = async () => {
     try {
-      const shareMessage = `I'm on a ${dailyQuestStreak} day quest streak in unQuest! 🔥 Join me on this epic adventure!\n\nhttps://unquestapp.com`;
+      const shareMessage = `I'm on a ${dailyQuestStreak} day quest streak in emberglow! 🔥 Join me on this epic adventure!\n\nhttps://emberglowapp.com`;
 
       const result = await RNShare.share({
         message: shareMessage,
-        title: 'My unQuest Streak',
+        title: 'My emberglow Streak',
       });
 
       if (result.action === RNShare.sharedAction) {
@@ -236,7 +236,7 @@ export default function StreakCelebrationScreen() {
       {/* Background */}
       <View className="absolute inset-0">
         <Image
-          source={require('@/../assets/images/background/active-quest.jpg')}
+          source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
           className="size-full"
           resizeMode="cover"
         />
@@ -270,7 +270,7 @@ export default function StreakCelebrationScreen() {
         {/* 5-Day Streak Visualization */}
         <Animated.View
           className="mb-8 w-full max-w-sm rounded-2xl p-6"
-          style={[weekViewStyle, { backgroundColor: white }]}
+          style={[weekViewStyle, { backgroundColor: '#2A4754' }]}
           entering={FadeInDown.delay(800).duration(600)}
         >
           <View className="flex-row justify-between">
@@ -284,7 +284,7 @@ export default function StreakCelebrationScreen() {
             ))}
           </View>
 
-          <Text className="mt-4 text-center" style={{ color: muted[500] }}>
+          <Text className="mt-4 text-center" style={{ color: '#F2E5DD' }}>
             Complete a quest each day so your streak won't reset!
           </Text>
         </Animated.View>

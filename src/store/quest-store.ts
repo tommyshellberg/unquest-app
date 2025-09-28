@@ -108,7 +108,8 @@ export const useQuestStore = create<QuestState>()(
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
         const currentCooperativeQuestRun = get().cooperativeQuestRun;
         // Only clear cooperative quest data when preparing a non-cooperative quest
-        const shouldClearCooperativeData = quest.mode !== 'custom' || quest.category !== 'cooperative';
+        const shouldClearCooperativeData =
+          quest.mode !== 'custom' || quest.category !== 'cooperative';
 
         set({
           pendingQuest: quest,
@@ -286,8 +287,11 @@ export const useQuestStore = create<QuestState>()(
             currentLiveActivityId: null,
             // Clear cooperative quest run if this was a cooperative quest
             cooperativeQuestRun:
-              (pendingQuest?.mode === 'custom' && pendingQuest?.category === 'cooperative') ||
-              (activeQuest?.mode === 'custom' && 'category' in activeQuest && activeQuest?.category === 'cooperative')
+              (pendingQuest?.mode === 'custom' &&
+                pendingQuest?.category === 'cooperative') ||
+              (activeQuest?.mode === 'custom' &&
+                'category' in activeQuest &&
+                activeQuest?.category === 'cooperative')
                 ? null
                 : cooperativeQuestRun,
           });
@@ -339,13 +343,21 @@ export const useQuestStore = create<QuestState>()(
       },
 
       refreshAvailableQuests: () => {
-        const { activeQuest, completedQuests } = get();
+        const { activeQuest, completedQuests, serverAvailableQuests } = get();
 
         if (activeQuest) {
           // If there is an active quest, don't refresh available quests
           return;
         }
 
+        // If server has provided quests, don't override them with local logic
+        // This allows server to provide previously completed quests for checkpoint scenarios
+        if (serverAvailableQuests && serverAvailableQuests.length > 0) {
+          console.log('🎯 Server quests available, skipping local quest logic');
+          return;
+        }
+
+        // Local quest logic - only used as fallback for unauthenticated users
         // If no quests completed, start with quest-1 (this is the only valid case for showing quest-1)
         if (completedQuests.length === 0) {
           const firstQuest = AVAILABLE_QUESTS.find((q) => q.id === 'quest-1');
@@ -570,6 +582,18 @@ export const useQuestStore = create<QuestState>()(
           mode: quest.mode as 'story' | 'custom',
         }));
 
+        console.log(
+          '🎯 Setting server available quests - server has full authority:',
+          {
+            questCount: quests.length,
+            questIds: clientQuests.map((q) => q.id),
+            hasMore,
+            complete,
+          }
+        );
+
+        // Server quests completely override local quest logic
+        // This includes previously completed quests for checkpoint scenarios
         set({
           serverAvailableQuests: quests,
           availableQuests: clientQuests as (

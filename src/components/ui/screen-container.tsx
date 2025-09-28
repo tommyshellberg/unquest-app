@@ -1,5 +1,6 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import { type ViewProps } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ScreenContainerProps extends ViewProps {
@@ -24,27 +25,24 @@ export function ScreenContainer({
   noPadding = false,
   noHorizontalPadding = false,
   style,
-  className = '',
   ...props
-}: ScreenContainerProps & { className?: string }) {
+}: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
 
-  // Standard horizontal padding unless explicitly disabled
-  const horizontalPadding = noHorizontalPadding ? '' : 'px-4';
-
   return (
-    <View
+    <LinearGradient
+      colors={['#102442', '#0e203b', '#0d1d35', '#0b1a2e', '#0a1628']}
       style={[
         {
           flex: 1,
           paddingBottom: noPadding ? 0 : insets.bottom + bottomPadding,
+          paddingHorizontal: noHorizontalPadding ? 0 : 16,
         },
         style,
       ]}
-      className={`${horizontalPadding} ${className}`.trim()}
       {...props}
     >
       {children}
-    </View>
+    </LinearGradient>
   );
 }

@@ -213,7 +213,7 @@ export function QuestComplete({
     <View className="relative flex-1">
       {/* Background Image */}
       <Image
-        source={require('@/../assets/images/background/active-quest.jpg')}
+        source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
         className="absolute inset-0 size-full"
         resizeMode="cover"
       />
@@ -224,12 +224,12 @@ export function QuestComplete({
       {/* Content */}
       <ScreenContainer className="items-center justify-between px-4">
         <Animated.View className="mb-3 mt-4 w-full" style={headerStyle}>
-          <Text className="text-cream mb-2 text-center text-2xl font-bold drop-shadow-md">
+          <Text className="mb-2 text-center text-2xl font-bold text-white drop-shadow-md">
             Quest Complete!
           </Text>
 
           {quest.title && (
-            <Text className="text-cream mb-4 text-center text-lg font-medium italic drop-shadow-md">
+            <Text className="mb-4 text-center text-lg font-medium italic text-white drop-shadow-md">
               {quest.title}
             </Text>
           )}

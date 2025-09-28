@@ -9,10 +9,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'inter-regular': ['Inter-Regular', 'sans-serif'],
-        'inter-bold': ['Inter-SemiBold', 'sans-serif'],
-        'canela-regular': ['CanelaTrial-Regular', 'serif'],
-        'canela-bold': ['CanelaTrial-Bold', 'serif'],
+        erstoria: ['Erstoria-Regular', 'serif'],
       },
       colors,
     },

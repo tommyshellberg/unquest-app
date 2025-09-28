@@ -6,6 +6,7 @@ export * from './card';
 export * from './checkbox';
 export { default as colors } from './colors';
 export * from './focus-aware-status-bar';
+export * from './gradient-background';
 export * from './image';
 export * from './input';
 export * from './list';
@@ -16,6 +17,7 @@ export * from './screen-container';
 export * from './screen-header';
 export * from './select';
 export * from './text';
+export * from './title';
 export * from './update-notification-bar';
 export * from './utils';
 

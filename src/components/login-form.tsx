@@ -124,10 +124,10 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
       behavior="padding"
       keyboardVerticalOffset={10}
     >
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-background">
         <View className="absolute inset-0 w-full flex-1">
           <Image
-            source={require('@/../assets/images/background/onboarding.jpg')}
+            source={require('@/../assets/images/background/onboarding-bg.png')}
             style={{ width: '100%', height: '100%' }}
           />
         </View>
@@ -137,13 +137,13 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
             source={require('@/../assets/images/unquestlogo-downscaled.png')}
             style={{ width: 100, height: 100 }}
           />
-          <Text className="mt-2 text-3xl font-bold">Welcome to unQuest</Text>
+          <Text className="mt-2 text-3xl font-bold">emberglow</Text>
         </View>
 
         {/* Form in bottom half */}
         <View className="mb-12 flex-1 justify-end">
           {/* Form card */}
-          <View className="mx-6 rounded-xl bg-white shadow-sm">
+          <View className="mx-6 rounded-xl bg-cardBackground shadow-sm">
             {emailSent ? (
               <View className="p-6">
                 <View className="mb-4">
@@ -162,7 +162,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                         className="text-primary-500 underline"
                         onPress={handleContactSupport}
                       >
-                        hello@unquestapp.com
+                        hello@emberglowapp.com
                       </Text>
                     </Text>
                   )}
@@ -206,7 +206,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
                   <Text
                     className="text-charcoal-600 underline"
                     onPress={() =>
-                      Linking.openURL('https://unquestapp.com/terms')
+                      Linking.openURL('https://emberglowapp.com/terms')
                     }
                   >
                     Terms of Use and Privacy Policy

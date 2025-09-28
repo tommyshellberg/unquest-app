@@ -1,6 +1,6 @@
 # Timezone Detection Implementation
 
-This document describes the client-side timezone detection feature implemented in the UnQuest React Native app.
+This document describes the client-side timezone detection feature implemented in the emberglow React Native app.
 
 ## Overview
 

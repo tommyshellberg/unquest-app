@@ -40,7 +40,7 @@ export const ManualEmailView: React.FC<ManualEmailViewProps> = ({
         </View>
         <View className="flex-1">
           <Text className="text-base text-neutral-600">
-            Enter a friend's email to invite them to unQuest.
+            Enter a friend's email to invite them to emberglow.
           </Text>
         </View>
       </View>

@@ -79,8 +79,8 @@ export function StreakCounter({
               py-[2px]
             `}
           >
-            <Flame size={20} color={red[300]} />
-            <Text className="font-semibold text-primary-500">
+            <Flame size={20} color={red[500]} />
+            <Text className="font-semibold text-red-500">
               {dailyQuestStreak}
             </Text>
           </Pressable>

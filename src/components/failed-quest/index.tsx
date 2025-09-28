@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import React, { useEffect } from 'react';
 import Animated, {
   useAnimatedStyle,
@@ -7,7 +6,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Button, Image, Text, View, ScreenContainer } from '@/components/ui';
+import { Button, Image, ScreenContainer, Text, View } from '@/components/ui';
 import type {
   CustomQuestTemplate,
   Quest,
@@ -52,7 +51,7 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
       {/* Background image */}
       <View className="absolute inset-0">
         <Image
-          source={require('@/../assets/images/background/onboarding.jpg')}
+          source={require('@/../assets/images/background/onboarding-bg.png')}
           className="size-full"
           resizeMode="cover"
         />

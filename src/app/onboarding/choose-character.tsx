@@ -183,7 +183,7 @@ export default function ChooseCharacterScreen() {
         <Animated.View entering={FadeInDown.delay(2100)}>
           <Text className="mb-2">Character Name</Text>
           <TextInput
-            className="flex h-14 items-center rounded-lg border border-gray-300 px-4 text-lg text-primary-400 placeholder:text-muted-200"
+            className="flex h-14 items-center rounded-lg border border-gray-300 px-4 text-lg text-white placeholder:text-muted-200"
             style={{ textAlignVertical: 'center' }}
             value={inputName}
             onChangeText={(text) => {
@@ -368,7 +368,7 @@ export default function ChooseCharacterScreen() {
 
       <View className="absolute inset-0">
         <Image
-          source={require('@/../assets/images/background/onboarding.jpg')}
+          source={require('@/../assets/images/background/onboarding-bg.png')}
           className="size-full"
           resizeMode="cover"
         />

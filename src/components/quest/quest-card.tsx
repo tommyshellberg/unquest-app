@@ -3,7 +3,6 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Card } from '@/components/ui/card';
 import colors from '@/components/ui/colors';
-import { Text } from '@/components/ui';
 
 interface QuestCardProps {
   title: string;
@@ -19,7 +18,7 @@ export function QuestCard({ title, duration, children }: QuestCardProps) {
     >
       <Animated.Text
         entering={FadeInDown.delay(300).duration(800)}
-        className="mb-2 text-center text-xl font-semibold"
+        className="mb-2 text-center text-xl font-semibold text-white"
         style={{ fontWeight: '700' }}
       >
         {title}
@@ -27,7 +26,7 @@ export function QuestCard({ title, duration, children }: QuestCardProps) {
       <Animated.Text
         entering={FadeInDown.delay(400).duration(800)}
         className="mb-4 text-center text-base"
-        style={{ color: colors.neutral[500] }}
+        style={{ color: colors.white }}
       >
         {`${duration} minutes`}
       </Animated.Text>

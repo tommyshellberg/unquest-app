@@ -87,7 +87,7 @@ export default function PendingQuestScreen() {
     <View className="flex-1">
       {/* Full-screen Background Image */}
       <Image
-        source={require('@/../assets/images/background/active-quest.jpg')}
+        source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
         className="absolute inset-0 size-full"
         resizeMode="cover"
       />
@@ -128,7 +128,7 @@ export default function PendingQuestScreen() {
             <Animated.Text
               entering={FadeInDown.delay(800).duration(800)}
               className="mb-6 text-center text-base"
-              style={{ color: colors.neutral[500] }}
+              style={{ color: colors.white }}
             >
               {pendingQuest?.mode === 'custom'
                 ? 'Time to focus on what matters most'
@@ -142,7 +142,7 @@ export default function PendingQuestScreen() {
             <Animated.Text
               entering={FadeInDown.delay(1200).duration(800)}
               className="mt-4 text-center text-sm italic"
-              style={{ color: colors.neutral[400] }}
+              style={{ color: colors.white }}
             >
               "The journey of a thousand miles begins with a single step"
             </Animated.Text>

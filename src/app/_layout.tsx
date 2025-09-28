@@ -2,10 +2,18 @@
 import '../../global.css';
 
 import { Env } from '@env';
+import {
+  SourceSans3_300Light,
+  SourceSans3_400Regular,
+  SourceSans3_500Medium,
+  SourceSans3_600SemiBold,
+  SourceSans3_700Bold,
+} from '@expo-google-fonts/source-sans-3';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { isRunningInExpoGo } from 'expo';
+import { useFonts } from 'expo-font';
 import { Stack, useNavigationContainerRef, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
@@ -92,6 +100,15 @@ const handleQuestFailure = (questRunId: string) => {
 };
 
 function RootLayout() {
+  // Load custom fonts
+  const [fontsLoaded] = useFonts({
+    SourceSans3_300Light,
+    SourceSans3_400Regular,
+    SourceSans3_500Medium,
+    SourceSans3_600SemiBold,
+    SourceSans3_700Bold,
+  });
+
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
@@ -352,11 +369,11 @@ function RootLayout() {
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
-    // Check both flags: hydration promise resolved AND auth status is final
-    if (hydrationFinished && authStatus !== 'hydrating') {
+    // Check all flags: hydration promise resolved, auth status is final, and fonts are loaded
+    if (hydrationFinished && authStatus !== 'hydrating' && fontsLoaded) {
       await SplashScreen.hideAsync();
     }
-  }, [hydrationFinished, authStatus]);
+  }, [hydrationFinished, authStatus, fontsLoaded]);
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
@@ -364,8 +381,8 @@ function RootLayout() {
   // Handle token refresh exhaustion
   useTokenRefreshErrorHandler();
 
-  // Return null until hydration promise is done AND auth status is final
-  if (!hydrationFinished || authStatus === 'hydrating') {
+  // Return null until hydration promise is done, auth status is final, and fonts are loaded
+  if (!hydrationFinished || authStatus === 'hydrating' || !fontsLoaded) {
     return null;
   }
 
@@ -433,7 +450,7 @@ function Providers({
 }) {
   const theme = useThemeConfig();
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-background">
       <SafeAreaView
         className="flex-1 bg-background"
         edges={['top', 'left', 'right']}

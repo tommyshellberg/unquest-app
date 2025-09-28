@@ -85,12 +85,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-font',
       {
-        fonts: [
-          './assets/fonts/Inter-Regular.ttf',
-          './assets/fonts/Inter-SemiBold.ttf',
-          './assets/fonts/CanelaTrial-Regular.otf',
-          './assets/fonts/CanelaTrial-Bold.otf',
-        ],
+        fonts: ['./assets/fonts/Erstoria-Regular.ttf'],
       },
     ],
     [

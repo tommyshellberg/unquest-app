@@ -2,7 +2,7 @@
 
 ## Overview
 
-UnQuest uses Zustand for state management with MMKV persistence for optimal performance and developer experience.
+emberglow uses Zustand for state management with MMKV persistence for optimal performance and developer experience.
 
 ## Store Architecture
 

@@ -2,11 +2,6 @@ import { useRouter } from 'expo-router';
 import { Award, TrendingUp } from 'lucide-react-native';
 import React, { useEffect } from 'react';
 import { RefreshControl } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 
 import {
   ContactsImportModal,
@@ -22,12 +17,12 @@ import { StatsCard } from '@/components/profile/stats-card';
 import {
   Card,
   FocusAwareStatusBar,
-  Text,
-  View,
+  Pressable,
   ScreenContainer,
   ScreenHeader,
   ScrollView,
-  Pressable,
+  Text,
+  View,
 } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 // Import hooks
@@ -182,7 +177,7 @@ export default function ProfileScreen() {
   const questCount = user?.totalQuestsCompleted ?? completedQuests.length;
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1">
       <FocusAwareStatusBar />
 
       <ScreenContainer>

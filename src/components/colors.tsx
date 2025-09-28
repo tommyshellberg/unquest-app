@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, View } from '@/components/ui';
 import colors from '@/components/ui/colors';
 
-import { Title } from './title';
+import { Title } from './ui/title';
 type ColorName = keyof typeof colors;
 
 export const Colors = () => {

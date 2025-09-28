@@ -194,7 +194,7 @@ export default function JournalScreen() {
   }, [data, page]);
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1">
       <FocusAwareStatusBar />
       <StreakCounter size="small" position="topRight" />
 
@@ -386,15 +386,15 @@ export default function JournalScreen() {
                                 quest.mode === 'story'
                                   ? 'bg-primary-200'
                                   : quest.mode === 'cooperative'
-                                    ? 'bg-blue-100'
+                                    ? 'bg-secondary-300'
                                     : 'bg-muted-200'
                               }`}
                               textClassName={
                                 quest.mode === 'story'
                                   ? 'text-primary-500'
                                   : quest.mode === 'cooperative'
-                                    ? 'text-blue-500'
-                                    : 'text-secondary-500'
+                                    ? 'text-secondary-500'
+                                    : 'text-muted-500'
                               }
                             >
                               {quest.mode === 'story'
@@ -414,9 +414,9 @@ export default function JournalScreen() {
                               <Feather
                                 name="award"
                                 size={14}
-                                color={colors.neutral[500]}
+                                color={colors.secondary[100]}
                               />
-                              <Text className="ml-1 text-sm text-neutral-500">
+                              <Text className="ml-1 text-sm text-secondary-100">
                                 {quest.reward.xp} XP
                               </Text>
                             </View>
@@ -427,9 +427,9 @@ export default function JournalScreen() {
                             <Feather
                               name="calendar"
                               size={14}
-                              color={colors.neutral[500]}
+                              color={colors.secondary[100]}
                             />
-                            <Text className="ml-1 text-sm text-neutral-500">
+                            <Text className="ml-1 text-sm text-secondary-100">
                               {quest.stopTime
                                 ? format(quest.stopTime, 'MMM d, yyyy')
                                 : 'Unknown'}
@@ -441,9 +441,9 @@ export default function JournalScreen() {
                             <Feather
                               name="clock"
                               size={14}
-                              color={colors.neutral[500]}
+                              color={colors.secondary[100]}
                             />
-                            <Text className="ml-1 text-sm text-neutral-500">
+                            <Text className="ml-1 text-sm text-secondary-100">
                               {formatDuration(quest)}
                             </Text>
                           </View>

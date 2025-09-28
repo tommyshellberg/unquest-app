@@ -162,12 +162,12 @@ export default function CooperativeQuestMenu() {
             </View>
 
             <Text className="mb-4 text-center text-2xl font-bold">
-              Join the unQuest Circle
+              Join the emberglow Circle
             </Text>
 
             <Text className="mb-6 text-center text-neutral-600">
               Cooperative quests are a premium feature available exclusively to
-              unQuest Circle members.
+              emberglow Circle members.
             </Text>
 
             <Card className="bg-primary-50 p-6">

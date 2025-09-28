@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for UnQuest
+about: Suggest an idea for emberglow
 title: '[FEATURE] '
 labels: 'enhancement'
 assignees: ''

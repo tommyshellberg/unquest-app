@@ -44,7 +44,7 @@ describe('LoginForm Form ', () => {
 
   it('renders correctly', async () => {
     setup(<LoginForm />);
-    expect(await screen.findByText(/welcome to unquest/i)).toBeOnTheScreen();
+    expect(await screen.findByText(/welcome to emberglow/i)).toBeOnTheScreen();
   });
 
   it('should disable button when email is empty', async () => {
