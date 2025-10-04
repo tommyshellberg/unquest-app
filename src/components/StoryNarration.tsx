@@ -224,17 +224,17 @@ export function StoryNarration({ quest }: Props) {
   // Early returns for error and loading states
   if (loadError) {
     return (
-      <View className="bg-background-light mt-4 w-full items-center rounded-lg p-4">
+      <View className="mt-4 w-full items-center rounded-lg bg-cardBackground p-4">
         <Text className="text-red-500">{loadError}</Text>
       </View>
     );
   }
 
   return (
-    <View className="bg-background-light mt-4 w-full rounded-lg p-4">
+    <View className="mt-4 w-full rounded-lg bg-cardBackground p-4">
       {isLoading && (
-        <View className="bg-background-light absolute inset-0 z-10 items-center justify-center rounded-lg">
-          <Text className="text-sm text-neutral-600">Loading audio...</Text>
+        <View className="absolute inset-0 z-10 items-center justify-center rounded-lg bg-cardBackground">
+          <Text className="text-sm text-neutral-200">Loading audio...</Text>
         </View>
       )}
       <View className="mb-2 w-full">
@@ -242,13 +242,13 @@ export function StoryNarration({ quest }: Props) {
           ref={progressBarRef}
           initialProgress={progress * 100}
           className="h-1.5 rounded"
-          style={{ backgroundColor: '#e5e5e5' }}
+          style={{ backgroundColor: '#2A4754' }}
         />
         <View className="mt-1 flex-row justify-between">
-          <Text className="text-xs text-neutral-600">
+          <Text className="text-xs text-neutral-200">
             {formatTime(position)}
           </Text>
-          <Text className="text-xs text-neutral-600">
+          <Text className="text-xs text-neutral-200">
             {formatTime(duration)}
           </Text>
         </View>
@@ -261,7 +261,7 @@ export function StoryNarration({ quest }: Props) {
           disabled={isLoading || !audioInitialized}
           style={{ opacity: isLoading || !audioInitialized ? 0.3 : 1 }}
         >
-          <Feather name="rotate-ccw" size={24} color="#3B7A57" />
+          <Feather name="rotate-ccw" size={24} color="#36B6D3" />
         </Pressable>
 
         {!isCompleted ? (
@@ -272,7 +272,7 @@ export function StoryNarration({ quest }: Props) {
             <Feather
               name={isPlaying ? 'pause-circle' : 'play-circle'}
               size={32}
-              color="#3B7A57"
+              color="#36B6D3"
               style={{ opacity: isLoading || !audioInitialized ? 0.3 : 1 }}
             />
           </Pressable>
@@ -280,7 +280,7 @@ export function StoryNarration({ quest }: Props) {
           <Feather
             name="play-circle"
             size={32}
-            color="#3B7A57"
+            color="#36B6D3"
             style={{ opacity: 0.3 }}
           />
         )}

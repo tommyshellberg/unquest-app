@@ -216,11 +216,11 @@ export default function ProfileScreen() {
               className="flex-1"
             >
               <Card className="items-center justify-center py-6">
-                <TrendingUp size={32} color="#2E948D" />
-                <Text className="mt-2 text-sm font-semibold text-gray-700">
+                <TrendingUp size={32} color="#36B6D3" />
+                <Text className="mt-2 text-sm font-semibold text-white">
                   View Leaderboard
                 </Text>
-                <Text className="mt-1 text-center text-xs text-gray-600">
+                <Text className="mt-1 text-center text-xs text-neutral-200">
                   See how others are doing
                 </Text>
               </Card>
@@ -231,11 +231,11 @@ export default function ProfileScreen() {
               className="flex-1"
             >
               <Card className="items-center justify-center py-6">
-                <Award size={32} color="#2E948D" />
-                <Text className="mt-2 text-sm font-semibold text-gray-700">
+                <Award size={32} color="#36B6D3" />
+                <Text className="mt-2 text-sm font-semibold text-white">
                   My Achievements
                 </Text>
-                <Text className="mt-1 text-center text-xs text-gray-600">
+                <Text className="mt-1 text-center text-xs text-neutral-200">
                   Track your progress
                 </Text>
               </Card>

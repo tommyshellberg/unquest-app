@@ -134,8 +134,8 @@ export default function CooperativeQuestMenu() {
       <View className="flex-1">
         <FocusAwareStatusBar />
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" />
-          <Text className="mt-4 text-neutral-600">Loading...</Text>
+          <ActivityIndicator size="large" color="#36B6D3" />
+          <Text className="mt-4 text-neutral-200">Loading...</Text>
         </View>
       </View>
     );
@@ -157,51 +157,51 @@ export default function CooperativeQuestMenu() {
 
           {/* Premium Feature Message */}
           <View className="flex-1 items-center justify-center px-4">
-            <View className="mb-6 rounded-full bg-primary-100 p-6">
-              <Lock size={64} color="#77c5bf" />
+            <View className="mb-6 rounded-full bg-secondary-400 p-6">
+              <Lock size={64} color="#FFFFFF" />
             </View>
 
-            <Text className="mb-4 text-center text-2xl font-bold">
+            <Text className="mb-4 text-center text-2xl font-bold text-white">
               Join the emberglow Circle
             </Text>
 
-            <Text className="mb-6 text-center text-neutral-600">
+            <Text className="mb-6 text-center text-neutral-200">
               Cooperative quests are a premium feature available exclusively to
               emberglow Circle members.
             </Text>
 
-            <Card className="bg-primary-50 p-6">
-              <Text className="mb-4 text-center text-lg font-semibold">
+            <Card className="bg-cardBackground p-6">
+              <Text className="mb-4 text-center text-lg font-semibold text-white">
                 What's included:
               </Text>
               <View className="gap-3">
                 <View className="flex-row items-start">
                   <CheckCircle
                     size={20}
-                    color="#77c5bf"
+                    color="#36B6D3"
                     style={{ marginTop: 2 }}
                   />
-                  <Text className="ml-2 flex-1 text-neutral-700">
+                  <Text className="ml-2 flex-1 text-neutral-200">
                     Create and join unlimited cooperative quests
                   </Text>
                 </View>
                 <View className="flex-row items-start">
                   <CheckCircle
                     size={20}
-                    color="#77c5bf"
+                    color="#36B6D3"
                     style={{ marginTop: 2 }}
                   />
-                  <Text className="ml-2 flex-1 text-neutral-700">
+                  <Text className="ml-2 flex-1 text-neutral-200">
                     Quest with multiple friends simultaneously
                   </Text>
                 </View>
                 <View className="flex-row items-start">
                   <CheckCircle
                     size={20}
-                    color="#77c5bf"
+                    color="#36B6D3"
                     style={{ marginTop: 2 }}
                   />
-                  <Text className="ml-2 flex-1 text-neutral-700">
+                  <Text className="ml-2 flex-1 text-neutral-200">
                     Access to exclusive quest types and rewards
                   </Text>
                 </View>
@@ -210,7 +210,7 @@ export default function CooperativeQuestMenu() {
 
             <TouchableOpacity
               onPress={() => setShowPaywallModal(true)}
-              className="mt-6 rounded-lg bg-primary-500 px-6 py-3"
+              className="mt-6 rounded-lg bg-primary-400 px-6 py-3"
             >
               <Text className="text-center text-lg font-semibold text-white">
                 View Subscription Options
@@ -236,7 +236,7 @@ export default function CooperativeQuestMenu() {
   // If user has no friends, show only the Add Friends option
   if (!hasFriends) {
     return (
-      <View className="flex-1">
+      <View className="flex-1 bg-cream-100">
         <FocusAwareStatusBar />
 
         <ScreenContainer className="px-4">
@@ -246,23 +246,23 @@ export default function CooperativeQuestMenu() {
               onPress={() => router.back()}
               className="mb-4 flex-row items-center"
             >
-              <ArrowLeft size={24} color="#333" />
-              <Text className="ml-2 text-lg">Back</Text>
+              <ArrowLeft size={24} color="#162034" />
+              <Text className="ml-2 text-lg text-neutral-800">Back</Text>
             </TouchableOpacity>
 
-            <Text className="mb-2 text-3xl font-bold">Cooperative Quests</Text>
-            <Text className="text-neutral-600">
+            <Text className="mb-2 text-3xl font-bold text-neutral-800">Cooperative Quests</Text>
+            <Text className="text-neutral-700">
               Team up with friends to complete quests together!
             </Text>
           </View>
 
           {/* No Friends Message */}
           <View className="mb-6 items-center py-8">
-            <Users size={64} color="#999" />
-            <Text className="mt-4 text-center text-lg font-semibold">
+            <Users size={64} color="#5C7380" />
+            <Text className="mt-4 text-center text-lg font-semibold text-neutral-800">
               Add Friends to Get Started
             </Text>
-            <Text className="mt-2 px-8 text-center text-neutral-600">
+            <Text className="mt-2 px-8 text-center text-neutral-700">
               Cooperative quests require friends to play with. Add some friends
               first to start creating and joining quests together!
             </Text>
@@ -293,12 +293,12 @@ export default function CooperativeQuestMenu() {
 
           {/* Info Section */}
           <View className="mt-auto">
-            <Card className="mb-4 bg-neutral-200 p-4">
+            <Card className="mb-4 bg-secondary-400 p-4">
               <View className="flex-row items-start">
-                <Info size={20} color="#666" style={{ marginTop: 2 }} />
+                <Info size={20} color="#FFFFFF" style={{ marginTop: 2 }} />
                 <View className="ml-3 flex-1">
-                  <Text className="mb-1 font-semibold">How it works</Text>
-                  <Text className="text-sm text-neutral-600">
+                  <Text className="mb-1 font-semibold text-white">How it works</Text>
+                  <Text className="text-sm text-white/90">
                     In cooperative quests, all participants must keep their
                     phones locked for the entire duration.{'\n'}
                     If anyone unlocks early, everyone fails together!
@@ -322,7 +322,7 @@ export default function CooperativeQuestMenu() {
 
   // If user has friends, show all options
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-cream-100">
       <FocusAwareStatusBar />
 
       <View className="flex-1 px-4">
@@ -332,12 +332,12 @@ export default function CooperativeQuestMenu() {
             onPress={() => router.back()}
             className="mb-4 flex-row items-center"
           >
-            <ArrowLeft size={24} color="#333" />
-            <Text className="ml-2 text-lg">Back</Text>
+            <ArrowLeft size={24} color="#162034" />
+            <Text className="ml-2 text-lg text-neutral-800">Back</Text>
           </TouchableOpacity>
 
-          <Text className="mb-2 text-3xl font-bold">Cooperative Quests</Text>
-          <Text className="text-neutral-600">
+          <Text className="mb-2 text-3xl font-bold text-neutral-800">Cooperative Quests</Text>
+          <Text className="text-neutral-700">
             Team up with friends to complete quests together. Everyone must keep
             their phones locked to succeed!
           </Text>
@@ -372,12 +372,12 @@ export default function CooperativeQuestMenu() {
         </View>
 
         {/* Info Section */}
-        <Card className="mb-4 bg-neutral-200 p-4">
+        <Card className="mb-4 bg-secondary-400 p-4">
           <View className="flex-row items-start">
-            <Info size={20} color="#666" style={{ marginTop: 2 }} />
+            <Info size={20} color="#FFFFFF" style={{ marginTop: 2 }} />
             <View className="ml-3 flex-1">
-              <Text className="mb-1 font-semibold">How it works</Text>
-              <Text className="text-sm text-neutral-600">
+              <Text className="mb-1 font-semibold text-white">How it works</Text>
+              <Text className="text-sm text-white/90">
                 In cooperative quests, all participants must keep their phones
                 locked for the entire duration.{'\n'}
                 If anyone unlocks early, everyone fails together!

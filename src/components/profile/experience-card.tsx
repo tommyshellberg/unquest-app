@@ -60,30 +60,30 @@ export function ExperienceCard({ character }: ExperienceCardProps) {
   return (
     <Card className="mx-4 mt-4 p-5">
       <View className="mb-3 flex-row items-center justify-between">
-        <Text className="text-lg font-bold">Experience</Text>
-        <Text className="text-sm font-semibold text-gray-600">
+        <Text className="text-lg font-bold text-white">Experience</Text>
+        <Text className="text-sm font-semibold text-brown">
           Total: {totalXP.toLocaleString()} XP
         </Text>
       </View>
 
       <View className="mb-2">
-        <Text className="text-center text-sm text-gray-600">
+        <Text className="text-center text-sm text-neutral-200">
           {xpForNextLevel} XP to Level {nextLevel}
         </Text>
       </View>
 
-      <View className="mt-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-        <Animated.View className="h-full bg-teal-700" style={animatedStyle} />
+      <View className="mt-2 h-3 w-full overflow-hidden rounded-full bg-neutral-400">
+        <Animated.View className="h-full bg-secondary-300" style={animatedStyle} />
       </View>
 
       <View className="mt-2 flex-row justify-between">
         <View className="flex-row items-center">
-          <Text className="font-semibold">Level {character.level}</Text>
-          <Text className="ml-2 text-sm text-gray-500">
+          <Text className="font-semibold text-white">Level {character.level}</Text>
+          <Text className="ml-2 text-sm text-neutral-200">
             ({xpProgressTowardNext}/{xpRequiredForCurrentToNext})
           </Text>
         </View>
-        <Text className="text-sm text-gray-500">Level {nextLevel}</Text>
+        <Text className="text-sm text-neutral-200">Level {nextLevel}</Text>
       </View>
     </Card>
   );

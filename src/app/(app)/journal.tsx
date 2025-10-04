@@ -302,15 +302,15 @@ export default function JournalScreen() {
           >
             {isLoading && sortedQuests.length === 0 ? (
               <View className="flex-1 items-center justify-center py-20">
-                <ActivityIndicator size="large" color={colors.primary[300]} />
-                <Text className="mt-4 text-center text-neutral-600">
+                <ActivityIndicator size="large" color="#36B6D3" />
+                <Text className="mt-4 text-center text-neutral-200">
                   Loading your quest history...
                 </Text>
               </View>
             ) : sortedQuests.length === 0 ? (
               <View className="flex-1 items-center justify-center py-20">
-                <Notebook size={48} color={colors.neutral[500]} />
-                <Text className="mt-4 text-center text-neutral-600">
+                <Notebook size={48} color={colors.neutral[300]} />
+                <Text className="mt-4 text-center text-neutral-200">
                   No quests found in this category.
                 </Text>
               </View>
@@ -458,7 +458,7 @@ export default function JournalScreen() {
             {/* Loading indicator for pagination */}
             {isLoading && sortedQuests.length > 0 && (
               <View className="py-4">
-                <ActivityIndicator size="small" color={colors.primary[300]} />
+                <ActivityIndicator size="small" color="#36B6D3" />
               </View>
             )}
 

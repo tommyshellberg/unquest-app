@@ -79,10 +79,10 @@ export function StatsCard({
               textAlign: 'center',
             }}
           />
-          <Text className="text-secondary-200">Quests</Text>
+          <Text className="text-neutral-200">Quests</Text>
         </View>
 
-        <View className="h-4/5 w-px bg-secondary-200" />
+        <View className="h-4/5 w-px bg-neutral-300" />
 
         <View className="items-center">
           <AnimatedNumber
@@ -96,10 +96,10 @@ export function StatsCard({
               textAlign: 'center',
             }}
           />
-          <Text className="text-secondary-200">Minutes Saved</Text>
+          <Text className="text-neutral-200">Minutes Saved</Text>
         </View>
 
-        <View className="h-4/5 w-px bg-secondary-200" />
+        <View className="h-4/5 w-px bg-neutral-300" />
 
         <Pressable
           className="items-center"
@@ -118,7 +118,7 @@ export function StatsCard({
               }}
             />
           </View>
-          <Text className="text-secondary-200">Day Streak</Text>
+          <Text className="text-neutral-200">Day Streak</Text>
         </Pressable>
       </View>
     </Card>

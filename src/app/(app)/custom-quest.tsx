@@ -99,7 +99,7 @@ export default function CustomQuestScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100 px-4">
+    <SafeAreaView className="flex-1 bg-secondary-500 px-4">
       <FocusAwareStatusBar />
 
       <ScreenHeader

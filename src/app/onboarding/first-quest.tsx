@@ -12,7 +12,7 @@ import Animated, {
 
 import { useNextAvailableQuests } from '@/api/quest';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
-import { Button, Card, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { Button, Card, FocusAwareStatusBar, Text, Title, View } from '@/components/ui';
 import { audioCacheService } from '@/lib/services/audio-cache.service';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
@@ -192,7 +192,7 @@ export default function FirstQuestScreen() {
 
       <View className="flex-1 justify-between p-6">
         <Animated.View style={headerStyle} className="mt-10">
-          <Text className="text-3xl font-bold">Your Journey Begins</Text>
+          <Title variant="centered">Your Journey Begins</Title>
         </Animated.View>
 
         <View className="flex-1 justify-center">

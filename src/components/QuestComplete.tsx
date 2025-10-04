@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AVAILABLE_CUSTOM_QUEST_STORIES } from '@/app/data/quests';
-import { Image, ScreenContainer, Text, View } from '@/components/ui';
+import { Image, ScreenContainer, Text, Title, View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCharacterStore } from '@/store/character-store';
@@ -224,9 +224,9 @@ export function QuestComplete({
       {/* Content */}
       <ScreenContainer className="items-center justify-between px-4">
         <Animated.View className="mb-3 mt-4 w-full" style={headerStyle}>
-          <Text className="mb-2 text-center text-2xl font-bold text-white drop-shadow-md">
+          <Title variant="centered" className="mb-2 drop-shadow-md">
             Quest Complete!
-          </Text>
+          </Title>
 
           {quest.title && (
             <Text className="mb-4 text-center text-lg font-medium italic text-white drop-shadow-md">
@@ -283,13 +283,13 @@ export function QuestComplete({
           className="my-2 w-full flex-1"
           style={storyStyle}
         >
-          <Card className="flex-1 rounded-xl bg-white/90">
+          <Card className="flex-1 rounded-xl">
             <ScrollView
               className="px-4"
               contentContainerStyle={{ paddingVertical: 16 }}
               showsVerticalScrollIndicator={true}
             >
-              <Text className="text-sm leading-6 text-neutral-800">
+              <Text className="text-sm leading-6 text-white">
                 {displayStory || 'Congratulations on completing your quest!'}
               </Text>
             </ScrollView>
@@ -307,19 +307,19 @@ export function QuestComplete({
               ? undefined
               : FadeInDown.delay(400).duration(600)
           }
-          className="mb-4"
+          className="mb-4 w-full"
         >
           {showActionButton && (
-            <View className="flex-row gap-8">
+            <View className="w-full flex-row justify-center gap-4 px-4">
               <Button
                 label={continueText}
                 onPress={handleContinue}
                 accessibilityLabel={continueText}
-                className="bg-secondary-400"
+                className="flex-1 bg-secondary-400"
               />
               {quest.questRunId && quest.id !== 'quest-1' && (
                 <Button
-                  className="bg-primary-400"
+                  className="flex-1 bg-primary-400"
                   label="Add Reflection"
                   onPress={() => {
                     router.push({

@@ -172,12 +172,12 @@ export default function AppQuestDetailsScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <FocusAwareStatusBar />
-        <Feather name="alert-circle" size={48} color={colors.neutral[500]} />
-        <Text className="mt-4 text-center text-neutral-600">
+        <Feather name="alert-circle" size={48} color={colors.neutral[300]} />
+        <Text className="mt-4 text-center text-neutral-200">
           Quest not found.
         </Text>
         <TouchableOpacity
-          className="mt-6 rounded-lg bg-primary-300 px-6 py-3"
+          className="mt-6 rounded-lg bg-primary-400 px-6 py-3"
           onPress={handleBackNavigation} // Changed text to be more generic
         >
           <Text className="font-medium text-white">Go Back</Text>
@@ -222,10 +222,10 @@ export default function AppQuestDetailsScreen() {
               <Feather
                 name="arrow-left"
                 size={20}
-                color={colors.neutral[500]}
+                color={colors.neutral[200]}
               />
             </TouchableOpacity>
-            <Text className="text-lg">Quest Details</Text>
+            <Text className="text-lg text-white">Quest Details</Text>
           </View>
         </Animated.View>
 
@@ -240,12 +240,12 @@ export default function AppQuestDetailsScreen() {
                   className="flex-row items-center justify-between rounded-lg bg-cardBackground p-4 shadow-md"
                 >
                   <View className="flex-row items-center">
-                    <Notebook size={22} color={colors.primary[300]} />
-                    <Text className="ml-3 text-base font-semibold text-emerald-800">
+                    <Notebook size={22} color={colors.secondary[300]} />
+                    <Text className="ml-3 text-base font-semibold text-white">
                       Reflection
                     </Text>
-                    <View className="ml-3 rounded-full bg-emerald-100 px-3 py-1">
-                      <Text className="text-xs font-medium text-emerald-700">
+                    <View className="ml-3 rounded-full bg-secondary-400 px-3 py-1">
+                      <Text className="text-xs font-medium text-white">
                         Added
                       </Text>
                     </View>
@@ -253,12 +253,12 @@ export default function AppQuestDetailsScreen() {
                   {isReflectionExpanded ? (
                     <ChevronUp
                       size={20}
-                      color={colors.primary[300] || '#059669'}
+                      color={colors.secondary[300]}
                     />
                   ) : (
                     <ChevronDown
                       size={20}
-                      color={colors.primary[300] || '#059669'}
+                      color={colors.secondary[300]}
                     />
                   )}
                 </TouchableOpacity>
@@ -310,7 +310,7 @@ export default function AppQuestDetailsScreen() {
 
                         {/* Note underneath */}
                         {(serverReflection?.text || quest.reflection?.text) && (
-                          <Text className="text-sm leading-relaxed text-neutral-600">
+                          <Text className="text-sm leading-relaxed text-neutral-200">
                             {serverReflection?.text || quest.reflection?.text}
                           </Text>
                         )}
@@ -387,10 +387,10 @@ export default function AppQuestDetailsScreen() {
               <Feather
                 name="arrow-left"
                 size={20}
-                color={colors.neutral[500]}
+                color={colors.neutral[200]}
               />
             </TouchableOpacity>
-            <Text className="mt-6 text-xl">Quest Details</Text>
+            <Text className="mt-6 text-xl text-white">Quest Details</Text>
           </View>
         </Animated.View>
         <FailedQuest
@@ -406,8 +406,8 @@ export default function AppQuestDetailsScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <FocusAwareStatusBar />
-      <ActivityIndicator color={colors.primary[400]} size="large" />
-      <Text className="mt-4">Loading quest details...</Text>
+      <ActivityIndicator color="#36B6D3" size="large" />
+      <Text className="mt-4 text-white">Loading quest details...</Text>
     </View>
   );
 }

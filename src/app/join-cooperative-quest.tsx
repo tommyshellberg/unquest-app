@@ -67,12 +67,12 @@ function InvitationCard({
       style={{ backgroundColor: colors.cardBackground }}
     >
       <View className="mb-3">
-        <Text className="text-lg font-semibold" style={{ fontWeight: '700' }}>
+        <Text className="text-lg font-semibold text-white" style={{ fontWeight: '700' }}>
           {questTitle}
         </Text>
         <View className="mt-2 flex-row items-center">
-          <User size={16} color={colors.neutral[400]} />
-          <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
+          <User size={16} color={colors.neutral[200]} />
+          <Text className="ml-1 text-sm text-neutral-200">
             Invited by{' '}
             {invitation.inviter.characterName ||
               invitation.inviter.username ||
@@ -80,14 +80,14 @@ function InvitationCard({
           </Text>
         </View>
         <View className="mt-1 flex-row items-center">
-          <Clock size={16} color={colors.neutral[400]} />
-          <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
+          <Clock size={16} color={colors.neutral[200]} />
+          <Text className="ml-1 text-sm text-neutral-200">
             {questDuration} minutes
           </Text>
         </View>
         <View className="mt-1 flex-row items-center">
-          <Users size={16} color={colors.neutral[400]} />
-          <Text className="ml-1 text-sm" style={{ color: colors.neutral[500] }}>
+          <Users size={16} color={colors.neutral[200]} />
+          <Text className="ml-1 text-sm text-neutral-200">
             {invitation.acceptedCount}/{invitation.inviteeCount} accepted
           </Text>
         </View>
