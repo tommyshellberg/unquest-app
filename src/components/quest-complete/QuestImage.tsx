@@ -1,19 +1,28 @@
 import LottieView from 'lottie-react-native';
-import React, { useRef, useEffect } from 'react';
-import { Image, Text, View } from '@/components/ui';
-import { getQuestImage } from './utils';
-import type { QuestImageProps } from './types';
-import { ANIMATION_TIMING } from './constants';
+import React, { useEffect, useRef } from 'react';
 
-export function QuestImage({ quest, disableAnimations = false }: QuestImageProps) {
+import { Image, Text, View } from '@/components/ui';
+
+import { ANIMATION_TIMING } from './constants';
+import type { QuestImageProps } from './types';
+import { getQuestImage } from './utils';
+
+export function QuestImage({
+  quest,
+  disableAnimations = false,
+}: QuestImageProps) {
   const lottieRef = useRef<LottieView>(null);
 
   useEffect(() => {
+    let timeout: NodeJS.Timeout;
     if (!disableAnimations && lottieRef.current) {
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         lottieRef.current?.play();
       }, ANIMATION_TIMING.LOTTIE_DELAY);
     }
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [disableAnimations]);
 
   return (
