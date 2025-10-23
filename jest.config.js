@@ -18,6 +18,12 @@ module.exports = {
   coverageReporters: ['json-summary', ['text', { file: 'coverage.txt' }]],
   reporters: [
     'default',
+    [
+      'tdd-guard-jest',
+      {
+        projectRoot: '/Users/thomasshellberg/Projects/unquest/unquest/',
+      },
+    ],
     ['github-actions', { silent: false }],
     'summary',
     [

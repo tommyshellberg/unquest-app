@@ -2,7 +2,7 @@
 import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
 import React, { useRef } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Image, TouchableOpacity } from 'react-native';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
@@ -42,7 +42,12 @@ export default function WelcomeScreen() {
       {/* Content */}
       <View className="flex-1 px-6 py-4">
         <View className="mt-8 items-center">
-          <Text className="mt-2 text-5xl font-bold">emberglow</Text>
+          <Image
+            source={require('@/../assets/images/icon.png')}
+            style={{ width: 120, height: 120 }}
+            resizeMode="contain"
+          />
+          <Text className="mt-4 text-5xl font-bold">emberglow</Text>
           <Text className="text-md font-semibold">Level Up By Logging Off</Text>
         </View>
 

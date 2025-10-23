@@ -27,6 +27,8 @@ type SettingsState = {
   setHasCompletedFirstQuest: (value: boolean) => void;
   hasBeenPromptedForReminder: boolean;
   setHasBeenPromptedForReminder: (value: boolean) => void;
+  hasSeenBranchingAnnouncement: boolean;
+  setHasSeenBranchingAnnouncement: (value: boolean) => void;
 };
 
 const getItemForStorage = (name: string) => {
@@ -53,6 +55,9 @@ export const useSettingsStore = create<SettingsState>()(
       hasBeenPromptedForReminder: false,
       setHasBeenPromptedForReminder: (value) =>
         set({ hasBeenPromptedForReminder: value }),
+      hasSeenBranchingAnnouncement: false,
+      setHasSeenBranchingAnnouncement: (value) =>
+        set({ hasSeenBranchingAnnouncement: value }),
     }),
     {
       name: 'unquest-settings',

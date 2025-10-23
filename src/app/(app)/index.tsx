@@ -18,6 +18,7 @@ import { type QuestOption } from '@/api/quest/types';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { getMapNameForQuest } from '@/app/utils/map-utils';
 import QuestCard from '@/components/home/quest-card';
+import { BranchingStoryAnnouncementModal } from '@/components/modals/branching-story-announcement-modal';
 import { PremiumPaywall } from '@/components/paywall';
 import { StreakCounter } from '@/components/StreakCounter';
 import {
@@ -33,6 +34,7 @@ import { useServerQuests } from '@/hooks/use-server-quests';
 import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
+import { useSettingsStore } from '@/store/settings-store';
 import { type StoryQuestTemplate } from '@/store/types';
 import { useUserStore } from '@/store/user-store';
 
@@ -66,6 +68,15 @@ export default function Home() {
   // Premium access state
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const { handlePaywallSuccess } = usePremiumAccess();
+
+  // Branching story announcement state
+  const [showBranchingAnnouncement, setShowBranchingAnnouncement] = useState(false);
+  const hasSeenBranchingAnnouncement = useSettingsStore(
+    (state) => state.hasSeenBranchingAnnouncement
+  );
+  const hasCompletedFirstQuest = useSettingsStore(
+    (state) => state.hasCompletedFirstQuest
+  );
 
   // Debug paywall modal state
   useEffect(() => {
@@ -146,6 +157,19 @@ export default function Home() {
       }
     }
   }, [activeQuest]);
+
+  // Check if branching story announcement should be shown
+  useEffect(() => {
+    // Only show if user hasn't seen it and has completed at least quest-1
+    if (!hasSeenBranchingAnnouncement && hasCompletedFirstQuest) {
+      // Delay showing the modal slightly to let the screen load
+      const timer = setTimeout(() => {
+        setShowBranchingAnnouncement(true);
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [hasSeenBranchingAnnouncement, hasCompletedFirstQuest]);
 
   // Get next quest options - prefer server data when available
   useEffect(() => {
@@ -1040,6 +1064,12 @@ export default function Home() {
         featureName={
           activeIndex === 2 ? 'Cooperative Quests' : 'Vaedros Storyline Quests'
         }
+      />
+
+      {/* Branching Story Announcement Modal */}
+      <BranchingStoryAnnouncementModal
+        visible={showBranchingAnnouncement}
+        onClose={() => setShowBranchingAnnouncement(false)}
       />
     </View>
   );

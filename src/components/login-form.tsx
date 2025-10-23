@@ -134,7 +134,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
         {/* Logo at the top */}
         <View className="mt-12 items-center">
           <Image
-            source={require('@/../assets/images/unquestlogo-downscaled.png')}
+            source={require('@/../assets/images/icon.png')}
             style={{ width: 100, height: 100 }}
           />
           <Text className="mt-2 text-3xl font-bold">emberglow</Text>
