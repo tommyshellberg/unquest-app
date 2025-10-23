@@ -8,6 +8,7 @@ import { useCharacterStore } from '@/store/character-store';
 
 import { useAuth } from './index';
 import { getToken, removeToken, setToken } from './utils';
+import { getItem } from '@/lib/storage';
 
 // Mock all dependencies
 jest.mock('expo-constants', () => ({
@@ -75,6 +76,12 @@ jest.mock('./utils', () => ({
   getToken: jest.fn(),
   removeToken: jest.fn(),
   setToken: jest.fn(),
+}));
+
+jest.mock('@/lib/storage', () => ({
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
 }));
 
 // Get references to the mocks
@@ -314,14 +321,15 @@ describe('Auth Store', () => {
       });
     });
 
-    it('should sign out when no token exists', async () => {
+    it('should set signOut status when no token exists', async () => {
       (getToken as jest.Mock).mockReturnValue(null);
-
-      const signOutSpy = jest.spyOn(useAuth.getState(), 'signOut');
+      (getItem as jest.Mock).mockReturnValue(null); // No provisional tokens either
 
       await useAuth.getState().hydrate();
 
-      expect(signOutSpy).toHaveBeenCalled();
+      const state = useAuth.getState();
+      expect(state.status).toBe('signOut');
+      expect(state.token).toBeNull();
       expect(getUserDetails).not.toHaveBeenCalled();
     });
 
