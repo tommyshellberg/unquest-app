@@ -16,6 +16,10 @@ jest.mock('@env', () => ({
 jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
   mobileReplayIntegration: jest.fn(() => ({})),
+  reactNavigationIntegration: jest.fn(() => ({
+    registerNavigationContainer: jest.fn(),
+  })),
+  reactNativeTracingIntegration: jest.fn(() => ({})),
   wrap: jest.fn((component) => component),
 }));
 
@@ -31,12 +35,19 @@ jest.mock('expo-router', () => {
     useRouter: () => ({
       push: mockPush,
     }),
+    useNavigationContainerRef: jest.fn(() => ({
+      current: null,
+    })),
   };
 });
 
 jest.mock('expo-splash-screen', () => ({
   preventAutoHideAsync: jest.fn().mockResolvedValue(undefined),
   hideAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('expo-font', () => ({
+  useFonts: jest.fn(() => [true, null]),
 }));
 
 jest.mock('react-native-onesignal', () => ({

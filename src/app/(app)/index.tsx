@@ -65,12 +65,17 @@ export default function Home() {
   );
   const availableQuests = useQuestStore((state) => state.availableQuests);
 
+  // Carousel state - declared early to avoid hooks ordering issues
+  const [activeIndex, setActiveIndex] = useState(0);
+  const progress = useSharedValue(0);
+
   // Premium access state
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const { handlePaywallSuccess } = usePremiumAccess();
 
   // Branching story announcement state
-  const [showBranchingAnnouncement, setShowBranchingAnnouncement] = useState(false);
+  const [showBranchingAnnouncement, setShowBranchingAnnouncement] =
+    useState(false);
   const hasSeenBranchingAnnouncement = useSettingsStore(
     (state) => state.hasSeenBranchingAnnouncement
   );
@@ -89,7 +94,7 @@ export default function Home() {
       console.log('[Paywall Modal] Resetting due to carousel swipe');
       setShowPaywallModal(false);
     }
-  }, [activeIndex]);
+  }, [activeIndex, showPaywallModal]);
 
   // Use server-driven quests
   const {
@@ -107,10 +112,6 @@ export default function Home() {
   useAudioPreloader({ storylineId: 'vaedros', enabled: true });
   // State for story choices - now primarily from server
   const [storyOptions, setStoryOptions] = useState<QuestOption[]>([]);
-
-  // Carousel state
-  const [activeIndex, setActiveIndex] = useState(0);
-  const progress = useSharedValue(0);
 
   // Get current map name based on next quest - prefer server data
   const currentMapName =

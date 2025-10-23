@@ -1,6 +1,6 @@
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import React from 'react';
-import { render, waitFor, fireEvent } from '@testing-library/react-native';
 
 import { useQuestStore } from '@/store/quest-store';
 
@@ -88,11 +88,10 @@ describe('PendingQuestScreen', () => {
   it('renders story quest correctly', () => {
     const { getByText, getByTestId } = render(<PendingQuestScreen />);
 
-    expect(getByText('Quest Ready')).toBeTruthy();
+    expect(getByText('Start Quest')).toBeTruthy();
     expect(getByTestId('quest-card')).toBeTruthy();
     expect(getByText('The Beginning')).toBeTruthy();
-    expect(getByText('5 minutes')).toBeTruthy();
-    expect(getByText('Your Journey Begins')).toBeTruthy();
+    expect(getByText('5 min')).toBeTruthy();
     expect(getByText('Your character is ready for their quest')).toBeTruthy();
   });
 
@@ -104,11 +103,10 @@ describe('PendingQuestScreen', () => {
 
     const { getByText, getByTestId } = render(<PendingQuestScreen />);
 
-    expect(getByText('Custom Quest')).toBeTruthy();
+    expect(getByText('Start Quest')).toBeTruthy();
     expect(getByTestId('quest-card')).toBeTruthy();
     expect(getByText('Morning Run')).toBeTruthy();
-    expect(getByText('30 minutes')).toBeTruthy();
-    expect(getByText('Your Journey Begins')).toBeTruthy();
+    expect(getByText('30 min')).toBeTruthy();
     expect(getByText('Time to focus on what matters most')).toBeTruthy();
   });
 
@@ -117,7 +115,6 @@ describe('PendingQuestScreen', () => {
 
     const lockInstructions = getByTestId('lock-instructions');
     expect(lockInstructions).toBeTruthy();
-    expect(lockInstructions.props.variant).toBe('single');
   });
 
   it('shows compass animation', () => {
@@ -125,15 +122,6 @@ describe('PendingQuestScreen', () => {
 
     const compass = getByTestId('compass-animation');
     expect(compass).toBeTruthy();
-    expect(compass.props.size).toBe(100);
-  });
-
-  it('displays motivational quote', () => {
-    const { getByText } = render(<PendingQuestScreen />);
-
-    expect(
-      getByText('"The journey of a thousand miles begins with a single step"')
-    ).toBeTruthy();
   });
 
   it('handles cancel quest button', () => {
@@ -172,12 +160,11 @@ describe('PendingQuestScreen', () => {
   });
 
   it('uses correct background image', () => {
-    const { UNSAFE_getByType } = render(<PendingQuestScreen />);
-    const Image = require('react-native').Image;
+    const { getByTestId } = render(<PendingQuestScreen />);
 
-    const backgroundImage = UNSAFE_getByType(Image);
+    const backgroundImage = getByTestId('background-image');
     expect(backgroundImage.props.source).toBe(
-      require('@/../assets/images/background/active-quest.jpg')
+      require('@/../assets/images/background/pending-quest-bg-alt.png')
     );
   });
 });

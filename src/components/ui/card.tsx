@@ -8,6 +8,7 @@ type CardProps = {
   style?: StyleProp<ViewStyle>;
   headerImage?: any; // Image source (require or uri)
   headerImageStyle?: StyleProp<ViewStyle>;
+  testID?: string;
 };
 
 export function Card({
@@ -15,10 +16,12 @@ export function Card({
   className = '',
   style,
   headerImage,
-  headerImageStyle
+  headerImageStyle,
+  testID,
 }: CardProps) {
   return (
     <View
+      testID={testID}
       style={[
         {
           backgroundColor: 'rgba(44, 69, 107, 0.92)', // cardBackground with 92% opacity

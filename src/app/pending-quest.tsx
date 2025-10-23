@@ -108,6 +108,7 @@ export default function PendingQuestScreen() {
     <View className="flex-1">
       {/* Full-screen Background Image */}
       <Image
+        testID="background-image"
         source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
         className="absolute inset-0 size-full"
         resizeMode="cover"
@@ -142,6 +143,7 @@ export default function PendingQuestScreen() {
         <View className="flex-1 justify-center">
           <Animated.View style={cardAnimatedStyle}>
             <Card
+              testID="quest-card"
               headerImage={getCharacterAvatar(character?.type)}
               headerImageStyle={{ height: 240 }}
             >
@@ -181,6 +183,7 @@ export default function PendingQuestScreen() {
 
         {/* Lock Instructions - Outside Card with Shimmer */}
         <Animated.View
+          testID="lock-instructions"
           entering={FadeInDown.delay(800).duration(800)}
           style={shimmerAnimatedStyle}
           className="mb-6 flex-row items-center justify-center"

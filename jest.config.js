@@ -2,6 +2,7 @@ module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest-setup.ts'],
   testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
+  silent: true, // Suppress console output by default
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!**/coverage/**',

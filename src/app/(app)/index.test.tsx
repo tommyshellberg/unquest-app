@@ -21,7 +21,55 @@ jest.mock('react-native-reanimated', () =>
 
 // Mock QuestTimer
 jest.mock('@/lib/services/quest-timer', () => ({
+  __esModule: true,
+  default: {
+    prepareQuest: jest.fn(),
+  },
   prepareQuest: jest.fn(),
+}));
+
+// Mock posthog
+jest.mock('posthog-react-native', () => ({
+  usePostHog: () => ({
+    capture: jest.fn(),
+  }),
+}));
+
+// Mock audio preloader
+jest.mock('@/hooks/use-audio-preloader', () => ({
+  useAudioPreloader: jest.fn(),
+}));
+
+// Mock premium access
+jest.mock('@/lib/hooks/use-premium-access', () => ({
+  usePremiumAccess: jest.fn(() => ({
+    hasPremiumAccess: false,
+    checkPremiumAccess: jest.fn(),
+    refreshPremiumStatus: jest.fn(),
+    handlePaywallSuccess: jest.fn(),
+  })),
+}));
+
+// Mock settings store
+jest.mock('@/store/settings-store', () => ({
+  useSettingsStore: jest.fn((selector) =>
+    selector
+      ? selector({
+          hasSeenBranchingAnnouncement: false,
+          hasCompletedFirstQuest: false,
+        })
+      : {
+          hasSeenBranchingAnnouncement: false,
+          hasCompletedFirstQuest: false,
+        }
+  ),
+}));
+
+// Mock user store
+jest.mock('@/store/user-store', () => ({
+  useUserStore: jest.fn((selector) =>
+    selector ? selector({ user: { id: 'test-user' } }) : { user: { id: 'test-user' } }
+  ),
 }));
 
 // Mock useServerQuests hook

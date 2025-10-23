@@ -35,6 +35,7 @@
     "type-check": "tsc  --noemit",
     "lint:translations": "eslint ./src/translations/ --fix --ext .json  ",
     "test": "jest",
+    "test:verbose": "jest --no-silent --verbose",
     "check-all": "pnpm run lint && pnpm run type-check && pnpm run lint:translations && pnpm run test",
     "test:ci": "pnpm run test --coverage",
     "test:watch": "pnpm run test --watch",

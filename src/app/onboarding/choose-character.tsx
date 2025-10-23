@@ -138,7 +138,8 @@ export default function ChooseCharacterScreen() {
     if (error) {
       setError(null);
     }
-  }, [debouncedName, error, selectedCharacter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedName, selectedCharacter]);
 
   // Handle step progression
   const handleStepForward = () => {

@@ -70,6 +70,12 @@ jest.mock('react-native-reanimated', () => {
     withDelay: (_: any, val: any) => val,
     withSpring: (val: any) => val,
     withSequence: (...args: any[]) => args[args.length - 1],
+    ReducedMotionConfig: jest.fn(({ children }: any) => children),
+    ReduceMotion: {
+      Never: 'never',
+      Always: 'always',
+      System: 'system',
+    },
   };
 });
 
