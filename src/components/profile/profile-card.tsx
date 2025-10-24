@@ -17,13 +17,15 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import CHARACTERS from '@/app/data/characters';
+import { PROFILE_COLORS } from '@/app/(app)/profile-constants';
+import type { Character } from '@/app/(app)/profile-types';
 import { Card, Text, View } from '@/components/ui';
 import { updateUserCharacter } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 
 type ProfileCardProps = {
   /** The character data to render */
-  character: any;
+  character: Character;
 };
 
 export function ProfileCard({ character }: ProfileCardProps) {
@@ -69,7 +71,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
 
       setIsEditing(false);
     } catch (error) {
-      console.error('Failed to update character name:', error);
+      // TODO: Replace with logger service
       Alert.alert(
         'Update Failed',
         'Unable to update your character name. Please try again.',
@@ -136,7 +138,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
                 ) : (
                   <View className="flex-row items-center gap-2">
                     <View className="relative">
-                      <Text className="text-2xl font-bold">
+                      <Text className="text-2xl font-bold text-neutral-800">
                         {character.name}
                       </Text>
                       {/* Success checkmark overlay */}
@@ -160,14 +162,18 @@ export function ProfileCard({ character }: ProfileCardProps) {
                     <Pressable
                       onPress={() => setIsEditing(true)}
                       className="rounded-full p-1"
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel="Edit character name"
+                      accessibilityHint="Tap to edit your character name"
                     >
-                      <Feather name="edit-2" size={18} color="#2E948D" />
+                      <Feather name="edit-2" size={18} color={PROFILE_COLORS.editIcon} />
                     </Pressable>
                   </View>
                 )}
               </View>
               {/* Level and character type on second row */}
-              <Text className="mt-1 text-gray-700">
+              <Text className="mt-1 text-base text-neutral-800">
                 Level {character.level} {characterDetails?.type}
               </Text>
             </View>

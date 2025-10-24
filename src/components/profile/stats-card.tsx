@@ -10,6 +10,7 @@ import {
 } from 'react-native-reanimated';
 
 import { Card, Text, View } from '@/components/ui';
+import { STATS_ANIMATION } from '@/app/(app)/profile-constants';
 
 type StatsCardProps = {
   questCount: number;
@@ -67,36 +68,46 @@ export function StatsCard({
   return (
     <Card className="mx-4 mt-4 p-5">
       <View className="flex-row justify-around">
-        <View className="items-center">
+        <View
+          className="items-center"
+          accessible={true}
+          accessibilityLabel={`${questCount} quests completed`}
+          accessibilityRole="text"
+        >
           <AnimatedNumber
             value={questCount}
-            duration={1200}
-            delay={100}
-            className="text-2xl font-bold text-secondary-100"
+            duration={STATS_ANIMATION.quests.duration}
+            delay={STATS_ANIMATION.quests.delay}
+            className="text-3xl font-bold text-secondary-100"
             style={{
-              fontSize: 24,
+              fontSize: 30,
               fontWeight: '700',
               textAlign: 'center',
             }}
           />
-          <Text className="text-neutral-200">Quests</Text>
+          <Text className="text-base text-neutral-200">Quests</Text>
         </View>
 
         <View className="h-4/5 w-px bg-neutral-300" />
 
-        <View className="items-center">
+        <View
+          className="items-center"
+          accessible={true}
+          accessibilityLabel={`${minutesSaved} minutes saved`}
+          accessibilityRole="text"
+        >
           <AnimatedNumber
             value={minutesSaved}
-            duration={1500}
-            delay={300}
-            className="text-2xl font-bold text-secondary-100"
+            duration={STATS_ANIMATION.minutes.duration}
+            delay={STATS_ANIMATION.minutes.delay}
+            className="text-3xl font-bold text-secondary-100"
             style={{
-              fontSize: 24,
+              fontSize: 30,
               fontWeight: '700',
               textAlign: 'center',
             }}
           />
-          <Text className="text-neutral-200">Minutes Saved</Text>
+          <Text className="text-base text-neutral-200">Minutes Saved</Text>
         </View>
 
         <View className="h-4/5 w-px bg-neutral-300" />
@@ -104,21 +115,25 @@ export function StatsCard({
         <Pressable
           className="items-center"
           onPress={() => router.push('/streak-celebration')}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`${streakCount} day streak`}
+          accessibilityHint="Tap to view streak celebration"
         >
           <View className="flex-row items-center">
             <AnimatedNumber
               value={streakCount}
-              duration={1000}
-              delay={500}
-              className="text-2xl font-bold text-secondary-100"
+              duration={STATS_ANIMATION.streak.duration}
+              delay={STATS_ANIMATION.streak.delay}
+              className="text-3xl font-bold text-secondary-100"
               style={{
-                fontSize: 24,
+                fontSize: 30,
                 fontWeight: '700',
                 textAlign: 'center',
               }}
             />
           </View>
-          <Text className="text-neutral-200">Day Streak</Text>
+          <Text className="text-base text-neutral-200">Day Streak</Text>
         </Pressable>
       </View>
     </Card>

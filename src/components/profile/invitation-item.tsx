@@ -56,10 +56,10 @@ export function InvitationItem({
       </View>
 
       <View className="ml-3 flex-1">
-        <Text className="font-bold">
+        <Text className="text-base font-bold text-white">
           {userToShow.character?.name || 'Unknown'}
         </Text>
-        <Text className="text-gray-600">
+        <Text className="text-sm text-neutral-200">
           {userToShow.character?.type ||
             (isOutgoing ? invitation.recipient : userToShow.email)}
         </Text>
@@ -67,14 +67,18 @@ export function InvitationItem({
 
       {isOutgoing ? (
         <View className="flex-row items-center space-x-2">
-          <View className="rounded-full bg-gray-200 px-2 py-1">
-            <Text className="text-xs font-bold text-gray-600">Invited</Text>
+          <View className="rounded-full bg-neutral-700 px-2 py-1">
+            <Text className="text-xs font-bold text-neutral-200">Invited</Text>
           </View>
 
           <Pressable
-            className="size-6 items-center justify-center rounded-full bg-red-300"
+            className="size-6 items-center justify-center rounded-full bg-destructive"
             onPress={() => onRescind(invitation)}
             disabled={isProcessing}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel invitation"
+            accessibilityHint={`Cancel invitation to ${userToShow.character?.name || invitation.recipient}`}
           >
             <Feather name="x" size={16} className="text-white" />
           </Pressable>
@@ -82,9 +86,13 @@ export function InvitationItem({
       ) : (
         <View className="flex-row items-center space-x-2">
           <Pressable
-            className="size-8 items-center justify-center rounded-full bg-red-500"
+            className="size-8 items-center justify-center rounded-full bg-destructive"
             onPress={() => onReject(invitation.id)}
             disabled={isProcessing}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Reject invitation"
+            accessibilityHint={`Reject invitation from ${userToShow.character?.name || userToShow.email}`}
           >
             {isRejecting ? (
               <View className="size-4 animate-spin rounded-full border-2 border-white" />
@@ -94,9 +102,13 @@ export function InvitationItem({
           </Pressable>
 
           <Pressable
-            className="size-8 items-center justify-center rounded-full bg-teal-700"
+            className="size-8 items-center justify-center rounded-full bg-secondary-300"
             onPress={() => onAccept(invitation.id)}
             disabled={isProcessing}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Accept invitation"
+            accessibilityHint={`Accept invitation from ${userToShow.character?.name || userToShow.email}`}
           >
             {isAccepting ? (
               <View className="size-4 animate-spin rounded-full border-2 border-white" />
