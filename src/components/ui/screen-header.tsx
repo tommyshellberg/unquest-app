@@ -64,7 +64,7 @@ export function ScreenHeader({
         )}
         <Title text={title} />
       </View>
-      {subtitle && <Text className="text-sm text-neutral-200">{subtitle}</Text>}
+      {subtitle && <Text className="text-md text-neutral-200">{subtitle}</Text>}
     </HeaderWrapper>
   );
 }

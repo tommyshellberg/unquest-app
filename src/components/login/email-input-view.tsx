@@ -36,7 +36,7 @@ export function EmailInputView({
     <View className="p-6">
       {/* Email input with label on left */}
       <View className="mb-6 flex-row items-center border-b border-neutral-300 pb-2">
-        <Text className="w-28 font-semibold text-white">EMAIL</Text>
+        <Text className="w-28 text-base font-semibold text-white">EMAIL</Text>
         <TextInput
           testID="email-input"
           placeholder="Enter your email"
@@ -45,7 +45,14 @@ export function EmailInputView({
           autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
-          className="flex-1 py-2 text-lg font-semibold text-primary-500"
+          style={{
+            flex: 1,
+            fontSize: 16,
+            fontWeight: '600',
+            color: '#e8dcc7', // white (warm cream)
+            paddingVertical: 0,
+            includeFontPadding: false,
+          }}
           accessibilityLabel="Email address"
           accessibilityHint="Enter your email to receive a login link"
         />

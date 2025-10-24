@@ -46,7 +46,7 @@ export const CategorySlider = ({
 
   return (
     <View className="mb-4">
-      <Text className="mb-3 px-4 text-base text-[#666]">What type of activity?</Text>
+      <Text className="mb-3 px-4 text-base text-neutral-200">What type of activity?</Text>
       <Controller
         control={control}
         render={({ field: { value, onChange } }) => (
@@ -54,7 +54,7 @@ export const CategorySlider = ({
             ref={scrollViewRef}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ 
+            contentContainerStyle={{
               paddingHorizontal: PADDING,
               paddingVertical: 8,
             }}
@@ -66,8 +66,8 @@ export const CategorySlider = ({
                   key={category.id}
                   testID={`category-option-${category.id}`}
                   className={`mx-1 items-center justify-center rounded-xl px-3 py-4 ${
-                    isSelected 
-                      ? 'bg-primary-400' 
+                    isSelected
+                      ? 'bg-primary-400'
                       : 'bg-cardBackground'
                   }`}
                   style={{ width: ITEM_WIDTH - 8 }}
@@ -83,14 +83,14 @@ export const CategorySlider = ({
                   <Feather
                     name={category.icon as any}
                     size={24}
-                    color={isSelected ? '#FFF' : '#3B7A57'}
+                    color={isSelected ? '#e8dcc7' : '#36B6D3'}
                     style={{ marginBottom: 4 }}
                   />
                   <Text
                     className={`text-center text-xs ${
                       isSelected
                         ? 'font-semibold text-white'
-                        : 'text-[#333]'
+                        : 'text-white'
                     }`}
                     numberOfLines={1}
                   >

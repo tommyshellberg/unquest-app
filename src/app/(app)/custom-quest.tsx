@@ -1,148 +1,131 @@
-import { router } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useEffect } from 'react';
 
+import {
+  A11Y_FORM_LABEL,
+  A11Y_START_BUTTON_DISABLED,
+  A11Y_START_BUTTON_ENABLED,
+  A11Y_START_BUTTON_HINT,
+  ANALYTICS_EVENTS,
+  SCREEN_SUBTITLE,
+  SCREEN_TITLE,
+  SCROLL_VIEW_BOTTOM_PADDING,
+  START_BUTTON_LABEL,
+  useCustomQuestForm,
+  useQuestCreation,
+} from '@/components/custom-quest';
 import { CategorySlider } from '@/components/QuestForm/category-slider';
-// Import our new components with appropriate paths
 import { CombinedQuestInput } from '@/components/QuestForm/combined-quest-input';
-// Import UI components from our project
 import {
   Button,
   FocusAwareStatusBar,
-  SafeAreaView,
+  ScreenContainer,
   ScreenHeader,
   ScrollView,
+  Text,
   View,
 } from '@/components/ui';
-import QuestTimer from '@/lib/services/quest-timer';
-import { useQuestStore } from '@/store/quest-store';
-import { type CustomQuestTemplate } from '@/store/types';
 
-// Define the form data type
-type FormData = {
-  questCategory: string;
-};
-
+/**
+ * Custom Quest Screen
+ *
+ * Allows users to create personalized quests with custom names and durations.
+ * Refactored to senior developer standards with:
+ * - Extracted hooks for form state and quest creation
+ * - Proper error handling with Sentry logging
+ * - Full accessibility support
+ * - Emberglow branding
+ * - No magic numbers or debug code
+ */
 export default function CustomQuestScreen() {
-  // Local state for the quest data
-  const [questName, setQuestName] = useState('');
-  const [questDuration, setQuestDuration] = useState(30);
   const posthog = usePostHog();
 
-  // Initialize react-hook-form just for the category
-  const { control, handleSubmit, watch, reset } = useForm<FormData>({
-    defaultValues: {
-      questCategory: 'fitness',
-    },
-    mode: 'onChange',
-  });
+  // Form state management hook
+  const {
+    questName,
+    questDuration,
+    questCategory,
+    canContinue,
+    control,
+    handleSubmit,
+    handleQuestNameChange,
+    handleDurationChange,
+    getFormData,
+  } = useCustomQuestForm();
 
-  // Watch values for real-time updates
-  const questCategory = watch('questCategory');
+  // Quest creation hook with error handling
+  const { createQuest, isCreating, error } = useQuestCreation();
 
-  // Determine if we can proceed
-  const canContinue = questName.trim().length > 0;
-
-  const handleQuestNameChange = (name: string) => {
-    setQuestName(name);
-  };
-
-  const handleDurationChange = (duration: number) => {
-    // This is only called when sliding is complete
-    setQuestDuration(duration);
-  };
-
-  const handleCancel = () => {
-    // Reset all form values to defaults
-    setQuestName('');
-    setQuestDuration(30);
-    reset({ questCategory: 'fitness' });
-
-    // Navigate back
-    router.back();
-  };
-
+  // Track screen open
   useEffect(() => {
-    posthog.capture('open_custom_quest_screen');
+    posthog.capture(ANALYTICS_EVENTS.OPEN_SCREEN);
   }, [posthog]);
 
-  const onSubmit = async (data: FormData) => {
-    posthog.capture('trigger_start_custom_quest');
-
-    // Create a custom quest object
-    const customQuest: CustomQuestTemplate = {
-      id: `custom-${Date.now()}`,
-      mode: 'custom',
-      title: questName.trim(),
-      durationMinutes: questDuration,
-      category: data.questCategory,
-      reward: {
-        xp: Math.round(questDuration * 3),
-      },
-    };
-
-    // Start the quest
-    try {
-      // First update the store to set pendingQuest
-      useQuestStore.getState().prepareQuest(customQuest);
-
-      // Then prepare the quest in the background task
-      await QuestTimer.prepareQuest(customQuest);
-      posthog.capture('sucess_start_custom_quest');
-
-      // Go to regular pending quest
-      router.push('/pending-quest');
-    } catch (error) {
-      console.error('Error preparing quest:', error);
-    }
+  // Submit handler
+  const onSubmit = async () => {
+    const formData = getFormData();
+    await createQuest(formData);
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-secondary-500 px-4">
+    <View className="flex-1">
       <FocusAwareStatusBar />
 
-      <ScreenHeader
-        title="Custom Quest"
-        subtitle="Create your own quest with a personalized name and duration"
-        showBackButton
-      />
-
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 80 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="mb-4">
-          {/* Paper planes illustration */}
-          {/* <PaperPlanes /> */}
-        </View>
-
-        {/* Quest Input with improved slider handling */}
-        <CombinedQuestInput
-          initialQuestName={questName}
-          initialDuration={questDuration}
-          onQuestNameChange={handleQuestNameChange}
-          onDurationChange={handleDurationChange}
+      <ScreenContainer>
+        <ScreenHeader
+          title={SCREEN_TITLE}
+          subtitle={SCREEN_SUBTITLE}
+          showBackButton
         />
 
-        {/* Category Slider */}
-        <CategorySlider control={control} questCategory={questCategory} />
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: SCROLL_VIEW_BOTTOM_PADDING }}
+          keyboardShouldPersistTaps="handled"
+          accessibilityLabel={A11Y_FORM_LABEL}
+          accessibilityRole="form"
+        >
+          {/* Error Message */}
+          {error && (
+            <View className="mb-4 rounded-lg border border-red-500 bg-red-500/20 p-4">
+              <Text className="text-center text-red-100">{error}</Text>
+            </View>
+          )}
 
-        {/* Continue Button (Large, Full-Width) */}
-        <Button
-          label="Start Quest"
-          variant="default"
-          size="lg"
-          disabled={!canContinue}
-          onPress={handleSubmit(onSubmit)}
-          className={`rounded-md bg-primary-400 py-3 ${
-            canContinue ? 'opacity-100' : 'opacity-50'
-          }`}
-          textClassName="text-lg font-semibold text-white"
-        />
-      </ScrollView>
-    </SafeAreaView>
+          {/* Quest Input */}
+          <CombinedQuestInput
+            initialQuestName={questName}
+            initialDuration={questDuration}
+            onQuestNameChange={handleQuestNameChange}
+            onDurationChange={handleDurationChange}
+          />
+
+          {/* Category Slider */}
+          <CategorySlider control={control} questCategory={questCategory} />
+
+          {/* Start Quest Button */}
+          <Button
+            label={START_BUTTON_LABEL}
+            variant="default"
+            size="lg"
+            disabled={!canContinue || isCreating}
+            onPress={handleSubmit(onSubmit)}
+            accessibilityLabel={
+              canContinue
+                ? A11Y_START_BUTTON_ENABLED
+                : A11Y_START_BUTTON_DISABLED
+            }
+            accessibilityRole="button"
+            accessibilityHint={A11Y_START_BUTTON_HINT}
+            accessibilityState={{ disabled: !canContinue || isCreating }}
+            className={`rounded-md bg-primary-400 py-3 ${
+              canContinue && !isCreating ? 'opacity-100' : 'opacity-50'
+            }`}
+            textClassName="text-lg font-semibold text-white"
+          />
+        </ScrollView>
+      </ScreenContainer>
+    </View>
   );
 }

@@ -8,10 +8,10 @@ import { useAuth } from '@/lib/auth';
 import { removeItem } from '@/lib/storage';
 import { useOnboardingStore } from '@/store/onboarding-store';
 
+import { BRAND_NAME, LOGO_SIZE } from './login/constants';
 import { EmailInputView } from './login/email-input-view';
 import { EmailSentView } from './login/email-sent-view';
 import { useMagicLink } from './login/hooks/use-magic-link';
-import { BRAND_NAME, LOGO_SIZE } from './login/constants';
 import type { LoginFormProps } from './login/types';
 
 export type { LoginFormProps };
@@ -88,7 +88,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
             style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
             accessibilityLabel={`${BRAND_NAME} app logo`}
           />
-          <Text className="mt-2 text-3xl font-bold">{BRAND_NAME}</Text>
+          <Text className="mt-2 font-erstoria text-4xl">{BRAND_NAME}</Text>
         </View>
 
         {/* Form in bottom half */}

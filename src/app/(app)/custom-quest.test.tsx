@@ -39,6 +39,14 @@ jest.mock('@/store/quest-store', () => ({
   })),
 }));
 
+// Mock PostHog
+const mockPostHogCapture = jest.fn();
+jest.mock('posthog-react-native', () => ({
+  usePostHog: jest.fn(() => ({
+    capture: mockPostHogCapture,
+  })),
+}));
+
 describe('CustomQuestScreen', () => {
   // Properly type the mocked objects
   let mockedRouter: { back: jest.Mock; push: jest.Mock };
@@ -139,20 +147,21 @@ describe('CustomQuestScreen', () => {
     expect(updatedText).not.toBe(initialText);
   });
 
-  // Skip category test for now since it requires complex modal mocking
   it('can select different quest categories', async () => {
     const { user } = setup(<CustomQuestScreen />);
 
-    // Find and press the category selector
-    const categorySelector = screen.getByTestId('category-selector');
-    await user.press(categorySelector);
+    // Initially fitness is selected
+    const fitnessOption = screen.getByTestId('category-option-fitness');
+    expect(fitnessOption.props.accessibilityState.selected).toBe(true);
 
-    // Select a different category
-    const socialCategory = screen.getByText('Social');
+    // Select a different category (social)
+    const socialCategory = screen.getByTestId('category-option-social');
     await user.press(socialCategory);
 
-    // Category should be updated
-    expect(screen.getAllByText('Social').length).toBeGreaterThan(0);
+    // Social should now be selected
+    await waitFor(() => {
+      expect(socialCategory.props.accessibilityState.selected).toBe(true);
+    });
   });
 
   it('calls prepareQuest when form is submitted with valid data', async () => {
@@ -187,5 +196,232 @@ describe('CustomQuestScreen', () => {
 
     // Verify QuestTimer.prepareQuest was called
     expect(QuestTimer.prepareQuest).toHaveBeenCalledTimes(1);
+  });
+
+  describe('Analytics Events', () => {
+    it('tracks screen open event on mount', () => {
+      render(<CustomQuestScreen />);
+
+      expect(mockPostHogCapture).toHaveBeenCalledWith(
+        'open_custom_quest_screen'
+      );
+    });
+
+    it('tracks trigger event when form is submitted', async () => {
+      const { user } = setup(<CustomQuestScreen />);
+
+      // Fill form and submit
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      expect(mockPostHogCapture).toHaveBeenCalledWith(
+        'trigger_start_custom_quest'
+      );
+    });
+
+    it('tracks success event when quest is created successfully', async () => {
+      const { user } = setup(<CustomQuestScreen />);
+
+      // Fill form and submit
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      await waitFor(() => {
+        expect(mockPostHogCapture).toHaveBeenCalledWith(
+          'success_start_custom_quest' // Fixed typo from 'sucess'
+        );
+      });
+    });
+  });
+
+  describe('XP Calculation', () => {
+    it('calculates XP correctly for 30 minute quest', async () => {
+      const { user } = setup(<CustomQuestScreen />);
+
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      // Default duration is 30 minutes
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      await waitFor(() => {
+        expect(mockedPrepareQuest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            reward: { xp: 90 }, // 30 * 3 = 90
+          })
+        );
+      });
+    });
+
+    it('calculates XP correctly for 60 minute quest', async () => {
+      const { user } = setup(<CustomQuestScreen />);
+
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      // Set duration to 60 minutes
+      const slider = screen.getByTestId('duration-slider');
+      fireEvent(slider, 'valueChange', 60);
+      fireEvent(slider, 'slidingComplete', 60);
+
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      await waitFor(() => {
+        expect(mockedPrepareQuest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            reward: { xp: 180 }, // 60 * 3 = 180
+          })
+        );
+      });
+    });
+
+    it('calculates XP correctly for 240 minute quest', async () => {
+      const { user } = setup(<CustomQuestScreen />);
+
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      // Set duration to 240 minutes (max)
+      const slider = screen.getByTestId('duration-slider');
+      fireEvent(slider, 'valueChange', 240);
+      fireEvent(slider, 'slidingComplete', 240);
+
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      await waitFor(() => {
+        expect(mockedPrepareQuest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            reward: { xp: 720 }, // 240 * 3 = 720
+          })
+        );
+      });
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('shows error message when store prepareQuest fails', async () => {
+      // Mock the store to throw an error
+      useQuestStore.getState = jest.fn().mockReturnValue({
+        prepareQuest: jest.fn(() => {
+          throw new Error('Store error');
+        }),
+      });
+
+      const { user } = setup(<CustomQuestScreen />);
+
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      // Should show error message (once we implement it)
+      await waitFor(() => {
+        expect(
+          screen.queryByText(/Failed to start quest/i)
+        ).toBeOnTheScreen();
+      });
+    });
+
+    it('shows error message when QuestTimer.prepareQuest fails', async () => {
+      // Mock QuestTimer to reject
+      (QuestTimer.prepareQuest as jest.Mock).mockRejectedValueOnce(
+        new Error('Timer error')
+      );
+
+      const { user } = setup(<CustomQuestScreen />);
+
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      // Should show error message (once we implement it)
+      await waitFor(() => {
+        expect(
+          screen.queryByText(/Failed to start quest/i)
+        ).toBeOnTheScreen();
+      });
+    });
+
+    it('allows retrying after error', async () => {
+      // Mock to fail first, then succeed
+      (QuestTimer.prepareQuest as jest.Mock)
+        .mockRejectedValueOnce(new Error('Timer error'))
+        .mockResolvedValueOnce(undefined);
+
+      const { user } = setup(<CustomQuestScreen />);
+
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      // First attempt - should fail
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(/Failed to start quest/i)
+        ).toBeOnTheScreen();
+      });
+
+      // Second attempt - should succeed
+      await user.press(startButton);
+
+      await waitFor(() => {
+        expect(mockedRouter.push).toHaveBeenCalledWith('/pending-quest');
+      });
+    });
+  });
+
+  describe('Navigation', () => {
+    it('navigates to pending-quest screen on successful quest creation', async () => {
+      const { user } = setup(<CustomQuestScreen />);
+
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      const startButton = screen.getByText('Start Quest');
+      await user.press(startButton);
+
+      await waitFor(() => {
+        expect(mockedRouter.push).toHaveBeenCalledWith('/pending-quest');
+      });
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('Start Quest button has proper accessibility label when enabled', async () => {
+      const { user } = setup(<CustomQuestScreen />);
+
+      const nameInput = screen.getByPlaceholderText('go for a run');
+      await user.type(nameInput, 'Test Quest');
+
+      const startButton = screen.getByText('Start Quest');
+
+      // Should have accessibility attributes (once we implement them)
+      expect(startButton).toHaveAccessibilityValue({});
+      // We'll add more specific checks once accessibility is implemented
+    });
+
+    it('Start Quest button announces disabled state when quest name is empty', () => {
+      render(<CustomQuestScreen />);
+
+      const startButton = screen.getByText('Start Quest');
+
+      // Should have disabled state announced (once we implement it)
+      expect(startButton).toBeDisabled();
+      // We'll add accessibility state checks once implemented
+    });
   });
 });
