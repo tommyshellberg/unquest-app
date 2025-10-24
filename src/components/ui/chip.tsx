@@ -1,4 +1,5 @@
 import React from 'react';
+import type { AccessibilityRole, AccessibilityState } from 'react-native';
 import { Pressable, View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 
@@ -9,6 +10,10 @@ type ChipProps = {
   className?: string;
   textClassName?: string;
   onPress?: () => void;
+  accessibilityRole?: AccessibilityRole;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  accessibilityState?: AccessibilityState;
 };
 
 export function Chip({
@@ -16,6 +21,10 @@ export function Chip({
   className = '',
   textClassName = '',
   onPress,
+  accessibilityRole,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityState,
 }: ChipProps) {
   const Container = onPress ? Pressable : View;
 
@@ -26,6 +35,10 @@ export function Chip({
         className
       )}
       onPress={onPress}
+      accessibilityRole={accessibilityRole}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={accessibilityState}
     >
       <Text className={twMerge('text-sm', textClassName)}>{children}</Text>
     </Container>
