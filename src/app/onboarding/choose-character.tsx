@@ -300,9 +300,10 @@ export default function ChooseCharacterScreen() {
 
     setIsCreating(true);
     setError(null);
-    posthog.capture('onboarding_trigger_continue_choose_character');
 
     try {
+      posthog.capture('onboarding_trigger_continue_choose_character');
+
       // Create the new character object
       const newCharacter = {
         type: selected.id,
@@ -325,6 +326,14 @@ export default function ChooseCharacterScreen() {
       // Handle specific error types
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
+
+      if (errorMessage === 'STORAGE_UNAVAILABLE') {
+        posthog.capture('onboarding_storage_unavailable');
+        setError(
+          'Unable to access device storage. Please check storage permissions and available space.'
+        );
+        return; // Don't reset character store
+      }
 
       if (errorMessage === 'PROVISIONAL_EMAIL_TAKEN') {
         posthog.capture('onboarding_provisional_email_taken');
