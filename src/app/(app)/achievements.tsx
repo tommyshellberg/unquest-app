@@ -32,6 +32,7 @@ import {
   Text,
   View,
 } from '@/components/ui';
+import colors from '@/components/ui/colors';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -160,7 +161,7 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
   );
 
   const getIcon = () => {
-    const iconColor = achievement.isUnlocked ? '#FFFFFF' : '#666666';
+    const iconColor = achievement.isUnlocked ? colors.white : colors.neutral[200]; // Warm cream or neutral
     const iconSize = 32;
 
     if (achievement.category === 'streak') {
@@ -198,56 +199,66 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
       style={{
         width: CARD_WIDTH,
         height: CARD_HEIGHT,
+        backgroundColor: achievement.isUnlocked ? colors.secondary[500] : colors.cardBackground,
       }}
-      className={`p-6 ${achievement.isUnlocked ? 'bg-primary-100' : ''}`}
+      className="p-6"
     >
       <View className="flex-1 justify-between">
         <View>
           <View className="mb-4 flex-row items-center justify-between">
             <View
-              className={`size-16 items-center justify-center rounded-full ${
-                achievement.isUnlocked ? 'bg-primary-500' : 'bg-gray-200'
-              }`}
+              style={{
+                backgroundColor: achievement.isUnlocked
+                  ? colors.secondary[300]
+                  : 'rgba(143, 165, 178, 0.25)',
+              }}
+              className="size-16 items-center justify-center rounded-full"
+              accessible
+              accessibilityLabel={`${achievement.category} achievement icon, level ${achievement.level}`}
             >
               {getIcon()}
             </View>
 
             {achievement.isUnlocked && (
-              <View className="rounded-full bg-primary-500 px-3 py-1">
-                <Text className="text-sm font-bold text-white">Unlocked!</Text>
+              <View
+                style={{ backgroundColor: colors.secondary[300] }}
+                className="rounded-full px-3 py-1"
+                accessible
+                accessibilityLabel="Achievement unlocked"
+              >
+                <Text style={{ color: colors.white }} className="text-sm font-bold">Unlocked!</Text>
               </View>
             )}
           </View>
 
           <Text
-            className={`text-xl font-bold ${
-              achievement.isUnlocked ? 'text-primary-700' : 'text-gray-800'
-            }`}
+            style={{ color: colors.white }}
+            className="text-xl font-bold"
           >
             {achievement.title}
           </Text>
 
-          <Text className="mt-2 text-gray-600">{achievement.description}</Text>
+          <Text style={{ color: colors.neutral[200] }} className="mt-2">{achievement.description}</Text>
         </View>
 
         <View>
           <View className="mb-2 flex-row justify-between">
-            <Text className="text-sm font-semibold text-gray-700">
+            <Text style={{ color: colors.white }} className="text-sm font-semibold">
               Progress
             </Text>
-            <Text className="text-primary-600 text-sm font-bold">
+            <Text style={{ color: colors.secondary[300] }} className="text-sm font-bold">
               {achievement.currentProgress}/{achievement.requirement}
             </Text>
           </View>
 
           <ProgressBar
             initialProgress={progress * 100}
-            progressColor={achievement.isUnlocked ? '#5E8977' : '#D1D5DB'}
-            backgroundColor="#F3F4F6"
+            progressColor={achievement.isUnlocked ? colors.secondary[300] : colors.neutral[200]}
+            backgroundColor="rgba(143, 165, 178, 0.2)"
           />
 
           {achievement.isUnlocked && achievement.unlockedAt && (
-            <Text className="mt-3 text-xs text-gray-500">
+            <Text style={{ color: colors.neutral[200] }} className="mt-3 text-xs">
               Unlocked on {achievement.unlockedAt.toLocaleDateString()}
             </Text>
           )}
@@ -287,19 +298,24 @@ const AchievementSection = ({
   const getCategoryIcon = () => {
     switch (category) {
       case 'streak':
-        return <Target size={24} color="#2E948D" />;
+        return <Target size={24} color={colors.secondary[300]} />;
       case 'quests':
-        return <MapPinCheck size={24} color="#2E948D" />;
+        return <MapPinCheck size={24} color={colors.secondary[300]} />;
       case 'minutes':
-        return <Timer size={24} color="#2E948D" />;
+        return <Timer size={24} color={colors.secondary[300]} />;
     }
   };
 
   return (
     <View className="mb-12">
-      <View className="mb-4 flex-row items-center px-4">
+      <View
+        className="mb-4 flex-row items-center px-4"
+        accessible
+        accessibilityRole="header"
+        accessibilityLabel={`${getCategoryTitle()} achievements`}
+      >
         {getCategoryIcon()}
-        <Text className="ml-2 text-lg font-bold text-gray-900">
+        <Text style={{ color: colors.white }} className="ml-2 text-lg font-bold">
           {getCategoryTitle()}
         </Text>
       </View>
@@ -323,7 +339,11 @@ const AchievementSection = ({
       </Animated.ScrollView>
 
       {/* Page Indicators */}
-      <View className="mt-4 flex-row justify-center">
+      <View
+        className="mt-4 flex-row justify-center"
+        accessible
+        accessibilityLabel={`Achievement carousel, ${achievements.length} items`}
+      >
         {achievements.map((_, index) => {
           const inputRange = [
             (index - 1) * (CARD_WIDTH + CARD_SPACING),
