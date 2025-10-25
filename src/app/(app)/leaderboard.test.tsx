@@ -17,6 +17,29 @@ jest.mock('@/store/character-store');
 jest.mock('@/api/stats');
 jest.mock('@/lib/storage');
 
+// Mock useLeaderboardData hook
+const mockUseLeaderboardData = jest.fn();
+jest.mock('./leaderboard/hooks/use-leaderboard-data', () => ({
+  useLeaderboardData: (...args: any[]) => mockUseLeaderboardData(...args),
+}));
+
+// Mock sub-components
+jest.mock('./leaderboard/components/empty-states', () => ({
+  EmptyStates: 'EmptyStates',
+}));
+jest.mock('./leaderboard/components/leaderboard-header', () => ({
+  LeaderboardHeader: 'LeaderboardHeader',
+}));
+jest.mock('./leaderboard/components/leaderboard-item', () => ({
+  LeaderboardItem: 'LeaderboardItem',
+}));
+jest.mock('./leaderboard/components/leaderboard-tabs', () => ({
+  LeaderboardTabs: 'LeaderboardTabs',
+}));
+jest.mock('./leaderboard/components/scope-toggle', () => ({
+  ScopeToggle: 'ScopeToggle',
+}));
+
 // Mock lucide-react-native icons
 jest.mock('lucide-react-native', () => ({
   Crown: 'Crown',
@@ -287,13 +310,96 @@ describe('LeaderboardScreen', () => {
       inviteMutation: {
         isPending: false,
       },
+      sendBulkInvites: jest.fn(),
     });
     (useLeaderboardStats as jest.Mock).mockReturnValue({
       data: mockLeaderboardData,
       isLoading: false,
       error: null,
+      refetch: jest.fn(),
     });
     (getItem as jest.Mock).mockReturnValue('current-user');
+
+    // Mock useLeaderboardData hook to return transformed data
+    mockUseLeaderboardData.mockReturnValue({
+      leaderboardData: [
+        {
+          rank: 1,
+          userId: '1',
+          username: 'DragonSlayer77',
+          characterType: 'knight',
+          metric: 150,
+          isCurrentUser: false,
+          isFriend: false,
+        },
+        {
+          rank: 2,
+          userId: '2',
+          username: 'MysticWanderer',
+          characterType: 'wizard',
+          metric: 135,
+          isCurrentUser: false,
+          isFriend: false,
+        },
+        {
+          rank: 3,
+          userId: '3',
+          username: 'QuestMaster42',
+          characterType: 'scout',
+          metric: 120,
+          isCurrentUser: false,
+          isFriend: true,
+        },
+        {
+          userId: 'current-user',
+          username: 'test',
+          characterType: 'bard',
+          metric: 105,
+          isCurrentUser: true,
+          isFriend: false,
+          isSeparated: true,
+        },
+      ],
+      topUser: {
+        rank: 1,
+        userId: '1',
+        username: 'DragonSlayer77',
+        characterType: 'knight',
+        metric: 150,
+        isCurrentUser: false,
+        isFriend: false,
+      },
+      restOfUsers: [
+        {
+          rank: 2,
+          userId: '2',
+          username: 'MysticWanderer',
+          characterType: 'wizard',
+          metric: 135,
+          isCurrentUser: false,
+          isFriend: false,
+        },
+        {
+          rank: 3,
+          userId: '3',
+          username: 'QuestMaster42',
+          characterType: 'scout',
+          metric: 120,
+          isCurrentUser: false,
+          isFriend: true,
+        },
+        {
+          userId: 'current-user',
+          username: 'test',
+          characterType: 'bard',
+          metric: 105,
+          isCurrentUser: true,
+          isFriend: false,
+          isSeparated: true,
+        },
+      ],
+      currentUserPosition: 4,
+    });
   });
 
   it('renders leaderboard with global data by default', () => {
