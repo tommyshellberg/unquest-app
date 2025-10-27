@@ -1,6 +1,8 @@
 import { renderHook } from '@testing-library/react-native';
-import { useCustomQuestStory } from './useCustomQuestStory';
+
 import type { QuestWithMode } from '@/components/quest-complete/types';
+
+import { useCustomQuestStory } from './useCustomQuestStory';
 
 describe('useCustomQuestStory', () => {
   describe('story quests', () => {

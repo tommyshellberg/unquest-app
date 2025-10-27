@@ -79,9 +79,7 @@ export function LeaderboardTabs({
 
             {/* Tab Label */}
             <Text
-              className={`mt-1 text-sm ${
-                isSelected ? 'font-bold' : ''
-              }`}
+              className={`mt-1 text-sm ${isSelected ? 'font-bold' : ''}`}
               style={{
                 color: isSelected
                   ? COLORS.secondaryAccent

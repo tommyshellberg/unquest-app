@@ -12,8 +12,8 @@ import {
 
 import { Text } from '@/components/ui';
 import { ProgressBar, type ProgressBarRef } from '@/components/ui/progress-bar';
-import { type StoryQuestTemplate } from '@/store/types';
 import { audioCacheService } from '@/lib/services/audio-cache.service';
+import { type StoryQuestTemplate } from '@/store/types';
 import { getQuestAudioPath } from '@/utils/audio-utils';
 
 type Props = {

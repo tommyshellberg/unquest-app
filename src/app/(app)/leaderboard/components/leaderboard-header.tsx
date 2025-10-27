@@ -35,7 +35,9 @@ export function LeaderboardHeader({ topUser, type }: LeaderboardHeaderProps) {
         <Trophy
           size={UI_CONFIG.iconSizeTrophy}
           color={COLORS.secondaryAccent}
-          style={{ transform: [{ rotate: UI_CONFIG.trophyBackgroundRotation }] }}
+          style={{
+            transform: [{ rotate: UI_CONFIG.trophyBackgroundRotation }],
+          }}
         />
       </View>
 

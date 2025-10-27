@@ -1,4 +1,3 @@
-import type { LeaderboardType } from './constants';
 import { getMetricLabel, getMetricLabelFull } from './utils';
 
 describe('Leaderboard Utils', () => {

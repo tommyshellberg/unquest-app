@@ -1,5 +1,5 @@
 // modules/lock-state/LockStateModule.ts
-import { requireNativeModule, EventEmitter } from 'expo-modules-core';
+import { EventEmitter, requireNativeModule } from 'expo-modules-core';
 
 /**
  * Define the shape of our events.

@@ -1,6 +1,6 @@
+import { Search, X } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, TextInput } from 'react-native';
-import { Search, X } from 'lucide-react-native';
 
 import CHARACTERS from '@/app/data/characters';
 import { Pressable, ScrollView, Text, View } from '@/components/ui';

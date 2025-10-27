@@ -27,9 +27,7 @@ export const useResetStoryline = () => {
 
   return useMutation<ResetStorylineResponse, Error, ResetStorylineVariables>({
     mutationFn: async ({ storylineId }) => {
-      const response = await apiClient.post(
-        `/storylines/${storylineId}/reset`
-      );
+      const response = await apiClient.post(`/storylines/${storylineId}/reset`);
       return response.data;
     },
     onSuccess: (data, variables) => {

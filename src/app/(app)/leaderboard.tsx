@@ -18,13 +18,13 @@ import {
 } from '@/components/profile/contact-import';
 import {
   Button,
+  Card,
   FocusAwareStatusBar,
   ScreenContainer,
   ScreenHeader,
   ScrollView,
   Text,
   View,
-  Card,
 } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
 import { useProfileData } from '@/lib/hooks/use-profile-data';
@@ -32,18 +32,18 @@ import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 import { useUserStore } from '@/store/user-store';
 
-import {
-  A11Y,
-  COLORS,
-  STRINGS,
-  type LeaderboardType,
-  type ScopeType,
-} from './leaderboard/constants';
 import { EmptyStates } from './leaderboard/components/empty-states';
 import { LeaderboardHeader } from './leaderboard/components/leaderboard-header';
 import { LeaderboardItem } from './leaderboard/components/leaderboard-item';
 import { LeaderboardTabs } from './leaderboard/components/leaderboard-tabs';
 import { ScopeToggle } from './leaderboard/components/scope-toggle';
+import {
+  A11Y,
+  COLORS,
+  type LeaderboardType,
+  type ScopeType,
+  STRINGS,
+} from './leaderboard/constants';
 import { useLeaderboardData } from './leaderboard/hooks/use-leaderboard-data';
 
 export default function LeaderboardScreen() {

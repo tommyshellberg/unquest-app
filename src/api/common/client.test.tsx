@@ -1,9 +1,11 @@
-import { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 import { signOut } from '@/lib/auth';
 import { getToken } from '@/lib/auth/utils';
 
 import { refreshAccessToken } from '../auth';
+// Import after mocks are set up
+import { __resetRefreshAttempts, apiClient } from './client';
 
 // Mock dependencies
 jest.mock('@/lib/auth');
@@ -63,9 +65,6 @@ jest.mock('axios', () => ({
     );
   }),
 }));
-
-// Import after mocks are set up
-import { apiClient, __resetRefreshAttempts } from './client';
 
 // Mock console methods
 const originalConsoleError = console.error;

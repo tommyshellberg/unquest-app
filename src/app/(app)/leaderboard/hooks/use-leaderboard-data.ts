@@ -9,11 +9,7 @@ import { useMemo } from 'react';
 
 import type { LeaderboardEntry as ApiLeaderboardEntry } from '@/api/stats';
 
-import {
-  UI_CONFIG,
-  type LeaderboardType,
-  type ScopeType,
-} from '../constants';
+import { type LeaderboardType, type ScopeType, UI_CONFIG } from '../constants';
 import type {
   CharacterType,
   LeaderboardEntry,
@@ -49,9 +45,7 @@ export interface UseLeaderboardDataParams {
   scope: ScopeType;
   currentUserId: string | undefined;
   friendsData: { friends: { _id: string }[] } | undefined;
-  character:
-    | { name: string; type: CharacterType; level: number }
-    | undefined;
+  character: { name: string; type: CharacterType; level: number } | undefined;
   completedQuests: Quest[];
   totalMinutes: number;
   dailyQuestStreak: number;
@@ -105,18 +99,20 @@ export function useLeaderboardData({
     }
 
     // Transform API data to UI format for top 10
-    const top10 = apiData.slice(0, UI_CONFIG.topUsersLimit).map((entry, index) => ({
-      rank: index + 1,
-      userId: entry.userId,
-      username: entry.characterName,
-      characterType: entry.characterType as CharacterType,
-      metric: entry.value,
-      isCurrentUser: entry.userId === currentUserId,
-      isFriend:
-        scope === 'friends' ||
-        friendsData?.friends?.some((friend) => friend._id === entry.userId) ||
-        false,
-    }));
+    const top10 = apiData
+      .slice(0, UI_CONFIG.topUsersLimit)
+      .map((entry, index) => ({
+        rank: index + 1,
+        userId: entry.userId,
+        username: entry.characterName,
+        characterType: entry.characterType as CharacterType,
+        metric: entry.value,
+        isCurrentUser: entry.userId === currentUserId,
+        isFriend:
+          scope === 'friends' ||
+          friendsData?.friends?.some((friend) => friend._id === entry.userId) ||
+          false,
+      }));
 
     // Check if current user is in top 10
     const userInTop10 = top10.some((entry) => entry.isCurrentUser);

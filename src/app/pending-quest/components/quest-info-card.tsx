@@ -7,7 +7,7 @@ import { Card, Text, View } from '@/components/ui';
 import colors from '@/components/ui/colors';
 
 import { ANIMATION_CONFIG, TEST_IDS, UI_CONFIG } from '../constants';
-import { CharacterData, PendingQuestData } from '../types';
+import { type CharacterData, type PendingQuestData } from '../types';
 import { getQuestSubtitle } from '../utils';
 
 interface QuestInfoCardProps {
@@ -47,7 +47,10 @@ export function QuestInfoCard({ quest, character }: QuestInfoCardProps) {
             {quest.title}
           </Text>
           <View className="ml-3 flex-row items-center">
-            <Clock size={UI_CONFIG.CLOCK_ICON_SIZE} color={colors.secondary[300]} />
+            <Clock
+              size={UI_CONFIG.CLOCK_ICON_SIZE}
+              color={colors.secondary[300]}
+            />
             <Text
               className="ml-1 text-sm text-neutral-200"
               accessibilityLabel={`Duration: ${quest.durationMinutes} minutes`}
@@ -62,7 +65,7 @@ export function QuestInfoCard({ quest, character }: QuestInfoCardProps) {
           entering={FadeInDown.delay(
             ANIMATION_CONFIG.QUEST_SUBTITLE_DELAY
           ).duration(ANIMATION_CONFIG.QUEST_INFO_FADE_DURATION)}
-          className="text-sm leading-relaxed text-neutral-200"
+          className="leading-relaxed text-neutral-200"
           accessibilityLabel={subtitle}
         >
           {subtitle}

@@ -3,12 +3,11 @@ import { OneSignal } from 'react-native-onesignal';
 
 import { storeTokens } from '@/api/token';
 import { getUserDetails } from '@/lib/services/user';
+import { getItem } from '@/lib/storage';
 import { useUserStore } from '@/store/user-store';
-import { useCharacterStore } from '@/store/character-store';
 
 import { useAuth } from './index';
 import { getToken, removeToken, setToken } from './utils';
-import { getItem } from '@/lib/storage';
 
 // Mock all dependencies
 jest.mock('expo-constants', () => ({
@@ -346,7 +345,7 @@ describe('Auth Store', () => {
       expect(getUserDetails).toHaveBeenCalled();
       // The implementation now keeps the user signed in on fetch failure
       expect(signOutSpy).not.toHaveBeenCalled();
-      
+
       // The implementation doesn't set status to signIn on user details fetch failure
       // It remains as 'hydrating' but the user stays logged in with the token
       const state = useAuth.getState();
@@ -365,7 +364,7 @@ describe('Auth Store', () => {
 
       // The implementation sets status to signOut but doesn't call signOut method
       expect(signOutSpy).not.toHaveBeenCalled();
-      
+
       // But it should set the status to signOut
       const state = useAuth.getState();
       expect(state.status).toBe('signOut');

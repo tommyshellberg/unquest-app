@@ -4,7 +4,7 @@ import { TextInput } from 'react-native';
 
 import { Button, Text, View } from '@/components/ui';
 
-import { BRAND_NAME, TERMS_URL } from './constants';
+import { TERMS_URL } from './constants';
 import { emailSchema } from './types';
 
 type EmailInputViewProps = {

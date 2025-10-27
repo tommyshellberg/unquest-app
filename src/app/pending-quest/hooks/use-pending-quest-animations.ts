@@ -9,7 +9,7 @@ import {
 } from 'react-native-reanimated';
 
 import { ANIMATION_CONFIG } from '../constants';
-import { AnimationStyles } from '../types';
+import { type AnimationStyles } from '../types';
 
 /**
  * Custom hook to manage all animations for the pending quest screen

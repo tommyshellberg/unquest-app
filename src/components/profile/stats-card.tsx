@@ -9,8 +9,8 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Card, Text, View } from '@/components/ui';
 import { STATS_ANIMATION } from '@/app/(app)/profile-constants';
+import { Card, Text, View } from '@/components/ui';
 
 type StatsCardProps = {
   questCount: number;

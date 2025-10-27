@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
+
 import { getMapNameForQuest } from '@/app/utils/map-utils';
+
 import { STORYLINE_COMPLETE_THRESHOLD } from '../constants';
 import type { CarouselItem } from '../types';
 

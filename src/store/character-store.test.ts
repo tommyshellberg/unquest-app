@@ -1,7 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 
-import { levels } from '@/app/data/level-progression';
-
 import { useCharacterStore } from './character-store';
 
 // Mock storage

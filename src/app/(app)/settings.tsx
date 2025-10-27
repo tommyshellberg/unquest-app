@@ -370,7 +370,9 @@ export default function Settings() {
                   <Feather name="user" size={24} color={iconColor} />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xl font-medium text-white">Account</Text>
+                  <Text className="text-xl font-medium text-white">
+                    Account
+                  </Text>
                   <Text className="text-neutral-200">
                     {user?.email || 'Not signed in'}
                   </Text>
@@ -439,7 +441,9 @@ export default function Settings() {
                   <Globe size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium text-white">Timezone</Text>
+                  <Text className="text-xl font-medium text-white">
+                    Timezone
+                  </Text>
                   <Text className="text-neutral-200">
                     {TIMEZONES.find((tz) => tz.value === selectedTimezone)
                       ?.label || selectedTimezone}
@@ -458,7 +462,9 @@ export default function Settings() {
                   <Feather name="bell" size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium text-white">Notifications</Text>
+                  <Text className="text-xl font-medium text-white">
+                    Notifications
+                  </Text>
                   <Text className="text-neutral-200">
                     {notificationsEnabled ? 'Enabled' : 'Disabled'}
                   </Text>
@@ -617,7 +623,9 @@ export default function Settings() {
                   <Feather name="mail" size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium text-white">Contact Us</Text>
+                  <Text className="text-xl font-medium text-white">
+                    Contact Us
+                  </Text>
                   <Text className="text-neutral-200">{contactEmail}</Text>
                 </View>
               </View>
@@ -635,7 +643,9 @@ export default function Settings() {
                   <Feather name="help-circle" size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium text-white">Request a Feature</Text>
+                  <Text className="text-xl font-medium text-white">
+                    Request a Feature
+                  </Text>
                   <Text className="text-neutral-200">{contactEmail}</Text>
                 </View>
               </View>

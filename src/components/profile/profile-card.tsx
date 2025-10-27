@@ -16,9 +16,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import CHARACTERS from '@/app/data/characters';
 import { PROFILE_COLORS } from '@/app/(app)/profile-constants';
 import type { Character } from '@/app/(app)/profile-types';
+import CHARACTERS from '@/app/data/characters';
 import { Card, Text, View } from '@/components/ui';
 import { updateUserCharacter } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
@@ -167,7 +167,11 @@ export function ProfileCard({ character }: ProfileCardProps) {
                       accessibilityLabel="Edit character name"
                       accessibilityHint="Tap to edit your character name"
                     >
-                      <Feather name="edit-2" size={18} color={PROFILE_COLORS.editIcon} />
+                      <Feather
+                        name="edit-2"
+                        size={18}
+                        color={PROFILE_COLORS.editIcon}
+                      />
                     </Pressable>
                   </View>
                 )}

@@ -36,10 +36,7 @@ export function EmptyStates({
           >
             {STRINGS.emptySignInFriends}
           </Text>
-          <Text
-            className="text-center"
-            style={{ color: COLORS.textSecondary }}
-          >
+          <Text className="text-center" style={{ color: COLORS.textSecondary }}>
             {STRINGS.emptySignInMessage}
           </Text>
         </View>
@@ -63,10 +60,7 @@ export function EmptyStates({
           >
             {STRINGS.emptyNoData}
           </Text>
-          <Text
-            className="text-center"
-            style={{ color: COLORS.textSecondary }}
-          >
+          <Text className="text-center" style={{ color: COLORS.textSecondary }}>
             {scope === 'friends'
               ? STRINGS.emptyNoFriendsStarted
               : STRINGS.emptyCompleteQuests}
@@ -92,10 +86,7 @@ export function EmptyStates({
           >
             {STRINGS.emptyInviteFriendsTitle}
           </Text>
-          <Text
-            className="text-center"
-            style={{ color: COLORS.textSecondary }}
-          >
+          <Text className="text-center" style={{ color: COLORS.textSecondary }}>
             {STRINGS.emptyInviteFriendsMessage}
           </Text>
         </View>
@@ -121,10 +112,7 @@ export function EmptyStates({
     return (
       <Card className="mb-4 p-6">
         <View className="items-center">
-          <Text
-            className="text-center"
-            style={{ color: COLORS.textSecondary }}
-          >
+          <Text className="text-center" style={{ color: COLORS.textSecondary }}>
             {message}
           </Text>
         </View>
@@ -136,7 +124,11 @@ export function EmptyStates({
   return (
     <View className="mb-6 mt-4">
       <Button
-        label={hasFriends ? STRINGS.inviteButtonHasFriends : STRINGS.inviteButtonNoFriends}
+        label={
+          hasFriends
+            ? STRINGS.inviteButtonHasFriends
+            : STRINGS.inviteButtonNoFriends
+        }
         variant="default"
         onPress={onInviteFriends}
         accessibilityLabel={A11Y.labelInviteFriends}

@@ -1,7 +1,10 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
+
 import { invitationApi } from '@/api/invitation';
-import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
+import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
+
+// Import the component
+import JoinCooperativeQuest from './join-cooperative-quest';
 
 // Mock the router
 const mockReplace = jest.fn();
@@ -48,9 +51,6 @@ jest.mock('@/components/providers/lazy-websocket-provider', () => ({
     forceReconnect: jest.fn(),
   })),
 }));
-
-// Import the component
-import JoinCooperativeQuest from './join-cooperative-quest';
 
 describe('JoinCooperativeQuest', () => {
   beforeEach(() => {

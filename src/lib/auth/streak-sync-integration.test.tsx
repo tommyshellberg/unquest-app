@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 
 import { getUserDetails } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';

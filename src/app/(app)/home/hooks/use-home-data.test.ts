@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react-native';
+
 import { useHomeData } from './use-home-data';
-import { STORYLINE_COMPLETE_THRESHOLD } from '../constants';
 
 // Mock getMapNameForQuest
 jest.mock('@/app/utils/map-utils', () => ({
@@ -109,7 +109,9 @@ describe('useHomeData', () => {
         })
       );
 
-      const customCard = result.current.carouselData.find((c) => c.id === 'custom');
+      const customCard = result.current.carouselData.find(
+        (c) => c.id === 'custom'
+      );
       expect(customCard).toBeDefined();
       expect(customCard?.title).toBe('Start Custom Quest');
       expect(customCard?.mode).toBe('custom');
@@ -126,7 +128,9 @@ describe('useHomeData', () => {
         })
       );
 
-      const coopCard = result.current.carouselData.find((c) => c.id === 'cooperative');
+      const coopCard = result.current.carouselData.find(
+        (c) => c.id === 'cooperative'
+      );
       expect(coopCard).toBeDefined();
       expect(coopCard?.title).toBe('Cooperative Quest');
       expect(coopCard?.mode).toBe('cooperative');

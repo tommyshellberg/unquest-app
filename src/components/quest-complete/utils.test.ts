@@ -1,6 +1,6 @@
-import { getQuestImage, hashString } from './utils';
-import { POI_IMAGES } from './types';
 import type { QuestWithMode } from './types';
+import { POI_IMAGES } from './types';
+import { getQuestImage, hashString } from './utils';
 
 describe('quest-complete/utils', () => {
   describe('hashString', () => {

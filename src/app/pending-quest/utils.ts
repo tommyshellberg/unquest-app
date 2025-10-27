@@ -1,5 +1,5 @@
 import { STRINGS } from './constants';
-import { QuestMode } from './types';
+import { type QuestMode } from './types';
 
 /**
  * Get the appropriate subtitle text based on quest mode

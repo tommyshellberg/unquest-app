@@ -9,8 +9,8 @@ import {
   rejectFriendInvitation,
   removeFriend,
   rescindInvitation,
-  sendFriendInvite,
   sendBulkFriendInvites,
+  sendFriendInvite,
 } from '@/lib/services/user';
 
 type InviteFormData = {

@@ -1,4 +1,5 @@
 import { Dimensions } from 'react-native';
+
 import Colors from '@/components/ui/colors';
 
 // Screen dimensions for the carousel
@@ -44,7 +45,8 @@ export const FOOTER_MIN_HEIGHT = 140;
 export const BACKGROUND_OPACITY = 0.6;
 
 // Carousel layout
-export const CAROUSEL_CONTENT_PADDING = (screenWidth - CARD_WIDTH) / 2 - CARD_SPACING;
+export const CAROUSEL_CONTENT_PADDING =
+  (screenWidth - CARD_WIDTH) / 2 - CARD_SPACING;
 export const CAROUSEL_VERTICAL_PADDING = 10;
 
 // Shadow styles (reusable)

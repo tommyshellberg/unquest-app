@@ -1,5 +1,5 @@
-import React from 'react';
 import { Clock } from 'lucide-react-native';
+import React from 'react';
 import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
 
 import { Card, View } from '@/components/ui';

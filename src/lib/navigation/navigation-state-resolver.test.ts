@@ -1,7 +1,12 @@
 import { renderHook } from '@testing-library/react-hooks';
 
+import { useAuth } from '@/lib/auth';
 import { useNavigationTarget } from '@/lib/navigation/navigation-state-resolver';
+// Import mocked modules
+import { getItem } from '@/lib/storage';
+import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep } from '@/store/onboarding-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 // Mock modules
@@ -10,12 +15,6 @@ jest.mock('@/lib/auth');
 jest.mock('@/store/onboarding-store');
 jest.mock('@/store/character-store');
 jest.mock('@/store/quest-store');
-
-// Import mocked modules
-import { getItem } from '@/lib/storage';
-import { useAuth } from '@/lib/auth';
-import { useOnboardingStore } from '@/store/onboarding-store';
-import { useCharacterStore } from '@/store/character-store';
 
 // Setup mock implementations
 const mockGetItem = getItem as jest.MockedFunction<typeof getItem>;

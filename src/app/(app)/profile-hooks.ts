@@ -11,7 +11,7 @@ import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import type { CharacterType } from '@/store/types';
 
-import { calculateXPForLevel, CHARACTER_SYNC } from './profile-constants';
+import { CHARACTER_SYNC } from './profile-constants';
 import type { UserWithLegacyCharacter } from './profile-types';
 
 /**
@@ -37,9 +37,7 @@ export function useCharacterSync() {
 
           // Check if user has character data at the top level (legacy format)
           const hasLegacyCharacterData =
-            user?.type &&
-            user?.name &&
-            user?.level !== undefined;
+            user?.type && user?.name && user?.level !== undefined;
 
           if (hasLegacyCharacterData) {
             // Create character from user data

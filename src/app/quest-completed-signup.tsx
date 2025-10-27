@@ -13,28 +13,20 @@ import {
   FocusAwareStatusBar,
   ScreenContainer,
   Text,
+  Title,
   View,
 } from '@/components/ui';
-import { useOnboardingStore } from '@/store/onboarding-store';
-import { OnboardingStep } from '@/store/onboarding-store';
 
 export default function QuestCompletedSignupScreen() {
-  const setOnboardingStep = useOnboardingStore((state) => state.setCurrentStep);
   const posthog = usePostHog();
 
   const handleCreateAccount = useCallback(() => {
     posthog.capture('onboarding_trigger_try_create_account');
 
-    // Important: Update the onboarding step to COMPLETED when navigating to login
-    // This prevents further redirects back to the signup screen
-    setOnboardingStep(OnboardingStep.COMPLETED);
-
-    // Use replace instead of push to avoid navigation stack issues
-    // Small delay to ensure the state is updated before navigation
-    setTimeout(() => {
-      router.replace('/login');
-    }, 100);
-  }, [setOnboardingStep, posthog]);
+    // Navigate to login - the login flow will handle setting onboarding to COMPLETED
+    // after successful authentication
+    router.replace('/login');
+  }, [posthog]);
 
   return (
     <View className="flex-1">
@@ -49,10 +41,10 @@ export default function QuestCompletedSignupScreen() {
         <View className="absolute inset-0 bg-white/10" />
       </View>
 
-      <ScreenContainer className="justify-between">
+      <ScreenContainer fullScreen className="justify-between">
         <View className="mt-6">
           <Animated.View entering={FadeInLeft.delay(100)}>
-            <Text className="text-3xl font-bold">Claim Your Legend</Text>
+            <Title text="Claim Your Legend" />
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(600)}>

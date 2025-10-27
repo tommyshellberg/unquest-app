@@ -1,5 +1,5 @@
-import { POI_IMAGES, type QuestWithMode } from './types';
 import { TOTAL_POI_IMAGES } from './constants';
+import { POI_IMAGES, type QuestWithMode } from './types';
 
 /**
  * Hash a string to a positive integer
@@ -46,7 +46,8 @@ export function getQuestImage(quest: QuestWithMode) {
   // For custom/cooperative quests or as fallback, use a hash of the quest ID
   // This ensures the same quest always gets the same image
   const hash = hashString(quest.id);
-  const imageNumber = ((hash % TOTAL_POI_IMAGES) + 1) as keyof typeof POI_IMAGES;
+  const imageNumber = ((hash % TOTAL_POI_IMAGES) +
+    1) as keyof typeof POI_IMAGES;
 
   return POI_IMAGES[imageNumber];
 }

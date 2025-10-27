@@ -17,8 +17,8 @@ export * from './utils';
 export * from './hooks/use-leaderboard-data';
 
 // Components
-export { LeaderboardItem } from './components/leaderboard-item';
-export { LeaderboardHeader } from './components/leaderboard-header';
-export { ScopeToggle } from './components/scope-toggle';
-export { LeaderboardTabs } from './components/leaderboard-tabs';
 export { EmptyStates } from './components/empty-states';
+export { LeaderboardHeader } from './components/leaderboard-header';
+export { LeaderboardItem } from './components/leaderboard-item';
+export { LeaderboardTabs } from './components/leaderboard-tabs';
+export { ScopeToggle } from './components/scope-toggle';

@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react-native';
+
 import { useCooperativeLobbyStore } from './cooperative-lobby-store';
 
 describe('CooperativeLobbyStore', () => {

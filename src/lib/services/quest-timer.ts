@@ -12,19 +12,18 @@ import {
 } from '@/lib/services/notifications';
 import {
   createQuestRun,
-  updateQuestRunStatus,
-  updatePhoneLockStatus,
   getQuestRunStatus,
+  updatePhoneLockStatus,
 } from '@/lib/services/quest-run-service';
 import { getItem, removeItem, setItem } from '@/lib/storage';
-import { useQuestStore } from '@/store/quest-store';
-import { useUserStore } from '@/store/user-store';
 import { useCharacterStore } from '@/store/character-store';
+import { useQuestStore } from '@/store/quest-store';
 import {
   type CustomQuestTemplate,
-  type StoryQuestTemplate,
   type Quest,
+  type StoryQuestTemplate,
 } from '@/store/types';
+import { useUserStore } from '@/store/user-store';
 
 // --- Linter Fix for Type Errors ---
 // Helper function to safely parse JSON from storage

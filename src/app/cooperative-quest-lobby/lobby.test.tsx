@@ -1,8 +1,11 @@
 import React from 'react';
+
 import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
 import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
 import { useUserStore } from '@/store/user-store';
-import { invitationApi } from '@/api/invitation';
+
+// Import the component
+import CooperativeQuestLobby from './[lobbyId]';
 
 // Mock the router
 const mockReplace = jest.fn();
@@ -43,9 +46,6 @@ jest.mock('@/api/invitation', () => ({
     respondToInvitation: jest.fn(),
   },
 }));
-
-// Import the component
-import CooperativeQuestLobby from './[lobbyId]';
 
 describe('CooperativeQuestLobby', () => {
   const mockLobby = {

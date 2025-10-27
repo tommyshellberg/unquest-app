@@ -1,21 +1,20 @@
-import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
-import { ActivityIndicator, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { ActivityIndicator, RefreshControl } from 'react-native';
 
 import {
   Button,
   FocusAwareStatusBar,
-  Text,
-  View,
-  ScrollView,
-  Pressable,
   ScreenContainer,
   ScreenHeader,
+  ScrollView,
+  Text,
+  View,
 } from '@/components/ui';
-import { getPendingInvitations } from '@/lib/services/invitation-service';
 import { useInvitationActions } from '@/lib/hooks/use-cooperative-quest';
-import { formatDistanceToNow } from 'date-fns';
+import { getPendingInvitations } from '@/lib/services/invitation-service';
 
 export default function QuestDiscoveryScreen() {
   const router = useRouter();
@@ -91,7 +90,7 @@ export default function QuestDiscoveryScreen() {
     <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
-      <ScreenContainer>
+      <ScreenContainer fullScreen>
         {/* Header */}
         <ScreenHeader title="Join a Quest" showBackButton />
 

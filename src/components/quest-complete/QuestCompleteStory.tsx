@@ -7,12 +7,14 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
-import { Card } from '@/components/ui/card';
-import { Text } from '@/components/ui';
+
 import { StoryNarration } from '@/components/StoryNarration';
+import { Text } from '@/components/ui';
+import { Card } from '@/components/ui/card';
+
+import { ANIMATION_TIMING } from './constants';
 import type { QuestCompleteStoryProps } from './types';
 import { isStoryQuest } from './types';
-import { ANIMATION_TIMING } from './constants';
 
 export function QuestCompleteStory({
   story,

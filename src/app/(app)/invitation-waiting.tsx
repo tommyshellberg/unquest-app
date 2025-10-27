@@ -2,13 +2,13 @@ import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
 
+import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
-import { useQuestStore } from '@/store/quest-store';
 import {
   useInvitationStatus,
   useQuestRunStatus,
 } from '@/lib/hooks/use-cooperative-quest';
-import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
+import { useQuestStore } from '@/store/quest-store';
 
 export default function InvitationWaitingScreen() {
   const router = useRouter();
@@ -19,8 +19,12 @@ export default function InvitationWaitingScreen() {
   const setCooperativeQuestRun = useQuestStore(
     (state) => state.setCooperativeQuestRun
   );
-  const { on: addListener, off: removeListener, connect: connectWebSocket } = useLazyWebSocket();
-  
+  const {
+    on: addListener,
+    off: removeListener,
+    connect: connectWebSocket,
+  } = useLazyWebSocket();
+
   // Connect WebSocket when entering this screen
   useEffect(() => {
     // Only connect if we have a proper auth context

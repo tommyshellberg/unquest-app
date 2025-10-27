@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react-native';
 import React from 'react';
+
 import { QuestCompleteStory } from './QuestCompleteStory';
 import type { QuestWithMode } from './types';
 
@@ -75,30 +76,21 @@ describe('QuestCompleteStory', () => {
   describe('StoryNarration Integration', () => {
     it('should show StoryNarration for story quests', () => {
       const { getByTestId } = render(
-        <QuestCompleteStory
-          story="Test story"
-          quest={mockStoryQuest}
-        />
+        <QuestCompleteStory story="Test story" quest={mockStoryQuest} />
       );
       expect(getByTestId('story-narration-mock')).toBeTruthy();
     });
 
     it('should not show StoryNarration for custom quests', () => {
       const { queryByTestId } = render(
-        <QuestCompleteStory
-          story="Test story"
-          quest={mockCustomQuest}
-        />
+        <QuestCompleteStory story="Test story" quest={mockCustomQuest} />
       );
       expect(queryByTestId('story-narration-mock')).toBeNull();
     });
 
     it('should not show StoryNarration for cooperative quests', () => {
       const { queryByTestId } = render(
-        <QuestCompleteStory
-          story="Test story"
-          quest={mockCooperativeQuest}
-        />
+        <QuestCompleteStory story="Test story" quest={mockCooperativeQuest} />
       );
       expect(queryByTestId('story-narration-mock')).toBeNull();
     });

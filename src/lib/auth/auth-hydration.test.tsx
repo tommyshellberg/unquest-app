@@ -1,9 +1,8 @@
-import { act, renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 
-import { getUserDetails } from '@/lib/services/user';
+import { hydrateAuth, useAuth } from '@/lib/auth';
 import { getToken } from '@/lib/auth/utils';
-import { useAuth, hydrateAuth } from '@/lib/auth';
-import { useCharacterStore } from '@/store/character-store';
+import { getUserDetails } from '@/lib/services/user';
 import { useUserStore } from '@/store/user-store';
 
 // Mock dependencies

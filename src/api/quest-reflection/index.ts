@@ -88,7 +88,7 @@ export function useQuestReflection(questRunId: string | undefined) {
 // React Query mutation hook for creating quest reflections
 export function useCreateQuestReflection() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: createQuestReflection,
     onSuccess: (data) => {

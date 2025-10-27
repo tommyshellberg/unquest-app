@@ -81,7 +81,8 @@ export const STRINGS = {
   // Empty states
   emptyNoData: 'No Data Yet',
   emptySignInFriends: 'Sign in to see friends',
-  emptySignInMessage: "You need to be signed in to view your friends' rankings.",
+  emptySignInMessage:
+    "You need to be signed in to view your friends' rankings.",
   emptyInviteFriendsTitle: 'Invite Friends to Compete!',
   emptyInviteFriendsMessage:
     "You're doing great! Invite friends to see how you stack up against each other.",
@@ -90,8 +91,7 @@ export const STRINGS = {
 
   // Friends empty state variations (metric-specific)
   emptyFriendsQuests: 'No friends have completed quests yet. Be the first!',
-  emptyFriendsMinutes:
-    'No friends have saved time yet. Start your journey!',
+  emptyFriendsMinutes: 'No friends have saved time yet. Start your journey!',
   emptyFriendsStreak: 'No friends have active streaks. Start yours today!',
 
   // Invite button

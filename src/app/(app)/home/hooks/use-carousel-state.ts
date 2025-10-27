@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
-import { SNAP_INTERVAL, ANIMATION_TIMINGS } from '../constants';
+
+import { ANIMATION_TIMINGS, SNAP_INTERVAL } from '../constants';
 
 interface UseCarouselStateOptions {
   onPaywallReset?: () => void;

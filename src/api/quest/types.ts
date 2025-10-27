@@ -67,12 +67,12 @@ export interface QuestRun {
     category?: string;
     storylineId?: string;
   };
-  participants: Array<{
+  participants: {
     userId: string;
     ready: boolean;
     phoneLocked: boolean;
     status: 'active' | 'failed' | 'completed';
-  }>;
+  }[];
   failureReason?: string;
   failedBy?: string;
   createdAt: string;

@@ -1,3 +1,3 @@
-export { QuestCard } from './quest-card';
-export { CompassAnimation } from './quest-animations';
 export { LockInstructions } from './lock-instructions';
+export { CompassAnimation } from './quest-animations';
+export { QuestCard } from './quest-card';

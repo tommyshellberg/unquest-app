@@ -1,7 +1,7 @@
 import React from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { Text, View } from '@/components/ui';
+import { Text } from '@/components/ui';
 import colors from '@/components/ui/colors';
 
 interface LockInstructionsProps {

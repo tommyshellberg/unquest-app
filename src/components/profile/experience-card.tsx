@@ -73,12 +73,17 @@ export function ExperienceCard({ character }: ExperienceCardProps) {
       </View>
 
       <View className="mt-2 h-3 w-full overflow-hidden rounded-full bg-neutral-400">
-        <Animated.View className="h-full bg-secondary-300" style={animatedStyle} />
+        <Animated.View
+          className="h-full bg-secondary-300"
+          style={animatedStyle}
+        />
       </View>
 
       <View className="mt-2 flex-row justify-between">
         <View className="flex-row items-center">
-          <Text className="font-semibold text-white">Level {character.level}</Text>
+          <Text className="font-semibold text-white">
+            Level {character.level}
+          </Text>
           <Text className="ml-2 text-sm text-neutral-200">
             ({xpProgressTowardNext}/{xpRequiredForCurrentToNext})
           </Text>

@@ -1,7 +1,10 @@
-import React from 'react';
-import { Platform, AppState } from 'react-native';
-import { render, waitFor } from '@testing-library/react-native';
 import { jest } from '@jest/globals';
+import { render, waitFor } from '@testing-library/react-native';
+import React from 'react';
+import { AppState, Platform } from 'react-native';
+
+// Import the component after mocks are set up
+import RootLayout from './_layout';
 
 // Mock environment variables
 jest.mock('@env', () => ({
@@ -258,9 +261,6 @@ jest.mock('./navigation-gate', () => ({
 
 // Mock the global CSS import
 jest.mock('../../global.css', () => ({}));
-
-// Import the component after mocks are set up
-import RootLayout from './_layout';
 
 describe('RootLayout', () => {
   beforeEach(() => {

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import { useCallback } from 'react';
+
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
@@ -72,7 +73,10 @@ export function useQuestSelection({
           await QuestTimer.prepareQuest(clientQuest as StoryQuestTemplate);
           posthog.capture('success_start_quest');
         } catch (error) {
-          console.error('[useQuestSelection] QuestTimer.prepareQuest failed:', error);
+          console.error(
+            '[useQuestSelection] QuestTimer.prepareQuest failed:',
+            error
+          );
           throw error;
         }
       } else {
@@ -96,7 +100,10 @@ export function useQuestSelection({
     try {
       router.push('/custom-quest');
     } catch (error) {
-      console.error('[useQuestSelection] Error navigating to custom quest:', error);
+      console.error(
+        '[useQuestSelection] Error navigating to custom quest:',
+        error
+      );
     }
   }, [router]);
 
@@ -105,7 +112,10 @@ export function useQuestSelection({
       posthog.capture('cooperative_quest_card_clicked');
       router.push('/cooperative-quest-menu');
     } catch (error) {
-      console.error('[useQuestSelection] Error navigating to cooperative quest menu:', error);
+      console.error(
+        '[useQuestSelection] Error navigating to cooperative quest menu:',
+        error
+      );
     }
   }, [router, posthog]);
 

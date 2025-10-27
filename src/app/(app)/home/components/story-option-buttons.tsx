@@ -1,9 +1,11 @@
 import { usePostHog } from 'posthog-react-native';
 import React from 'react';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+
 import { type QuestOption } from '@/api/quest/types';
 import { Button, View } from '@/components/ui';
 import Colors from '@/components/ui/colors';
+
 import { CARD_WIDTH } from '../constants';
 
 interface ServerQuest {

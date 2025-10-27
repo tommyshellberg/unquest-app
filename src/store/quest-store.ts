@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { queryClient } from '@/api/common';
-import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import type { QuestTemplate } from '@/api/quest/types';
+import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import {
   cancelStreakWarningNotification,
   scheduleStreakWarningNotification,
@@ -13,6 +13,7 @@ import { getItem, removeItem, setItem } from '@/lib/storage';
 import { usePOIStore } from '@/store/poi-store';
 
 import { useCharacterStore } from './character-store';
+import { useOnboardingStore } from './onboarding-store';
 import {
   type CooperativeQuestRun,
   type CustomQuestTemplate,
@@ -572,6 +573,20 @@ export const useQuestStore = create<QuestState>()(
         hasMore: boolean,
         complete: boolean
       ) => {
+        // Check if we're in onboarding and shouldn't progress past quest-1
+        const onboardingStore = useOnboardingStore.getState();
+        const hasSeenSignupPrompt = onboardingStore.hasSeenSignupPrompt();
+        const isOnboardingComplete = onboardingStore.isOnboardingComplete();
+
+        // If user hasn't signed up yet and has completed quest-1,
+        // don't allow progression to next quests
+        if (!isOnboardingComplete && hasSeenSignupPrompt) {
+          console.log(
+            '🎯 Blocking quest progression - user must complete signup first'
+          );
+          return; // Don't update available quests
+        }
+
         // Convert server quest templates to client format
         const clientQuests = quests.map((quest) => ({
           ...quest,

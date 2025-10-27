@@ -75,7 +75,6 @@ export default function ProfileScreen() {
     sendBulkInvites,
   } = useFriendManagement(userEmail, contactsModalRef);
 
-
   // Fetch user details when the component mounts
   useEffect(() => {
     if (character) {

@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react-native';
 import React from 'react';
+
 import { QuestCompleteHeader } from './QuestCompleteHeader';
 import type { QuestWithMode } from './types';
 
@@ -80,7 +81,10 @@ describe('QuestCompleteHeader', () => {
   describe('Animation Props', () => {
     it('should pass disableAnimations prop to QuestImage', () => {
       const { getByTestId } = render(
-        <QuestCompleteHeader quest={mockQuestWithTitle} disableAnimations={true} />
+        <QuestCompleteHeader
+          quest={mockQuestWithTitle}
+          disableAnimations={true}
+        />
       );
       // QuestImage should be rendered (we can't easily test props with mock)
       expect(getByTestId('quest-image-mock')).toBeTruthy();
@@ -98,7 +102,9 @@ describe('QuestCompleteHeader', () => {
         status: 'completed',
       };
 
-      const { getByText, getAllByText } = render(<QuestCompleteHeader quest={storyQuest} />);
+      const { getByText, getAllByText } = render(
+        <QuestCompleteHeader quest={storyQuest} />
+      );
       expect(getByText('Quest Complete!')).toBeTruthy();
       const titles = getAllByText('Story Quest');
       expect(titles.length).toBeGreaterThan(0);
@@ -115,7 +121,9 @@ describe('QuestCompleteHeader', () => {
         status: 'completed',
       };
 
-      const { getByText, getAllByText } = render(<QuestCompleteHeader quest={customQuest} />);
+      const { getByText, getAllByText } = render(
+        <QuestCompleteHeader quest={customQuest} />
+      );
       expect(getByText('Quest Complete!')).toBeTruthy();
       const titles = getAllByText('Morning Workout');
       expect(titles.length).toBeGreaterThan(0);
@@ -132,7 +140,9 @@ describe('QuestCompleteHeader', () => {
         status: 'completed',
       };
 
-      const { getByText, getAllByText } = render(<QuestCompleteHeader quest={coopQuest} />);
+      const { getByText, getAllByText } = render(
+        <QuestCompleteHeader quest={coopQuest} />
+      );
       expect(getByText('Quest Complete!')).toBeTruthy();
       const titles = getAllByText('Team Challenge');
       expect(titles.length).toBeGreaterThan(0);

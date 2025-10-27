@@ -227,6 +227,7 @@ export default function CooperativePendingQuestScreen() {
       <BlurView intensity={30} tint="regular" className="absolute inset-0" />
 
       <ScreenContainer
+        fullScreen
         style={{
           paddingTop: insets.top + 20,
           paddingHorizontal: 20,

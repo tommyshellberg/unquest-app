@@ -1,6 +1,6 @@
+import LottieView from 'lottie-react-native';
 import React from 'react';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import LottieView from 'lottie-react-native';
 
 interface CompassAnimationProps {
   size?: number;

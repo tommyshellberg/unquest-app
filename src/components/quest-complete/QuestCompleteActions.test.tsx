@@ -1,8 +1,10 @@
-import { render, fireEvent } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import React from 'react';
-import { QuestCompleteActions } from './QuestCompleteActions';
+
 import { useQuestStore } from '@/store/quest-store';
+
+import { QuestCompleteActions } from './QuestCompleteActions';
 import type { QuestWithMode } from './types';
 
 // Mock dependencies

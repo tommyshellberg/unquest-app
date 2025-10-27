@@ -1,6 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { View } from 'react-native';
 
 import { cleanup, screen, setup } from '@/lib/test-utils';
 

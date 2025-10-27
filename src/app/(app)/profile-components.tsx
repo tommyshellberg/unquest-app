@@ -15,7 +15,12 @@ import type { ActionCardProps } from './profile-types';
 /**
  * ActionCard - Reusable card component for navigation actions
  */
-export function ActionCard({ icon: Icon, title, description, onPress }: ActionCardProps) {
+export function ActionCard({
+  icon: Icon,
+  title,
+  description,
+  onPress,
+}: ActionCardProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -27,9 +32,7 @@ export function ActionCard({ icon: Icon, title, description, onPress }: ActionCa
     >
       <Card className="items-center justify-center py-6">
         <Icon size={32} color={PROFILE_COLORS.actionCardIcon} />
-        <Text className="mt-2 text-base font-semibold text-white">
-          {title}
-        </Text>
+        <Text className="mt-2 text-base font-semibold text-white">{title}</Text>
         <Text className="mt-1 text-center text-sm text-neutral-200">
           {description}
         </Text>
@@ -41,7 +44,10 @@ export function ActionCard({ icon: Icon, title, description, onPress }: ActionCa
 /**
  * ActionCards - Container for leaderboard and achievements navigation cards
  */
-export function ActionCards({ onLeaderboardPress, onAchievementsPress }: {
+export function ActionCards({
+  onLeaderboardPress,
+  onAchievementsPress,
+}: {
   onLeaderboardPress: () => void;
   onAchievementsPress: () => void;
 }) {

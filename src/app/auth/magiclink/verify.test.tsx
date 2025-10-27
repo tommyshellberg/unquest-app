@@ -1,6 +1,6 @@
+import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import axios from 'axios';
 
 import { verifyMagicLinkAndSignIn } from '@/api/auth';
 import { signOut } from '@/lib/auth';

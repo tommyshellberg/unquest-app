@@ -1,4 +1,4 @@
-import { ViewStyle } from 'react-native';
+import { type ViewStyle } from 'react-native';
 
 /**
  * Quest mode type - determines quest type and behavior

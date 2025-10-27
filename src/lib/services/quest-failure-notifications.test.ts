@@ -1,11 +1,10 @@
 import { jest } from '@jest/globals';
-import { Platform, AppState } from 'react-native';
-import { OneSignal } from 'react-native-onesignal';
+import { Platform } from 'react-native';
 import BackgroundService from 'react-native-bg-actions';
 
+import { getQuestRunStatus } from '@/lib/services/quest-run-service';
 // Mock imports
 import { useQuestStore } from '@/store/quest-store';
-import { getQuestRunStatus } from '@/lib/services/quest-run-service';
 
 // Mock all dependencies
 jest.mock('react-native-onesignal');

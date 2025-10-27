@@ -5,10 +5,12 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
+
 import { Text, Title } from '@/components/ui';
+
+import { ANIMATION_TIMING } from './constants';
 import { QuestImage } from './QuestImage';
 import type { QuestCompleteHeaderProps } from './types';
-import { ANIMATION_TIMING } from './constants';
 
 export function QuestCompleteHeader({
   quest,

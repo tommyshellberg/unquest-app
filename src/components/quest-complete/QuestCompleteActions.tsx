@@ -7,11 +7,13 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
+
 import { View } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { useQuestStore } from '@/store/quest-store';
-import type { QuestCompleteActionsProps } from './types';
+
 import { ANIMATION_TIMING, ONBOARDING_QUEST_ID } from './constants';
+import type { QuestCompleteActionsProps } from './types';
 
 export function QuestCompleteActions({
   quest,

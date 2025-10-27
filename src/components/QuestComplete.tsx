@@ -1,9 +1,11 @@
 import React from 'react';
+
 import { Image, ScreenContainer, View } from '@/components/ui';
 import { useCustomQuestStory } from '@/hooks/useCustomQuestStory';
+
+import { QuestCompleteActions } from './quest-complete/QuestCompleteActions';
 import { QuestCompleteHeader } from './quest-complete/QuestCompleteHeader';
 import { QuestCompleteStory } from './quest-complete/QuestCompleteStory';
-import { QuestCompleteActions } from './quest-complete/QuestCompleteActions';
 import type { QuestCompleteProps } from './quest-complete/types';
 
 export function QuestComplete({
@@ -30,7 +32,7 @@ export function QuestComplete({
       <View className="bg-background-light/80 absolute inset-0" />
 
       {/* Content */}
-      <ScreenContainer className="items-center justify-between px-4">
+      <ScreenContainer fullScreen className="items-center justify-between px-4">
         <QuestCompleteHeader
           quest={quest}
           disableAnimations={disableEnteringAnimations}

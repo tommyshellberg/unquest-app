@@ -1,8 +1,8 @@
 import { Env } from '@env';
+import * as Sentry from '@sentry/react-native';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import * as Sentry from '@sentry/react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface Props {
   error: Error;
@@ -45,17 +45,17 @@ export function ErrorBoundary({ error, retry }: Props) {
       <Text style={styles.description}>
         We've been notified and are working on fixing this. Please try again.
       </Text>
-      
+
       <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[styles.button, styles.primaryButton]} 
+        <TouchableOpacity
+          style={[styles.button, styles.primaryButton]}
           onPress={retry}
         >
           <Text style={styles.buttonText}>Try Again</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.button, styles.secondaryButton]} 
+
+        <TouchableOpacity
+          style={[styles.button, styles.secondaryButton]}
           onPress={() => router.replace('/')}
         >
           <Text style={[styles.buttonText, styles.secondaryButtonText]}>

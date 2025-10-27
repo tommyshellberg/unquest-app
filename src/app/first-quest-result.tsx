@@ -16,6 +16,9 @@ export default function FirstQuestResultScreen() {
   }>();
   const setOnboardingStep = useOnboardingStore((state) => state.setCurrentStep);
   const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
+  const clearRecentCompletedQuest = useQuestStore(
+    (state) => state.clearRecentCompletedQuest
+  );
   const posthog = usePostHog();
 
   // Find quest-1 details (assuming it has a fixed ID like 'quest-1')
@@ -30,8 +33,15 @@ export default function FirstQuestResultScreen() {
   }, [outcome, setOnboardingStep]);
 
   const handleCompletedContinue = () => {
+    // Clear the completed quest state to prevent stale state issues
+    clearRecentCompletedQuest();
     setOnboardingStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
-    router.push('/quest-completed-signup');
+
+    // Use replace instead of push to avoid navigation stack issues
+    // Small delay to ensure state updates propagate
+    setTimeout(() => {
+      router.replace('/quest-completed-signup');
+    }, 100);
   };
 
   if (!firstQuestData) {

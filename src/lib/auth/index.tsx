@@ -4,7 +4,7 @@ import { create } from 'zustand';
 
 import { storeTokens } from '@/api/token';
 import { revenueCatService } from '@/lib/services/revenuecat-service';
-import { getUserDetails, refreshPremiumStatus as refreshServerPremium } from '@/lib/services/user';
+import { getUserDetails } from '@/lib/services/user';
 import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useUserStore } from '@/store/user-store';
@@ -197,7 +197,10 @@ const _useAuth = create<AuthState>((set, get) => ({
                   type: (user as any).character.type,
                   name: (user as any).character.name,
                   level: (user as any).character.level || 1,
-                  currentXP: (user as any).character.currentXP || (user as any).character.xp || 0,
+                  currentXP:
+                    (user as any).character.currentXP ||
+                    (user as any).character.xp ||
+                    0,
                 }
               : {
                   type: (user as any).type,

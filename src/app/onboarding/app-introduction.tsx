@@ -9,7 +9,13 @@ import Animated, {
   FadeInLeft,
 } from 'react-native-reanimated';
 
-import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  Text,
+  Title,
+  View,
+} from '@/components/ui';
 import {
   requestNotificationPermissions,
   setupNotifications,
@@ -95,7 +101,7 @@ export default function AppIntroductionScreen() {
         return (
           <View key="welcome">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-3xl font-bold">emberglow</Text>
+              <Title text="emberglow" />
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
               <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
@@ -127,7 +133,7 @@ export default function AppIntroductionScreen() {
         return (
           <View key="notifications">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-3xl font-bold">Notifications</Text>
+              <Title text="Notifications" />
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
               <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">

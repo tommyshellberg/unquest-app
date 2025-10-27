@@ -43,8 +43,8 @@ const generateQuestRunBodyCustom = (questTemplate: CustomQuestTemplate) => {
   }
 
   // Build the request body
-  const body: any = { 
-    quest: rest
+  const body: any = {
+    quest: rest,
   };
 
   // Add inviteeIds if this is a cooperative quest
@@ -60,23 +60,28 @@ const generateQuestRunBodyCustom = (questTemplate: CustomQuestTemplate) => {
 const generateQuestRunBodyStory = (questTemplate: StoryQuestTemplate) => {
   // Check if this is a server quest template with _id
   const questTemplateId = (questTemplate as any)._id;
-  
+
   if (questTemplateId) {
     // Server quest template - use questTemplateId
-    console.log('[generateQuestRunBodyStory] Using server questTemplateId:', questTemplateId);
+    console.log(
+      '[generateQuestRunBodyStory] Using server questTemplateId:',
+      questTemplateId
+    );
     return { questTemplateId };
   } else {
     // Local quest template - send full quest object
-    console.log('[generateQuestRunBodyStory] Using local quest template, sending full quest object');
+    console.log(
+      '[generateQuestRunBodyStory] Using local quest template, sending full quest object'
+    );
     const { id: _id, inviteeIds, ...rest } = questTemplate;
-    
+
     // Ensure mode is set
     if (!rest.mode) {
       rest.mode = 'story';
     }
-    
-    return { 
-      quest: rest
+
+    return {
+      quest: rest,
     };
   }
 };
@@ -93,20 +98,29 @@ export async function createQuestRun(
   });
 
   // Determine mode - if undefined, check for story-specific fields
-  const mode = questTemplate.mode || 
-    ((questTemplate as any).poiSlug || (questTemplate as any).story ? 'story' : 'custom');
-  
+  const mode =
+    questTemplate.mode ||
+    ((questTemplate as any).poiSlug || (questTemplate as any).story
+      ? 'story'
+      : 'custom');
+
   const body =
     mode === 'story'
       ? generateQuestRunBodyStory(questTemplate)
       : generateQuestRunBodyCustom(questTemplate);
 
-  console.log('[createQuestRun] Generated body for API call:', JSON.stringify(body, null, 2));
+  console.log(
+    '[createQuestRun] Generated body for API call:',
+    JSON.stringify(body, null, 2)
+  );
 
   try {
     // Check if we're using a provisional user
     const hasProvisionalToken = !!getItem('provisionalAccessToken');
-    console.log('[createQuestRun] Using provisional token:', hasProvisionalToken);
+    console.log(
+      '[createQuestRun] Using provisional token:',
+      hasProvisionalToken
+    );
 
     // Use the appropriate client
     const client = hasProvisionalToken ? provisionalApiClient : apiClient;

@@ -1,5 +1,6 @@
+import { RotateCcw } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
-import { ImageBackground, View } from 'react-native';
+import { ImageBackground, Pressable, View } from 'react-native';
 
 import { ProgressBar, Text } from '@/components/ui';
 import { Card } from '@/components/ui/card';
@@ -17,6 +18,7 @@ interface QuestCardProps {
   showProgress?: boolean;
   requiresPremium?: boolean;
   isCompleted?: boolean;
+  onRestart?: () => void;
 }
 
 const imageMap = {
@@ -36,6 +38,7 @@ export default function QuestCard({
   showProgress = false,
   requiresPremium = false,
   isCompleted = false,
+  onRestart,
 }: QuestCardProps) {
   // Create a reference to control the progress bar
   const progressBarRef = useRef<ProgressBarRef>(null);
@@ -63,6 +66,18 @@ export default function QuestCard({
                 : 'bg-[rgba(151,158,121,0.2)]'
           }`}
         />
+
+        {/* Restart Button - Only show for story mode with progress */}
+        {mode === 'story' && onRestart && progress > 0 && (
+          <Pressable
+            onPress={onRestart}
+            className="absolute right-3 top-3 size-10 items-center justify-center rounded-full bg-white/20"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <RotateCcw size={20} color="#ffffff" />
+          </Pressable>
+        )}
+
         <View className="flex-1 p-4">
           <View>
             {/* Mode Pill */}

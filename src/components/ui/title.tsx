@@ -15,7 +15,7 @@ export const Title = ({
   children,
   variant = 'default',
   className = '',
-  showDivider = false
+  showDivider = false,
 }: TitleProps) => {
   const content = text || children;
 
@@ -33,10 +33,12 @@ export const Title = ({
 
   return (
     <View className={containerClasses[variant]}>
-      <Text className={`font-erstoria font-bold text-white ${sizeClasses[variant]} ${className}`}>
+      <Text
+        className={`font-erstoria text-white ${sizeClasses[variant]} ${className}`}
+      >
         {content}
       </Text>
-      {showDivider && <View className="h-[2px] flex-1 ml-2" />}
+      {showDivider && <View className="ml-2 h-[2px] flex-1" />}
     </View>
   );
 };

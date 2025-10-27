@@ -8,6 +8,7 @@ interface ScreenContainerProps extends ViewProps {
   bottomPadding?: number;
   noPadding?: boolean;
   noHorizontalPadding?: boolean;
+  fullScreen?: boolean;
 }
 
 /**
@@ -16,18 +17,24 @@ interface ScreenContainerProps extends ViewProps {
  * content doesn't go too close to the bottom of the screen
  *
  * Standard padding:
- * - Bottom: 8px above safe area (accounts for tab bar)
+ * - Bottom: 8px above safe area (for screens with tab bar)
+ * - Bottom: 32px above safe area (for full screens without tab bar, use fullScreen={true})
  * - Horizontal: 16px (4 in Tailwind = 16px)
  */
 export function ScreenContainer({
   children,
-  bottomPadding = 8, // Default 8px padding above safe area
+  bottomPadding,
   noPadding = false,
   noHorizontalPadding = false,
+  fullScreen = false,
   style,
   ...props
 }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
+
+  // Determine bottom padding: fullScreen uses 32px, tab screens use 8px
+  const defaultBottomPadding = fullScreen ? 32 : 8;
+  const finalBottomPadding = bottomPadding ?? defaultBottomPadding;
 
   return (
     <LinearGradient
@@ -35,7 +42,7 @@ export function ScreenContainer({
       style={[
         {
           flex: 1,
-          paddingBottom: noPadding ? 0 : insets.bottom + bottomPadding,
+          paddingBottom: noPadding ? 0 : insets.bottom + finalBottomPadding,
           paddingHorizontal: noHorizontalPadding ? 0 : 16,
         },
         style,

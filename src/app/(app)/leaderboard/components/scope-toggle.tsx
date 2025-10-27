@@ -20,9 +20,7 @@ export function ScopeToggle({ scope, onScopeChange }: ScopeToggleProps) {
         onPress={() => onScopeChange('friends')}
         className="flex-1 rounded-full py-2"
         style={
-          scope === 'friends'
-            ? { backgroundColor: COLORS.selectedToggle }
-            : {}
+          scope === 'friends' ? { backgroundColor: COLORS.selectedToggle } : {}
         }
         accessible
         accessibilityRole={A11Y.roleButton}

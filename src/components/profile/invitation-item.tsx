@@ -72,7 +72,7 @@ export function InvitationItem({
           </View>
 
           <Pressable
-            className="size-6 items-center justify-center rounded-full bg-destructive"
+            className="bg-destructive size-6 items-center justify-center rounded-full"
             onPress={() => onRescind(invitation)}
             disabled={isProcessing}
             accessible={true}
@@ -86,7 +86,7 @@ export function InvitationItem({
       ) : (
         <View className="flex-row items-center space-x-2">
           <Pressable
-            className="size-8 items-center justify-center rounded-full bg-destructive"
+            className="bg-destructive size-8 items-center justify-center rounded-full"
             onPress={() => onReject(invitation.id)}
             disabled={isProcessing}
             accessible={true}

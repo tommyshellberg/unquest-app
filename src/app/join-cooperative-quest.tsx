@@ -67,7 +67,10 @@ function InvitationCard({
       style={{ backgroundColor: colors.cardBackground }}
     >
       <View className="mb-3">
-        <Text className="text-lg font-semibold text-white" style={{ fontWeight: '700' }}>
+        <Text
+          className="text-lg font-semibold text-white"
+          style={{ fontWeight: '700' }}
+        >
           {questTitle}
         </Text>
         <View className="mt-2 flex-row items-center">

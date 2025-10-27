@@ -326,9 +326,7 @@ describe('CustomQuestScreen', () => {
 
       // Should show error message (once we implement it)
       await waitFor(() => {
-        expect(
-          screen.queryByText(/Failed to start quest/i)
-        ).toBeOnTheScreen();
+        expect(screen.queryByText(/Failed to start quest/i)).toBeOnTheScreen();
       });
     });
 
@@ -348,9 +346,7 @@ describe('CustomQuestScreen', () => {
 
       // Should show error message (once we implement it)
       await waitFor(() => {
-        expect(
-          screen.queryByText(/Failed to start quest/i)
-        ).toBeOnTheScreen();
+        expect(screen.queryByText(/Failed to start quest/i)).toBeOnTheScreen();
       });
     });
 
@@ -370,9 +366,7 @@ describe('CustomQuestScreen', () => {
       await user.press(startButton);
 
       await waitFor(() => {
-        expect(
-          screen.queryByText(/Failed to start quest/i)
-        ).toBeOnTheScreen();
+        expect(screen.queryByText(/Failed to start quest/i)).toBeOnTheScreen();
       });
 
       // Second attempt - should succeed

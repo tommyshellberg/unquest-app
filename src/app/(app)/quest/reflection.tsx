@@ -134,7 +134,7 @@ export default function ReflectionScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
       >
-        <ScreenContainer className="flex-1">
+        <ScreenContainer fullScreen className="flex-1">
           <ScrollView
             className="flex-1"
             showsVerticalScrollIndicator={false}

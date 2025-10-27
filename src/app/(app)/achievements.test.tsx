@@ -274,9 +274,7 @@ describe('AchievementsScreen', () => {
 
     it('shows unlocked state for minutes achievement when requirement is met', () => {
       useQuestStore.setState({
-        completedQuests: [
-          { id: '1', durationMinutes: 10 },
-        ] as any,
+        completedQuests: [{ id: '1', durationMinutes: 10 }] as any,
         getCompletedQuests: jest.fn(() => [{ id: '1', durationMinutes: 10 }]),
       });
 
@@ -420,9 +418,7 @@ describe('AchievementsScreen', () => {
     it('handles very large minute counts', () => {
       useQuestStore.setState({
         completedQuests: [{ id: '1', durationMinutes: 9999 }] as any,
-        getCompletedQuests: jest.fn(() => [
-          { id: '1', durationMinutes: 9999 },
-        ]),
+        getCompletedQuests: jest.fn(() => [{ id: '1', durationMinutes: 9999 }]),
       });
 
       render(<AchievementsScreen />);
@@ -448,10 +444,7 @@ describe('AchievementsScreen', () => {
 
     it('handles missing quest duration gracefully', () => {
       useQuestStore.setState({
-        completedQuests: [
-          { id: '1' },
-          { id: '2', durationMinutes: 0 },
-        ] as any,
+        completedQuests: [{ id: '1' }, { id: '2', durationMinutes: 0 }] as any,
         getCompletedQuests: jest.fn(() => [
           { id: '1' },
           { id: '2', durationMinutes: 0 },

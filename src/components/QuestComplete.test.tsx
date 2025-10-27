@@ -1,9 +1,11 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { render, fireEvent } from '@testing-library/react-native';
 import React from 'react';
-import { QuestComplete } from './QuestComplete';
+
 import { useQuestStore } from '@/store/quest-store';
+
 import type { QuestWithMode } from './quest-complete/types';
+import { QuestComplete } from './QuestComplete';
 
 // Mock the router
 jest.mock('expo-router', () => ({

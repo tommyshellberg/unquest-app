@@ -12,7 +12,14 @@ import Animated, {
 
 import { useNextAvailableQuests } from '@/api/quest';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
-import { Button, Card, FocusAwareStatusBar, Text, Title, View } from '@/components/ui';
+import {
+  Button,
+  Card,
+  FocusAwareStatusBar,
+  Text,
+  Title,
+  View,
+} from '@/components/ui';
 import { audioCacheService } from '@/lib/services/audio-cache.service';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';

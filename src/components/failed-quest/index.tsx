@@ -6,7 +6,14 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Button, Image, ScreenContainer, Text, Title, View } from '@/components/ui';
+import {
+  Button,
+  Image,
+  ScreenContainer,
+  Text,
+  Title,
+  View,
+} from '@/components/ui';
 import type {
   CustomQuestTemplate,
   Quest,

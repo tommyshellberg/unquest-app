@@ -1,5 +1,9 @@
 import React from 'react';
+
 import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
+
+// Import the component
+import CooperativeQuestMenu from './cooperative-quest-menu';
 
 // Mock the router
 const mockPush = jest.fn();
@@ -64,9 +68,6 @@ jest.mock('@/components/providers/lazy-websocket-provider', () => ({
     forceReconnect: jest.fn(),
   })),
 }));
-
-// Import the component
-import CooperativeQuestMenu from './cooperative-quest-menu';
 
 describe('CooperativeQuestMenu', () => {
   beforeEach(() => {

@@ -77,11 +77,10 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
             {/* Bottom section with description */}
             <BlurView
               intensity={Platform.OS === 'ios' ? 50 : 100}
-              tint="extraLight"
               className="mt-auto overflow-hidden px-4 py-3"
             >
               <Text
-                className="text-sm leading-relaxed"
+                className="leading-relaxed"
                 numberOfLines={3}
                 ellipsizeMode="tail"
               >

@@ -1,6 +1,7 @@
+import { AlertCircle, CheckCircle } from 'lucide-react-native';
 import React from 'react';
-import { View, ScrollView } from 'react-native';
-import { CheckCircle, AlertCircle } from 'lucide-react-native';
+import { ScrollView, View } from 'react-native';
+
 import { Button, Text } from '@/components/ui';
 
 interface InviteResults {
@@ -23,7 +24,7 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
   return (
     <View className="flex-1 bg-background">
       <View className="items-center py-6">
-        <Text className="text-lg text-black mb-4">
+        <Text className="mb-4 text-lg text-black">
           {successful.length > 0 && failed.length > 0
             ? 'Invitations sent with some failures'
             : successful.length > 0
@@ -32,9 +33,9 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
         </Text>
 
         {successful.length > 0 && (
-          <View className="flex-row items-center mb-2">
+          <View className="mb-2 flex-row items-center">
             <CheckCircle size={20} color="#2E948D" />
-            <Text className="text-lg text-primary-500 ml-2">
+            <Text className="ml-2 text-lg text-primary-500">
               {successful.length} Successful
             </Text>
           </View>
@@ -43,19 +44,19 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
         {failed.length > 0 && (
           <View className="flex-row items-center">
             <AlertCircle size={20} color="#E25A3B" />
-            <Text className="text-lg text-red-400 ml-2">
+            <Text className="ml-2 text-lg text-red-400">
               {failed.length} Failed
             </Text>
           </View>
         )}
       </View>
 
-      <View className="h-px bg-neutral-200 mx-4" />
+      <View className="mx-4 h-px bg-neutral-200" />
 
-      <ScrollView className="flex-1 px-4 py-4">
+      <ScrollView className="flex-1 p-4">
         {successful.length > 0 && (
           <>
-            <Text className="text-sm font-semibold text-neutral-500 mb-3">
+            <Text className="mb-3 text-sm font-semibold text-neutral-500">
               SUCCESSFULLY INVITED
             </Text>
             {successful.map((contact, index) => (
@@ -65,10 +66,10 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
               >
                 <CheckCircle size={20} color="#2E948D" />
                 <View className="ml-3 flex-1">
-                  <Text className="text-base text-black font-medium">
+                  <Text className="text-base font-medium text-black">
                     {contact.name}
                   </Text>
-                  <Text className="text-sm text-neutral-500 mt-1">
+                  <Text className="mt-1 text-sm text-neutral-500">
                     {contact.email}
                   </Text>
                 </View>
@@ -80,9 +81,9 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
         {failed.length > 0 && (
           <>
             {successful.length > 0 && (
-              <View className="h-px bg-neutral-200 my-4" />
+              <View className="my-4 h-px bg-neutral-200" />
             )}
-            <Text className="text-sm font-semibold text-neutral-500 mb-3">
+            <Text className="mb-3 text-sm font-semibold text-neutral-500">
               FAILED TO INVITE
             </Text>
             {failed.map((contact, index) => (
@@ -90,13 +91,13 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
                 <View className="flex-row items-start">
                   <AlertCircle size={20} color="#E25A3B" />
                   <View className="ml-3 flex-1">
-                    <Text className="text-base text-black font-medium">
+                    <Text className="text-base font-medium text-black">
                       {contact.name}
                     </Text>
-                    <Text className="text-sm text-neutral-500 mt-0.5">
+                    <Text className="mt-0.5 text-sm text-neutral-500">
                       {contact.email}
                     </Text>
-                    <Text className="text-sm text-red-400 mt-1">
+                    <Text className="mt-1 text-sm text-red-400">
                       {contact.reason}
                     </Text>
                   </View>
@@ -107,7 +108,7 @@ export const InviteResultsSummary: React.FC<InviteResultsSummaryProps> = ({
         )}
       </ScrollView>
 
-      <View className="p-4 bg-background border-t border-neutral-200">
+      <View className="border-t border-neutral-200 bg-background p-4">
         <Button label="DONE" onPress={onDone} className="w-full" />
       </View>
     </View>

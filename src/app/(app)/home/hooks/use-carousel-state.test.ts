@@ -1,6 +1,7 @@
-import { renderHook, act } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
+
+import { SNAP_INTERVAL } from '../constants';
 import { useCarouselState } from './use-carousel-state';
-import { SNAP_INTERVAL, ANIMATION_TIMINGS } from '../constants';
 
 // Mock react-native-reanimated
 const mockSharedValues = new Map<any, { value: number }>();

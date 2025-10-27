@@ -1,11 +1,11 @@
+export { ContactItem } from './ContactItem';
+export { ContactSearchBar } from './ContactSearchBar';
 export {
   ContactsImportModal,
   type ContactsImportModalRef,
 } from './ContactsImportModal';
-export { EmptyContactsView } from './EmptyContactsView';
-export { PermissionDeniedView } from './PermissionDeniedView';
 export { ContactsList } from './ContactsList';
-export { ContactItem } from './ContactItem';
-export { ContactSearchBar } from './ContactSearchBar';
+export { EmptyContactsView } from './EmptyContactsView';
 export { InviteResultsSummary } from './InviteResultsSummary';
 export { ManualEmailView } from './ManualEmailView';
+export { PermissionDeniedView } from './PermissionDeniedView';

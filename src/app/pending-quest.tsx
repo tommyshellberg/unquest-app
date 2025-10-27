@@ -12,8 +12,13 @@ import colors from '@/components/ui/colors';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 
-import { ANIMATION_CONFIG, STRINGS, TEST_IDS, UI_CONFIG } from './pending-quest/constants';
 import { QuestInfoCard } from './pending-quest/components/quest-info-card';
+import {
+  ANIMATION_CONFIG,
+  STRINGS,
+  TEST_IDS,
+  UI_CONFIG,
+} from './pending-quest/constants';
 import { usePendingQuestAnimations } from './pending-quest/hooks/use-pending-quest-animations';
 
 export default function PendingQuestScreen() {

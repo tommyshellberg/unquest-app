@@ -55,7 +55,7 @@ class AudioCacheService {
 
   private async loadCacheIndex() {
     try {
-      const savedIndex = getItem<Array<[string, AudioCacheEntry]>>(
+      const savedIndex = getItem<[string, AudioCacheEntry][]>(
         this.CACHE_INDEX_KEY
       );
       if (!savedIndex || !Array.isArray(savedIndex)) {

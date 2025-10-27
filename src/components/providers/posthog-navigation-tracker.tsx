@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import { usePathname } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
+import { useEffect } from 'react';
 
 export function PostHogNavigationTracker() {
   const pathname = usePathname();

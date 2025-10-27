@@ -23,7 +23,9 @@ export const XP_CONFIG = {
  * @returns XP required for that level
  */
 export function calculateXPForLevel(level: number): number {
-  return Math.floor(XP_CONFIG.BASE_XP * Math.pow(XP_CONFIG.LEVEL_MULTIPLIER, level - 1));
+  return Math.floor(
+    XP_CONFIG.BASE_XP * Math.pow(XP_CONFIG.LEVEL_MULTIPLIER, level - 1)
+  );
 }
 
 /**

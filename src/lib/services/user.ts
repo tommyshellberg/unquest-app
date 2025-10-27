@@ -352,10 +352,7 @@ export async function createProvisionalUser(
     try {
       setItem('provisionalEmail', provisionalEmail);
     } catch (storageError) {
-      console.error(
-        '[createProvisionalUser] Storage failed:',
-        storageError
-      );
+      console.error('[createProvisionalUser] Storage failed:', storageError);
       throw new Error('STORAGE_UNAVAILABLE');
     }
 

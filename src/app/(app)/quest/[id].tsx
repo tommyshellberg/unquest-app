@@ -251,15 +251,9 @@ export default function AppQuestDetailsScreen() {
                     </View>
                   </View>
                   {isReflectionExpanded ? (
-                    <ChevronUp
-                      size={20}
-                      color={colors.secondary[300]}
-                    />
+                    <ChevronUp size={20} color={colors.secondary[300]} />
                   ) : (
-                    <ChevronDown
-                      size={20}
-                      color={colors.secondary[300]}
-                    />
+                    <ChevronDown size={20} color={colors.secondary[300]} />
                   )}
                 </TouchableOpacity>
 

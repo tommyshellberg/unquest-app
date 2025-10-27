@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+
 import { type QuestOption } from '@/api/quest/types';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 

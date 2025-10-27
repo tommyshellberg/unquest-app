@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
-import { Image } from 'react-native';
+import { Alert, Image } from 'react-native';
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -13,22 +13,22 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { AVAILABLE_QUESTS } from '@/app/data/quests';
-import { getMapNameForQuest } from '@/app/utils/map-utils';
-import { useCarouselState } from '@/app/(app)/home/hooks/use-carousel-state';
-import { useHomeData } from '@/app/(app)/home/hooks/use-home-data';
-import { useStoryOptions } from '@/app/(app)/home/hooks/use-story-options';
-import { useQuestSelection } from '@/app/(app)/home/hooks/use-quest-selection';
+import { useResetStoryline } from '@/api/quest';
 import { StoryOptionButtons } from '@/app/(app)/home/components/story-option-buttons';
 import {
-  CARD_WIDTH,
   CARD_HEIGHT,
   CARD_SPACING,
-  SNAP_INTERVAL,
-  QUEST_MODES,
+  CARD_WIDTH,
   CAROUSEL_CONTENT_PADDING,
   CAROUSEL_VERTICAL_PADDING,
+  QUEST_MODES,
+  SNAP_INTERVAL,
 } from '@/app/(app)/home/constants';
+import { useCarouselState } from '@/app/(app)/home/hooks/use-carousel-state';
+import { useHomeData } from '@/app/(app)/home/hooks/use-home-data';
+import { useQuestSelection } from '@/app/(app)/home/hooks/use-quest-selection';
+import { useStoryOptions } from '@/app/(app)/home/hooks/use-story-options';
+import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import QuestCard from '@/components/home/quest-card';
 import { BranchingStoryAnnouncementModal } from '@/components/modals/branching-story-announcement-modal';
 import { PremiumPaywall } from '@/components/paywall';
@@ -38,6 +38,7 @@ import {
   FocusAwareStatusBar,
   ScreenContainer,
   ScreenHeader,
+  useModal,
   View,
 } from '@/components/ui';
 import Colors from '@/components/ui/colors';
@@ -46,9 +47,9 @@ import { useServerQuests } from '@/hooks/use-server-quests';
 import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import QuestTimer from '@/lib/services/quest-timer';
 import { refreshPremiumStatus as refreshServerPremium } from '@/lib/services/user';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 import { useSettingsStore } from '@/store/settings-store';
-import { type StoryQuestTemplate } from '@/store/types';
 import { useUserStore } from '@/store/user-store';
 
 export default function Home() {
@@ -73,16 +74,17 @@ export default function Home() {
       },
     });
 
-  // Branching story announcement state
-  const [showBranchingAnnouncement, setShowBranchingAnnouncement] =
-    useState(false);
+  // Branching story announcement modal
+  const branchingModal = useModal();
   const hasSeenBranchingAnnouncement = useSettingsStore(
     (state) => state.hasSeenBranchingAnnouncement
   );
-  const hasCompletedFirstQuest = useSettingsStore(
-    (state) => state.hasCompletedFirstQuest
-  );
+  const completedQuests = useQuestStore((state) => state.completedQuests);
 
+  // Check if user has completed first branching quest (quest-1a or quest-1b)
+  const hasCompletedFirstBranch = completedQuests.some(
+    (quest) => quest.id === 'quest-1a' || quest.id === 'quest-1b'
+  );
 
   // Use server-driven quests
   const {
@@ -91,13 +93,19 @@ export default function Home() {
     storylineProgress,
     isLoading: isLoadingQuests,
   } = useServerQuests();
-  const completedQuests = useQuestStore((state) => state.completedQuests);
   const prepareQuest = useQuestStore((state) => state.prepareQuest);
   const user = useUserStore((state) => state.user);
   const posthog = usePostHog();
 
+  // Check if onboarding is complete to determine if audio preloading should be enabled
+  const isOnboardingComplete = useOnboardingStore((state) =>
+    state.isOnboardingComplete()
+  );
+
   // Preload audio files for upcoming quests
-  useAudioPreloader({ storylineId: 'vaedros', enabled: true });
+  // Only enable for authenticated users (onboarding complete)
+  // Provisional users get quest-1 audio preloaded in the first-quest screen
+  useAudioPreloader({ storylineId: 'vaedros', enabled: isOnboardingComplete });
 
   // Use extracted hooks for data management
   const { carouselData, currentMapName, storyProgress, isStorylineComplete } =
@@ -130,6 +138,59 @@ export default function Home() {
     serverOptions,
   });
 
+  // Storyline reset
+  const resetStorylineMutation = useResetStoryline();
+
+  const handleRestartStoryline = () => {
+    Alert.alert(
+      'Restart Storyline?',
+      "This will reset your story progress to the first branching point. You'll keep all your achievements, stats, streaks, and XP—only your story progress resets.",
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Restart',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              posthog.capture('storyline_restart_initiated', {
+                storyline_id: 'vaedros',
+                source: 'home_screen_restart_button',
+              });
+
+              await resetStorylineMutation.mutateAsync({
+                storylineId: 'vaedros',
+              });
+
+              posthog.capture('storyline_reset_success', {
+                storyline_id: 'vaedros',
+                source: 'home_screen_restart_button',
+              });
+
+              // Refresh available quests to show the new options
+              refreshAvailableQuests();
+            } catch (error) {
+              console.error('Error resetting storyline:', error);
+              posthog.capture('storyline_reset_failed', {
+                storyline_id: 'vaedros',
+                source: 'home_screen_restart_button',
+                error: error instanceof Error ? error.message : 'Unknown error',
+              });
+
+              Alert.alert(
+                'Error',
+                'Failed to reset storyline. Please try again.',
+                [{ text: 'OK' }]
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
   // Animation values
   const headerOpacity = useSharedValue(0);
   const contentOpacity = useSharedValue(0);
@@ -138,7 +199,6 @@ export default function Home() {
   const animatedScrollStyle = useAnimatedStyle(() => ({
     opacity: scrollContainerOpacity.value,
   }));
-
 
   // Check for stuck cooperative quest and clean it up
   useEffect(() => {
@@ -156,16 +216,17 @@ export default function Home() {
 
   // Check if branching story announcement should be shown
   useEffect(() => {
-    // Only show if user hasn't seen it and has completed at least quest-1
-    if (!hasSeenBranchingAnnouncement && hasCompletedFirstQuest) {
+    // Only show if user hasn't seen it and has completed first branching quest (quest-1a or quest-1b)
+    // This means they've made their first story choice and can benefit from restart option
+    if (!hasSeenBranchingAnnouncement && hasCompletedFirstBranch) {
       // Delay showing the modal slightly to let the screen load
       const timer = setTimeout(() => {
-        setShowBranchingAnnouncement(true);
+        branchingModal.present();
       }, 1500);
 
       return () => clearTimeout(timer);
     }
-  }, [hasSeenBranchingAnnouncement, hasCompletedFirstQuest]);
+  }, [hasSeenBranchingAnnouncement, hasCompletedFirstBranch, branchingModal]);
 
   // Refresh available quests when there's no active quest
   // Only use local refresh if server quests aren't being used
@@ -195,7 +256,6 @@ export default function Home() {
   // Also get hasPremiumAccess without renaming for use in other places
   const { hasPremiumAccess } = usePremiumAccess();
 
-
   // Check premium status on mount
   // RevenueCat SDK handles caching and offline scenarios automatically
   useEffect(() => {
@@ -211,7 +271,11 @@ export default function Home() {
   // Animated background style based on carousel progress
   const backgroundStyle = useAnimatedStyle(() => {
     const inputRange = [0, 1, 2]; // Always have 3 modes now
-    const outputRange = [QUEST_MODES[0].color, QUEST_MODES[1].color, QUEST_MODES[2].color];
+    const outputRange = [
+      QUEST_MODES[0].color,
+      QUEST_MODES[1].color,
+      QUEST_MODES[2].color,
+    ];
 
     const backgroundColor = interpolateColor(
       progress.value,
@@ -240,6 +304,7 @@ export default function Home() {
           showProgress={item.mode === 'story'}
           requiresPremium={item.isPremium && !hasPremiumAccess}
           isCompleted={item.mode === 'story' && isStorylineComplete}
+          onRestart={item.mode === 'story' ? handleRestartStoryline : undefined}
         />
       </View>
     );
@@ -271,7 +336,6 @@ export default function Home() {
     }, [questId, type]);
     return null;
   };
-
 
   return (
     <View className="flex-1">
@@ -454,10 +518,7 @@ export default function Home() {
       />
 
       {/* Branching Story Announcement Modal */}
-      <BranchingStoryAnnouncementModal
-        visible={showBranchingAnnouncement}
-        onClose={() => setShowBranchingAnnouncement(false)}
-      />
+      <BranchingStoryAnnouncementModal ref={branchingModal.ref} />
     </View>
   );
 }

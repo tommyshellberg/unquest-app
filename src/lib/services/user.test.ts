@@ -4,18 +4,18 @@ import { apiClient } from '@/api/common/client';
 import { setItem } from '@/lib/storage';
 
 import {
-  getUserDetails,
-  updateUserCharacter,
-  getUserFriends,
-  sendFriendInvite,
-  getUserInvitations,
   acceptFriendInvitation,
+  createProvisionalUser,
+  deleteUserAccount,
+  getUserDetails,
+  getUserFriends,
+  getUserInvitations,
   rejectFriendInvitation,
   removeFriend,
   rescindInvitation,
   sendBulkFriendInvites,
-  deleteUserAccount,
-  createProvisionalUser,
+  sendFriendInvite,
+  updateUserCharacter,
 } from './user';
 
 // Mock dependencies

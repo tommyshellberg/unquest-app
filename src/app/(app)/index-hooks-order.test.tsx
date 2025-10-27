@@ -3,6 +3,7 @@
  * This test will fail/hang if hooks are declared after they're used in useEffect
  */
 import React from 'react';
+
 import { render } from '@/lib/test-utils';
 
 // Mock the router

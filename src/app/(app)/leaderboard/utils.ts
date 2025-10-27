@@ -19,10 +19,7 @@ import { STRINGS } from './constants';
  * getMetricLabel('minutes', 3200) // "3200 mins"
  * getMetricLabel('streak', 45) // "45 days"
  */
-export function getMetricLabel(
-  type: LeaderboardType,
-  value: number
-): string {
+export function getMetricLabel(type: LeaderboardType, value: number): string {
   switch (type) {
     case 'quests':
       return STRINGS.metricQuests(value);

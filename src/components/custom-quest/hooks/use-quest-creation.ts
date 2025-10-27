@@ -9,12 +9,15 @@ import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import { useState } from 'react';
 
-import QuestTimer from '@/lib/services/quest-timer';
 import { log } from '@/lib/services/logger.service';
+import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
 import type { CustomQuestTemplate } from '@/store/types';
 
-import { ANALYTICS_EVENTS, ERROR_MESSAGE_QUEST_CREATION_FAILED } from '../constants';
+import {
+  ANALYTICS_EVENTS,
+  ERROR_MESSAGE_QUEST_CREATION_FAILED,
+} from '../constants';
 import type { CustomQuestFormData, QuestCreationState } from '../types';
 import { calculateQuestXP } from '../utils';
 

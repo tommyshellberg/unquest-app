@@ -1,8 +1,8 @@
 /* eslint-disable max-lines-per-function */
 import React from 'react';
 
-import { cleanup, render, screen, setup, waitFor } from '@/lib/test-utils';
 import * as userService from '@/lib/services/user';
+import { cleanup, render, screen, setup, waitFor } from '@/lib/test-utils';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 import { useUserStore } from '@/store/user-store';
@@ -32,7 +32,9 @@ jest.mock('@/components/ui', () => {
   return {
     View: RN.View,
     Text: RN.Text,
-    Card: ({ children, className }: any) => <RN.View testID="card">{children}</RN.View>,
+    Card: ({ children, className }: any) => (
+      <RN.View testID="card">{children}</RN.View>
+    ),
     Pressable: RN.Pressable,
     ScrollView: RN.ScrollView,
     FocusAwareStatusBar: () => null,
@@ -391,7 +393,9 @@ describe('ProfileScreen', () => {
 
   describe('User Interactions', () => {
     it('allows inviting friends', async () => {
-      const mockUseFriendManagement = jest.requireMock('@/lib/hooks/use-friend-management').useFriendManagement;
+      const mockUseFriendManagement = jest.requireMock(
+        '@/lib/hooks/use-friend-management'
+      ).useFriendManagement;
       const mockHandleInvite = jest.fn();
 
       mockUseFriendManagement.mockReturnValue({
@@ -410,7 +414,9 @@ describe('ProfileScreen', () => {
     });
 
     it('supports pull to refresh', () => {
-      const mockUseFriendManagement = jest.requireMock('@/lib/hooks/use-friend-management').useFriendManagement;
+      const mockUseFriendManagement = jest.requireMock(
+        '@/lib/hooks/use-friend-management'
+      ).useFriendManagement;
       const mockOnRefresh = jest.fn();
 
       mockUseFriendManagement.mockReturnValue({
@@ -428,7 +434,9 @@ describe('ProfileScreen', () => {
     });
 
     it('shows loading state for friends', () => {
-      const mockUseFriendManagement = jest.requireMock('@/lib/hooks/use-friend-management').useFriendManagement;
+      const mockUseFriendManagement = jest.requireMock(
+        '@/lib/hooks/use-friend-management'
+      ).useFriendManagement;
 
       mockUseFriendManagement.mockReturnValue({
         ...mockUseFriendManagement(),
