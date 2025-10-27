@@ -119,15 +119,6 @@ export default function CooperativeQuestMenu() {
     }
   };
 
-  // Add debug logging
-  React.useEffect(() => {
-    console.log('[CooperativeQuestMenu] Premium status:', {
-      hasPremiumAccess,
-      isPremiumLoading,
-      showPaywallModal,
-    });
-  }, [hasPremiumAccess, isPremiumLoading, showPaywallModal]);
-
   // Show loading state while checking friends or premium status
   if (isLoading || isPremiumLoading) {
     return (
@@ -236,7 +227,7 @@ export default function CooperativeQuestMenu() {
   // If user has no friends, show only the Add Friends option
   if (!hasFriends) {
     return (
-      <View className="flex-1 bg-cream-100">
+      <View className="flex-1 bg-background">
         <FocusAwareStatusBar />
 
         <ScreenContainer fullScreen className="px-4">
@@ -246,25 +237,25 @@ export default function CooperativeQuestMenu() {
               onPress={() => router.back()}
               className="mb-4 flex-row items-center"
             >
-              <ArrowLeft size={24} color="#162034" />
-              <Text className="ml-2 text-lg text-neutral-800">Back</Text>
+              <ArrowLeft size={24} color="#e8dcc7" />
+              <Text className="ml-2 text-lg text-white">Back</Text>
             </TouchableOpacity>
 
-            <Text className="mb-2 text-3xl font-bold text-neutral-800">
+            <Text className="mb-2 text-3xl font-bold text-white">
               Cooperative Quests
             </Text>
-            <Text className="text-neutral-700">
+            <Text className="text-neutral-200">
               Team up with friends to complete quests together!
             </Text>
           </View>
 
           {/* No Friends Message */}
           <View className="mb-6 items-center py-8">
-            <Users size={64} color="#5C7380" />
-            <Text className="mt-4 text-center text-lg font-semibold text-neutral-800">
+            <Users size={64} color="#8FA5B2" />
+            <Text className="mt-4 text-center text-lg font-semibold text-white">
               Add Friends to Get Started
             </Text>
-            <Text className="mt-2 px-8 text-center text-neutral-700">
+            <Text className="mt-2 px-8 text-center text-neutral-200">
               Cooperative quests require friends to play with. Add some friends
               first to start creating and joining quests together!
             </Text>
@@ -326,7 +317,7 @@ export default function CooperativeQuestMenu() {
 
   // If user has friends, show all options
   return (
-    <View className="flex-1 bg-cream-100">
+    <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       <View className="flex-1 px-4">
@@ -336,14 +327,14 @@ export default function CooperativeQuestMenu() {
             onPress={() => router.back()}
             className="mb-4 flex-row items-center"
           >
-            <ArrowLeft size={24} color="#162034" />
-            <Text className="ml-2 text-lg text-neutral-800">Back</Text>
+            <ArrowLeft size={24} color="#e8dcc7" />
+            <Text className="ml-2 text-lg text-white">Back</Text>
           </TouchableOpacity>
 
-          <Text className="mb-2 text-3xl font-bold text-neutral-800">
+          <Text className="mb-2 text-3xl font-bold text-white">
             Cooperative Quests
           </Text>
-          <Text className="text-neutral-700">
+          <Text className="text-neutral-200">
             Team up with friends to complete quests together. Everyone must keep
             their phones locked to succeed!
           </Text>

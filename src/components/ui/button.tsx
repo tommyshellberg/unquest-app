@@ -35,13 +35,13 @@ const button = tv({
       },
       ghost: {
         container: 'bg-transparent',
-        label: 'text-black underline',
-        indicator: 'text-black',
+        label: 'text-white underline',
+        indicator: 'text-white',
       },
       link: {
         container: 'bg-transparent',
-        label: 'text-black',
-        indicator: 'text-black',
+        label: 'text-white',
+        indicator: 'text-white',
       },
     },
     size: {

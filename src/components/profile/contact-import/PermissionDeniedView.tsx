@@ -32,11 +32,11 @@ export const PermissionDeniedView: React.FC<PermissionDeniedViewProps> = ({
           <Settings size={40} color="#EA580C" />
         </View>
 
-        <Text className="mb-3 text-center text-lg font-semibold text-neutral-800">
+        <Text className="mb-3 text-center text-lg font-semibold text-white">
           Contact Access Required
         </Text>
 
-        <Text className="mb-8 px-4 text-center text-base text-neutral-500">
+        <Text className="mb-8 px-4 text-center text-base text-neutral-200">
           To import contacts and invite friends easily, please enable contact
           access in your device settings.
         </Text>
@@ -50,7 +50,7 @@ export const PermissionDeniedView: React.FC<PermissionDeniedViewProps> = ({
 
           <View className="my-4 flex-row items-center justify-center">
             <View className="h-px flex-1 bg-neutral-200" />
-            <Text className="mx-4 text-sm text-neutral-400">or</Text>
+            <Text className="mx-4 text-sm text-neutral-200">or</Text>
             <View className="h-px flex-1 bg-neutral-200" />
           </View>
 

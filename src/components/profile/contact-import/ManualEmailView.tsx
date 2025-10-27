@@ -35,17 +35,17 @@ export const ManualEmailView: React.FC<ManualEmailViewProps> = ({
   return (
     <View className="flex-1 bg-background p-4">
       <View className="mb-8 flex-row items-center">
-        <View className="mr-4 size-12 items-center justify-center rounded-full bg-primary-100">
-          <Mail size={24} color="#2E948D" />
+        <View className="mr-4 size-12 items-center justify-center rounded-full bg-secondary-100">
+          <Mail size={24} color="#36B6D3" />
         </View>
         <View className="flex-1">
-          <Text className="text-base text-neutral-600">
+          <Text className="text-base text-neutral-200">
             Enter a friend's email to invite them to emberglow.
           </Text>
         </View>
       </View>
 
-      <Text className="mb-2 text-sm font-medium text-neutral-700">
+      <Text className="mb-2 text-sm font-medium text-neutral-200">
         Email Address
       </Text>
 
@@ -53,7 +53,7 @@ export const ManualEmailView: React.FC<ManualEmailViewProps> = ({
         value={localEmail}
         onChangeText={setLocalEmail}
         placeholder="friend@example.com"
-        placeholderTextColor="#9E8E7F"
+        placeholderTextColor="#8FA5B2"
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="off"
@@ -64,11 +64,11 @@ export const ManualEmailView: React.FC<ManualEmailViewProps> = ({
           height: 48,
           borderRadius: 8,
           borderWidth: 1,
-          borderColor: '#C9BFAF',
-          backgroundColor: '#F5F5F0',
+          borderColor: '#5C7380',
+          backgroundColor: '#2c456b',
           paddingHorizontal: 16,
           fontSize: 16,
-          color: '#1f0f0c',
+          color: '#e8dcc7',
         }}
       />
 
