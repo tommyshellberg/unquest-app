@@ -47,7 +47,7 @@ export function QuestImage({
       {/* Lottie animation overlay */}
       <LottieView
         ref={lottieRef}
-        source={require('@/../assets/animations/congrats.json')}
+        source={require('@/../assets/animations/congrats.lottie')}
         autoPlay={false}
         loop={false}
         style={{

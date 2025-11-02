@@ -258,7 +258,8 @@ export default function CooperativeQuestReady() {
       await QuestTimer.prepareQuest(questTemplate, questRunId);
 
       // Navigate to cooperative pending quest which will show the countdown
-      router.replace('/cooperative-pending-quest');
+      // Use push so cancel button can navigate back
+      router.push('/cooperative-pending-quest');
     },
     [currentLobby, prepareQuest, router]
   );

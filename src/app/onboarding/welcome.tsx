@@ -1,7 +1,6 @@
 // src/app/index.tsx
-import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
-import React, { useRef } from 'react';
+import React from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
@@ -10,7 +9,6 @@ import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 export default function WelcomeScreen() {
   const router = useRouter();
   const { setCurrentStep } = useOnboardingStore();
-  const videoRef = useRef<Video>(null);
 
   const handleGetStarted = () => {
     // Update the onboarding step to SELECTING_CHARACTER which will trigger navigation
@@ -26,16 +24,12 @@ export default function WelcomeScreen() {
     <View className="flex h-full">
       <FocusAwareStatusBar />
 
-      {/* Full‑screen background video */}
+      {/* Full-screen background image */}
       <View className="absolute inset-0">
-        <Video
-          ref={videoRef}
-          source={require('@/../assets/animations/onboarding-bg.mp4')}
+        <Image
+          source={require('@/../assets/images/background/onboarding-bg.jpg')}
           style={{ width: '100%', height: '100%' }}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted
+          resizeMode="cover"
         />
       </View>
 

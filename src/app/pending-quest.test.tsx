@@ -19,9 +19,9 @@ jest.mock('@/../assets/images/background/active-quest.jpg', () => ({}));
 jest.mock('@/app/utils/character-utils', () => ({
   getCharacterAvatar: jest.fn((characterType?: string) => {
     if (!characterType) {
-      return require('@/../assets/images/characters/character-placeholder.jpg');
+      return require('@/../assets/images/characters/alchemist-profile.jpg');
     }
-    return require('@/../assets/images/characters/warrior.jpg');
+    return require('@/../assets/images/characters/alchemist-profile.jpg');
   }),
 }));
 
@@ -171,7 +171,7 @@ describe('PendingQuestScreen', () => {
 
     const backgroundImage = getByTestId('background-image');
     expect(backgroundImage.props.source).toBe(
-      require('@/../assets/images/background/pending-quest-bg-alt.png')
+      require('@/../assets/images/background/pending-quest-bg-alt.jpg')
     );
   });
 
@@ -215,12 +215,17 @@ describe('PendingQuestScreen', () => {
       const { getCharacterAvatar } = require('@/app/utils/character-utils');
 
       useCharacterStore.setState({
-        character: { type: 'warrior', name: 'TestWarrior' },
+        character: {
+          type: 'alchemist',
+          name: 'TestAlchemist',
+          level: 1,
+          currentXP: 0,
+        },
       });
 
       render(<PendingQuestScreen />);
 
-      expect(getCharacterAvatar).toHaveBeenCalledWith('warrior');
+      expect(getCharacterAvatar).toHaveBeenCalledWith('alchemist');
     });
 
     it('handles missing character gracefully', () => {

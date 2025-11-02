@@ -81,7 +81,8 @@ export default function FirstQuestScreen() {
       console.log(
         'First quest screen: Already have pending quest, navigating to pending-quest screen'
       );
-      router.replace('/pending-quest');
+      // Use push instead of replace so that canceling the quest can navigate back
+      router.push('/pending-quest');
     }
   }, [pendingQuest, router]);
 
@@ -191,7 +192,7 @@ export default function FirstQuestScreen() {
 
       <View className="absolute inset-0">
         <Image
-          source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
+          source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
           className="size-full"
           resizeMode="cover"
         />

@@ -217,7 +217,7 @@ describe('Navigation State Resolver', () => {
     mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
     mockCharacterState.character = {
       name: 'LegacyChar',
-      type: 'warrior',
+      type: 'alchemist',
       level: 5,
       currentXP: 200,
       xpToNextLevel: 300,
@@ -340,7 +340,7 @@ describe('Navigation State Resolver', () => {
     mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
     mockCharacterState.character = {
       name: 'TestChar',
-      type: 'warrior',
+      type: 'alchemist',
       level: 2,
       currentXP: 150,
       xpToNextLevel: 250,
@@ -376,7 +376,7 @@ describe('Navigation State Resolver', () => {
     mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
     mockCharacterState.character = {
       name: 'LegacyChar',
-      type: 'warrior',
+      type: 'alchemist',
       level: 5,
       currentXP: 200,
       xpToNextLevel: 300,

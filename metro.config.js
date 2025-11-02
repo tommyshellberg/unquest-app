@@ -12,4 +12,7 @@ config.resolver.blacklistRE = [
   /.*\/node_modules\/@testing-library\/.*/,
 ];
 
+// Add .lottie file support for compressed Lottie animations
+config.resolver.assetExts = [...config.resolver.assetExts, 'lottie'];
+
 module.exports = withNativeWind(config, { input: './global.css' });

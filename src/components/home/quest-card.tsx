@@ -22,9 +22,9 @@ interface QuestCardProps {
 }
 
 const imageMap = {
-  story: require('@/../assets/images/background/card-background-alt.png'),
-  custom: require('@/../assets/images/background/custom-quest-background-alt.png'),
-  cooperative: require('@/../assets/images/background/coop-quest-background-alt.png'),
+  story: require('@/../assets/images/background/card-background-alt.jpg'),
+  custom: require('@/../assets/images/background/custom-quest-background-alt.jpg'),
+  cooperative: require('@/../assets/images/background/coop-quest-background-alt.jpg'),
 };
 
 export default function QuestCard({

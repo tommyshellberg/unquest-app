@@ -49,7 +49,7 @@ export default function PendingQuestScreen() {
       {/* Full-screen Background Image */}
       <Image
         testID={TEST_IDS.BACKGROUND_IMAGE}
-        source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
+        source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
         className="absolute inset-0 size-full"
         resizeMode="cover"
         accessibilityLabel="Quest background"

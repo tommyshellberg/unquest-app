@@ -50,6 +50,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     infoPlist: {
       BGTaskSchedulerPermittedIdentifiers: ['$(PRODUCT_BUNDLE_IDENTIFIER)'],
+      // Allow HTTP connections in staging for local dev server
+      ...(Env.APP_ENV !== 'production' && {
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true,
+        },
+      }),
     },
     buildNumber: Env.VERSION.split('.').pop() || '0',
   },
@@ -70,6 +76,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     // use the last digit of semver
     versionCode: parseInt(Env.VERSION.split('.').pop() || '0'),
+    // Allow HTTP connections in staging for local dev server
+    ...(Env.APP_ENV !== 'production' && {
+      usesCleartextTraffic: true,
+    }),
   },
   plugins: [
     [

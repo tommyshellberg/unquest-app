@@ -1,0 +1,55 @@
+appId: com.vaedros.unquest.staging
+---
+# =============================================================================
+# STREAK CELEBRATION TEST
+# =============================================================================
+# Verifies streak celebration screen appears after quest completion
+#
+# Prerequisites:
+#   - Second quest must have been completed
+#   - User should be on Day 2 streak
+#
+# Note: This test assumes the streak celebration appears automatically
+# after the quest completion flow.
+# =============================================================================
+
+# The streak celebration might already be showing after the previous quest
+# or we might need to trigger it by completing another action
+
+# =============================================================================
+# VERIFY STREAK CELEBRATION SCREEN
+# =============================================================================
+- runFlow:
+    when:
+      visible: 'Day 2'
+    commands:
+      # Streak celebration is showing
+      - assertVisible: 'Streak'
+      - assertVisible: '2'
+
+      # Verify celebration elements
+      - assertVisible: 'Keep it up!'
+
+      # Continue past celebration
+      - tapOn: 'Continue'
+
+# If streak celebration already passed, verify in profile
+- runFlow:
+    when:
+      visible: 'Your Journey'
+    commands:
+      # Navigate to profile to verify streak count
+      - tapOn: 'Profile'
+
+      # Verify streak shows 2 days
+      - assertVisible:
+          text: '2'
+      - assertVisible: 'Day Streak'
+
+      # Navigate back
+      - tapOn: 'Home'
+
+# =============================================================================
+# STREAK VERIFICATION COMPLETE
+# =============================================================================
+# User's streak has been verified!

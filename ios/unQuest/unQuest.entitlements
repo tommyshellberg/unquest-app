@@ -10,6 +10,7 @@
     <array>
       <string>group.com.vaedros.unquest.onesignal</string>
       <string>group.com.vaedros.unquest.development.onesignal</string>
+      <string>group.com.vaedros.unquest.staging.onesignal</string>
     </array>
   </dict>
 </plist>

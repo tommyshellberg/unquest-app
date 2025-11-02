@@ -113,8 +113,8 @@ export default function InvitationWaitingScreen() {
           console.log(
             '[InvitationWaiting] Navigating to cooperative pending quest...'
           );
-          // Use replace so they can't go back to the waiting screen
-          router.replace('/cooperative-pending-quest');
+          // Use push so cancel button can navigate back
+          router.push('/cooperative-pending-quest');
         } else {
           // All declined or expired, go back home
           router.replace('/(app)');

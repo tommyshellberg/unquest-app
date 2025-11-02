@@ -1,14 +1,57 @@
-flows:
-  - auth/*
-  - app/*
+# =============================================================================
+# MAESTRO E2E TEST CONFIGURATION
+# =============================================================================
+# Comprehensive test suite for UnQuest app
+#
+# Test Flow Sequence:
+#   1. Guest Onboarding (creates provisional user, completes first quest)
+#   2. User Conversion (converts provisional → full user via DB)
+#   3. Fresh User Tests (tests with known state: Level 1, 50 XP)
+#   4. Screen Coverage (tests all major app screens)
+#   5. Regression (quick smoke tests)
+#
+# Environment Variables Required:
+#   - TEST_EMAIL: Email for test user (with timestamp: test-${TIMESTAMP}@unquest.test)
+#   - MONGODB_URI: MongoDB connection string for user conversion
+#   - TEST_EMAIL_TIMESTAMP: Unique timestamp for test run
+#
+# Usage:
+#   maestro test .maestro/ --env TEST_EMAIL_TIMESTAMP=$(date +%s)
+# =============================================================================
+
+appId: com.vaedros.unquest.staging
+
+# Global configuration for all flows
+config:
+  # Default timeout for assertions (5 seconds = 5000ms)
+  # This ensures tests fail fast instead of hanging indefinitely
+  defaultTimeout: 5000
+
+# Take screenshot on any test failure
+onFlowFailure:
+  - takeScreenshot: failure-${flow.name}
 
 excludeTags:
   - util
+  - skip
 
-appId: com.vaedros.unquest.development
-
+# Execute tests in strict order
 executionOrder:
-  continueOnFailure: false # default is true
-  flowsOrder:
-    - onboarding
-    - quest-completion-to-login
+  continueOnFailure: false
+
+# NOTE: Onboarding flows (01-onboarding) are handled by run-tests.sh
+# due to the need for a 15-second sleep between part 1 and part 2.
+# They are NOT included in this config to avoid running them twice.
+
+flows:
+  # Phase 2: Convert Provisional to Full User
+  - flows/02-conversion/*
+
+  # Phase 3: Fresh Authenticated User Tests
+  - flows/03-fresh-authenticated/*
+
+  # Phase 4: Screen Coverage Tests
+  - flows/04-screen-coverage/*
+
+  # Phase 5: Regression Tests (optional, can be run separately)
+  # - flows/05-regression/*

@@ -72,6 +72,9 @@ export function useQuestSelection({
         try {
           await QuestTimer.prepareQuest(clientQuest as StoryQuestTemplate);
           posthog.capture('success_start_quest');
+
+          // Navigate to pending-quest screen with push (not replace) so back button works
+          router.push('/pending-quest');
         } catch (error) {
           console.error(
             '[useQuestSelection] QuestTimer.prepareQuest failed:',
@@ -90,10 +93,13 @@ export function useQuestSelection({
           prepareQuest(localQuest);
           await QuestTimer.prepareQuest(localQuest);
           posthog.capture('success_start_quest');
+
+          // Navigate to pending-quest screen with push (not replace) so back button works
+          router.push('/pending-quest');
         }
       }
     },
-    [serverQuests, serverOptions, prepareQuest, posthog]
+    [serverQuests, serverOptions, prepareQuest, posthog, router]
   );
 
   const handleStartCustomQuest = useCallback(() => {

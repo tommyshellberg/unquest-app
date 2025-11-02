@@ -1,4 +1,4 @@
-appId: com.vaedros.unquest.development
+appId: com.vaedros.unquest.staging
 ---
 - clearState
 # Unset notifications permission to ensure consistent test state

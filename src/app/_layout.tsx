@@ -252,6 +252,15 @@ function RootLayout() {
 
   // Initialize RevenueCat SDK on app launch (following official docs)
   useEffect(() => {
+    // Skip RevenueCat initialization in development to avoid bundle ID mismatch errors
+    // Development mode already grants premium access (see revenuecat-service.ts line 131-134)
+    if (__DEV__ && Env.APP_ENV === 'development') {
+      console.log(
+        '[RevenueCat] Skipping SDK initialization in development mode'
+      );
+      return;
+    }
+
     try {
       // Enable test mode in development first
       // Commented out to test actual paywall behavior

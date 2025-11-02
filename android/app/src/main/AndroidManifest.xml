@@ -39,6 +39,7 @@
         <data android:scheme="unquest"/>
         <data android:scheme="com.vaedros.unquest.development"/>
         <data android:scheme="exp+unquest-app"/>
+        <data android:scheme="com.vaedros.unquest.staging"/>
       </intent-filter>
     </activity>
   </application>

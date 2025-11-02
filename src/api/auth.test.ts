@@ -263,8 +263,8 @@ describe('auth.ts', () => {
         email: 'test@example.com',
         name: 'Test User',
         character: {
-          type: 'warrior',
-          name: 'Test Warrior',
+          type: 'alchemist',
+          name: 'Test Alchemist',
           level: 5,
           currentXP: 250,
           xpToNextLevel: 500,

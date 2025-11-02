@@ -33,14 +33,14 @@ export function EmailSentView({
   return (
     <View className="p-6">
       <View className="mb-4">
-        <Text className="text-center text-neutral-500">
+        <Text className="text-center text-white">
           Email sent to <Text className="font-bold">{email}</Text>
         </Text>
-        <Text className="mt-2 text-center text-neutral-500">
+        <Text className="mt-2 text-center text-white">
           It may take a few minutes to arrive. Please check your SPAM folder.
         </Text>
         {showSupportContact && (
-          <Text className="mt-2 text-center text-neutral-500">
+          <Text className="mt-2 text-center text-white">
             {' '}
             Having trouble? {'\n'} Write us at{' '}
             <Text

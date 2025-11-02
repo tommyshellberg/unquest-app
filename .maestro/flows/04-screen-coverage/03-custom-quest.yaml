@@ -1,0 +1,103 @@
+appId: com.vaedros.unquest.staging
+---
+# =============================================================================
+# CUSTOM QUEST TEST
+# =============================================================================
+# Tests creating a custom quest
+#
+# Flow:
+#   1. Navigate to custom quest creation
+#   2. Fill in quest details
+#   3. Create quest
+#   4. Verify quest appears in list
+#   5. Optional: Start custom quest
+# =============================================================================
+
+# Navigate to Home
+- tapOn: 'Home'
+
+# =============================================================================
+# NAVIGATE TO CUSTOM QUEST
+# =============================================================================
+# Look for custom quest button/section
+- runFlow:
+    when:
+      visible: 'Custom Quest'
+    commands:
+      - tapOn: 'Custom Quest'
+
+# Alternative: might be in a menu or different location
+- runFlow:
+    when:
+      visible: 'Create Quest'
+    commands:
+      - tapOn: 'Create Quest'
+
+# =============================================================================
+# CUSTOM QUEST CREATION FORM
+# =============================================================================
+- assertVisible: 'Custom Quest'
+
+# Enter quest title
+- runFlow:
+    when:
+      visible: 'Quest Title'
+    commands:
+      - tapOn: 'Quest Title'
+      - inputText: 'Maestro Test Quest'
+
+# Alternative field name
+- runFlow:
+    when:
+      visible: 'Title'
+    commands:
+      - tapOn: 'Title'
+      - inputText: 'Maestro Test Quest'
+
+# Select duration
+- runFlow:
+    when:
+      visible: 'Duration'
+    commands:
+      - tapOn: 'Duration'
+      - tapOn: '2 minutes'
+
+# Select category (if available)
+- runFlow:
+    when:
+      visible: 'Category'
+    commands:
+      - tapOn: 'Category'
+      - tapOn: 'Exercise'
+
+# Create the quest
+- tapOn: 'Create'
+
+# =============================================================================
+# VERIFY QUEST CREATED
+# =============================================================================
+- assertVisible: 'Maestro Test Quest'
+
+# Should show duration
+- assertVisible: '2 min'
+
+# =============================================================================
+# OPTIONAL: START CUSTOM QUEST
+# =============================================================================
+- runFlow:
+    when:
+      visible: 'Maestro Test Quest'
+    commands:
+      # Tap on the quest to start it
+      - tapOn: 'Maestro Test Quest'
+
+      # Should see pending quest screen
+      - assertVisible: 'Quest Ready'
+      - assertVisible: 'Lock your phone'
+
+      # Cancel the quest (don't actually wait 2 minutes)
+      - tapOn: 'Cancel'
+
+# =============================================================================
+# CUSTOM QUEST TEST COMPLETE
+# =============================================================================

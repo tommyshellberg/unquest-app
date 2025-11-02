@@ -43,7 +43,7 @@ describe('Streak Sync Integration Tests', () => {
         id: 'knight',
         name: 'Test Knight',
         title: 'The Brave',
-        backstory: 'A test warrior',
+        backstory: 'A test knight',
         xp: 0,
         level: 1,
         description: 'Test description',

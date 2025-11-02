@@ -252,7 +252,7 @@ describe('Auth Store', () => {
       const mockUser = {
         id: 'user-123',
         character: {
-          type: 'warrior',
+          type: 'alchemist',
           name: 'TestChar',
           level: 5,
           currentXP: 250,
@@ -274,11 +274,11 @@ describe('Auth Store', () => {
       await useAuth.getState().hydrate();
 
       expect(characterStoreMocks.mockCreateCharacter).toHaveBeenCalledWith(
-        'warrior',
+        'alchemist',
         'TestChar'
       );
       expect(characterStoreMocks.mockUpdateCharacter).toHaveBeenCalledWith({
-        type: 'warrior',
+        type: 'alchemist',
         name: 'TestChar',
         level: 5,
         currentXP: 250,
@@ -402,7 +402,7 @@ describe('Auth Store', () => {
       const mockUser = {
         id: 'user-123',
         character: {
-          type: 'warrior',
+          type: 'alchemist',
           name: 'TestChar',
           level: 5,
           currentXP: 250,
@@ -414,7 +414,7 @@ describe('Auth Store', () => {
 
       // Set character already exists
       characterStoreMocks.mockGetState.mockReturnValue({
-        character: { type: 'warrior', name: 'ExistingChar' }, // Character already exists
+        character: { type: 'alchemist', name: 'ExistingChar' }, // Character already exists
         createCharacter: characterStoreMocks.mockCreateCharacter,
         updateCharacter: characterStoreMocks.mockUpdateCharacter,
         setStreak: characterStoreMocks.mockSetStreak,

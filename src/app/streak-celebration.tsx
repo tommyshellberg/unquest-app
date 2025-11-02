@@ -80,14 +80,17 @@ export default function StreakCelebrationScreen() {
       {/* Background */}
       <View className="absolute inset-0">
         <Image
-          source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
+          source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
           className="size-full"
           resizeMode="cover"
         />
         <View className="absolute inset-0" />
       </View>
 
-      <ScreenContainer fullScreen className="items-center justify-between px-6 pt-20">
+      <ScreenContainer
+        fullScreen
+        className="items-center justify-between px-6 pt-20"
+      >
         <View className="w-full flex-1 items-center justify-center">
           {/* Streak Counter with Confetti Animation */}
           <View
@@ -96,7 +99,7 @@ export default function StreakCelebrationScreen() {
           >
             <LottieView
               ref={lottieRef}
-              source={require('@/../assets/animations/congrats.json')}
+              source={require('@/../assets/animations/congrats.lottie')}
               style={{
                 position: 'absolute',
                 width: '200%',

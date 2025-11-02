@@ -1,0 +1,82 @@
+appId: com.vaedros.unquest.staging
+---
+# =============================================================================
+# MAP SCREEN TEST
+# =============================================================================
+# Tests the map screen functionality
+#
+# Verification:
+#   - Map renders correctly
+#   - POI markers display
+#   - Map controls are functional
+# =============================================================================
+
+# Navigate to Map tab
+- tapOn: 'Map'
+
+# =============================================================================
+# VERIFY MAP SCREEN LOADS
+# =============================================================================
+- assertVisible: 'Map'
+
+# Wait for map to render
+
+# =============================================================================
+# VERIFY MAP CONTROLS
+# =============================================================================
+# Check for zoom controls
+- runFlow:
+    when:
+      visible: '+'
+    commands:
+      - assertVisible: '+'  # Zoom in
+      - assertVisible: '-'  # Zoom out
+
+# =============================================================================
+# VERIFY MAP INTERACTIONS
+# =============================================================================
+# Test zoom in
+- runFlow:
+    when:
+      visible: '+'
+    commands:
+      - tapOn: '+'
+
+# Test zoom out
+- runFlow:
+    when:
+      visible: '-'
+    commands:
+      - tapOn: '-'
+
+# =============================================================================
+# VERIFY POI MARKERS
+# =============================================================================
+# Map should show points of interest markers
+# These might not be visible immediately, so this is optional
+- runFlow:
+    when:
+      visible: 'Your Locations'
+    commands:
+      - assertVisible: 'Your Locations'
+
+# =============================================================================
+# TEST MAP GESTURES
+# =============================================================================
+# Pan the map
+- swipe:
+    start: 60%, 50%
+    end: 40%, 50%
+    duration: 500
+
+
+# Pan back
+- swipe:
+    start: 40%, 50%
+    end: 60%, 50%
+    duration: 500
+
+
+# =============================================================================
+# MAP TEST COMPLETE
+# =============================================================================

@@ -1,0 +1,89 @@
+appId: com.vaedros.unquest.staging
+---
+# =============================================================================
+# PROFILE → LEADERBOARD → ACHIEVEMENTS TEST
+# =============================================================================
+# Tests the profile screen and navigation to leaderboard and achievements
+#
+# Expected State:
+#   - Level: 1 (or 2)
+#   - XP: 100
+#   - Quests completed: 2
+#   - Streak: Day 2
+# =============================================================================
+
+# Navigate to Profile
+- tapOn: 'Profile'
+
+# =============================================================================
+# PROFILE SCREEN
+# =============================================================================
+- assertVisible: 'MaestroHero'
+- assertVisible: 'Level'
+
+# Verify XP after 2 quests (50 + 50 = 100)
+- assertVisible: '100'
+
+# Verify streak
+- assertVisible: '2'
+- assertVisible: 'Day Streak'
+
+# =============================================================================
+# LEADERBOARD
+# =============================================================================
+- assertVisible: 'Leaderboard'
+- tapOn: 'Leaderboard'
+
+# Verify leaderboard loaded
+- assertVisible: 'Friends'
+- assertVisible: 'Global'
+
+# Test switching tabs
+- tapOn: 'Global'
+
+# Our test user should appear in the list
+- assertVisible: 'MaestroHero'
+
+# Switch to Friends tab
+- tapOn: 'Friends'
+
+# Go back to profile
+- tapOn:
+    point: '5%, 5%'  # Back button area
+
+# =============================================================================
+# ACHIEVEMENTS
+# =============================================================================
+- assertVisible: 'Achievements'
+- tapOn: 'Achievements'
+
+# Verify achievements screen loaded
+- assertVisible: 'Achievements'
+
+# Should see achievement cards
+- runFlow:
+    when:
+      visible: 'First Steps'
+    commands:
+      - assertVisible: 'Complete your first quest'
+
+# Verify locked achievements are shown
+- runFlow:
+    when:
+      visible: 'Locked'
+    commands:
+      - assertVisible: 'Locked'
+
+# Go back to profile
+- tapOn:
+    point: '5%, 5%'  # Back button area
+
+# =============================================================================
+# VERIFY BACK AT PROFILE
+# =============================================================================
+- assertVisible: 'MaestroHero'
+- assertVisible: 'Level'
+
+# =============================================================================
+# PROFILE NAVIGATION COMPLETE
+# =============================================================================

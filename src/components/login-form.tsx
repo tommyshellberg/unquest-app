@@ -75,7 +75,7 @@ export const LoginForm = ({ onSubmit, initialError }: LoginFormProps) => {
         {/* Background image */}
         <View className="absolute inset-0 w-full flex-1">
           <Image
-            source={require('@/../assets/images/background/onboarding-bg.png')}
+            source={require('@/../assets/images/background/onboarding-bg.jpg')}
             style={{ width: '100%', height: '100%' }}
             accessibilityLabel="Background illustration"
           />

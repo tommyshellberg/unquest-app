@@ -219,7 +219,7 @@ export default function CooperativePendingQuestScreen() {
     <View className="flex-1">
       {/* Full-screen Background Image */}
       <Image
-        source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
+        source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
         className="absolute inset-0 size-full"
         resizeMode="cover"
       />

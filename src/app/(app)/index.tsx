@@ -345,7 +345,7 @@ export default function Home() {
       <View className="absolute inset-0">
         <StreakCounter size="small" position="topRight" />
         <Image
-          source={require('@/../assets/images/background/pending-quest-bg-alt.png')}
+          source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
           className="size-full"
           resizeMode="cover"
         />
