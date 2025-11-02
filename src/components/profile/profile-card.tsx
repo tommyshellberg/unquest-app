@@ -53,7 +53,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
     setIsLoading(true);
     try {
       // Update on server - exclude xpToNextLevel which may exist in persisted data
-      const { xpToNextLevel, ...characterForServer } = character;
+      const { ...characterForServer } = character;
       await updateUserCharacter({
         ...characterForServer,
         name: editedName.trim(),
@@ -138,7 +138,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
                 ) : (
                   <View className="flex-row items-center gap-2">
                     <View className="relative">
-                      <Text className="text-2xl font-bold text-neutral-800">
+                      <Text className="text-2xl font-bold">
                         {character.name}
                       </Text>
                       {/* Success checkmark overlay */}
@@ -177,7 +177,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
                 )}
               </View>
               {/* Level and character type on second row */}
-              <Text className="mt-1 text-base text-neutral-800">
+              <Text className="mt-1 text-base text-muted-100">
                 Level {character.level} {characterDetails?.type}
               </Text>
             </View>

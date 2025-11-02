@@ -64,17 +64,13 @@ export default function PendingQuestScreen() {
       <View
         className="flex-1 justify-between"
         style={{
-          paddingTop: insets.top + UI_CONFIG.TOP_PADDING,
+          paddingTop: insets.top,
           paddingHorizontal: UI_CONFIG.HORIZONTAL_PADDING,
         }}
       >
         {/* Title */}
         <Animated.View style={headerStyle}>
-          <Title
-            variant="centered"
-            className="text-4xl"
-            accessibilityRole="header"
-          >
+          <Title variant="centered" className="text-4xl">
             {STRINGS.TITLE}
           </Title>
         </Animated.View>

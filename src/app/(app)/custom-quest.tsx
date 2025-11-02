@@ -84,7 +84,6 @@ export default function CustomQuestScreen() {
           contentContainerStyle={{ paddingBottom: SCROLL_VIEW_BOTTOM_PADDING }}
           keyboardShouldPersistTaps="handled"
           accessibilityLabel={A11Y_FORM_LABEL}
-          accessibilityRole="form"
         >
           {/* Error Message */}
           {error && (
