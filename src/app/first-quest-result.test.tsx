@@ -137,32 +137,25 @@ describe('FirstQuestResultScreen', () => {
   });
 
   describe('Navigation Behavior', () => {
-    it('should use router.replace instead of router.push for navigation', async () => {
+    it('should not call router directly - NavigationGate handles navigation', () => {
       const { getByTestId } = render(<FirstQuestResultScreen />);
 
       const continueButton = getByTestId('continue-button');
       fireEvent.press(continueButton);
 
-      // Wait for any async navigation
-      await waitFor(
-        () => {
-          // This test will FAIL because the current implementation uses router.push
-          expect(mockRouterReplace).toHaveBeenCalledWith(
-            '/quest-completed-signup'
-          );
-          expect(mockRouterPush).not.toHaveBeenCalled();
-        },
-        { timeout: 200 }
-      );
+      // Router should NOT be called directly - NavigationGate will handle navigation
+      // based on the onboarding step change
+      expect(mockRouterReplace).not.toHaveBeenCalled();
+      expect(mockRouterPush).not.toHaveBeenCalled();
     });
 
-    it('should clear quest state before navigation to prevent stale state', () => {
+    it('should clear quest state and update onboarding step to trigger navigation', () => {
       const { getByTestId } = render(<FirstQuestResultScreen />);
 
       const continueButton = getByTestId('continue-button');
       fireEvent.press(continueButton);
 
-      // Verify both functions are called (order is ensured by code structure)
+      // Verify both state updates are called (NavigationGate will handle routing)
       expect(mockQuestStore.clearRecentCompletedQuest).toHaveBeenCalled();
       expect(mockOnboardingStore.setCurrentStep).toHaveBeenCalledWith(
         OnboardingStep.VIEWING_SIGNUP_PROMPT

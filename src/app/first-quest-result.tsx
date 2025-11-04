@@ -35,13 +35,10 @@ export default function FirstQuestResultScreen() {
   const handleCompletedContinue = () => {
     // Clear the completed quest state to prevent stale state issues
     clearRecentCompletedQuest();
-    setOnboardingStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
 
-    // Use replace instead of push to avoid navigation stack issues
-    // Small delay to ensure state updates propagate
-    setTimeout(() => {
-      router.replace('/quest-completed-signup');
-    }, 100);
+    // Update onboarding step - NavigationGate will handle the actual navigation
+    // This prevents race conditions from duplicate navigation calls
+    setOnboardingStep(OnboardingStep.VIEWING_SIGNUP_PROMPT);
   };
 
   if (!firstQuestData) {
