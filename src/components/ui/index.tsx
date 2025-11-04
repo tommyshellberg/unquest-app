@@ -1,6 +1,7 @@
 import { cssInterop } from 'nativewind';
 import Svg from 'react-native-svg';
 
+export * from './background-image';
 export * from './button';
 export * from './card';
 export * from './checkbox';

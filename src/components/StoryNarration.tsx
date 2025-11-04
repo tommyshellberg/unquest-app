@@ -231,7 +231,7 @@ export function StoryNarration({ quest }: Props) {
   }
 
   return (
-    <View className="mt-4 w-full rounded-lg bg-cardBackground p-4">
+    <View className="mt-4 w-full p-4">
       {isLoading && (
         <View className="absolute inset-0 z-10 items-center justify-center rounded-lg bg-cardBackground">
           <Text className="text-sm text-neutral-200">Loading audio...</Text>

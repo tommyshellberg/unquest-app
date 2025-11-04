@@ -34,6 +34,7 @@ import { BranchingStoryAnnouncementModal } from '@/components/modals/branching-s
 import { PremiumPaywall } from '@/components/paywall';
 import { StreakCounter } from '@/components/StreakCounter';
 import {
+  BackgroundImage,
   Button,
   FocusAwareStatusBar,
   ScreenContainer,
@@ -342,13 +343,10 @@ export default function Home() {
       <FocusAwareStatusBar />
 
       {/* Background */}
-      <View className="absolute inset-0">
+      <BackgroundImage
+        source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
+      >
         <StreakCounter size="small" position="topRight" />
-        <Image
-          source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
-          className="size-full"
-          resizeMode="cover"
-        />
         <Animated.View
           style={[
             backgroundStyle,
@@ -360,7 +358,7 @@ export default function Home() {
             },
           ]}
         />
-      </View>
+      </BackgroundImage>
 
       <ScreenContainer className="flex-col">
         {/* Header */}

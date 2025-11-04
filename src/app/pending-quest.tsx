@@ -1,13 +1,12 @@
-import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
 import { Lock } from 'lucide-react-native';
 import React from 'react';
-import { ActivityIndicator, Image } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CompassAnimation } from '@/components/quest';
-import { Button, Text, Title, View } from '@/components/ui';
+import { BackgroundImage, Button, Text, Title, View } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
@@ -47,19 +46,9 @@ export default function PendingQuestScreen() {
   return (
     <View className="flex-1">
       {/* Full-screen Background Image */}
-      <Image
-        testID={TEST_IDS.BACKGROUND_IMAGE}
+      <BackgroundImage
         source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
-        className="absolute inset-0 size-full"
-        resizeMode="cover"
-        accessibilityLabel="Quest background"
-      />
-      {/* BlurView for a subtle overlay effect */}
-      <BlurView
-        intensity={UI_CONFIG.BLUR_INTENSITY}
-        tint="regular"
-        className="absolute inset-0"
-      />
+      ></BackgroundImage>
 
       <View
         className="flex-1 justify-between"

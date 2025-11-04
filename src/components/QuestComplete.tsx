@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Image, ScreenContainer, View } from '@/components/ui';
+import { BackgroundImage, ScreenContainer, View } from '@/components/ui';
 import { useCustomQuestStory } from '@/hooks/useCustomQuestStory';
 
 import { QuestCompleteActions } from './quest-complete/QuestCompleteActions';
@@ -22,14 +22,12 @@ export function QuestComplete({
   return (
     <View className="relative flex-1">
       {/* Background Image */}
-      <Image
+      <BackgroundImage
         source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
-        className="absolute inset-0 size-full"
-        resizeMode="cover"
-      />
-
-      {/* Semi-transparent overlay */}
-      <View className="bg-background-light/80 absolute inset-0" />
+      >
+        {/* Semi-transparent overlay */}
+        <View className="bg-background-light/80 absolute inset-0" />
+      </BackgroundImage>
 
       {/* Content */}
       <ScreenContainer fullScreen className="items-center justify-between px-4">

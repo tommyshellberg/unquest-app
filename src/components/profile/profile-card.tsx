@@ -94,6 +94,9 @@ export function ProfileCard({ character }: ProfileCardProps) {
           width: '100%',
         }}
       >
+        {/* White tint overlay */}
+        <View className="absolute inset-0 bg-white/10" />
+
         <View className="flex h-full flex-col justify-between">
           {/* Top area - empty but keeps the layout vertical */}
           <View />

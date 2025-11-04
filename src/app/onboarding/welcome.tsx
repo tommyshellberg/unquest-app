@@ -3,7 +3,14 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 
-import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import {
+  BackgroundImage,
+  Button,
+  FocusAwareStatusBar,
+  Text,
+  Title,
+  View,
+} from '@/components/ui';
 import { OnboardingStep, useOnboardingStore } from '@/store/onboarding-store';
 
 export default function WelcomeScreen() {
@@ -25,29 +32,25 @@ export default function WelcomeScreen() {
       <FocusAwareStatusBar />
 
       {/* Full-screen background image */}
-      <View className="absolute inset-0">
-        <Image
-          source={require('@/../assets/images/background/onboarding-bg.jpg')}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
-        />
-      </View>
+      <BackgroundImage />
 
       {/* Content */}
       <View className="flex-1 px-6 py-4">
-        <View className="mt-8 items-center">
+        <View className="mb-20 mt-8 items-center">
           <Image
             source={require('@/../assets/images/icon.png')}
             style={{ width: 120, height: 120 }}
             resizeMode="contain"
           />
-          <Text className="mt-4 text-5xl font-bold">emberglow</Text>
+          <Title className="text-4xl" variant="centered">
+            emberglow
+          </Title>
           <Text className="text-md font-semibold">Level Up By Logging Off</Text>
         </View>
 
         {/* Middle description section */}
-        <View className="my-20 flex-1">
-          <Text className="text-center text-lg">
+        <View className="mt-20 flex-1">
+          <Text className="mt-20 text-center text-lg text-white">
             Turn phone breaks into epic adventures
           </Text>
         </View>

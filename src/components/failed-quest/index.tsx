@@ -7,8 +7,8 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import {
+  BackgroundImage,
   Button,
-  Image,
   ScreenContainer,
   Text,
   Title,
@@ -56,13 +56,7 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
   return (
     <View className="flex-1">
       {/* Background image */}
-      <View className="absolute inset-0">
-        <Image
-          source={require('@/../assets/images/background/onboarding-bg.jpg')}
-          className="size-full"
-          resizeMode="cover"
-        />
-      </View>
+      <BackgroundImage />
 
       <ScreenContainer className="py-8">
         {/* Title Section */}

@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   Dimensions,
   FlatList,
-  Image,
   ImageBackground,
   Platform,
   TextInput,
@@ -15,7 +14,14 @@ import Animated, {
   FadeInLeft,
 } from 'react-native-reanimated';
 
-import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import {
+  BackgroundImage,
+  Button,
+  FocusAwareStatusBar,
+  Text,
+  Title,
+  View,
+} from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { primary } from '@/components/ui/colors';
 import { createProvisionalUser } from '@/lib/services/user';
@@ -52,7 +58,7 @@ const CardComponent = ({ item, isSelected }: CardProps) => {
       >
         <ImageBackground
           source={item.image}
-          className="size-full"
+          className="size-full bg-white/10"
           resizeMode="cover"
         >
           <View className="flex h-full flex-col justify-between">
@@ -158,7 +164,7 @@ export default function ChooseCharacterScreen() {
     return (
       <View key="intro-and-name">
         <Animated.View entering={FadeInLeft.delay(100)}>
-          <Text className="text-3xl font-bold">Your Character</Text>
+          <Title>Your Character</Title>
         </Animated.View>
         <Animated.View entering={FadeInDown.delay(600)}>
           <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
@@ -183,7 +189,7 @@ export default function ChooseCharacterScreen() {
         <Animated.View entering={FadeInDown.delay(2100)}>
           <Text className="mb-2">Character Name</Text>
           <TextInput
-            className="flex h-14 items-center rounded-lg border border-gray-300 px-4 text-lg text-white placeholder:text-muted-200"
+            className="flex h-14 items-center rounded-lg border border-gray-300 px-4 text-lg text-white placeholder:text-white/90"
             style={{ textAlignVertical: 'center' }}
             value={inputName}
             onChangeText={(text) => {
@@ -375,14 +381,7 @@ export default function ChooseCharacterScreen() {
     <View className="flex-1">
       <FocusAwareStatusBar />
 
-      <View className="absolute inset-0">
-        <Image
-          source={require('@/../assets/images/background/onboarding-bg.jpg')}
-          className="size-full"
-          resizeMode="cover"
-        />
-        <View className="absolute inset-0 bg-white/10" />
-      </View>
+      <BackgroundImage />
 
       <View className="flex-1 justify-between p-6">
         {/* Step Content */}

@@ -18,7 +18,13 @@ import {
   LockInstructions,
   QuestCard,
 } from '@/components/quest';
-import { Button, ScreenContainer, Text, View } from '@/components/ui';
+import {
+  BackgroundImage,
+  Button,
+  ScreenContainer,
+  Text,
+  View,
+} from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { useCooperativeQuest } from '@/lib/hooks/use-cooperative-quest';
 import { useQuestStore } from '@/store/quest-store';
@@ -218,13 +224,12 @@ export default function CooperativePendingQuestScreen() {
   return (
     <View className="flex-1">
       {/* Full-screen Background Image */}
-      <Image
+      <BackgroundImage
         source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
-        className="absolute inset-0 size-full"
-        resizeMode="cover"
-      />
-      {/* BlurView for a subtle overlay effect */}
-      <BlurView intensity={30} tint="regular" className="absolute inset-0" />
+      >
+        {/* BlurView for a subtle overlay effect */}
+        <BlurView intensity={30} tint="regular" className="absolute inset-0" />
+      </BackgroundImage>
 
       <ScreenContainer
         fullScreen

@@ -13,6 +13,7 @@ import Animated, {
 import { useNextAvailableQuests } from '@/api/quest';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import {
+  BackgroundImage,
   Button,
   Card,
   FocusAwareStatusBar,
@@ -190,13 +191,9 @@ export default function FirstQuestScreen() {
     <View className="flex-1">
       <FocusAwareStatusBar />
 
-      <View className="absolute inset-0">
-        <Image
-          source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
-          className="size-full"
-          resizeMode="cover"
-        />
-      </View>
+      <BackgroundImage
+        source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
+      />
 
       <View className="flex-1 justify-between p-6">
         <Animated.View style={headerStyle} className="mt-10">
