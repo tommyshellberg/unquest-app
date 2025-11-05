@@ -30,14 +30,20 @@ const mockEmit = jest.fn();
 const mockOn = jest.fn();
 const mockOff = jest.fn();
 
-jest.mock('@/components/providers/websocket-provider', () => ({
-  useWebSocket: () => ({
+jest.mock('@/components/providers/lazy-websocket-provider', () => ({
+  useLazyWebSocket: () => ({
     emit: mockEmit,
     on: mockOn,
     off: mockOff,
     joinQuestRoom: jest.fn(),
     leaveQuestRoom: jest.fn(),
+    isConnected: true,
+    isEnabled: true,
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    forceReconnect: jest.fn(),
   }),
+  LazyWebSocketProvider: ({ children }: { children: any }) => children,
 }));
 
 // Mock the invitation API

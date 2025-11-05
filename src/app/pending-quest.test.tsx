@@ -27,6 +27,28 @@ jest.mock('@/app/utils/character-utils', () => ({
 
 // Don't mock the pending-quest module - we want to test the real implementation
 
+// Mock UI components including BackgroundImage
+jest.mock('@/components/ui', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+
+  return {
+    BackgroundImage: ({ testID, source, ...props }: any) =>
+      React.createElement(RN.View, { testID, ...props, source }),
+    Button: ({ onPress, children, ...props }: any) =>
+      React.createElement(
+        RN.TouchableOpacity,
+        { onPress, ...props },
+        React.createElement(RN.Text, {}, children)
+      ),
+    Card: ({ children, testID, ...props }: any) =>
+      React.createElement(RN.View, { testID, ...props }, children),
+    Text: (props: any) => React.createElement(RN.Text, props),
+    Title: (props: any) => React.createElement(RN.Text, props),
+    View: (props: any) => React.createElement(RN.View, props),
+  };
+});
+
 // Mock the quest components
 jest.mock('@/components/quest', () => {
   const React = jest.requireActual('react');

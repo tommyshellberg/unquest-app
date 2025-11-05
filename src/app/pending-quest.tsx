@@ -47,6 +47,7 @@ export default function PendingQuestScreen() {
     <View className="flex-1">
       {/* Full-screen Background Image */}
       <BackgroundImage
+        testID="background-image"
         source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
       ></BackgroundImage>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 import { type QuestOption } from '@/api/quest/types';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
@@ -32,31 +32,26 @@ export function useStoryOptions({
   serverOptions,
   serverQuests,
 }: UseStoryOptionsProps) {
-  const [storyOptions, setStoryOptions] = useState<QuestOption[]>([]);
-
-  useEffect(() => {
+  const storyOptions = useMemo<QuestOption[]>(() => {
     // Don't show options if there's an active or pending quest
     if (activeQuest || pendingQuest) {
-      setStoryOptions([]);
-      return;
+      return [];
     }
 
     // If we have multiple server quests, create options from their decisionText
     // This represents branching paths where each quest has its own decision text
     if (serverQuests.length > 1) {
-      const optionsFromQuests = serverQuests.map((quest, index) => ({
+      return serverQuests.map((quest, index) => ({
         id: `option-${index}`,
         text: quest.decisionText || 'Continue', // Use each quest's decisionText
         nextQuestId: quest.customId,
         nextQuest: quest,
       }));
-      setStoryOptions(optionsFromQuests);
-      return;
     }
 
     // If we have a single server quest with decisionText, create a single option
     if (serverQuests.length === 1 && serverQuests[0].decisionText) {
-      const optionsFromQuest = [
+      return [
         {
           id: 'option-0',
           text: serverQuests[0].decisionText,
@@ -64,14 +59,11 @@ export function useStoryOptions({
           nextQuest: serverQuests[0],
         },
       ];
-      setStoryOptions(optionsFromQuest);
-      return;
     }
 
     // Only use serverOptions as a fallback if no quests with decisionText
     if (serverOptions.length > 0) {
-      setStoryOptions(serverOptions);
-      return;
+      return serverOptions;
     }
 
     // Fallback to local logic if server data not available
@@ -85,30 +77,29 @@ export function useStoryOptions({
         (quest) => quest.mode === 'story'
       );
       if (firstQuest && firstQuest.mode === 'story' && firstQuest.options) {
-        setStoryOptions(firstQuest.options);
-      } else {
-        setStoryOptions([]);
+        return firstQuest.options;
       }
-    } else {
-      // Get the last completed story quest
-      const lastCompletedQuest = storyQuests[storyQuests.length - 1];
-
-      // Find this quest in the AVAILABLE_QUESTS array to get its options
-      const questData = AVAILABLE_QUESTS.find(
-        (q) => q.id === lastCompletedQuest.id
-      );
-
-      if (
-        questData &&
-        questData.mode === 'story' &&
-        questData.options &&
-        questData.options.length > 0
-      ) {
-        setStoryOptions(questData.options);
-      } else {
-        setStoryOptions([]);
-      }
+      return [];
     }
+
+    // Get the last completed story quest
+    const lastCompletedQuest = storyQuests[storyQuests.length - 1];
+
+    // Find this quest in the AVAILABLE_QUESTS array to get its options
+    const questData = AVAILABLE_QUESTS.find(
+      (q) => q.id === lastCompletedQuest.id
+    );
+
+    if (
+      questData &&
+      questData.mode === 'story' &&
+      questData.options &&
+      questData.options.length > 0
+    ) {
+      return questData.options;
+    }
+
+    return [];
   }, [completedQuests, activeQuest, pendingQuest, serverOptions, serverQuests]);
 
   return { storyOptions };

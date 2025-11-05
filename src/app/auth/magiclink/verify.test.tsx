@@ -24,6 +24,7 @@ jest.mock('@/api/auth', () => ({
 // Mock the auth functions
 jest.mock('@/lib/auth', () => ({
   signOut: jest.fn(),
+  useAuth: jest.fn((selector) => selector({ status: 'signOut' })),
 }));
 
 // Mock axios

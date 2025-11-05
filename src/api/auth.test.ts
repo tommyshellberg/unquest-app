@@ -75,19 +75,17 @@ describe('auth.ts', () => {
       );
     });
 
-    it('should include provisional ID when available', async () => {
-      (getItem as jest.Mock)
-        .mockReturnValueOnce('provisional-123') // provisionalUserId
-        .mockReturnValueOnce(null); // provisionalAccessToken
+    it('should only send email when no provisional token exists', async () => {
+      (getItem as jest.Mock).mockReturnValue(null); // provisionalAccessToken
       (authClient.post as jest.Mock).mockResolvedValue({ data: {} });
 
       await requestMagicLink('test@example.com');
 
+      // No provisional token, so no Authorization header
       expect(authClient.post).toHaveBeenCalledWith(
         '/auth/magiclink',
         {
           email: 'test@example.com',
-          provisionalId: 'provisional-123',
         },
         {
           headers: {
@@ -98,9 +96,7 @@ describe('auth.ts', () => {
     });
 
     it('should include provisional token in headers when available', async () => {
-      (getItem as jest.Mock)
-        .mockReturnValueOnce(null) // provisionalUserId
-        .mockReturnValueOnce('provisional-token-123'); // provisionalAccessToken
+      (getItem as jest.Mock).mockReturnValue('provisional-token-123'); // provisionalAccessToken
       (authClient.post as jest.Mock).mockResolvedValue({ data: {} });
 
       await requestMagicLink('test@example.com');
@@ -117,19 +113,17 @@ describe('auth.ts', () => {
       );
     });
 
-    it('should include both provisional ID and token when available', async () => {
-      (getItem as jest.Mock)
-        .mockReturnValueOnce('provisional-123') // provisionalUserId
-        .mockReturnValueOnce('provisional-token-123'); // provisionalAccessToken
+    it('should include token in header when provisional token is available', async () => {
+      (getItem as jest.Mock).mockReturnValue('provisional-token-123'); // provisionalAccessToken
       (authClient.post as jest.Mock).mockResolvedValue({ data: {} });
 
       await requestMagicLink('test@example.com');
 
+      // Token is sent in the Authorization header
       expect(authClient.post).toHaveBeenCalledWith(
         '/auth/magiclink',
         {
           email: 'test@example.com',
-          provisionalId: 'provisional-123',
         },
         {
           headers: {
@@ -140,14 +134,13 @@ describe('auth.ts', () => {
       );
     });
 
-    it('should not include provisional ID if it is an empty string', async () => {
-      (getItem as jest.Mock)
-        .mockReturnValueOnce('') // provisionalUserId
-        .mockReturnValueOnce(null); // provisionalAccessToken
+    it('should not include Authorization header when provisional token is empty string', async () => {
+      (getItem as jest.Mock).mockReturnValue(''); // empty provisionalAccessToken
       (authClient.post as jest.Mock).mockResolvedValue({ data: {} });
 
       await requestMagicLink('test@example.com');
 
+      // Empty string should not add Authorization header
       expect(authClient.post).toHaveBeenCalledWith(
         '/auth/magiclink',
         { email: 'test@example.com' },
@@ -280,10 +273,19 @@ describe('auth.ts', () => {
 
       const result = await verifyMagicLinkAndSignIn('test-token');
 
+      // setUser is called with the full user object including character data
       expect(mockSetUser).toHaveBeenCalledWith({
         id: 'user-123',
         email: 'test@example.com',
         name: 'Test User',
+        character: {
+          type: 'alchemist',
+          name: 'Test Alchemist',
+          level: 5,
+          currentXP: 250,
+          xpToNextLevel: 500,
+        },
+        dailyQuestStreak: 7,
       });
       expect(result).toBe('app');
       // Character store logic is tested via integration tests due to dynamic import complexity

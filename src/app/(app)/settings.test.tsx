@@ -1,6 +1,43 @@
-import { render, waitFor } from '@testing-library/react-native';
+import { render, waitFor } from '@/lib/test-utils';
 
 import Settings from './settings';
+
+// Mock lucide-react-native icons as simple mock functions
+jest.mock('lucide-react-native', () => ({
+  Crown: () => null,
+  Flame: () => null,
+  Globe: () => null,
+}));
+
+// Mock react-native-svg for lucide icons
+jest.mock('react-native-svg', () => ({
+  Svg: () => null,
+  Path: () => null,
+  Circle: () => null,
+  Rect: () => null,
+  Line: () => null,
+  Polygon: () => null,
+  Polyline: () => null,
+  G: () => null,
+}));
+
+// Mock i18n to avoid storage issues
+jest.mock('@/lib/i18n', () => ({
+  translate: jest.fn((key) => key),
+  useTranslation: jest.fn(() => ({
+    t: (key: string) => key,
+    changeLanguage: jest.fn(),
+  })),
+  useSelectedLanguage: jest.fn(() => 'en'),
+}));
+
+// Mock react-native-localize
+jest.mock('react-native-localize', () => ({
+  getLocales: jest.fn(() => [{ languageCode: 'en', countryCode: 'US' }]),
+  getTimeZone: jest.fn(() => 'America/New_York'),
+  uses24HourClock: jest.fn(() => false),
+  usesMetricSystem: jest.fn(() => false),
+}));
 
 // Mock the navigation dependencies
 jest.mock('expo-router', () => ({
@@ -78,11 +115,6 @@ jest.mock('@expo/vector-icons', () => ({
   Feather: 'Feather',
 }));
 
-// Mock lucide-react-native
-jest.mock('lucide-react-native', () => ({
-  Flame: 'Flame',
-}));
-
 // Mock the UI components
 jest.mock('@/components/ui', () => ({
   FocusAwareStatusBar: 'FocusAwareStatusBar',
@@ -91,6 +123,7 @@ jest.mock('@/components/ui', () => ({
   View: 'View',
   ScreenContainer: 'ScreenContainer',
   ScreenHeader: 'ScreenHeader',
+  BottomSheetKeyboardAwareScrollView: 'BottomSheetKeyboardAwareScrollView',
 }));
 
 // Mock expo-linking

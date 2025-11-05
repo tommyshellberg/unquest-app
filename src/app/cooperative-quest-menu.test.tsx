@@ -64,7 +64,7 @@ jest.mock('@/lib/services/user', () => ({
   ),
 }));
 
-// Mock lazy websocket provider
+// Mock lazy websocket provider (both the hook and the component)
 jest.mock('@/components/providers/lazy-websocket-provider', () => ({
   useLazyWebSocket: jest.fn(() => ({
     isConnected: false,
@@ -78,6 +78,7 @@ jest.mock('@/components/providers/lazy-websocket-provider', () => ({
     leaveQuestRoom: jest.fn(),
     forceReconnect: jest.fn(),
   })),
+  LazyWebSocketProvider: ({ children }: { children: any }) => children,
 }));
 
 describe('CooperativeQuestMenu', () => {

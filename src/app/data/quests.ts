@@ -9,7 +9,7 @@ import {
 // Set quest duration to 2 minutes in development mode
 const isDev = Env.APP_ENV === 'development';
 function questDuration(prod: number): number {
-  return isDev ? 2 : prod;
+  return isDev ? 1 : prod;
 }
 
 export const AVAILABLE_QUESTS: (CustomQuestTemplate | StoryQuestTemplate)[] = [

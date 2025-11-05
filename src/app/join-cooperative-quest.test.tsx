@@ -50,6 +50,7 @@ jest.mock('@/components/providers/lazy-websocket-provider', () => ({
     leaveQuestRoom: jest.fn(),
     forceReconnect: jest.fn(),
   })),
+  LazyWebSocketProvider: ({ children }: { children: any }) => children,
 }));
 
 describe('JoinCooperativeQuest', () => {
