@@ -30,6 +30,7 @@ import { LazyWebSocketProvider } from '@/components/providers/lazy-websocket-pro
 import { PostHogNavigationTracker } from '@/components/providers/posthog-navigation-tracker';
 import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
+import colors from '@/components/ui/colors';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import { useTokenRefreshErrorHandler } from '@/lib/hooks/use-token-refresh-error-handler';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
@@ -400,7 +401,12 @@ function RootLayout() {
     <Providers onLayout={onLayoutRootView}>
       <NavigationGate />
       <PostHogNavigationTracker />
-      <Stack>
+      <Stack
+        screenOptions={{
+          contentStyle: { backgroundColor: colors.black },
+          animation: 'slide_from_right',
+        }}
+      >
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />

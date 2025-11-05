@@ -3,7 +3,7 @@ import { Redirect, Tabs, useRootNavigationState } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 
-import { background, muted, white } from '@/components/ui/colors';
+import colors, { white } from '@/components/ui/colors';
 import { useAuth } from '@/lib/auth';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useUserStore } from '@/store/user-store';
@@ -86,10 +86,13 @@ export default function TabLayout() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: white, // Forest color
-        tabBarInactiveTintColor: muted[100],
+        tabBarActiveTintColor: '#334738', // Forest color
+        tabBarInactiveTintColor: '#666666',
+        sceneContainerStyle: {
+          backgroundColor: colors.black,
+        },
         tabBarStyle: {
-          backgroundColor: background,
+          backgroundColor: colors.background,
           borderTopWidth: 1,
           borderTopColor: '#E5E5E5',
           height: 120,

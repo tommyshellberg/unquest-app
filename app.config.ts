@@ -5,6 +5,7 @@ import type { ConfigContext, ExpoConfig } from '@expo/config';
 import type { AppIconBadgeConfig } from 'app-icon-badge/types';
 
 import { ClientEnv, Env } from './env';
+import colors from './src/components/ui/colors';
 
 const appIconBadgeConfig: AppIconBadgeConfig = {
   enabled: Env.APP_ENV !== 'production',
@@ -33,6 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   userInterfaceStyle: 'automatic',
+  backgroundColor: colors.black,
   newArchEnabled: true,
   runtimeVersion: Env.VERSION.toString(),
   updates: {
