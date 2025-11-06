@@ -99,17 +99,16 @@ export default function StreakCelebrationScreen() {
           >
             <LottieView
               ref={lottieRef}
-              source={require('@/../assets/animations/congrats.lottie')}
+              source={require('@/../assets/animations/congrats.json')}
               style={{
                 position: 'absolute',
-                width: '200%',
-                height: '200%',
-                opacity: INTERPOLATION.CONFETTI_OPACITY,
-                zIndex: 0,
+                width: '150%',
+                height: '150%',
+                opacity: 0.8,
               }}
               loop={false}
               autoPlay={false}
-              resizeMode="contain"
+              resizeMode="cover"
             />
             <View style={{ zIndex: 1 }}>
               <StreakCounter animate={true} size="large" disablePress={true} />
