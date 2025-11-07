@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
-import { Alert, Image } from 'react-native';
+import { Alert } from 'react-native';
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -66,7 +66,7 @@ export default function Home() {
   const { handlePaywallSuccess } = usePremiumAccess();
 
   // Carousel state with paywall reset
-  const { activeIndex, setActiveIndex, progress, handleMomentumScrollEnd } =
+  const { activeIndex, setActiveIndex: _setActiveIndex, progress, handleMomentumScrollEnd } =
     useCarouselState({
       onPaywallReset: () => {
         if (showPaywallModal) {
@@ -94,8 +94,8 @@ export default function Home() {
     storylineProgress,
     isLoading: isLoadingQuests,
   } = useServerQuests();
-  const prepareQuest = useQuestStore((state) => state.prepareQuest);
-  const user = useUserStore((state) => state.user);
+  const _prepareQuest = useQuestStore((state) => state.prepareQuest);
+  const _user = useUserStore((state) => state.user);
   const posthog = usePostHog();
 
   // Check if onboarding is complete to determine if audio preloading should be enabled
@@ -109,7 +109,7 @@ export default function Home() {
   useAudioPreloader({ storylineId: 'vaedros', enabled: isOnboardingComplete });
 
   // Use extracted hooks for data management
-  const { carouselData, currentMapName, storyProgress, isStorylineComplete } =
+  const { carouselData, currentMapName: _currentMapName, storyProgress: _storyProgress, isStorylineComplete } =
     useHomeData({
       serverQuests,
       availableQuests,
@@ -250,7 +250,7 @@ export default function Home() {
   // Check premium access for cooperative quests
   const {
     hasPremiumAccess: hasCoopAccess,
-    checkPremiumAccess,
+    checkPremiumAccess: _checkPremiumAccess,
     refreshPremiumStatus,
   } = usePremiumAccess();
 

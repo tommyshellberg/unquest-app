@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect } from 'react';
-import { Image } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

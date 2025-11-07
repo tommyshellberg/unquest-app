@@ -41,14 +41,14 @@ describe('Provisional API Client', () => {
 
     // Setup interceptor capture
     mockAxiosInstance.interceptors.request.use.mockImplementation(
-      (success, error) => {
+      (success, _error) => {
         requestInterceptor = success;
         return success;
       }
     );
 
     mockAxiosInstance.interceptors.response.use.mockImplementation(
-      (success, error) => {
+      (success, _error) => {
         responseInterceptor = success;
         return success;
       }

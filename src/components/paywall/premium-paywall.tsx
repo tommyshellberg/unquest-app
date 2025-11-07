@@ -18,20 +18,20 @@ export function PremiumPaywall({
   isVisible,
   onClose,
   onSuccess,
-  featureName = 'this feature',
+  featureName: _featureName = 'this feature',
 }: PremiumPaywallProps) {
   console.log('[PremiumPaywall] Component rendered with isVisible:', isVisible);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [hasPresented, setHasPresented] = useState(false);
 
   // Handle purchase started
-  const handlePurchaseStarted = useCallback(() => {
+  const _handlePurchaseStarted = useCallback(() => {
     console.log('[PremiumPaywall] Purchase started');
     setIsPurchasing(true);
   }, []);
 
   // Handle successful purchase
-  const handlePurchaseCompleted = useCallback(
+  const _handlePurchaseCompleted = useCallback(
     async (customerInfo: { customerInfo: CustomerInfo }) => {
       console.log('[PremiumPaywall] Purchase completed', customerInfo);
       setIsPurchasing(false);
@@ -67,7 +67,7 @@ export function PremiumPaywall({
   );
 
   // Handle purchase error
-  const handlePurchaseError = useCallback((error: { error: any }) => {
+  const _handlePurchaseError = useCallback((error: { error: any }) => {
     console.error('[PremiumPaywall] Purchase error:', error);
     setIsPurchasing(false);
 
@@ -79,13 +79,13 @@ export function PremiumPaywall({
   }, []);
 
   // Handle purchase cancelled
-  const handlePurchaseCancelled = useCallback(() => {
+  const _handlePurchaseCancelled = useCallback(() => {
     console.log('[PremiumPaywall] Purchase cancelled');
     setIsPurchasing(false);
   }, []);
 
   // Handle restore completed
-  const handleRestoreCompleted = useCallback(
+  const _handleRestoreCompleted = useCallback(
     async (customerInfo: { customerInfo: CustomerInfo }) => {
       console.log('[PremiumPaywall] Restore completed', customerInfo);
 
@@ -121,7 +121,7 @@ export function PremiumPaywall({
   );
 
   // Handle restore error
-  const handleRestoreError = useCallback((error: { error: any }) => {
+  const _handleRestoreError = useCallback((error: { error: any }) => {
     console.error('[PremiumPaywall] Restore error:', error);
 
     Alert.alert(
@@ -132,7 +132,7 @@ export function PremiumPaywall({
   }, []);
 
   // Handle paywall dismiss
-  const handleDismiss = useCallback(() => {
+  const _handleDismiss = useCallback(() => {
     console.log('[PremiumPaywall] Paywall dismissed');
     if (!isPurchasing) {
       onClose();

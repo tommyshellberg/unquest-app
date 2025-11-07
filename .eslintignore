@@ -8,3 +8,8 @@ ios/
 .expo-shared
 docs/
 cli/
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx

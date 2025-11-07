@@ -79,31 +79,31 @@ export const BranchingStoryAnnouncementModal = forwardRef<BottomSheetModal>(
           </View>
 
           {/* Main Message */}
-          <Text className="text-cream-500 mb-2 text-center text-2xl font-bold">
+          <Text className="mb-2 text-center text-2xl font-bold text-cream-500">
             Your Story Just Got Deadlier
           </Text>
 
-          <Text className="text-cream-500 mb-6 text-center text-sm">
+          <Text className="mb-6 text-center text-sm text-cream-500">
             unQuest now features branching storylines with real consequences.
             Some choices lead to victory, others... to death.
           </Text>
 
           {/* Reset Option */}
           <View className="mb-6 rounded-lg border border-primary-300 bg-primary-500/10 p-4">
-            <Text className="text-cream-500 mb-2 text-base font-bold">
+            <Text className="mb-2 text-base font-bold text-cream-500">
               Experience the storylines from the beginning
             </Text>
-            <Text className="text-cream-300 mb-3 text-base">
+            <Text className="mb-3 text-base text-cream-300">
               Restart at the first branching point. You'll keep all your
               achievements, stats, streaks, and XP. Only story progress resets.
             </Text>
-            <Text className="text-cream-300 text-sm">
+            <Text className="text-sm text-cream-300">
               ✓ Keep your level and XP
             </Text>
-            <Text className="text-cream-300 text-sm">
+            <Text className="text-sm text-cream-300">
               ✓ Keep your streaks and stats
             </Text>
-            <Text className="text-cream-300 text-sm">
+            <Text className="text-sm text-cream-300">
               ✓ Keep all achievements
             </Text>
           </View>
