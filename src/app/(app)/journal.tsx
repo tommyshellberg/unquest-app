@@ -14,14 +14,14 @@ import {
 } from '@/components/ui';
 import colors from '@/components/ui/colors';
 
-import { EmptyState, FilterChips, QuestListItem } from './journal-components';
-import { QUESTS_PER_PAGE, SCROLL_END_THRESHOLD } from './journal-constants';
+import { EmptyState, FilterChips, QuestListItem } from '@/features/journal/components/journal-components';
+import { QUESTS_PER_PAGE, SCROLL_END_THRESHOLD } from '@/features/journal/constants/journal-constants';
 import {
   useJournalAnimations,
   useJournalFilters,
   useJournalPagination,
   useTransformedQuestRuns,
-} from './journal-hooks';
+} from '@/features/journal/hooks/journal-hooks';
 
 export default function JournalScreen() {
   const { page, resetPage, incrementPage } = useJournalPagination();

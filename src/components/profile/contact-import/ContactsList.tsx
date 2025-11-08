@@ -88,8 +88,8 @@ export const ContactsList: React.FC<ContactsListProps> = ({
       ContactSection
     >;
   }) => (
-    <View className="border-b border-neutral-200 bg-background px-4 py-2">
-      <Text className="text-sm font-semibold text-neutral-500">
+    <View className="border-b border-neutral-300 bg-background px-4 py-2">
+      <Text className="text-sm font-semibold text-neutral-200">
         {section.title}
       </Text>
     </View>

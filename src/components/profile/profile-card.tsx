@@ -16,10 +16,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { PROFILE_COLORS } from '@/app/(app)/profile-constants';
-import type { Character } from '@/app/(app)/profile-types';
 import CHARACTERS from '@/app/data/characters';
 import { Card, Text, View } from '@/components/ui';
+import { PROFILE_COLORS } from '@/features/profile/constants/profile-constants';
+import type { Character } from '@/features/profile/types/profile-types';
 import { updateUserCharacter } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 
@@ -87,10 +87,8 @@ export function ProfileCard({ character }: ProfileCardProps) {
       <ImageBackground
         source={characterDetails?.profileImage}
         className="aspect-[1.2] w-full bg-[rgba(47,129,142,0.9)] opacity-80"
-        resizeMode="cover"
         imageStyle={{
           position: 'absolute',
-          top: -60,
           width: '100%',
         }}
       >
@@ -102,7 +100,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
           <View />
 
           {/* Bottom section with player info and blur */}
-          <BlurView intensity={50} tint="light" className="overflow-hidden p-5">
+          <BlurView intensity={80} tint="dark" className="overflow-hidden p-5">
             <View>
               {/* Name row with edit icon */}
               <View className="flex-row items-center justify-between">

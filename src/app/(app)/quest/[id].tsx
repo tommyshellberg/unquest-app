@@ -25,7 +25,7 @@ import {
   REFLECTION_PARAM_FROM_VALUE,
   REFLECTION_ROUTE,
   SCREEN_TITLE,
-} from './constants/quest-details.constants';
+} from '@/features/quest/constants/quest-details.constants';
 
 export default function AppQuestDetailsScreen() {
   const { id, timestamp, from, questData } = useLocalSearchParams<{

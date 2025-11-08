@@ -32,26 +32,26 @@ export const ContactItem: React.FC<ContactItemProps> = ({
     >
       <View className="mr-3 flex-1">
         <Text
-          className={`text-base font-medium ${isFriend ? 'text-neutral-500' : 'text-black'}`}
+          className={`text-base font-medium ${isFriend ? 'text-neutral-300' : 'text-white'}`}
         >
           {displayName}
         </Text>
         {email && contact.name && (
-          <Text className="mt-1 text-sm text-neutral-500">{email}</Text>
+          <Text className="mt-1 text-sm text-neutral-200">{email}</Text>
         )}
       </View>
 
       <View className="flex-row items-center">
         {isFriend && (
-          <Text className="mr-3 text-sm text-neutral-500">Already invited</Text>
+          <Text className="mr-3 text-sm text-neutral-200">Already invited</Text>
         )}
 
         {!isFriend && (
           <View
             className={`size-6 items-center justify-center rounded-full border-2 ${
               isSelected
-                ? 'border-primary-500 bg-primary-500'
-                : 'border-neutral-500 bg-background'
+                ? 'border-primary-400 bg-primary-400'
+                : 'border-neutral-300 bg-background'
             }`}
           >
             {isSelected && <Check size={14} color="white" strokeWidth={3} />}

@@ -25,9 +25,9 @@ import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 import { useUserStore } from '@/store/user-store';
 
-import { ActionCards } from './profile-components';
-import { PROFILE_COLORS } from './profile-constants';
-import { useCharacterSync } from './profile-hooks';
+import { ActionCards } from '@/features/profile/components/profile-components';
+import { PROFILE_COLORS } from '@/features/profile/constants/profile-constants';
+import { useCharacterSync } from '@/features/profile/hooks/profile-hooks';
 
 export default function ProfileScreen() {
   const router = useRouter();

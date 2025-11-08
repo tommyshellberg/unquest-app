@@ -9,7 +9,7 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
-import { STATS_ANIMATION } from '@/app/(app)/profile-constants';
+import { STATS_ANIMATION } from '@/features/profile/constants/profile-constants';
 import { Card, Text, View } from '@/components/ui';
 
 type StatsCardProps = {

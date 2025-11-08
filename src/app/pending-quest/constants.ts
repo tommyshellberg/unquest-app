@@ -43,7 +43,7 @@ export const UI_CONFIG = {
   // Padding and spacing
   TOP_PADDING: 32,
   HORIZONTAL_PADDING: 24,
-  BOTTOM_PADDING: 24,
+  BOTTOM_PADDING: 48,
 
   // Blur
   BLUR_INTENSITY: 30,

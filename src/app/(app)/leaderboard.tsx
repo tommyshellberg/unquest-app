@@ -32,19 +32,19 @@ import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 import { useUserStore } from '@/store/user-store';
 
-import { EmptyStates } from './leaderboard/components/empty-states';
-import { LeaderboardHeader } from './leaderboard/components/leaderboard-header';
-import { LeaderboardItem } from './leaderboard/components/leaderboard-item';
-import { LeaderboardTabs } from './leaderboard/components/leaderboard-tabs';
-import { ScopeToggle } from './leaderboard/components/scope-toggle';
+import { EmptyStates } from '@/features/leaderboard/components/empty-states';
+import { LeaderboardHeader } from '@/features/leaderboard/components/leaderboard-header';
+import { LeaderboardItem } from '@/features/leaderboard/components/leaderboard-item';
+import { LeaderboardTabs } from '@/features/leaderboard/components/leaderboard-tabs';
+import { ScopeToggle } from '@/features/leaderboard/components/scope-toggle';
 import {
   A11Y,
   COLORS,
   type LeaderboardType,
   type ScopeType,
   STRINGS,
-} from './leaderboard/constants';
-import { useLeaderboardData } from './leaderboard/hooks/use-leaderboard-data';
+} from '@/features/leaderboard/constants/leaderboard-constants';
+import { useLeaderboardData } from '@/features/leaderboard/hooks/use-leaderboard-data';
 
 export default function LeaderboardScreen() {
   const router = useRouter();

@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useResetStoryline } from '@/api/quest';
-import { StoryOptionButtons } from '@/app/(app)/home/components/story-option-buttons';
+import { StoryOptionButtons } from '@/features/home/components/story-option-buttons';
 import {
   CARD_HEIGHT,
   CARD_SPACING,
@@ -23,11 +23,11 @@ import {
   CAROUSEL_VERTICAL_PADDING,
   QUEST_MODES,
   SNAP_INTERVAL,
-} from '@/app/(app)/home/constants';
-import { useCarouselState } from '@/app/(app)/home/hooks/use-carousel-state';
-import { useHomeData } from '@/app/(app)/home/hooks/use-home-data';
-import { useQuestSelection } from '@/app/(app)/home/hooks/use-quest-selection';
-import { useStoryOptions } from '@/app/(app)/home/hooks/use-story-options';
+} from '@/features/home/constants/home-constants';
+import { useCarouselState } from '@/features/home/hooks/use-carousel-state';
+import { useHomeData } from '@/features/home/hooks/use-home-data';
+import { useQuestSelection } from '@/features/home/hooks/use-quest-selection';
+import { useStoryOptions } from '@/features/home/hooks/use-story-options';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import QuestCard from '@/components/home/quest-card';
 import { BranchingStoryAnnouncementModal } from '@/components/modals/branching-story-announcement-modal';
