@@ -4,18 +4,18 @@ import { apiClient } from '@/api/common/client';
 import { setItem } from '@/lib/storage';
 
 import {
-  getUserDetails,
-  updateUserCharacter,
-  getUserFriends,
-  sendFriendInvite,
-  getUserInvitations,
   acceptFriendInvitation,
+  createProvisionalUser,
+  deleteUserAccount,
+  getUserDetails,
+  getUserFriends,
+  getUserInvitations,
   rejectFriendInvitation,
   removeFriend,
   rescindInvitation,
   sendBulkFriendInvites,
-  deleteUserAccount,
-  createProvisionalUser,
+  sendFriendInvite,
+  updateUserCharacter,
 } from './user';
 
 // Mock dependencies
@@ -47,8 +47,8 @@ describe('User Service', () => {
         email: 'test@example.com',
         role: 'user',
         character: {
-          type: 'warrior',
-          name: 'TestWarrior',
+          type: 'alchemist',
+          name: 'Testalchemist',
           level: 5,
           currentXP: 250,
           xpToNextLevel: 300,
@@ -116,8 +116,8 @@ describe('User Service', () => {
   describe('updateUserCharacter', () => {
     it('should update user character successfully', async () => {
       const mockCharacter = {
-        type: 'warrior' as const,
-        name: 'UpdatedWarrior',
+        type: 'alchemist' as const,
+        name: 'Updatedalchemist',
         level: 6,
         currentXP: 300,
         xpToNextLevel: 400,
@@ -136,8 +136,8 @@ describe('User Service', () => {
 
     it('should handle update errors', async () => {
       const mockCharacter = {
-        type: 'warrior' as const,
-        name: 'TestWarrior',
+        type: 'alchemist' as const,
+        name: 'Testalchemist',
         level: 1,
         currentXP: 0,
         xpToNextLevel: 100,
@@ -307,8 +307,8 @@ describe('User Service', () => {
                 level: 5,
                 currentXP: 250,
                 _id: 'char-123',
-                type: 'warrior',
-                name: 'SenderWarrior',
+                type: 'alchemist',
+                name: 'Senderalchemist',
               },
               email: 'sender@example.com',
               id: 'user-sender',
@@ -700,8 +700,8 @@ describe('User Service', () => {
   describe('createProvisionalUser', () => {
     it('should create provisional user successfully', async () => {
       const mockCharacter = {
-        type: 'warrior' as const,
-        name: 'ProvisionalWarrior',
+        type: 'alchemist' as const,
+        name: 'Provisionalalchemist',
         level: 1,
         currentXP: 0,
         xpToNextLevel: 100,
@@ -818,8 +818,8 @@ describe('User Service', () => {
 
     it('should handle network errors', async () => {
       const mockCharacter = {
-        type: 'warrior' as const,
-        name: 'TestWarrior',
+        type: 'alchemist' as const,
+        name: 'Testalchemist',
         level: 1,
         currentXP: 0,
         xpToNextLevel: 100,
@@ -843,8 +843,8 @@ describe('User Service', () => {
 
     it('should handle other API errors', async () => {
       const mockCharacter = {
-        type: 'warrior' as const,
-        name: 'TestWarrior',
+        type: 'alchemist' as const,
+        name: 'Testalchemist',
         level: 1,
         currentXP: 0,
         xpToNextLevel: 100,

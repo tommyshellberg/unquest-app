@@ -3,8 +3,8 @@ import { OneSignal } from 'react-native-onesignal';
 
 import { storeTokens } from '@/api/token';
 import { getUserDetails } from '@/lib/services/user';
+import { getItem } from '@/lib/storage';
 import { useUserStore } from '@/store/user-store';
-import { useCharacterStore } from '@/store/character-store';
 
 import { useAuth } from './index';
 import { getToken, removeToken, setToken } from './utils';
@@ -75,6 +75,12 @@ jest.mock('./utils', () => ({
   getToken: jest.fn(),
   removeToken: jest.fn(),
   setToken: jest.fn(),
+}));
+
+jest.mock('@/lib/storage', () => ({
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
 }));
 
 // Get references to the mocks
@@ -246,7 +252,7 @@ describe('Auth Store', () => {
       const mockUser = {
         id: 'user-123',
         character: {
-          type: 'warrior',
+          type: 'alchemist',
           name: 'TestChar',
           level: 5,
           currentXP: 250,
@@ -268,11 +274,11 @@ describe('Auth Store', () => {
       await useAuth.getState().hydrate();
 
       expect(characterStoreMocks.mockCreateCharacter).toHaveBeenCalledWith(
-        'warrior',
+        'alchemist',
         'TestChar'
       );
       expect(characterStoreMocks.mockUpdateCharacter).toHaveBeenCalledWith({
-        type: 'warrior',
+        type: 'alchemist',
         name: 'TestChar',
         level: 5,
         currentXP: 250,
@@ -314,14 +320,15 @@ describe('Auth Store', () => {
       });
     });
 
-    it('should sign out when no token exists', async () => {
+    it('should set signOut status when no token exists', async () => {
       (getToken as jest.Mock).mockReturnValue(null);
-
-      const signOutSpy = jest.spyOn(useAuth.getState(), 'signOut');
+      (getItem as jest.Mock).mockReturnValue(null); // No provisional tokens either
 
       await useAuth.getState().hydrate();
 
-      expect(signOutSpy).toHaveBeenCalled();
+      const state = useAuth.getState();
+      expect(state.status).toBe('signOut');
+      expect(state.token).toBeNull();
       expect(getUserDetails).not.toHaveBeenCalled();
     });
 
@@ -338,7 +345,7 @@ describe('Auth Store', () => {
       expect(getUserDetails).toHaveBeenCalled();
       // The implementation now keeps the user signed in on fetch failure
       expect(signOutSpy).not.toHaveBeenCalled();
-      
+
       // The implementation doesn't set status to signIn on user details fetch failure
       // It remains as 'hydrating' but the user stays logged in with the token
       const state = useAuth.getState();
@@ -357,7 +364,7 @@ describe('Auth Store', () => {
 
       // The implementation sets status to signOut but doesn't call signOut method
       expect(signOutSpy).not.toHaveBeenCalled();
-      
+
       // But it should set the status to signOut
       const state = useAuth.getState();
       expect(state.status).toBe('signOut');
@@ -395,7 +402,7 @@ describe('Auth Store', () => {
       const mockUser = {
         id: 'user-123',
         character: {
-          type: 'warrior',
+          type: 'alchemist',
           name: 'TestChar',
           level: 5,
           currentXP: 250,
@@ -407,7 +414,7 @@ describe('Auth Store', () => {
 
       // Set character already exists
       characterStoreMocks.mockGetState.mockReturnValue({
-        character: { type: 'warrior', name: 'ExistingChar' }, // Character already exists
+        character: { type: 'alchemist', name: 'ExistingChar' }, // Character already exists
         createCharacter: characterStoreMocks.mockCreateCharacter,
         updateCharacter: characterStoreMocks.mockUpdateCharacter,
         setStreak: characterStoreMocks.mockSetStreak,

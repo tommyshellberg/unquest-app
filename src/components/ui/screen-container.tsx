@@ -1,5 +1,6 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import { type ViewProps } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ScreenContainerProps extends ViewProps {
@@ -7,6 +8,7 @@ interface ScreenContainerProps extends ViewProps {
   bottomPadding?: number;
   noPadding?: boolean;
   noHorizontalPadding?: boolean;
+  fullScreen?: boolean;
 }
 
 /**
@@ -15,36 +17,39 @@ interface ScreenContainerProps extends ViewProps {
  * content doesn't go too close to the bottom of the screen
  *
  * Standard padding:
- * - Bottom: 8px above safe area (accounts for tab bar)
+ * - Bottom: 8px above safe area (for screens with tab bar)
+ * - Bottom: 32px above safe area (for full screens without tab bar, use fullScreen={true})
  * - Horizontal: 16px (4 in Tailwind = 16px)
  */
 export function ScreenContainer({
   children,
-  bottomPadding = 8, // Default 8px padding above safe area
+  bottomPadding,
   noPadding = false,
   noHorizontalPadding = false,
+  fullScreen = false,
   style,
-  className = '',
   ...props
-}: ScreenContainerProps & { className?: string }) {
+}: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
 
-  // Standard horizontal padding unless explicitly disabled
-  const horizontalPadding = noHorizontalPadding ? '' : 'px-4';
+  // Determine bottom padding: fullScreen uses 32px, tab screens use 8px
+  const defaultBottomPadding = fullScreen ? 32 : 8;
+  const finalBottomPadding = bottomPadding ?? defaultBottomPadding;
 
   return (
-    <View
+    <LinearGradient
+      colors={['#102442', '#0e203b', '#0d1d35', '#0b1a2e', '#0a1628']}
       style={[
         {
           flex: 1,
-          paddingBottom: noPadding ? 0 : insets.bottom + bottomPadding,
+          paddingBottom: noPadding ? 0 : insets.bottom + finalBottomPadding,
+          paddingHorizontal: noHorizontalPadding ? 0 : 16,
         },
         style,
       ]}
-      className={`${horizontalPadding} ${className}`.trim()}
       {...props}
     >
       {children}
-    </View>
+    </LinearGradient>
   );
 }

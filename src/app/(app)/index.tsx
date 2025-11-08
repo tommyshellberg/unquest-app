@@ -1,8 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
-import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Image } from 'react-native';
+import { Alert } from 'react-native';
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -14,51 +13,47 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { type QuestOption } from '@/api/quest/types';
+import { useResetStoryline } from '@/api/quest';
+import { StoryOptionButtons } from '@/features/home/components/story-option-buttons';
+import {
+  CARD_HEIGHT,
+  CARD_SPACING,
+  CARD_WIDTH,
+  CAROUSEL_CONTENT_PADDING,
+  CAROUSEL_VERTICAL_PADDING,
+  QUEST_MODES,
+  SNAP_INTERVAL,
+} from '@/features/home/constants/home-constants';
+import { useCarouselState } from '@/features/home/hooks/use-carousel-state';
+import { useHomeData } from '@/features/home/hooks/use-home-data';
+import { useQuestSelection } from '@/features/home/hooks/use-quest-selection';
+import { useStoryOptions } from '@/features/home/hooks/use-story-options';
 import { AVAILABLE_QUESTS } from '@/app/data/quests';
-import { getMapNameForQuest } from '@/app/utils/map-utils';
 import QuestCard from '@/components/home/quest-card';
+import { BranchingStoryAnnouncementModal } from '@/components/modals/branching-story-announcement-modal';
 import { PremiumPaywall } from '@/components/paywall';
 import { StreakCounter } from '@/components/StreakCounter';
 import {
+  BackgroundImage,
   Button,
   FocusAwareStatusBar,
   ScreenContainer,
   ScreenHeader,
+  useModal,
   View,
 } from '@/components/ui';
+import Colors from '@/components/ui/colors';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { useServerQuests } from '@/hooks/use-server-quests';
 import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import QuestTimer from '@/lib/services/quest-timer';
+import { refreshPremiumStatus as refreshServerPremium } from '@/lib/services/user';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
-import { type StoryQuestTemplate } from '@/store/types';
+import { useSettingsStore } from '@/store/settings-store';
 import { useUserStore } from '@/store/user-store';
 
-// Define screen dimensions for the carousel
-const screenWidth = Dimensions.get('window').width;
-const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
-const cardSpacing = 16; // spacing between cards
-const snapInterval = cardWidth + cardSpacing; // adjust snap to include spacing
-const cardHeight = cardWidth * (4 / 3); // Height based on 3:4 aspect ratio
-
-// Pre-require animations to avoid dynamic require
-const curvedLeftAnimation = require('@/../assets/animations/curved-left.json');
-const curvedRightAnimation = require('@/../assets/animations/curved-right.json');
-
-// Define our modes
-const MODES = [
-  { id: 'story', name: 'Story Mode', color: 'rgba(194, 199, 171, 0.9)' },
-  { id: 'custom', name: 'Free Play Mode', color: 'rgba(146, 185, 191, 0.9)' },
-  {
-    id: 'cooperative',
-    name: 'Cooperative Quest',
-    color: 'rgba(106, 177, 185, 0.9)',
-  },
-];
-
 export default function Home() {
-  const router = useRouter();
   const activeQuest = useQuestStore((state) => state.activeQuest);
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const refreshAvailableQuests = useQuestStore(
@@ -70,18 +65,27 @@ export default function Home() {
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const { handlePaywallSuccess } = usePremiumAccess();
 
-  // Debug paywall modal state
-  useEffect(() => {
-    console.log('[Paywall Modal] State changed:', showPaywallModal);
-  }, [showPaywallModal]);
+  // Carousel state with paywall reset
+  const { activeIndex, setActiveIndex: _setActiveIndex, progress, handleMomentumScrollEnd } =
+    useCarouselState({
+      onPaywallReset: () => {
+        if (showPaywallModal) {
+          setShowPaywallModal(false);
+        }
+      },
+    });
 
-  // Reset paywall modal when carousel index changes
-  useEffect(() => {
-    if (showPaywallModal) {
-      console.log('[Paywall Modal] Resetting due to carousel swipe');
-      setShowPaywallModal(false);
-    }
-  }, [activeIndex]);
+  // Branching story announcement modal
+  const branchingModal = useModal();
+  const hasSeenBranchingAnnouncement = useSettingsStore(
+    (state) => state.hasSeenBranchingAnnouncement
+  );
+  const completedQuests = useQuestStore((state) => state.completedQuests);
+
+  // Check if user has completed first branching quest (quest-1a or quest-1b)
+  const hasCompletedFirstBranch = completedQuests.some(
+    (quest) => quest.id === 'quest-1a' || quest.id === 'quest-1b'
+  );
 
   // Use server-driven quests
   const {
@@ -90,38 +94,103 @@ export default function Home() {
     storylineProgress,
     isLoading: isLoadingQuests,
   } = useServerQuests();
-  const completedQuests = useQuestStore((state) => state.completedQuests);
-  const prepareQuest = useQuestStore((state) => state.prepareQuest);
-  const user = useUserStore((state) => state.user);
+  const _prepareQuest = useQuestStore((state) => state.prepareQuest);
+  const _user = useUserStore((state) => state.user);
   const posthog = usePostHog();
 
+  // Check if onboarding is complete to determine if audio preloading should be enabled
+  const isOnboardingComplete = useOnboardingStore((state) =>
+    state.isOnboardingComplete()
+  );
+
   // Preload audio files for upcoming quests
-  useAudioPreloader({ storylineId: 'vaedros', enabled: true });
-  // State for story choices - now primarily from server
-  const [storyOptions, setStoryOptions] = useState<QuestOption[]>([]);
+  // Only enable for authenticated users (onboarding complete)
+  // Provisional users get quest-1 audio preloaded in the first-quest screen
+  useAudioPreloader({ storylineId: 'vaedros', enabled: isOnboardingComplete });
 
-  // Carousel state
-  const [activeIndex, setActiveIndex] = useState(0);
-  const progress = useSharedValue(0);
-
-  // Get current map name based on next quest - prefer server data
-  const currentMapName =
-    serverQuests.length > 0
-      ? getMapNameForQuest(serverQuests[0].customId)
-      : availableQuests.length > 0
-        ? getMapNameForQuest(availableQuests[0].id)
-        : 'Vaedros Kingdom';
-
-  // Calculate story progress - prefer server data if available
-  const storyProgress = storylineProgress
-    ? storylineProgress.progressPercentage / 100
-    : completedQuests.filter((quest) => quest.mode === 'story').length /
-      AVAILABLE_QUESTS.filter(
+  // Use extracted hooks for data management
+  const { carouselData, currentMapName: _currentMapName, storyProgress: _storyProgress, isStorylineComplete } =
+    useHomeData({
+      serverQuests,
+      availableQuests,
+      storyOptions: [],
+      completedQuests,
+      isLoadingQuests,
+      storylineProgress,
+      totalStoryQuests: AVAILABLE_QUESTS.filter(
         (quest) => quest.mode === 'story' && !/quest-\d+b$/.test(quest.id)
-      ).length;
-  
-  // Check if the storyline is complete
-  const isStorylineComplete = storyProgress >= 0.999; // Account for floating point precision
+      ).length,
+    });
+
+  const { storyOptions } = useStoryOptions({
+    completedQuests,
+    activeQuest,
+    pendingQuest,
+    serverOptions,
+    serverQuests,
+  });
+
+  const {
+    handleQuestOptionSelect,
+    handleStartCustomQuest,
+    handleCooperativeQuest,
+  } = useQuestSelection({
+    serverQuests,
+    serverOptions,
+  });
+
+  // Storyline reset
+  const resetStorylineMutation = useResetStoryline();
+
+  const handleRestartStoryline = () => {
+    Alert.alert(
+      'Restart Storyline?',
+      "This will reset your story progress to the first branching point. You'll keep all your achievements, stats, streaks, and XP—only your story progress resets.",
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Restart',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              posthog.capture('storyline_restart_initiated', {
+                storyline_id: 'vaedros',
+                source: 'home_screen_restart_button',
+              });
+
+              await resetStorylineMutation.mutateAsync({
+                storylineId: 'vaedros',
+              });
+
+              posthog.capture('storyline_reset_success', {
+                storyline_id: 'vaedros',
+                source: 'home_screen_restart_button',
+              });
+
+              // Refresh available quests to show the new options
+              refreshAvailableQuests();
+            } catch (error) {
+              console.error('Error resetting storyline:', error);
+              posthog.capture('storyline_reset_failed', {
+                storyline_id: 'vaedros',
+                source: 'home_screen_restart_button',
+                error: error instanceof Error ? error.message : 'Unknown error',
+              });
+
+              Alert.alert(
+                'Error',
+                'Failed to reset storyline. Please try again.',
+                [{ text: 'OK' }]
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
 
   // Animation values
   const headerOpacity = useSharedValue(0);
@@ -131,10 +200,6 @@ export default function Home() {
   const animatedScrollStyle = useAnimatedStyle(() => ({
     opacity: scrollContainerOpacity.value,
   }));
-
-  useEffect(() => {
-    console.log('Home screen is mounting');
-  }, []);
 
   // Check for stuck cooperative quest and clean it up
   useEffect(() => {
@@ -150,102 +215,24 @@ export default function Home() {
     }
   }, [activeQuest]);
 
-  // Get next quest options - prefer server data when available
+  // Check if branching story announcement should be shown
   useEffect(() => {
-    console.log('🔄 Story options useEffect running');
-    console.log('🔄 Server options available:', serverOptions.length);
-    console.log('🔄 Server quests available:', serverQuests.length);
-    console.log('🔄 activeQuest:', activeQuest);
-    console.log('🔄 pendingQuest:', pendingQuest);
+    // Only show if user hasn't seen it and has completed first branching quest (quest-1a or quest-1b)
+    // This means they've made their first story choice and can benefit from restart option
+    if (!hasSeenBranchingAnnouncement && hasCompletedFirstBranch) {
+      // Delay showing the modal slightly to let the screen load
+      const timer = setTimeout(() => {
+        branchingModal.present();
+      }, 1500);
 
-    if (activeQuest || pendingQuest) {
-      console.log('🔄 Returning early due to active/pending quest');
-      return;
+      return () => clearTimeout(timer);
     }
-
-    // If we have multiple server quests, create options from their decisionText
-    // This represents branching paths where each quest has its own decision text
-    if (serverQuests.length > 1) {
-      console.log('🔄 Creating options from multiple server quests with decisionText');
-      const optionsFromQuests = serverQuests.map((quest, index) => ({
-        id: `option-${index}`,
-        text: quest.decisionText || 'Continue', // Use each quest's decisionText
-        nextQuestId: quest.customId,
-        nextQuest: quest,
-      }));
-      setStoryOptions(optionsFromQuests);
-      return;
-    }
-
-    // If we have a single server quest with decisionText, create a single option
-    if (serverQuests.length === 1 && serverQuests[0].decisionText) {
-      console.log('🔄 Creating single option from server quest with decisionText');
-      const optionsFromQuest = [{
-        id: 'option-0',
-        text: serverQuests[0].decisionText,
-        nextQuestId: serverQuests[0].customId,
-        nextQuest: serverQuests[0],
-      }];
-      setStoryOptions(optionsFromQuest);
-      return;
-    }
-
-    // Only use serverOptions as a fallback if no quests with decisionText
-    if (serverOptions.length > 0) {
-      console.log('🔄 Using server options as fallback:', serverOptions);
-      setStoryOptions(serverOptions);
-      return;
-    }
-
-    // Fallback to local logic if server data not available
-    console.log('🔄 Falling back to local quest logic');
-    const storyQuests = completedQuests.filter(
-      (quest) => quest.mode === 'story'
-    );
-
-    if (storyQuests.length === 0) {
-      // No completed story quests - show first quest
-      const firstQuest = AVAILABLE_QUESTS.find(
-        (quest) => quest.mode === 'story'
-      );
-      if (firstQuest && firstQuest.mode === 'story' && firstQuest.options) {
-        setStoryOptions(firstQuest.options);
-      } else {
-        throw new Error('No story quests found');
-      }
-    } else {
-      // Get the last completed story quest
-      const lastCompletedQuest = storyQuests[storyQuests.length - 1];
-      console.log('lastCompletedQuest', lastCompletedQuest.id);
-
-      // Find this quest in the AVAILABLE_QUESTS array to get its options
-      const questData = AVAILABLE_QUESTS.find(
-        (q) => q.id === lastCompletedQuest.id
-      );
-
-      if (
-        questData &&
-        questData.mode === 'story' &&
-        questData.options &&
-        questData.options.length > 0
-      ) {
-        console.log(
-          '🔄 Setting story options from local data:',
-          questData.options
-        );
-        setStoryOptions(questData.options);
-      } else {
-        console.log('🔄 No options found, setting empty');
-        setStoryOptions([]);
-      }
-    }
-  }, [completedQuests, activeQuest, pendingQuest, serverOptions, serverQuests]);
+  }, [hasSeenBranchingAnnouncement, hasCompletedFirstBranch, branchingModal]);
 
   // Refresh available quests when there's no active quest
   // Only use local refresh if server quests aren't being used
   useEffect(() => {
     if (!activeQuest && !pendingQuest && serverQuests.length === 0) {
-      console.log('➡️ refreshing available quests locally');
       refreshAvailableQuests();
     }
   }, [activeQuest, pendingQuest, refreshAvailableQuests, serverQuests.length]);
@@ -260,225 +247,36 @@ export default function Home() {
     contentTranslateY.value = withDelay(1000, withSpring(0));
   }, [contentOpacity, contentTranslateY, headerOpacity]);
 
-  // Function to handle quest option selection
-  const handleQuestOptionSelect = async (nextQuestId: string | null) => {
-    console.log('[handleQuestOptionSelect] Called with nextQuestId:', nextQuestId);
-    posthog.capture('try_trigger_start_quest');
-    if (!nextQuestId) {
-      console.log('[handleQuestOptionSelect] No nextQuestId provided, returning');
-      return;
-    }
-
-    // First check if this is an option quest (from serverOptions)
-    let selectedQuest = null;
-    const selectedOption = serverOptions.find(opt => opt.nextQuestId === nextQuestId);
-    if (selectedOption && selectedOption.nextQuest) {
-      console.log('[handleQuestOptionSelect] Found quest in server options:', selectedOption.nextQuest);
-      selectedQuest = selectedOption.nextQuest;
-    } else {
-      // Then check server quests
-      selectedQuest = serverQuests.find(
-        (quest) => quest.customId === nextQuestId
-      );
-    }
-
-    // Convert server quest to client format if found
-    if (selectedQuest) {
-      const clientQuest = {
-        ...selectedQuest,
-        id: selectedQuest.customId,
-        _id: selectedQuest._id, // Preserve MongoDB ID
-        mode: selectedQuest.mode as 'story' | 'custom',
-      };
-      console.log('🎯 Selected server quest:', clientQuest);
-      console.log('[handleQuestOptionSelect] Quest details:', {
-        id: clientQuest.id,
-        _id: clientQuest._id,
-        customId: clientQuest.customId,
-        mode: clientQuest.mode,
-        title: clientQuest.title,
-      });
-      console.log('[handleQuestOptionSelect] About to call prepareQuest on store');
-      posthog.capture('trigger_start_quest');
-      prepareQuest(clientQuest as StoryQuestTemplate);
-      console.log('[handleQuestOptionSelect] Called prepareQuest on store, now calling QuestTimer.prepareQuest');
-      try {
-        await QuestTimer.prepareQuest(clientQuest as StoryQuestTemplate);
-        console.log('[handleQuestOptionSelect] QuestTimer.prepareQuest completed successfully');
-        posthog.capture('success_start_quest');
-      } catch (error) {
-        console.error('[handleQuestOptionSelect] QuestTimer.prepareQuest failed:', error);
-        console.error('[handleQuestOptionSelect] Error stack:', error instanceof Error ? error.stack : 'No stack');
-        throw error;
-      }
-    } else {
-      // Fallback to local quest data
-      const localQuest = AVAILABLE_QUESTS.find(
-        (quest) => quest.id === nextQuestId
-      );
-
-      if (localQuest) {
-        console.log('🎯 Selected local quest:', localQuest);
-        posthog.capture('trigger_start_quest');
-        prepareQuest(localQuest);
-        await QuestTimer.prepareQuest(localQuest);
-        posthog.capture('success_start_quest');
-      } else {
-        console.error('[handleQuestOptionSelect] No quest found for nextQuestId:', nextQuestId);
-        console.error('[handleQuestOptionSelect] Available server quests:', serverQuests.map(q => q.customId));
-        console.error('[handleQuestOptionSelect] Available server options:', serverOptions.map(opt => ({ nextQuestId: opt.nextQuestId, hasNextQuest: !!opt.nextQuest })));
-        console.error('[handleQuestOptionSelect] Available local quests:', AVAILABLE_QUESTS.map(q => q.id));
-      }
-    }
-  };
-
-  // Handle custom quest button
-  const handleStartCustomQuest = () => {
-    try {
-      router.push('/custom-quest');
-    } catch (error) {
-      console.error('Error navigating to custom quest:', error);
-    }
-  };
-
-  // Handle cooperative quest button
-  const handleCooperativeQuest = () => {
-    try {
-      posthog.capture('cooperative_quest_card_clicked');
-      router.push('/cooperative-quest-menu');
-    } catch (error) {
-      console.error('Error navigating to cooperative quest menu:', error);
-    }
-  };
-
   // Check premium access for cooperative quests
-  const { hasPremiumAccess: hasCoopAccess, checkPremiumAccess, refreshPremiumStatus } =
-    usePremiumAccess();
-  
+  const {
+    hasPremiumAccess: hasCoopAccess,
+    checkPremiumAccess: _checkPremiumAccess,
+    refreshPremiumStatus,
+  } = usePremiumAccess();
+
   // Also get hasPremiumAccess without renaming for use in other places
   const { hasPremiumAccess } = usePremiumAccess();
-
-  // Debug log to understand timing
-  useEffect(() => {
-    console.log('[Home] User state:', user ? 'loaded' : 'not loaded');
-    console.log('[Home] Has premium access for coop:', hasCoopAccess);
-  }, [user, hasCoopAccess]);
 
   // Check premium status on mount
   // RevenueCat SDK handles caching and offline scenarios automatically
   useEffect(() => {
-    console.log('[Home] Initial premium status check');
     refreshPremiumStatus();
-    
+
     // TEMPORARY: Force refresh server premium status on app load for testing
     // TODO: Remove this after testing
-    console.log('[Home] TEMP: Force refreshing server premium status...');
-    import('@/lib/services/user').then(({ refreshPremiumStatus: refreshServerPremium }) => {
-      refreshServerPremium()
-        .then(response => {
-          console.log('[Home] TEMP: Server premium refresh response:', response);
-        })
-        .catch(error => {
-          console.error('[Home] TEMP: Server premium refresh error:', error);
-        });
+    refreshServerPremium().catch((error) => {
+      console.error('[Home] Server premium refresh error:', error);
     });
   }, []);
-
-  // Prepare carousel data - prefer server data when available
-  const carouselData = [
-    {
-      id: 'story',
-      mode: 'story',
-      title:
-        serverQuests.length > 0
-          ? serverQuests[0].title
-          : availableQuests.length > 0
-            ? availableQuests[0].title
-            : storyOptions.length > 0
-              ? 'Choose Your Path'
-              : isLoadingQuests
-                ? 'Loading quests...'
-                : 'No quests available',
-      recap: (() => {
-        // Use server quest recap if available
-        if (serverQuests.length > 0 && serverQuests[0].recap) {
-          return serverQuests[0].recap;
-        }
-
-        // Get the last completed story quest for the recap
-        const storyQuests = completedQuests.filter(
-          (quest) => quest.mode === 'story' && quest.status === 'completed'
-        );
-
-        if (storyQuests.length > 0) {
-          // Use the recap from the most recently completed story quest
-          const lastCompletedStoryQuest = [...storyQuests].sort(
-            (a, b) => (b.stopTime || 0) - (a.stopTime || 0)
-          )[0];
-          return (
-            (lastCompletedStoryQuest as any)?.recap || 'Continue your journey'
-          );
-        }
-
-        // Fallback if no story quests completed
-        return serverQuests.length > 0 || availableQuests.length > 0
-          ? 'Begin your journey'
-          : 'Continue your journey';
-      })(),
-      subtitle: currentMapName,
-      duration:
-        serverQuests.length > 0
-          ? serverQuests[0].durationMinutes
-          : availableQuests.length > 0
-            ? availableQuests[0].durationMinutes
-            : storyOptions.length > 0 && storyOptions[0].nextQuestId
-              ? AVAILABLE_QUESTS.find(
-                  (q) => q.id === storyOptions[0].nextQuestId
-                )?.durationMinutes || 0
-              : 0,
-      xp:
-        serverQuests.length > 0
-          ? serverQuests[0].reward.xp
-          : availableQuests.length > 0
-            ? availableQuests[0].reward.xp
-            : storyOptions.length > 0 && storyOptions[0].nextQuestId
-              ? AVAILABLE_QUESTS.find(
-                  (q) => q.id === storyOptions[0].nextQuestId
-                )?.reward.xp || 0
-              : 0,
-      progress: storyProgress,
-      isPremium:
-        serverQuests.length > 0 ? serverQuests[0].isPremium : false,
-    },
-    {
-      id: 'custom',
-      mode: 'custom',
-      title: 'Start Custom Quest',
-      subtitle: 'Free Play Mode',
-      recap:
-        'Start a custom quest and embark on an adventure of your own design.',
-      duration: 5,
-      xp: 15,
-    },
-  ];
-
-  // Always add cooperative quest card (premium feature)
-  carouselData.push({
-    id: 'cooperative',
-    mode: 'cooperative',
-    title: 'Cooperative Quest',
-    subtitle: 'Team Challenge',
-    recap:
-      'Invite a friend on a quest or join a quest and stay off your phone together',
-    duration: 5,
-    xp: 15,
-    isPremium: true, // Cooperative quests are always premium
-  });
 
   // Animated background style based on carousel progress
   const backgroundStyle = useAnimatedStyle(() => {
     const inputRange = [0, 1, 2]; // Always have 3 modes now
-    const outputRange = [MODES[0].color, MODES[1].color, MODES[2].color];
+    const outputRange = [
+      QUEST_MODES[0].color,
+      QUEST_MODES[1].color,
+      QUEST_MODES[2].color,
+    ];
 
     const backgroundColor = interpolateColor(
       progress.value,
@@ -491,15 +289,10 @@ export default function Home() {
     };
   });
 
-  // Animated styles
-  const headerStyle = useAnimatedStyle(() => ({
-    opacity: headerOpacity.value,
-  }));
-
   // Render item for the carousel
   const renderCarouselItem = ({ item }: { item: any }) => {
     return (
-      <View style={{ width: cardWidth }}>
+      <View style={{ width: CARD_WIDTH }}>
         <QuestCard
           mode={item.mode}
           title={item.title}
@@ -512,13 +305,20 @@ export default function Home() {
           showProgress={item.mode === 'story'}
           requiresPremium={item.isPremium && !hasPremiumAccess}
           isCompleted={item.mode === 'story' && isStorylineComplete}
+          onRestart={item.mode === 'story' ? handleRestartStoryline : undefined}
         />
       </View>
     );
   };
 
   // Track premium CTA view
-  const PremiumCTATracker = ({ questId, type }: { questId?: string; type: 'storyline' | 'cooperative' }) => {
+  const PremiumCTATracker = ({
+    questId,
+    type,
+  }: {
+    questId?: string;
+    type: 'storyline' | 'cooperative';
+  }) => {
     useEffect(() => {
       if (type === 'storyline') {
         posthog.capture('premium_upsell_cta_viewed', {
@@ -538,272 +338,15 @@ export default function Home() {
     return null;
   };
 
-  // Render story quest option buttons
-  const renderStoryOptions = () => {
-    if (activeIndex !== 0) return null; // Only show for story mode
-
-    // Debug logging
-
-    // If there's a single server quest available with no branching, show start button
-    if (serverQuests.length === 1 && storyOptions.length === 0) {
-      const quest = serverQuests[0];
-      console.log('[renderStoryOptions] Single server quest:', quest);
-      console.log('[renderStoryOptions] isStorylineComplete:', isStorylineComplete);
-      return (
-        <Animated.View
-          entering={FadeIn.duration(600).delay(200)}
-          className="w-full items-center px-4"
-        >
-          {quest.isPremium && !hasPremiumAccess && <PremiumCTATracker questId={quest.customId} type="storyline" />}
-          <Animated.View
-            entering={FadeInDown.duration(600).delay(400)}
-            style={{
-              width: cardWidth,
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 3,
-              },
-              shadowOpacity: 0.12,
-              shadowRadius: 4,
-              elevation: 6,
-            }}
-          >
-            <Button
-              label={
-                (quest.isPremium && !hasPremiumAccess)
-                  ? 'Unlock full Vaedros storyline'
-                  : isStorylineComplete
-                  ? 'Begin your journey'
-                  : 'Start Quest'
-              }
-              onPress={() => {
-                console.log(
-                  '[Story Quest Button] Pressed - isPremium:',
-                  quest.isPremium,
-                  'hasPremiumAccess:',
-                  hasPremiumAccess
-                );
-                if (!quest.isPremium || hasPremiumAccess) {
-                  handleQuestOptionSelect(quest.customId);
-                } else {
-                  console.log(
-                    '[Story Quest Button] Setting showPaywallModal to true'
-                  );
-                  posthog.capture('premium_upsell_cta_clicked', {
-                    upsell_type: 'storyline_quest',
-                    trigger_location: 'home_storyline',
-                    quest_type: 'story',
-                    quest_id: quest.customId,
-                  });
-                  setShowPaywallModal(true);
-                }
-              }}
-              className={`h-16 justify-center rounded-xl p-3 ${
-                (quest.isPremium && !hasPremiumAccess) ? 'bg-amber-400' : 'bg-primary-300'
-              }`}
-              textClassName="text-sm text-white text-center leading-snug"
-              textStyle={{ fontWeight: '700' }}
-            />
-          </Animated.View>
-        </Animated.View>
-      );
-    }
-
-    if (storyOptions.length === 0) {
-      console.log('⚠️ No story options available');
-      return null;
-    }
-
-    // Single option gets same treatment as multi-option
-    if (storyOptions.length === 1) {
-      const option = storyOptions[0];
-      const nextQuest =
-        option.nextQuest ||
-        serverQuests.find((q) => q.customId === option.nextQuestId);
-      const questIsPremium = nextQuest?.isPremium || false;
-
-      return (
-        <Animated.View
-          entering={FadeIn.duration(600).delay(200)}
-          className="w-full items-center px-4"
-        >
-          <Animated.View
-            entering={FadeInDown.duration(600).delay(400)}
-            style={{
-              width: cardWidth,
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 3,
-              },
-              shadowOpacity: 0.12,
-              shadowRadius: 4,
-              elevation: 6,
-            }}
-          >
-            <Button
-              label={
-                (questIsPremium && !hasPremiumAccess) 
-                  ? 'Unlock full Vaedros storyline' 
-                  : isStorylineComplete
-                  ? 'Begin your journey'
-                  : option.text
-              }
-              onPress={() => {
-                if (questIsPremium && !hasPremiumAccess) {
-                  posthog.capture('premium_upsell_cta_clicked', {
-                    upsell_type: 'storyline_quest',
-                    trigger_location: 'home_storyline_options',
-                    quest_type: 'story',
-                    quest_id: option.nextQuestId,
-                  });
-                  setShowPaywallModal(true);
-                } else {
-                  handleQuestOptionSelect(option.nextQuestId);
-                }
-              }}
-              className={`h-16 justify-center rounded-xl p-3 ${
-                (questIsPremium && !hasPremiumAccess) ? 'bg-amber-400' : 'bg-primary-300'
-              }`}
-              textClassName="text-sm text-white text-center leading-snug"
-              textStyle={{ fontWeight: '700' }}
-              disabled={!option.nextQuestId}
-            />
-          </Animated.View>
-        </Animated.View>
-      );
-    }
-
-    // Multiple options with arrow animations
-    
-    // Check if any options lead to premium content
-    const anyOptionsPremium = storyOptions.some((option) => {
-      const nextQuest = option.nextQuest || 
-        serverQuests.find((q) => q.customId === option.nextQuestId);
-      return nextQuest?.isPremium || false;
-    });
-
-    // If any options are premium and user doesn't have access, show a single unlock button
-    if (anyOptionsPremium && !hasPremiumAccess) {
-      return (
-        <Animated.View
-          entering={FadeIn.duration(600).delay(200)}
-          className="w-full items-center px-4"
-        >
-          <Animated.View
-            entering={FadeInDown.duration(600).delay(400)}
-            style={{
-              width: cardWidth,
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 3,
-              },
-              shadowOpacity: 0.12,
-              shadowRadius: 4,
-              elevation: 6,
-            }}
-          >
-            <Button
-              label="Unlock full Vaedros storyline"
-              onPress={() => {
-                console.log('[Story Options] Premium option detected - showing paywall');
-                setShowPaywallModal(true);
-              }}
-              className="h-16 justify-center rounded-xl bg-amber-400 p-3"
-              textClassName="text-sm text-white text-center leading-snug"
-              textStyle={{ fontWeight: '700' }}
-            />
-          </Animated.View>
-        </Animated.View>
-      );
-    }
-
-    return (
-      <Animated.View
-        entering={FadeIn.duration(600).delay(200)}
-        className="w-full items-center px-4"
-      >
-        {/* Decision buttons */}
-        <View className="w-full flex-row justify-between gap-3">
-          {storyOptions.map((option: QuestOption, index: number) => {
-            // Check if the next quest requires premium
-            const nextQuest =
-              option.nextQuest ||
-              serverQuests.find((q) => q.customId === option.nextQuestId);
-            const questIsPremium = nextQuest?.isPremium || false;
-
-            return (
-              <Animated.View
-                key={option.id}
-                entering={FadeInDown.duration(600).delay(400 + index * 100)}
-                className="flex-1"
-                style={{
-                  shadowColor: '#000',
-                  shadowOffset: {
-                    width: 0,
-                    height: 3,
-                  },
-                  shadowOpacity: 0.12,
-                  shadowRadius: 4,
-                  elevation: 6,
-                }}
-              >
-                {questIsPremium && !hasPremiumAccess && <PremiumCTATracker questId={option.nextQuestId || undefined} type="storyline" />}
-                <Button
-                  label={
-                    (questIsPremium && !hasPremiumAccess)
-                      ? 'Unlock full Vaedros storyline'
-                      : isStorylineComplete
-                      ? 'Begin your journey'
-                      : option.text
-                  }
-                  onPress={() => {
-                    if (questIsPremium && !hasPremiumAccess) {
-                      posthog.capture('premium_upsell_cta_clicked', {
-                        upsell_type: 'storyline_quest',
-                        trigger_location: 'home_storyline_options',
-                        quest_type: 'story',
-                        quest_id: option.nextQuestId,
-                      });
-                      setShowPaywallModal(true);
-                    } else {
-                      handleQuestOptionSelect(option.nextQuestId);
-                    }
-                  }}
-                  className={`h-16 justify-center rounded-xl p-3 ${
-                    (questIsPremium && !hasPremiumAccess)
-                      ? 'bg-amber-400'
-                      : index === 0
-                        ? 'bg-neutral-300'
-                        : 'bg-primary-300'
-                  }`}
-                  textClassName="text-sm text-white text-center leading-snug"
-                  textStyle={{ fontWeight: '700' }}
-                  disabled={!option.nextQuestId} // Disable if nextQuestId is null
-                />
-              </Animated.View>
-            );
-          })}
-        </View>
-      </Animated.View>
-    );
-  };
-
-
   return (
     <View className="flex-1">
       <FocusAwareStatusBar />
 
       {/* Background */}
-      <View className="absolute inset-0">
+      <BackgroundImage
+        source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
+      >
         <StreakCounter size="small" position="topRight" />
-        <Image
-          source={require('@/../assets/images/background/active-quest.jpg')}
-          className="size-full"
-          resizeMode="cover"
-        />
         <Animated.View
           style={[
             backgroundStyle,
@@ -815,7 +358,7 @@ export default function Home() {
             },
           ]}
         />
-      </View>
+      </BackgroundImage>
 
       <ScreenContainer className="flex-col">
         {/* Header */}
@@ -827,31 +370,26 @@ export default function Home() {
         {/* Main content area */}
         <View className="flex-1 justify-center">
           <Animated.View
-            style={[animatedScrollStyle, { height: cardHeight + 20 }]}
+            style={[animatedScrollStyle, { height: CARD_HEIGHT + 20 }]}
           >
             <FlashList
               data={carouselData}
               horizontal
-              snapToInterval={snapInterval}
+              snapToInterval={SNAP_INTERVAL}
               decelerationRate="fast"
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id}
               initialScrollIndex={0} // Start at the first item
               contentContainerStyle={{
-                paddingHorizontal: (screenWidth - cardWidth) / 2 - cardSpacing,
-                paddingVertical: 10,
+                paddingHorizontal: CAROUSEL_CONTENT_PADDING,
+                paddingVertical: CAROUSEL_VERTICAL_PADDING,
               }}
               ItemSeparatorComponent={() => (
-                <View style={{ width: cardSpacing }} />
+                <View style={{ width: CARD_SPACING }} />
               )}
-              onMomentumScrollEnd={(event) => {
-                const offsetX = event.nativeEvent.contentOffset.x;
-                const newIndex = Math.round(offsetX / snapInterval);
-                setActiveIndex(newIndex);
-                progress.value = withTiming(newIndex, { duration: 300 });
-              }}
+              onMomentumScrollEnd={handleMomentumScrollEnd}
               renderItem={renderCarouselItem}
-              estimatedItemSize={cardWidth}
+              estimatedItemSize={CARD_WIDTH}
               removeClippedSubviews={true} // improves performance by clipping offscreen items
             />
           </Animated.View>
@@ -864,7 +402,15 @@ export default function Home() {
             style={{ minHeight: 140 }}
           >
             {activeIndex === 0 ? (
-              renderStoryOptions()
+              <StoryOptionButtons
+                activeIndex={activeIndex}
+                serverQuests={serverQuests}
+                storyOptions={storyOptions}
+                isStorylineComplete={isStorylineComplete}
+                hasPremiumAccess={hasPremiumAccess}
+                onQuestSelect={handleQuestOptionSelect}
+                onShowPaywall={() => setShowPaywallModal(true)}
+              />
             ) : activeIndex === 1 ? (
               // Show create custom quest button for custom mode
               <Animated.View
@@ -874,8 +420,8 @@ export default function Home() {
                 <Animated.View
                   entering={FadeInDown.duration(600).delay(400)}
                   style={{
-                    width: cardWidth,
-                    shadowColor: '#000',
+                    width: CARD_WIDTH,
+                    shadowColor: Colors.black,
                     shadowOffset: {
                       width: 0,
                       height: 3,
@@ -904,8 +450,8 @@ export default function Home() {
                 <Animated.View
                   entering={FadeInDown.duration(600).delay(400)}
                   style={{
-                    width: cardWidth,
-                    shadowColor: '#000',
+                    width: CARD_WIDTH,
+                    shadowColor: Colors.black,
                     shadowOffset: {
                       width: 0,
                       height: 3,
@@ -922,16 +468,9 @@ export default function Home() {
                         : 'Unlock Cooperative Mode'
                     }
                     onPress={() => {
-                      console.log(
-                        '[Coop Button] Pressed - hasCoopAccess:',
-                        hasCoopAccess
-                      );
                       if (hasCoopAccess) {
                         handleCooperativeQuest();
                       } else {
-                        console.log(
-                          '[Coop Button] Setting showPaywallModal to true'
-                        );
                         posthog.capture('premium_upsell_cta_clicked', {
                           upsell_type: 'cooperative_quest',
                           trigger_location: 'home_carousel',
@@ -957,19 +496,17 @@ export default function Home() {
       <PremiumPaywall
         isVisible={showPaywallModal}
         onClose={() => {
-          console.log('[Paywall Modal] onClose called');
           setShowPaywallModal(false);
         }}
         onSuccess={async () => {
-          console.log('[Paywall Modal] onSuccess called');
           setShowPaywallModal(false);
-          
+
           // Force refresh premium status
           await refreshPremiumStatus();
-          
+
           // Call the hook's success handler
           handlePaywallSuccess();
-          
+
           // Refresh quests to update premium access
           refreshAvailableQuests();
         }}
@@ -977,6 +514,9 @@ export default function Home() {
           activeIndex === 2 ? 'Cooperative Quests' : 'Vaedros Storyline Quests'
         }
       />
+
+      {/* Branching Story Announcement Modal */}
+      <BranchingStoryAnnouncementModal ref={branchingModal.ref} />
     </View>
   );
 }

@@ -67,7 +67,7 @@ describe('AppIntroductionScreen', () => {
 
     // Use waitFor to handle the async permission check
     await waitFor(() => {
-      expect(getByText('Welcome to unQuest')).toBeTruthy();
+      expect(getByText('emberglow')).toBeTruthy();
       expect(
         getByText('Discover quests and embrace your journey.')
       ).toBeTruthy();
@@ -211,7 +211,7 @@ describe('AppIntroductionScreen', () => {
     const { getByText } = render(<AppIntroductionScreen />);
 
     await waitFor(() => {
-      expect(getByText('Welcome to unQuest')).toBeTruthy();
+      expect(getByText('emberglow')).toBeTruthy();
     });
   });
 
@@ -229,7 +229,7 @@ describe('AppIntroductionScreen', () => {
     const { getByText } = render(<AppIntroductionScreen />);
 
     await waitFor(() => {
-      expect(getByText('Welcome to unQuest')).toBeTruthy();
+      expect(getByText('emberglow')).toBeTruthy();
     });
   });
 });

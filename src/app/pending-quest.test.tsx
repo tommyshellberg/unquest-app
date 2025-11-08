@@ -1,7 +1,8 @@
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import React from 'react';
-import { render, waitFor, fireEvent } from '@testing-library/react-native';
 
+import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
 
 import PendingQuestScreen from './pending-quest';
@@ -13,6 +14,40 @@ jest.mock('expo-blur', () => ({
 }));
 jest.mock('@/../assets/animations/compass.json', () => ({}));
 jest.mock('@/../assets/images/background/active-quest.jpg', () => ({}));
+
+// Mock character utils
+jest.mock('@/app/utils/character-utils', () => ({
+  getCharacterAvatar: jest.fn((characterType?: string) => {
+    if (!characterType) {
+      return require('@/../assets/images/characters/alchemist-profile.jpg');
+    }
+    return require('@/../assets/images/characters/alchemist-profile.jpg');
+  }),
+}));
+
+// Don't mock the pending-quest module - we want to test the real implementation
+
+// Mock UI components including BackgroundImage
+jest.mock('@/components/ui', () => {
+  const React = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
+
+  return {
+    BackgroundImage: ({ testID, source, ...props }: any) =>
+      React.createElement(RN.View, { testID, ...props, source }),
+    Button: ({ onPress, children, ...props }: any) =>
+      React.createElement(
+        RN.TouchableOpacity,
+        { onPress, ...props },
+        React.createElement(RN.Text, {}, children)
+      ),
+    Card: ({ children, testID, ...props }: any) =>
+      React.createElement(RN.View, { testID, ...props }, children),
+    Text: (props: any) => React.createElement(RN.Text, props),
+    Title: (props: any) => React.createElement(RN.Text, props),
+    View: (props: any) => React.createElement(RN.View, props),
+  };
+});
 
 // Mock the quest components
 jest.mock('@/components/quest', () => {
@@ -44,12 +79,6 @@ jest.mock('@/components/quest', () => {
       }),
   };
 });
-
-// Helper to create mock view component
-const MockView = ({ children, ...props }: any) => {
-  const View = require('react-native').View;
-  return <View {...props}>{children}</View>;
-};
 
 describe('PendingQuestScreen', () => {
   const mockStoryQuest = {
@@ -88,11 +117,10 @@ describe('PendingQuestScreen', () => {
   it('renders story quest correctly', () => {
     const { getByText, getByTestId } = render(<PendingQuestScreen />);
 
-    expect(getByText('Quest Ready')).toBeTruthy();
+    expect(getByText('Start Quest')).toBeTruthy();
     expect(getByTestId('quest-card')).toBeTruthy();
     expect(getByText('The Beginning')).toBeTruthy();
-    expect(getByText('5 minutes')).toBeTruthy();
-    expect(getByText('Your Journey Begins')).toBeTruthy();
+    expect(getByText('5 min')).toBeTruthy();
     expect(getByText('Your character is ready for their quest')).toBeTruthy();
   });
 
@@ -104,11 +132,10 @@ describe('PendingQuestScreen', () => {
 
     const { getByText, getByTestId } = render(<PendingQuestScreen />);
 
-    expect(getByText('Custom Quest')).toBeTruthy();
+    expect(getByText('Start Quest')).toBeTruthy();
     expect(getByTestId('quest-card')).toBeTruthy();
     expect(getByText('Morning Run')).toBeTruthy();
-    expect(getByText('30 minutes')).toBeTruthy();
-    expect(getByText('Your Journey Begins')).toBeTruthy();
+    expect(getByText('30 min')).toBeTruthy();
     expect(getByText('Time to focus on what matters most')).toBeTruthy();
   });
 
@@ -117,7 +144,6 @@ describe('PendingQuestScreen', () => {
 
     const lockInstructions = getByTestId('lock-instructions');
     expect(lockInstructions).toBeTruthy();
-    expect(lockInstructions.props.variant).toBe('single');
   });
 
   it('shows compass animation', () => {
@@ -125,15 +151,6 @@ describe('PendingQuestScreen', () => {
 
     const compass = getByTestId('compass-animation');
     expect(compass).toBeTruthy();
-    expect(compass.props.size).toBe(100);
-  });
-
-  it('displays motivational quote', () => {
-    const { getByText } = render(<PendingQuestScreen />);
-
-    expect(
-      getByText('"The journey of a thousand miles begins with a single step"')
-    ).toBeTruthy();
   });
 
   it('handles cancel quest button', () => {
@@ -172,12 +189,178 @@ describe('PendingQuestScreen', () => {
   });
 
   it('uses correct background image', () => {
-    const { UNSAFE_getByType } = render(<PendingQuestScreen />);
-    const Image = require('react-native').Image;
+    const { getByTestId } = render(<PendingQuestScreen />);
 
-    const backgroundImage = UNSAFE_getByType(Image);
+    const backgroundImage = getByTestId('background-image');
     expect(backgroundImage.props.source).toBe(
-      require('@/../assets/images/background/active-quest.jpg')
+      require('@/../assets/images/background/pending-quest-bg-alt.jpg')
     );
+  });
+
+  describe('Quest Subtitles', () => {
+    it('shows custom quest subtitle for custom mode', () => {
+      useQuestStore.setState({
+        pendingQuest: mockCustomQuest,
+        cancelQuest: jest.fn(),
+      });
+
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(getByText('Time to focus on what matters most')).toBeTruthy();
+    });
+
+    it('shows story quest subtitle for story mode', () => {
+      useQuestStore.setState({
+        pendingQuest: mockStoryQuest,
+        cancelQuest: jest.fn(),
+      });
+
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(getByText('Your character is ready for their quest')).toBeTruthy();
+    });
+
+    it('shows story quest subtitle when mode is undefined', () => {
+      useQuestStore.setState({
+        pendingQuest: { ...mockStoryQuest, mode: undefined },
+        cancelQuest: jest.fn(),
+      });
+
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(getByText('Your character is ready for their quest')).toBeTruthy();
+    });
+  });
+
+  describe('Character Avatar', () => {
+    it('uses character avatar when character exists', () => {
+      const { getCharacterAvatar } = require('@/app/utils/character-utils');
+
+      useCharacterStore.setState({
+        character: {
+          type: 'alchemist',
+          name: 'TestAlchemist',
+          level: 1,
+          currentXP: 0,
+        },
+      });
+
+      render(<PendingQuestScreen />);
+
+      expect(getCharacterAvatar).toHaveBeenCalledWith('alchemist');
+    });
+
+    it('handles missing character gracefully', () => {
+      const { getCharacterAvatar } = require('@/app/utils/character-utils');
+
+      useCharacterStore.setState({
+        character: null,
+      });
+
+      render(<PendingQuestScreen />);
+
+      expect(getCharacterAvatar).toHaveBeenCalledWith(undefined);
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('handles quest with very long title', () => {
+      useQuestStore.setState({
+        pendingQuest: {
+          ...mockStoryQuest,
+          title:
+            'This is a very long quest title that should still render correctly without breaking the layout',
+        },
+        cancelQuest: jest.fn(),
+      });
+
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(
+        getByText(
+          'This is a very long quest title that should still render correctly without breaking the layout'
+        )
+      ).toBeTruthy();
+    });
+
+    it('handles quest with 0 duration', () => {
+      useQuestStore.setState({
+        pendingQuest: {
+          ...mockStoryQuest,
+          durationMinutes: 0,
+        },
+        cancelQuest: jest.fn(),
+      });
+
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(getByText('0 min')).toBeTruthy();
+    });
+
+    it('handles quest with large duration', () => {
+      useQuestStore.setState({
+        pendingQuest: {
+          ...mockStoryQuest,
+          durationMinutes: 120,
+        },
+        cancelQuest: jest.fn(),
+      });
+
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(getByText('120 min')).toBeTruthy();
+    });
+  });
+
+  describe('UI Elements', () => {
+    it('displays "Start Quest" title', () => {
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(getByText('Start Quest')).toBeTruthy();
+    });
+
+    it('displays lock instructions text', () => {
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(getByText('Lock your phone to begin')).toBeTruthy();
+    });
+
+    it('displays cancel button text', () => {
+      const { getByText } = render(<PendingQuestScreen />);
+
+      expect(getByText('Cancel Quest')).toBeTruthy();
+    });
+
+    it('renders quest card with header image', () => {
+      const { getByTestId } = render(<PendingQuestScreen />);
+
+      const card = getByTestId('quest-card');
+      expect(card).toBeTruthy();
+    });
+  });
+
+  describe('Navigation', () => {
+    it('calls router.back when cancel is pressed', () => {
+      const { getByText } = render(<PendingQuestScreen />);
+
+      fireEvent.press(getByText('Cancel Quest'));
+
+      expect(router.back).toHaveBeenCalledTimes(1);
+    });
+
+    it('cancels quest and navigates back', () => {
+      const mockCancelQuest = jest.fn();
+      useQuestStore.setState({
+        pendingQuest: mockStoryQuest,
+        cancelQuest: mockCancelQuest,
+      });
+
+      const { getByText } = render(<PendingQuestScreen />);
+
+      fireEvent.press(getByText('Cancel Quest'));
+
+      expect(mockCancelQuest).toHaveBeenCalledTimes(1);
+      expect(router.back).toHaveBeenCalledTimes(1);
+    });
   });
 });

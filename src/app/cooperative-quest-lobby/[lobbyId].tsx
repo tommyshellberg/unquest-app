@@ -1,33 +1,32 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Check, Circle, Clock, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
-import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 
 import { invitationApi } from '@/api/invitation';
+import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 import {
   Button,
   FocusAwareStatusBar,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
 } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { InfoCard } from '@/components/ui/info-card';
-import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
-import {
-  useCooperativeLobbyStore,
-  type CooperativeLobby,
-} from '@/store/cooperative-lobby-store';
-import { useUserStore } from '@/store/user-store';
-import { useQuestStore } from '@/store/quest-store';
 import type {
+  LobbyInvitationResponsePayload,
   LobbyParticipantJoinedPayload,
   LobbyParticipantUpdatedPayload,
-  LobbyInvitationResponsePayload,
   LobbyReadyStatusPayload,
 } from '@/lib/services/websocket-events.types';
+import {
+  type CooperativeLobby,
+  useCooperativeLobbyStore,
+} from '@/store/cooperative-lobby-store';
+import { useQuestStore } from '@/store/quest-store';
+import { useUserStore } from '@/store/user-store';
 
 interface ParticipantRowProps {
   participant: any;
@@ -93,19 +92,28 @@ export default function CooperativeQuestLobby() {
   const joinLobby = useCooperativeLobbyStore((state) => state.joinLobby);
   const leaveLobby = useCooperativeLobbyStore((state) => state.leaveLobby);
 
-  const { emit, on, off, joinQuestRoom, leaveQuestRoom, connect: connectWebSocket } = useLazyWebSocket();
+  const {
+    emit,
+    on,
+    off,
+    joinQuestRoom,
+    leaveQuestRoom,
+    connect: connectWebSocket,
+  } = useLazyWebSocket();
   const [isLoading, setIsLoading] = useState(true);
   const [hasTransitioned, setHasTransitioned] = useState(false);
   // For cooperative quests, the lobbyId IS the invitationId
   const invitationId = lobbyId;
-  
+
   // Connect WebSocket when entering the lobby
   useEffect(() => {
     // Only connect if user is properly authenticated
     if (currentUser?.id) {
       connectWebSocket();
     } else {
-      console.warn('[CooperativeQuestLobby] No authenticated user, skipping WebSocket connection');
+      console.warn(
+        '[CooperativeQuestLobby] No authenticated user, skipping WebSocket connection'
+      );
     }
   }, [connectWebSocket, currentUser?.id]);
 
@@ -286,11 +294,11 @@ export default function CooperativeQuestLobby() {
           updateInvitationResponse(data.userId, 'declined');
         }
       };
-      
+
       // Add handler for invitationAccepted event (the actual event emitted by server)
       const handleInvitationAccepted = (data: any) => {
         console.log('Invitation accepted event received:', data);
-        
+
         // Convert to the expected format and call the existing handler
         handleInvitationResponse({
           lobbyId: data.invitationId,
@@ -515,28 +523,25 @@ export default function CooperativeQuestLobby() {
   // Show loading only during initial load
   if (isLoading && !currentLobby) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
         <Text className="mt-4">Loading lobby...</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!currentLobby || !currentUser) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center">
         <Text>Error: Lobby not found</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   console.log('Current lobby participants:', currentLobby.participants);
 
   return (
-    <SafeAreaView
-      className="flex-1"
-      style={{ backgroundColor: colors.background }}
-    >
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <FocusAwareStatusBar />
 
       {/* Header */}
@@ -678,6 +683,6 @@ export default function CooperativeQuestLobby() {
           </View>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

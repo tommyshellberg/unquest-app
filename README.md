@@ -1,7 +1,7 @@
-# UnQuest - Digital Detox Through Gamified Real-World Adventures
+# emberglow - Digital Detox Through Gamified Real-World Adventures
 
 <div align="center">
-  <img src="./assets/icon.png" width="200" style="border-radius:20px" alt="UnQuest Logo"/>
+  <img src="./assets/icon.png" width="200" style="border-radius:20px" alt="emberglow Logo"/>
   
   <p align="center">
     <strong>Transform your screen time into real-world adventures</strong>
@@ -24,9 +24,9 @@
   </p>
 </div>
 
-## 📱 About UnQuest
+## About emberglow
 
-UnQuest is a gamified mobile application that encourages users to disconnect from their phones and engage with the real world through story-driven quests, challenges, and social adventures. By transforming daily activities into epic quests, UnQuest makes digital detox fun and rewarding.
+emberglow is a gamified mobile application that encourages users to disconnect from their phones and engage with the real world through story-driven quests, challenges, and social adventures. By transforming daily activities into epic quests, emberglow makes digital detox fun and rewarding.
 
 ### 🎯 Key Features
 

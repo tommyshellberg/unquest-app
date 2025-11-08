@@ -2,7 +2,7 @@ import CHARACTERS from '@/app/data/characters';
 
 export function getCharacterAvatar(characterType?: string) {
   if (!characterType) {
-    return require('@/../assets/images/characters/character-placeholder.jpg');
+    return require('@/../assets/images/characters/alchemist-profile.jpg');
   }
 
   const character = CHARACTERS.find((c) => c.id === characterType);
@@ -10,6 +10,6 @@ export function getCharacterAvatar(characterType?: string) {
   return (
     character?.profileImage ||
     character?.image ||
-    require('@/../assets/images/characters/character-placeholder.jpg')
+    require('@/../assets/images/characters/alchemist-profile.jpg')
   );
 }

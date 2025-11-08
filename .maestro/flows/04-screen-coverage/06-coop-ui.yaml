@@ -1,0 +1,137 @@
+appId: com.vaedros.unquest.staging
+---
+# =============================================================================
+# COOPERATIVE QUEST UI TEST (UI Only, No Multiplayer)
+# =============================================================================
+# Tests the cooperative quest UI screens without actual multiplayer coordination
+#
+# Verification:
+#   - Coop menu loads
+#   - Create lobby button works
+#   - Lobby screen displays correctly
+#   - Join lobby option is present
+#
+# Note: This test only verifies UI elements, not actual multiplayer functionality
+# =============================================================================
+
+# Navigate to Home
+- tapOn: 'Home'
+
+# =============================================================================
+# NAVIGATE TO COOPERATIVE QUESTS
+# =============================================================================
+# Look for cooperative quest option
+- runFlow:
+    when:
+      visible: 'Cooperative'
+    commands:
+      - tapOn: 'Cooperative'
+
+# Alternative: might be called "Co-op" or "Multiplayer"
+- runFlow:
+    when:
+      visible: 'Co-op'
+    commands:
+      - tapOn: 'Co-op'
+
+# =============================================================================
+# COOPERATIVE QUEST MENU
+# =============================================================================
+- assertVisible: 'Create Lobby'
+- assertVisible: 'Join Lobby'
+
+# =============================================================================
+# TEST CREATE LOBBY FLOW
+# =============================================================================
+- tapOn: 'Create Lobby'
+
+# =============================================================================
+# LOBBY SCREEN
+# =============================================================================
+- assertVisible: 'Lobby'
+
+# Should show lobby code
+- runFlow:
+    when:
+      visible: 'Lobby Code'
+    commands:
+      - assertVisible: 'Lobby Code'
+
+# Should show waiting status
+- runFlow:
+    when:
+      visible: 'Waiting for players'
+    commands:
+      - assertVisible: 'Waiting'
+
+# Verify we're the host
+- runFlow:
+    when:
+      visible: 'MaestroHero'
+    commands:
+      - assertVisible: 'MaestroHero'
+
+# =============================================================================
+# VERIFY LOBBY CONTROLS
+# =============================================================================
+# Should have option to cancel/leave lobby
+- runFlow:
+    when:
+      visible: 'Cancel'
+    commands:
+      - assertVisible: 'Cancel'
+
+- runFlow:
+    when:
+      visible: 'Leave'
+    commands:
+      - assertVisible: 'Leave'
+
+# =============================================================================
+# LEAVE LOBBY (don't actually wait for players)
+# =============================================================================
+- runFlow:
+    when:
+      visible: 'Cancel'
+    commands:
+      - tapOn: 'Cancel'
+
+- runFlow:
+    when:
+      visible: 'Leave'
+    commands:
+      - tapOn: 'Leave'
+
+# =============================================================================
+# VERIFY BACK AT COOP MENU
+# =============================================================================
+- assertVisible: 'Create Lobby'
+- assertVisible: 'Join Lobby'
+
+# =============================================================================
+# TEST JOIN LOBBY UI (without actually joining)
+# =============================================================================
+- tapOn: 'Join Lobby'
+
+# Should show input for lobby code
+- runFlow:
+    when:
+      visible: 'Enter Lobby Code'
+    commands:
+      - assertVisible: 'Enter Lobby Code'
+
+      # Go back without entering a code
+      - tapOn:
+          point: '5%, 5%'
+
+# =============================================================================
+# RETURN TO HOME
+# =============================================================================
+- tapOn: 'Home'
+
+- assertVisible: 'Your Journey'
+
+# =============================================================================
+# COOPERATIVE UI TEST COMPLETE
+# =============================================================================
+# Successfully verified coop quest UI screens without multiplayer!

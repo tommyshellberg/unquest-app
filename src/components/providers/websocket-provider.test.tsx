@@ -1,18 +1,13 @@
+import { act, render, waitFor } from '@testing-library/react-native';
 import React from 'react';
-import {
-  render,
-  act,
-  renderHook,
-  waitFor,
-} from '@testing-library/react-native';
-import { AppState } from 'react-native';
+
+import { queryClient } from '@/api/common';
+import { useAuth } from '@/lib/auth';
+import { webSocketService } from '@/lib/services/websocket-service';
+import { getItem } from '@/lib/storage';
+import { useQuestStore } from '@/store/quest-store';
 
 import { WebSocketProvider } from './websocket-provider';
-import { webSocketService } from '@/lib/services/websocket-service';
-import { useAuth } from '@/lib/auth';
-import { useQuestStore } from '@/store/quest-store';
-import { queryClient } from '@/api/common';
-import { getItem } from '@/lib/storage';
 
 // Mock dependencies
 jest.mock('@/lib/services/websocket-service', () => ({

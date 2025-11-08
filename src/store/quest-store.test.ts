@@ -1,3 +1,5 @@
+// Import after mocking
+import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
 import { type Quest } from '@/store/types';
 
@@ -11,9 +13,6 @@ jest.mock('@/lib/services/quest-timer', () => {
     },
   };
 });
-
-// Import after mocking
-import QuestTimer from '@/lib/services/quest-timer';
 
 // Mock the AVAILABLE_QUESTS import
 jest.mock('@/app/data/quests', () => {
@@ -104,6 +103,20 @@ jest.mock('@/store/character-store', () => ({
   },
 }));
 
+// Mock the onboarding store
+const mockIsOnboardingComplete = jest.fn(() => false);
+const mockHasSeenSignupPrompt = jest.fn(() => false);
+
+jest.mock('@/store/onboarding-store', () => ({
+  useOnboardingStore: {
+    getState: () => ({
+      isOnboardingComplete: mockIsOnboardingComplete,
+      hasSeenSignupPrompt: mockHasSeenSignupPrompt,
+      currentStep: 'SELECTING_FIRST_QUEST',
+    }),
+  },
+}));
+
 // Mock tanstack query
 jest.mock('@/api/common', () => ({
   queryClient: {
@@ -169,7 +182,7 @@ describe('QuestStore - refreshAvailableQuests', () => {
     mockAddXP.mockClear();
     mockResetStreak.mockClear();
     mockRevealLocation.mockClear();
-    
+
     // Clear QuestTimer mocks
     (QuestTimer.stopQuest as jest.Mock).mockClear();
     (QuestTimer.getQuestRunId as jest.Mock).mockClear();
@@ -1321,6 +1334,109 @@ describe('QuestStore - refreshAvailableQuests', () => {
 
       const state = useQuestStore.getState();
       expect(state.cooperativeQuestRun).toBeNull();
+    });
+  });
+
+  describe('Onboarding Quest Progression Blocking', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+
+      // Reset mock return values to defaults
+      mockIsOnboardingComplete.mockReturnValue(false);
+      mockHasSeenSignupPrompt.mockReturnValue(false);
+
+      // Reset quest store
+      useQuestStore.setState({
+        activeQuest: null,
+        pendingQuest: null,
+        availableQuests: [],
+        completedQuests: [],
+        serverAvailableQuests: [],
+        hasMoreQuests: false,
+        storylineComplete: false,
+      });
+    });
+
+    test('should block quest progression when user has seen signup prompt but not signed up', () => {
+      // Arrange - user completed quest-1 and should be at signup screen
+      mockHasSeenSignupPrompt.mockReturnValue(true);
+      mockIsOnboardingComplete.mockReturnValue(false);
+
+      const quest1aTemplate = {
+        _id: 'mongo-quest-1a',
+        customId: 'quest-1a',
+        mode: 'story' as const,
+        title: 'Explore the Woods',
+        durationMinutes: 2,
+        reward: { xp: 100 },
+      };
+
+      // Act - try to set next quests (quest-1a, quest-1b) from server
+      useQuestStore
+        .getState()
+        .setServerAvailableQuests([quest1aTemplate], false, false);
+
+      // Assert - This test will FAIL because the current implementation doesn't check onboarding state
+      const state = useQuestStore.getState();
+      expect(state.serverAvailableQuests).toEqual([]); // Should NOT set the quests
+      expect(state.hasMoreQuests).toBe(false);
+      expect(state.storylineComplete).toBe(false);
+    });
+
+    test('should allow quest progression when onboarding is complete', () => {
+      // Arrange - user has completed signup
+      mockIsOnboardingComplete.mockReturnValue(true);
+      mockHasSeenSignupPrompt.mockReturnValue(true);
+
+      const quest1aTemplate = {
+        _id: 'mongo-quest-1a',
+        customId: 'quest-1a',
+        mode: 'story' as const,
+        title: 'Explore the Woods',
+        durationMinutes: 2,
+        reward: { xp: 100 },
+      };
+
+      // Act
+      useQuestStore
+        .getState()
+        .setServerAvailableQuests([quest1aTemplate], false, false);
+
+      // Assert - should allow the quests to be set
+      const state = useQuestStore.getState();
+      expect(state.serverAvailableQuests.length).toBe(1);
+      expect(state.serverAvailableQuests[0].customId).toBe('quest-1a');
+      // Also check that availableQuests is populated with client format
+      expect(state.availableQuests.length).toBe(1);
+      expect(state.availableQuests[0].id).toBe('quest-1a');
+    });
+
+    test('should allow initial quest-1 fetch before signup prompt is shown', () => {
+      // Arrange - user hasn't seen signup prompt yet
+      mockHasSeenSignupPrompt.mockReturnValue(false);
+      mockIsOnboardingComplete.mockReturnValue(false);
+
+      const quest1Template = {
+        _id: 'mongo-quest-1',
+        customId: 'quest-1',
+        mode: 'story' as const,
+        title: 'First Quest',
+        durationMinutes: 2,
+        reward: { xp: 100 },
+      };
+
+      // Act - fetch quest-1 (the first quest)
+      useQuestStore
+        .getState()
+        .setServerAvailableQuests([quest1Template], false, false);
+
+      // Assert - should allow quest-1 to be set
+      const state = useQuestStore.getState();
+      expect(state.serverAvailableQuests.length).toBe(1);
+      expect(state.serverAvailableQuests[0].customId).toBe('quest-1');
+      // Also check that availableQuests is populated with client format
+      expect(state.availableQuests.length).toBe(1);
+      expect(state.availableQuests[0].id).toBe('quest-1');
     });
   });
 });

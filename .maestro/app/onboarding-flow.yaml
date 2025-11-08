@@ -1,4 +1,4 @@
-appId: com.vaedros.unquest.development
+appId: com.vaedros.unquest.staging
 ---
 # NOTE: This test assumes you've already handled the developer menu
 # Run this after manually dismissing the developer menu or after running a setup test
@@ -6,7 +6,7 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 # WELCOME SCREEN
 # =============================================================================
-- assertVisible: 'unQuest'
+- assertVisible: 'emberglow'
 - assertVisible: 'Begin New Journey'
 
 - tapOn: 'Begin New Journey'
@@ -37,7 +37,7 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 - runFlow:
     when:
-      visible: 'Welcome to unQuest'
+      visible: 'emberglow'
     commands:
       - tapOn: 'Got it'
       - waitForAnimationToEnd

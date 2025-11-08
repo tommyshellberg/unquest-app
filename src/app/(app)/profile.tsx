@@ -1,12 +1,6 @@
 import { useRouter } from 'expo-router';
-import { Award, TrendingUp } from 'lucide-react-native';
 import React, { useEffect } from 'react';
 import { RefreshControl } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 
 import {
   ContactsImportModal,
@@ -16,39 +10,34 @@ import { DeleteFriendModal } from '@/components/profile/delete-friend-modal';
 import { ExperienceCard } from '@/components/profile/experience-card';
 import { FriendsList } from '@/components/profile/friends-list';
 import { ProfileCard } from '@/components/profile/profile-card';
-// Import components
 import { RescindInvitationModal } from '@/components/profile/rescind-invitation-modal';
 import { StatsCard } from '@/components/profile/stats-card';
 import {
-  Card,
   FocusAwareStatusBar,
-  Text,
-  View,
   ScreenContainer,
   ScreenHeader,
   ScrollView,
-  Pressable,
+  View,
 } from '@/components/ui';
 import { useFriendManagement } from '@/lib/hooks/use-friend-management';
-// Import hooks
 import { useProfileData } from '@/lib/hooks/use-profile-data';
-import { getItem } from '@/lib/storage';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
-import { type CharacterType } from '@/store/types';
 import { useUserStore } from '@/store/user-store';
+
+import { ActionCards } from '@/features/profile/components/profile-components';
+import { PROFILE_COLORS } from '@/features/profile/constants/profile-constants';
+import { useCharacterSync } from '@/features/profile/hooks/profile-hooks';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const character = useCharacterStore((state) => state.character);
   const completedQuests = useQuestStore((state) => state.getCompletedQuests());
-  // Add a state to track if we need to redirect
-  const [isRedirecting, setIsRedirecting] = React.useState(false);
   const streakCount = useCharacterStore((state) => state.dailyQuestStreak);
   const contactsModalRef = React.useRef<ContactsImportModalRef>(null);
 
-  // Animation value for header
-  // Header animation is now handled by ScreenHeader component
+  // Character sync for users without local character data
+  const { isRedirecting } = useCharacterSync();
 
   // Get profile data from custom hook
   const { userEmail, fetchUserDetails } = useProfileData();
@@ -64,98 +53,27 @@ export default function ProfileScreen() {
     deleteModalVisible,
     rescindModalVisible,
     invitationToRescind,
-    inviteError,
-    inviteSuccess,
-    formMethods,
+    inviteError: _inviteError,
+    inviteSuccess: _inviteSuccess,
+    formMethods: _formMethods,
     handleInviteFriends,
-    handleCloseInviteModal,
+    handleCloseInviteModal: _handleCloseInviteModal,
     handleDeleteFriend,
     handleConfirmDelete,
     handleCancelDelete,
     handleRescindInvitation,
     handleConfirmRescind,
     handleCancelRescind,
-    handleSendFriendRequest,
+    handleSendFriendRequest: _handleSendFriendRequest,
     handleAcceptInvitation,
     handleRejectInvitation,
     isOutgoingInvitation,
     acceptMutation,
     rejectMutation,
     rescindMutation,
-    inviteMutation,
+    inviteMutation: _inviteMutation,
     sendBulkInvites,
   } = useFriendManagement(userEmail, contactsModalRef);
-
-  // Create the modal instance at the parent level
-
-  // Check if character exists and handle redirect
-  useEffect(() => {
-    if (!character && !isRedirecting) {
-      // For verified users, we should sync character data from the server
-      // rather than redirecting to onboarding
-      const syncCharacterFromUser = async () => {
-        try {
-          const { getUserDetails } = await import('@/lib/services/user');
-          const user = await getUserDetails();
-
-          // Check if user has character data at the top level (legacy format)
-          if (
-            user &&
-            (user as any).type &&
-            (user as any).name &&
-            (user as any).level !== undefined
-          ) {
-            // Create character from user data
-            const characterStore = useCharacterStore.getState();
-            characterStore.createCharacter(
-              (user as any).type as CharacterType,
-              (user as any).name
-            );
-
-            // Update with level and XP data
-            const level = (user as any).level || 1;
-            const calculateXPForLevel = (l: number): number => {
-              return Math.floor(100 * Math.pow(1.5, l - 1));
-            };
-
-            characterStore.updateCharacter({
-              type: (user as any).type,
-              name: (user as any).name,
-              level: level,
-              currentXP: (user as any).xp || 0,
-            });
-
-            // Update streak if available
-            if ((user as any).dailyQuestStreak !== undefined) {
-              characterStore.setStreak((user as any).dailyQuestStreak);
-            }
-          } else {
-            // Only redirect to onboarding if this is truly a new user
-            // Check for provisional data to determine if they're in onboarding
-            const hasProvisionalData = !!(
-              getItem('provisionalUserId') ||
-              getItem('provisionalAccessToken') ||
-              getItem('provisionalEmail')
-            );
-
-            if (hasProvisionalData) {
-              // User is in onboarding flow, redirect to choose character
-              setIsRedirecting(true);
-              setTimeout(() => {
-                router.replace('/onboarding/choose-character');
-              }, 0);
-            }
-            // For verified users without character data, we'll show a message
-            // rather than redirecting to onboarding
-          }
-        } catch (error) {
-          console.error('Error syncing character data:', error);
-        }
-      };
-
-      syncCharacterFromUser();
-    }
-  }, [character, router, isRedirecting]);
 
   // Fetch user details when the component mounts
   useEffect(() => {
@@ -182,7 +100,7 @@ export default function ProfileScreen() {
   const questCount = user?.totalQuestsCompleted ?? completedQuests.length;
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1">
       <FocusAwareStatusBar />
 
       <ScreenContainer>
@@ -199,8 +117,8 @@ export default function ProfileScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#334738']}
-              tintColor={'#334738'}
+              colors={[PROFILE_COLORS.refreshControl]}
+              tintColor={PROFILE_COLORS.refreshControl}
             />
           }
         >
@@ -215,37 +133,10 @@ export default function ProfileScreen() {
           />
 
           {/* Action Cards */}
-          <View className="mx-4 mt-4 flex-row gap-3">
-            <Pressable
-              onPress={() => router.push('/leaderboard')}
-              className="flex-1"
-            >
-              <Card className="items-center justify-center py-6">
-                <TrendingUp size={32} color="#2E948D" />
-                <Text className="mt-2 text-sm font-semibold text-gray-700">
-                  View Leaderboard
-                </Text>
-                <Text className="mt-1 text-center text-xs text-gray-600">
-                  See how others are doing
-                </Text>
-              </Card>
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.push('/achievements')}
-              className="flex-1"
-            >
-              <Card className="items-center justify-center py-6">
-                <Award size={32} color="#2E948D" />
-                <Text className="mt-2 text-sm font-semibold text-gray-700">
-                  My Achievements
-                </Text>
-                <Text className="mt-1 text-center text-xs text-gray-600">
-                  Track your progress
-                </Text>
-              </Card>
-            </Pressable>
-          </View>
+          <ActionCards
+            onLeaderboardPress={() => router.push('/leaderboard')}
+            onAchievementsPress={() => router.push('/achievements')}
+          />
 
           {/* Experience Progress */}
           <ExperienceCard character={character} />

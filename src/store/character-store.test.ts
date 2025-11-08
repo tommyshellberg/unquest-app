@@ -1,7 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 
-import { levels } from '@/app/data/level-progression';
-
 import { useCharacterStore } from './character-store';
 
 // Mock storage
@@ -321,15 +319,16 @@ describe('Character Store', () => {
     test('should maintain streak when completing multiple times in same calendar day', () => {
       const { result } = renderHook(() => useCharacterStore());
 
-      // Previous completion was 1 hour ago (same day)
-      const oneHourAgo = Date.now() - 60 * 60 * 1000;
+      // Previous completion was earlier today (same day) - use noon to avoid midnight boundary issues
+      const today = new Date();
+      today.setHours(12, 0, 0, 0);
 
       act(() => {
         useCharacterStore.setState({ dailyQuestStreak: 5 });
       });
 
       act(() => {
-        result.current.updateStreak(oneHourAgo);
+        result.current.updateStreak(today.getTime());
       });
 
       expect(result.current.dailyQuestStreak).toBe(5);
@@ -338,15 +337,16 @@ describe('Character Store', () => {
     test('should set streak to 1 when current streak is 0 and completing on same day', () => {
       const { result } = renderHook(() => useCharacterStore());
 
-      // Previous completion was 1 hour ago (same day)
-      const oneHourAgo = Date.now() - 60 * 60 * 1000;
+      // Previous completion was earlier today (same day) - use noon to avoid midnight boundary issues
+      const today = new Date();
+      today.setHours(12, 0, 0, 0);
 
       act(() => {
         useCharacterStore.setState({ dailyQuestStreak: 0 });
       });
 
       act(() => {
-        result.current.updateStreak(oneHourAgo);
+        result.current.updateStreak(today.getTime());
       });
 
       expect(result.current.dailyQuestStreak).toBe(1);

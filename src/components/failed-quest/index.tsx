@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import React, { useEffect } from 'react';
 import Animated, {
   useAnimatedStyle,
@@ -7,7 +6,14 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Button, Image, Text, View, ScreenContainer } from '@/components/ui';
+import {
+  BackgroundImage,
+  Button,
+  ScreenContainer,
+  Text,
+  Title,
+  View,
+} from '@/components/ui';
 import type {
   CustomQuestTemplate,
   Quest,
@@ -50,13 +56,7 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
   return (
     <View className="flex-1">
       {/* Background image */}
-      <View className="absolute inset-0">
-        <Image
-          source={require('@/../assets/images/background/onboarding.jpg')}
-          className="size-full"
-          resizeMode="cover"
-        />
-      </View>
+      <BackgroundImage />
 
       <ScreenContainer className="py-8">
         {/* Title Section */}
@@ -64,8 +64,8 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
           style={headerAnimatedStyle}
           className="mt-12 items-center"
         >
-          <Text className="text-3xl font-bold">Quest Failed</Text>
-          <Text className="mt-2 text-center text-lg font-medium">
+          <Title variant="centered">Quest Failed</Title>
+          <Text className="mt-2 text-center text-lg font-medium text-white">
             {quest.title}
           </Text>
         </Animated.View>
@@ -75,13 +75,13 @@ export function FailedQuest({ quest, onRetry }: FailedQuestProps) {
           style={messageAnimatedStyle}
           className="my-6 flex-1 items-center px-6"
         >
-          <Text className="mb-4">
+          <Text className="mb-4 text-center text-white">
             It's okay to fail – every setback teaches you a lesson.
           </Text>
-          <Text className="mb-4 text-base">
+          <Text className="mb-4 text-center text-base text-neutral-200">
             Resist unlocking out of boredom.
           </Text>
-          <Text className="text-base">
+          <Text className="text-center text-base text-neutral-200">
             Using your phone less helps build focus and mindfulness.
           </Text>
         </Animated.View>

@@ -1,8 +1,10 @@
-import { io, Socket } from 'socket.io-client';
-import { getItem } from '@/lib/storage';
 import { Env } from '@env';
+import { io, type Socket } from 'socket.io-client';
+
 import { getToken } from '@/lib/auth/utils';
-import { TypedWebSocketEvents } from './websocket-events.types';
+import { getItem } from '@/lib/storage';
+
+import { type TypedWebSocketEvents } from './websocket-events.types';
 
 // Re-export the typed events for backward compatibility
 export type WebSocketEvents = TypedWebSocketEvents;
@@ -34,7 +36,7 @@ class WebSocketService {
     const tokenData = getToken();
     const provisionalToken = getItem('provisionalAccessToken');
     const accessToken = tokenData?.access || provisionalToken;
-    
+
     console.log('[WebSocket] Token check:', {
       hasTokenData: !!tokenData,
       tokenDataAccess: tokenData?.access,
@@ -76,7 +78,7 @@ class WebSocketService {
       // Force new connection
       forceNew: true,
     });
-    
+
     console.log('[WebSocket] Socket created, setting up listeners');
 
     this.setupEventListeners();

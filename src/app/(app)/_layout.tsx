@@ -3,7 +3,7 @@ import { Redirect, Tabs, useRootNavigationState } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 
-import { white } from '@/components/ui/colors';
+import colors, { white } from '@/components/ui/colors';
 import { useAuth } from '@/lib/auth';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
 import { useUserStore } from '@/store/user-store';
@@ -40,9 +40,14 @@ function CenterButton({
   return (
     <View className="-mt-5 items-center justify-center">
       <View
-        className={`size-14 items-center justify-center rounded-full ${
-          focused ? 'bg-secondary-400' : 'bg-secondary-300'
-        }`}
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: 28,
+          backgroundColor: focused ? colors.primary[300] : colors.primary[400],
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
         <Feather name="compass" size={28} color={white} />
       </View>
@@ -86,12 +91,15 @@ export default function TabLayout() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: '#334738', // Forest color
-        tabBarInactiveTintColor: '#666666',
+        tabBarActiveTintColor: colors.white, // Warm cream for active tabs
+        tabBarInactiveTintColor: colors.neutral[200], // Light gray for inactive tabs
+        sceneContainerStyle: {
+          backgroundColor: colors.black,
+        },
         tabBarStyle: {
-          backgroundColor: white,
+          backgroundColor: colors.background,
           borderTopWidth: 1,
-          borderTopColor: '#E5E5E5',
+          borderTopColor: colors.neutral[300], // Medium gray for borders
           height: 120,
           paddingBottom: 20,
           // Hide tab bar for quest screens and pending-quest
@@ -139,6 +147,11 @@ export default function TabLayout() {
             <CenterButton focused={focused} color={color} />
           ),
           tabBarButtonTestID: 'new-quest-tab',
+          tabBarLabelStyle: {
+            fontSize: 12,
+            marginTop: 8,
+            paddingTop: 2,
+          },
         }}
       />
 

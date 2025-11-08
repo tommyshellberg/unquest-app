@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 
 import { getUserDetails } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
@@ -43,7 +43,7 @@ describe('Streak Sync Integration Tests', () => {
         id: 'knight',
         name: 'Test Knight',
         title: 'The Brave',
-        backstory: 'A test warrior',
+        backstory: 'A test knight',
         xp: 0,
         level: 1,
         description: 'Test description',
@@ -362,9 +362,13 @@ describe('Streak Sync Integration Tests', () => {
         characterResult.current.setStreak(5);
       });
 
-      // Complete another quest on the same day (only 1 hour later)
+      // Complete another quest on the same day - use noon today as the previous completion
+      // to avoid midnight boundary issues
+      const today = new Date();
+      today.setHours(12, 0, 0, 0);
+
       act(() => {
-        characterResult.current.updateStreak(Date.now() - 1 * 60 * 60 * 1000);
+        characterResult.current.updateStreak(today.getTime());
       });
 
       // Streak should not increase for same day

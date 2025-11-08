@@ -368,8 +368,8 @@ export const ContactsImportModal = forwardRef<
       case 'loading':
         return (
           <View className="flex-1 items-center justify-center p-6">
-            <ActivityIndicator size="large" color="#2E948D" />
-            <Text className="mt-4 text-lg text-neutral-500">
+            <ActivityIndicator size="large" color="#36B6D3" />
+            <Text className="mt-4 text-lg text-neutral-200">
               Loading contacts...
             </Text>
           </View>
@@ -378,8 +378,8 @@ export const ContactsImportModal = forwardRef<
       case 'sending':
         return (
           <View className="flex-1 items-center justify-center p-6">
-            <ActivityIndicator size="large" color="#2E948D" />
-            <Text className="mt-4 text-lg text-neutral-500">
+            <ActivityIndicator size="large" color="#36B6D3" />
+            <Text className="mt-4 text-lg text-neutral-200">
               Sending invitations...
             </Text>
           </View>
@@ -396,7 +396,7 @@ export const ContactsImportModal = forwardRef<
       case 'manual':
         return ['50%'];
       case 'empty':
-        return ['75%']; // Increased to accommodate benefits section
+        return ['60%']; // Compact height for benefits section
       case 'permissions-denied':
         return ['60%'];
       default:

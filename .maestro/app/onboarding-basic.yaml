@@ -1,4 +1,4 @@
-appId: com.vaedros.unquest.development
+appId: com.vaedros.unquest.staging
 ---
 - clearState
 - launchApp
@@ -33,12 +33,12 @@ appId: com.vaedros.unquest.development
       visible: 'Recently opened'
     commands:
       - tapOn:
-          text: 'unQuest'
+          text: 'Emberglow'
           below: 'Recently opened'
       - waitForAnimationToEnd
 
 # Welcome screen
-- assertVisible: 'unQuest'
+- assertVisible: 'emberglow'
 - assertVisible: 'Begin New Journey'
 - tapOn: 'Begin New Journey'
 
@@ -57,7 +57,7 @@ appId: com.vaedros.unquest.development
 # Handle intro screens
 - runFlow:
     when:
-      visible: 'Welcome to unQuest'
+      visible: 'emberglow'
     commands:
       - tapOn: 'Got it'
       - waitForAnimationToEnd

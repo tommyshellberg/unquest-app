@@ -1,8 +1,10 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
+
 import { cooperativeQuestApi } from '@/api/cooperative-quest';
-import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
-import { useUserStore } from '@/store/user-store';
+import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
+
+// Import the component
+import CreateCooperativeQuestScreen from './create-cooperative-quest';
 
 // Mock the router
 const mockReplace = jest.fn();
@@ -26,55 +28,57 @@ jest.mock('posthog-react-native', () => ({
   }),
 }));
 
-// Mock lucide-react-native
+// Mock lucide-react-native icons
 jest.mock('lucide-react-native', () => ({
-  Info: 'Info',
+  ArrowLeft: ({ size, color, ...props }: any) => {
+    const React = jest.requireActual('react');
+    const { Text } = jest.requireActual('react-native');
+    return React.createElement(Text, props, 'arrow-left');
+  },
+  Info: () => null,
+  Users: () => null,
+}));
+
+// Mock react-native-svg (which lucide-react-native uses)
+jest.mock('react-native-svg', () => ({
+  Svg: () => null,
+  Path: () => null,
+  Circle: () => null,
+  Rect: () => null,
+  Line: () => null,
+  Polygon: () => null,
+  Polyline: () => null,
+  G: () => null,
 }));
 
 // Mock @expo/vector-icons
-jest.mock('@expo/vector-icons', () => {
-  const React = jest.requireActual('react');
-  const RN = jest.requireActual('react-native');
-
-  return {
-    MaterialCommunityIcons: ({ name, ...props }: any) =>
-      React.createElement(RN.Text, { ...props }, name),
-  };
-});
-
-// Make MaterialCommunityIcons globally available (component seems to use it without import)
-const ReactGlobal = require('react');
-const RNGlobal = require('react-native');
-global.MaterialCommunityIcons = ({ name, ...props }: any) =>
-  ReactGlobal.createElement(RNGlobal.Text, { ...props }, name);
+jest.mock('@expo/vector-icons', () => ({
+  MaterialCommunityIcons: ({ name, ...props }: any) => {
+    const React = jest.requireActual('react');
+    const { Text } = jest.requireActual('react-native');
+    return React.createElement(Text, props, name);
+  },
+}));
 
 // Mock UI components
-jest.mock('@/components/ui', () => {
-  const React = jest.requireActual('react');
-  const RN = jest.requireActual('react-native');
-
-  return {
-    Button: ({ label, onPress, disabled }: any) =>
-      React.createElement(
-        RN.TouchableOpacity,
-        { onPress, disabled },
-        React.createElement(RN.Text, {}, label)
-      ),
-    FocusAwareStatusBar: 'FocusAwareStatusBar',
-    SafeAreaView: RN.SafeAreaView,
-    ScrollView: RN.ScrollView,
-    Text: RN.Text,
-    View: RN.View,
-    ScreenContainer: ({ children }: any) =>
-      React.createElement(RN.View, {}, children),
-    ScreenHeader: ({ title, subtitle }: any) =>
-      React.createElement(RN.View, {}, [
-        React.createElement(RN.Text, { key: 'title' }, title),
-        subtitle && React.createElement(RN.Text, { key: 'subtitle' }, subtitle),
-      ]),
-    TouchableOpacity: RN.TouchableOpacity,
-  };
-});
+jest.mock('@/components/ui', () => ({
+  Button: ({ label, onPress, disabled, ...props }: any) => {
+    const React = jest.requireActual('react');
+    const { TouchableOpacity, Text: RNText } = jest.requireActual('react-native');
+    return React.createElement(
+      TouchableOpacity,
+      { onPress, disabled, ...props },
+      React.createElement(RNText, {}, label)
+    );
+  },
+  FocusAwareStatusBar: 'FocusAwareStatusBar',
+  ScrollView: 'ScrollView',
+  Text: 'Text',
+  View: 'View',
+  ScreenContainer: 'ScreenContainer',
+  ScreenHeader: 'ScreenHeader',
+  TouchableOpacity: 'TouchableOpacity',
+}));
 
 // Mock the API
 jest.mock('@/api/cooperative-quest', () => ({
@@ -156,9 +160,6 @@ jest.mock('@/components/QuestForm/friend-selector', () => {
     },
   };
 });
-
-// Import the component
-import CreateCooperativeQuestScreen from './create-cooperative-quest';
 
 describe('CreateCooperativeQuestScreen', () => {
   beforeEach(() => {

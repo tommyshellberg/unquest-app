@@ -9,7 +9,13 @@ import Animated, {
   FadeInLeft,
 } from 'react-native-reanimated';
 
-import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  Text,
+  Title,
+  View,
+} from '@/components/ui';
 import {
   requestNotificationPermissions,
   setupNotifications,
@@ -95,7 +101,7 @@ export default function AppIntroductionScreen() {
         return (
           <View key="welcome">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-3xl font-bold">Welcome to unQuest</Text>
+              <Title text="emberglow" />
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
               <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
@@ -104,9 +110,9 @@ export default function AppIntroductionScreen() {
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(1100)}>
               <Text className="mb-4">
-                In unQuest, you'll embark on a mindful adventure by periodically
-                stepping away from the digital world and reconnecting with the
-                real world.
+                In emberglow, you'll embark on a mindful adventure by
+                periodically stepping away from the digital world and
+                reconnecting with the real world.
               </Text>
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(1600)}>
@@ -127,7 +133,7 @@ export default function AppIntroductionScreen() {
         return (
           <View key="notifications">
             <Animated.View entering={FadeInLeft.delay(100)}>
-              <Text className="text-3xl font-bold">Notifications</Text>
+              <Title text="Notifications" />
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(600)}>
               <Text className="mb-6 mt-1 text-lg font-bold leading-relaxed">
@@ -136,7 +142,7 @@ export default function AppIntroductionScreen() {
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(1100)}>
               <Text className="mb-4">
-                unQuest's unique feature is the ability to track your progress
+                emberglow's unique feature is the ability to track your progress
                 without unlocking your phone:
               </Text>
             </Animated.View>
@@ -196,7 +202,7 @@ export default function AppIntroductionScreen() {
 
       <View className="absolute inset-0">
         <Image
-          source={require('@/../assets/images/background/onboarding.jpg')}
+          source={require('@/../assets/images/background/onboarding-bg.jpg')}
           className="size-full"
           resizeMode="cover"
         />

@@ -1,74 +1,34 @@
-import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
-import React, { useEffect } from 'react';
-import { ActivityIndicator, Image } from 'react-native';
-import Animated, {
-  FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from 'react-native-reanimated';
+import { Lock } from 'lucide-react-native';
+import React from 'react';
+import { ActivityIndicator } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  CompassAnimation,
-  LockInstructions,
-  QuestCard,
-} from '@/components/quest';
-import { Button, ScreenContainer, Text, View } from '@/components/ui';
+import { CompassAnimation } from '@/components/quest';
+import { BackgroundImage, Button, Text, Title, View } from '@/components/ui';
 import colors from '@/components/ui/colors';
+import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
+
+import { QuestInfoCard } from './pending-quest/components/quest-info-card';
+import {
+  ANIMATION_CONFIG,
+  STRINGS,
+  TEST_IDS,
+  UI_CONFIG,
+} from './pending-quest/constants';
+import { usePendingQuestAnimations } from './pending-quest/hooks/use-pending-quest-animations';
 
 export default function PendingQuestScreen() {
   const pendingQuest = useQuestStore((state) => state.pendingQuest);
-  const insets = useSafeAreaInsets();
+  const character = useCharacterStore((state) => state.character);
   const cancelQuest = useQuestStore((state) => state.cancelQuest);
+  const insets = useSafeAreaInsets();
 
-  // Header animation using react-native-reanimated
-  const headerOpacity = useSharedValue(0);
-  const headerScale = useSharedValue(0.9);
-  const cardOpacity = useSharedValue(0);
-  const cardScale = useSharedValue(0.9);
-  const buttonOpacity = useSharedValue(0);
-  const buttonScale = useSharedValue(0.9);
-
-  // Animations must be defined before conditionals (for React Hook Rules)
-  const headerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: headerOpacity.value,
-    transform: [{ scale: headerScale.value }],
-  }));
-
-  const cardAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: cardOpacity.value,
-    transform: [{ scale: cardScale.value }],
-  }));
-
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-    transform: [{ scale: buttonScale.value }],
-  }));
-
-  // Run animations when component mounts
-  useEffect(() => {
-    if (pendingQuest) {
-      // Simple animation sequence
-      headerOpacity.value = withTiming(1, { duration: 500 });
-      headerScale.value = withTiming(1, { duration: 500 });
-      cardOpacity.value = withDelay(500, withTiming(1, { duration: 500 }));
-      cardScale.value = withDelay(500, withTiming(1, { duration: 500 }));
-      buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
-      buttonScale.value = withDelay(1000, withTiming(1, { duration: 500 }));
-    }
-  }, [
-    pendingQuest,
-    buttonOpacity,
-    buttonScale,
-    cardOpacity,
-    cardScale,
-    headerOpacity,
-    headerScale,
-  ]);
+  // Use animation hook for all screen animations
+  const { headerStyle, cardStyle, buttonStyle, shimmerStyle } =
+    usePendingQuestAnimations(!!pendingQuest);
 
   const handleCancelQuest = () => {
     cancelQuest();
@@ -86,86 +46,89 @@ export default function PendingQuestScreen() {
   return (
     <View className="flex-1">
       {/* Full-screen Background Image */}
-      <Image
-        source={require('@/../assets/images/background/active-quest.jpg')}
-        className="absolute inset-0 size-full"
-        resizeMode="cover"
-      />
-      {/* BlurView for a subtle overlay effect */}
-      <BlurView intensity={30} tint="regular" className="absolute inset-0" />
-      <ScreenContainer
-        className="px-6"
+      <BackgroundImage
+        testID="background-image"
+        source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
+      ></BackgroundImage>
+
+      <View
+        className="flex-1 justify-between"
         style={{
-          paddingTop: insets.top + 16, // Spacing with safe area
+          paddingTop: insets.top,
+          paddingHorizontal: UI_CONFIG.HORIZONTAL_PADDING,
         }}
       >
+        {/* Title */}
+        <Animated.View style={headerStyle}>
+          <Title variant="centered" className="text-4xl">
+            {STRINGS.TITLE}
+          </Title>
+        </Animated.View>
+
+        {/* Compass Animation */}
         <Animated.View
+          entering={FadeInDown.delay(
+            ANIMATION_CONFIG.COMPASS_FADE_DELAY
+          ).duration(ANIMATION_CONFIG.COMPASS_FADE_DURATION)}
           className="mb-8 items-center"
-          style={headerAnimatedStyle}
         >
-          <Text className="text-3xl font-bold" style={{ fontWeight: '700' }}>
-            {pendingQuest?.mode === 'custom' ? 'Custom Quest' : 'Quest Ready'}
+          <CompassAnimation
+            size={UI_CONFIG.COMPASS_SIZE}
+            delay={ANIMATION_CONFIG.COMPASS_ANIMATION_DELAY}
+            color={colors.secondary[300]}
+          />
+        </Animated.View>
+
+        {/* Card with Quest Info */}
+        <View className="flex-1 justify-center">
+          <Animated.View style={cardStyle}>
+            <QuestInfoCard quest={pendingQuest} character={character} />
+          </Animated.View>
+        </View>
+
+        {/* Lock Instructions - Outside Card with Shimmer */}
+        <Animated.View
+          testID={TEST_IDS.LOCK_INSTRUCTIONS}
+          entering={FadeInDown.delay(
+            ANIMATION_CONFIG.LOCK_INSTRUCTIONS_DELAY
+          ).duration(ANIMATION_CONFIG.QUEST_INFO_FADE_DURATION)}
+          style={shimmerStyle}
+          className="mb-6 flex-row items-center justify-center"
+        >
+          <Lock
+            size={UI_CONFIG.LOCK_ICON_SIZE}
+            color={colors.white}
+            accessibilityHidden
+          />
+          <Text
+            className="ml-2 text-base font-semibold text-white"
+            accessibilityLabel={STRINGS.LOCK_INSTRUCTIONS}
+          >
+            {STRINGS.LOCK_INSTRUCTIONS}
           </Text>
         </Animated.View>
 
-        <Animated.View className="flex-0" style={cardAnimatedStyle}>
-          <QuestCard
-            title={pendingQuest.title}
-            duration={pendingQuest.durationMinutes}
-          >
-            {/* Single Quest Compass Animation */}
-            <CompassAnimation size={100} delay={300} />
-
-            {/* Single Quest Hero Message */}
-            <Animated.Text
-              entering={FadeInDown.delay(600).duration(800)}
-              className="mb-2 text-center text-lg font-bold"
-              style={{ color: colors.primary[500], fontWeight: '700' }}
-            >
-              Your Journey Begins
-            </Animated.Text>
-
-            <Animated.Text
-              entering={FadeInDown.delay(800).duration(800)}
-              className="mb-6 text-center text-base"
-              style={{ color: colors.neutral[500] }}
-            >
-              {pendingQuest?.mode === 'custom'
-                ? 'Time to focus on what matters most'
-                : 'Your character is ready for their quest'}
-            </Animated.Text>
-
-            {/* Lock Instructions */}
-            <LockInstructions variant="single" delay={1000} />
-
-            {/* Motivational Quote for Single Player */}
-            <Animated.Text
-              entering={FadeInDown.delay(1200).duration(800)}
-              className="mt-4 text-center text-sm italic"
-              style={{ color: colors.neutral[400] }}
-            >
-              "The journey of a thousand miles begins with a single step"
-            </Animated.Text>
-          </QuestCard>
-        </Animated.View>
-
-        <View className="flex-1" />
-
-        <Animated.View style={buttonAnimatedStyle}>
+        {/* Cancel Button */}
+        <Animated.View
+          style={[buttonStyle, { marginBottom: UI_CONFIG.BOTTOM_PADDING }]}
+        >
           <Button
             onPress={handleCancelQuest}
             variant="destructive"
             className="items-center rounded-full"
+            accessibilityRole="button"
+            accessibilityLabel={STRINGS.CANCEL_BUTTON}
+            accessibilityHint="Cancels the quest and returns to the previous screen"
           >
             <Text
               className="text-base font-semibold"
               style={{ fontWeight: '700' }}
             >
-              Cancel Quest
+              {STRINGS.CANCEL_BUTTON}
             </Text>
           </Button>
         </Animated.View>
-      </ScreenContainer>
+      </View>
     </View>
   );
 }

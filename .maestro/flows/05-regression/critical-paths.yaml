@@ -1,0 +1,66 @@
+appId: com.vaedros.unquest.staging
+---
+# =============================================================================
+# CRITICAL PATHS SMOKE TEST
+# =============================================================================
+# Quick smoke test covering the most critical user paths
+# Use this for rapid regression testing during development
+#
+# Coverage:
+#   - App launches successfully
+#   - Main tabs are accessible
+#   - Profile data loads
+#   - Quest selection works
+#
+# Duration: ~30 seconds (no quest completion wait)
+# =============================================================================
+
+# Verify app is running and authenticated
+- assertVisible: 'Your Journey'
+- assertVisible: 'emberglow'
+
+# =============================================================================
+# CRITICAL PATH 1: TAB NAVIGATION
+# =============================================================================
+- tapOn: 'Journal'
+- assertVisible: 'Journal'
+
+- tapOn: 'Map'
+- assertVisible: 'Map'
+
+- tapOn: 'Profile'
+- assertVisible: 'MaestroHero'
+- assertVisible: 'Level'
+
+- tapOn: 'Home'
+- assertVisible: 'Your Journey'
+
+# =============================================================================
+# CRITICAL PATH 2: QUEST SELECTION
+# =============================================================================
+# Verify quest selection UI is functional
+- tapOn:
+    point: '50%, 60%'
+
+# Should navigate to quest screen or pending quest
+- runFlow:
+    when:
+      visible: 'Quest Ready'
+    commands:
+      - assertVisible: 'Lock your phone'
+      - tapOn: 'Cancel'
+
+# =============================================================================
+# CRITICAL PATH 3: PROFILE DATA
+# =============================================================================
+- tapOn: 'Profile'
+
+# Verify core profile data is present
+- assertVisible: 'Level'
+- assertVisible: 'XP'
+- assertVisible: 'Day Streak'
+
+# =============================================================================
+# SMOKE TEST COMPLETE
+# =============================================================================
+# All critical paths verified!

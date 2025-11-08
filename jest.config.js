@@ -2,6 +2,7 @@ module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest-setup.ts'],
   testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
+  silent: true, // Suppress console output by default
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!**/coverage/**',
@@ -18,6 +19,12 @@ module.exports = {
   coverageReporters: ['json-summary', ['text', { file: 'coverage.txt' }]],
   reporters: [
     'default',
+    [
+      'tdd-guard-jest',
+      {
+        projectRoot: '/Users/thomasshellberg/Projects/unquest/unquest/',
+      },
+    ],
     ['github-actions', { silent: false }],
     'summary',
     [
@@ -36,7 +43,7 @@ module.exports = {
   coverageDirectory: '<rootDir>/coverage/',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
+    '\\.(jpg|jpeg|png|gif|webp|svg|lottie)$': '<rootDir>/__mocks__/fileMock.js',
   },
   setupFiles: ['<rootDir>/.jest/setEnvVars.js'],
 };

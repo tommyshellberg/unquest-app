@@ -23,10 +23,10 @@ type SettingsState = {
   streakWarning: StreakWarning;
   setDailyReminder: (reminder: DailyReminder) => void;
   setStreakWarning: (streakWarning: StreakWarning) => void;
-  hasCompletedFirstQuest: boolean;
-  setHasCompletedFirstQuest: (value: boolean) => void;
   hasBeenPromptedForReminder: boolean;
   setHasBeenPromptedForReminder: (value: boolean) => void;
+  hasSeenBranchingAnnouncement: boolean;
+  setHasSeenBranchingAnnouncement: (value: boolean) => void;
 };
 
 const getItemForStorage = (name: string) => {
@@ -47,12 +47,12 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setDailyReminder: (reminder) => set({ dailyReminder: reminder }),
       setStreakWarning: (streakWarning) => set({ streakWarning }),
-      hasCompletedFirstQuest: false,
-      setHasCompletedFirstQuest: (value) =>
-        set({ hasCompletedFirstQuest: value }),
       hasBeenPromptedForReminder: false,
       setHasBeenPromptedForReminder: (value) =>
         set({ hasBeenPromptedForReminder: value }),
+      hasSeenBranchingAnnouncement: false,
+      setHasSeenBranchingAnnouncement: (value) =>
+        set({ hasSeenBranchingAnnouncement: value }),
     }),
     {
       name: 'unquest-settings',

@@ -1,4 +1,4 @@
-appId: com.vaedros.unquest.development
+appId: com.vaedros.unquest.staging
 ---
 - clearState
 # Unset notifications permission to ensure consistent test state
@@ -52,7 +52,7 @@ appId: com.vaedros.unquest.development
 # SCENARIO 1: App shows intro screen
 - runFlow:
     when:
-      visible: 'Welcome to unQuest'
+      visible: 'emberglow'
     commands:
       - tapOn: 'Got it'
       - waitForAnimationToEnd
@@ -97,7 +97,7 @@ appId: com.vaedros.unquest.development
       # Handle possible intro screens after character creation
       - runFlow:
           when:
-            visible: 'Welcome to unQuest'
+            visible: 'emberglow'
           commands:
             - tapOn: 'Got it'
             - waitForAnimationToEnd

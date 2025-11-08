@@ -1,14 +1,12 @@
-import React, { createContext, useContext, useEffect, useRef } from 'react';
-import { useAuth } from '@/lib/auth';
-import {
-  webSocketService,
-  WebSocketEvents,
-} from '@/lib/services/websocket-service';
-import { TypedWebSocketEvents } from '@/lib/services/websocket-events.types';
-import { useQuestStore } from '@/store/quest-store';
+import React, { createContext, useEffect, useRef } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
+
 import { queryClient } from '@/api/common';
-import { AppState, AppStateStatus } from 'react-native';
+import { useAuth } from '@/lib/auth';
+import { type TypedWebSocketEvents } from '@/lib/services/websocket-events.types';
+import { webSocketService } from '@/lib/services/websocket-service';
 import { getItem } from '@/lib/storage';
+import { useQuestStore } from '@/store/quest-store';
 
 interface WebSocketContextValue {
   isConnected: boolean;

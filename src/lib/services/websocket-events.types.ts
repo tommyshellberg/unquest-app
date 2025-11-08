@@ -1,4 +1,4 @@
-import { CharacterType } from '@/store/types';
+import { type CharacterType } from '@/store/types';
 
 // Lobby Event Payloads
 export interface LobbyJoinPayload {
@@ -65,7 +65,7 @@ export interface LobbyQuestCreatedPayload {
       xp: number;
     };
     hostId: string;
-    participants: Array<{
+    participants: {
       userId: string;
       ready: boolean;
       status:
@@ -77,7 +77,7 @@ export interface LobbyQuestCreatedPayload {
         | 'failed';
       userName?: string;
       characterType?: CharacterType;
-    }>;
+    }[];
     status: 'pending' | 'active' | 'completed' | 'failed';
     actualStartTime?: number;
     scheduledEndTime?: number;
@@ -116,11 +116,11 @@ export interface QuestCompletedPayload {
   questId: string;
   completedAt: number;
   xpGained: number;
-  participantResults: Array<{
+  participantResults: {
     userId: string;
     status: 'completed' | 'failed';
     xpGained: number;
-  }>;
+  }[];
 }
 
 export interface QuestFailedPayload {
@@ -128,10 +128,10 @@ export interface QuestFailedPayload {
   questId: string;
   failedAt: number;
   reason: string;
-  participantResults: Array<{
+  participantResults: {
     userId: string;
     status: 'completed' | 'failed';
-  }>;
+  }[];
 }
 
 export interface ParticipantJoinedPayload {

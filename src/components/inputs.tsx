@@ -4,7 +4,7 @@ import type { OptionType } from '@/components/ui';
 import { Input, Select, View } from '@/components/ui';
 import { Checkbox, Radio, Switch } from '@/components/ui';
 
-import { Title } from './title';
+import { Title } from './ui/title';
 
 const options: OptionType[] = [
   { value: 'chocolate', label: 'Chocolate' },

@@ -9,12 +9,11 @@ import { FriendSelector } from '@/components/QuestForm/friend-selector';
 import {
   Button,
   FocusAwareStatusBar,
-  SafeAreaView,
   ScrollView,
+  showErrorMessage,
   Text,
   TouchableOpacity,
   View,
-  showErrorMessage,
 } from '@/components/ui';
 import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
 import { useUserStore } from '@/store/user-store';
@@ -114,7 +113,7 @@ export default function CreateCooperativeQuestScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <View className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Header */}
@@ -194,6 +193,6 @@ export default function CreateCooperativeQuestScreen() {
           textClassName="text-white font-bold text-lg"
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

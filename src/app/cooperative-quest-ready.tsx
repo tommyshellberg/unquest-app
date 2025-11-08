@@ -8,7 +8,6 @@ import { useWebSocket } from '@/components/providers/websocket-provider';
 import {
   Button,
   FocusAwareStatusBar,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -172,9 +171,9 @@ export default function CooperativeQuestReady() {
 
   if (!currentLobby || !currentUser) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -259,7 +258,8 @@ export default function CooperativeQuestReady() {
       await QuestTimer.prepareQuest(questTemplate, questRunId);
 
       // Navigate to cooperative pending quest which will show the countdown
-      router.replace('/cooperative-pending-quest');
+      // Use push so cancel button can navigate back
+      router.push('/cooperative-pending-quest');
     },
     [currentLobby, prepareQuest, router]
   );
@@ -337,10 +337,7 @@ export default function CooperativeQuestReady() {
   };
 
   return (
-    <SafeAreaView
-      className="flex-1"
-      style={{ backgroundColor: colors.background }}
-    >
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <FocusAwareStatusBar />
 
       {/* Header */}
@@ -433,6 +430,6 @@ export default function CooperativeQuestReady() {
           textClassName={`font-bold text-lg ${isReady ? 'text-neutral-700' : 'text-white'}`}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

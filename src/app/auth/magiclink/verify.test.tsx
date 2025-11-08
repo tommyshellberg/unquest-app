@@ -1,6 +1,6 @@
+import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import axios from 'axios';
 
 import { verifyMagicLinkAndSignIn } from '@/api/auth';
 import { signOut } from '@/lib/auth';
@@ -24,6 +24,7 @@ jest.mock('@/api/auth', () => ({
 // Mock the auth functions
 jest.mock('@/lib/auth', () => ({
   signOut: jest.fn(),
+  useAuth: jest.fn((selector) => selector({ status: 'signOut' })),
 }));
 
 // Mock axios

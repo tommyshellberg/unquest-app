@@ -5,15 +5,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
+import { type TypedWebSocketEvents } from '@/lib/services/websocket-events.types';
+import { webSocketService } from '@/lib/services/websocket-service';
 import { getItem } from '@/lib/storage';
-import {
-  webSocketService,
-  WebSocketEvents,
-} from '@/lib/services/websocket-service';
-import { TypedWebSocketEvents } from '@/lib/services/websocket-events.types';
 
 interface LazyWebSocketContextValue {
   isConnected: boolean;
@@ -95,7 +92,14 @@ export const LazyWebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Manual connect function
   const connect = () => {
-    console.log('[LazyWebSocket] Connect called - authStatus:', authStatus, 'hasProvisionalToken:', hasProvisionalToken, 'isEnabled:', isEnabled);
+    console.log(
+      '[LazyWebSocket] Connect called - authStatus:',
+      authStatus,
+      'hasProvisionalToken:',
+      hasProvisionalToken,
+      'isEnabled:',
+      isEnabled
+    );
     if ((authStatus === 'signIn' || hasProvisionalToken) && !isEnabled) {
       console.log('[LazyWebSocket] Manually connecting WebSocket...');
       setIsEnabled(true);

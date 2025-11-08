@@ -2,10 +2,18 @@
 import '../../global.css';
 
 import { Env } from '@env';
+import {
+  SourceSans3_300Light,
+  SourceSans3_400Regular,
+  SourceSans3_500Medium,
+  SourceSans3_600SemiBold,
+  SourceSans3_700Bold,
+} from '@expo-google-fonts/source-sans-3';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { isRunningInExpoGo } from 'expo';
+import { useFonts } from 'expo-font';
 import { Stack, useNavigationContainerRef, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
@@ -22,6 +30,7 @@ import { LazyWebSocketProvider } from '@/components/providers/lazy-websocket-pro
 import { PostHogNavigationTracker } from '@/components/providers/posthog-navigation-tracker';
 import { PostHogProviderWrapper } from '@/components/providers/posthog-provider-wrapper';
 import { SafeAreaView, UpdateNotificationBar } from '@/components/ui';
+import colors from '@/components/ui/colors';
 import { hydrateAuth, loadSelectedTheme, useAuth } from '@/lib';
 import { useTokenRefreshErrorHandler } from '@/lib/hooks/use-token-refresh-error-handler';
 import useLockStateDetection from '@/lib/hooks/useLockStateDetection';
@@ -92,6 +101,15 @@ const handleQuestFailure = (questRunId: string) => {
 };
 
 function RootLayout() {
+  // Load custom fonts
+  const [fontsLoaded] = useFonts({
+    SourceSans3_300Light,
+    SourceSans3_400Regular,
+    SourceSans3_500Medium,
+    SourceSans3_600SemiBold,
+    SourceSans3_700Bold,
+  });
+
   // Get auth status
   const authStatus = useAuth((state) => state.status);
   const [hydrationFinished, setHydrationFinished] = React.useState(false);
@@ -235,6 +253,15 @@ function RootLayout() {
 
   // Initialize RevenueCat SDK on app launch (following official docs)
   useEffect(() => {
+    // Skip RevenueCat initialization in development to avoid bundle ID mismatch errors
+    // Development mode already grants premium access (see revenuecat-service.ts line 131-134)
+    if (__DEV__ && Env.APP_ENV === 'development') {
+      console.log(
+        '[RevenueCat] Skipping SDK initialization in development mode'
+      );
+      return;
+    }
+
     try {
       // Enable test mode in development first
       // Commented out to test actual paywall behavior
@@ -352,11 +379,11 @@ function RootLayout() {
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
-    // Check both flags: hydration promise resolved AND auth status is final
-    if (hydrationFinished && authStatus !== 'hydrating') {
+    // Check all flags: hydration promise resolved, auth status is final, and fonts are loaded
+    if (hydrationFinished && authStatus !== 'hydrating' && fontsLoaded) {
       await SplashScreen.hideAsync();
     }
-  }, [hydrationFinished, authStatus]);
+  }, [hydrationFinished, authStatus, fontsLoaded]);
 
   // Activate lock detection for the whole main app.
   useLockStateDetection();
@@ -364,8 +391,8 @@ function RootLayout() {
   // Handle token refresh exhaustion
   useTokenRefreshErrorHandler();
 
-  // Return null until hydration promise is done AND auth status is final
-  if (!hydrationFinished || authStatus === 'hydrating') {
+  // Return null until hydration promise is done, auth status is final, and fonts are loaded
+  if (!hydrationFinished || authStatus === 'hydrating' || !fontsLoaded) {
     return null;
   }
 
@@ -374,7 +401,12 @@ function RootLayout() {
     <Providers onLayout={onLayoutRootView}>
       <NavigationGate />
       <PostHogNavigationTracker />
-      <Stack>
+      <Stack
+        screenOptions={{
+          contentStyle: { backgroundColor: colors.black },
+          animation: 'slide_from_right',
+        }}
+      >
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
@@ -393,7 +425,10 @@ function RootLayout() {
         />
         <Stack.Screen
           name="streak-celebration"
-          options={{ headerShown: false }}
+          options={{
+            headerShown: false,
+            animation: 'fade',
+          }}
         />
         <Stack.Screen
           name="cooperative-quest-menu"
@@ -433,7 +468,7 @@ function Providers({
 }) {
   const theme = useThemeConfig();
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-background">
       <SafeAreaView
         className="flex-1 bg-background"
         edges={['top', 'left', 'right']}

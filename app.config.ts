@@ -5,6 +5,7 @@ import type { ConfigContext, ExpoConfig } from '@expo/config';
 import type { AppIconBadgeConfig } from 'app-icon-badge/types';
 
 import { ClientEnv, Env } from './env';
+import colors from './src/components/ui/colors';
 
 const appIconBadgeConfig: AppIconBadgeConfig = {
   enabled: Env.APP_ENV !== 'production',
@@ -33,6 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   userInterfaceStyle: 'automatic',
+  backgroundColor: colors.black,
   newArchEnabled: true,
   runtimeVersion: Env.VERSION.toString(),
   updates: {
@@ -44,11 +46,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: Env.BUNDLE_ID,
+    icon: './assets/images/app-icon.png',
     config: {
       usesNonExemptEncryption: false,
     },
     infoPlist: {
       BGTaskSchedulerPermittedIdentifiers: ['$(PRODUCT_BUNDLE_IDENTIFIER)'],
+      // Allow HTTP connections in staging for local dev server
+      ...(Env.APP_ENV !== 'production' && {
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true,
+        },
+      }),
     },
     buildNumber: Env.VERSION.split('.').pop() || '0',
   },
@@ -57,7 +66,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/images/adaptive-icon.png',
+      foregroundImage: './assets/images/icon.png',
       backgroundColor: '#051c25',
     },
     package: Env.PACKAGE,
@@ -69,12 +78,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     // use the last digit of semver
     versionCode: parseInt(Env.VERSION.split('.').pop() || '0'),
+    // Allow HTTP connections in staging for local dev server
+    ...(Env.APP_ENV !== 'production' && {
+      usesCleartextTraffic: true,
+    }),
   },
   plugins: [
     [
       'expo-splash-screen',
       {
-        image: './assets/images/splash-icon.png',
+        image: './assets/images/icon.png',
         imageWidth: 200,
         resizeMode: 'contain',
         backgroundColor: '#051c25',
@@ -85,7 +98,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-font',
       {
-        fonts: ['./assets/fonts/Inter.ttf'],
+        fonts: ['./assets/fonts/Erstoria-Regular.ttf'],
       },
     ],
     [

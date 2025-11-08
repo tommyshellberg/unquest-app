@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
-import * as Contacts from 'expo-contacts';
-import { Text } from '@/components/ui';
+import type * as Contacts from 'expo-contacts';
 import { Check } from 'lucide-react-native';
+import React from 'react';
+import { TouchableOpacity, View } from 'react-native';
+
+import { Text } from '@/components/ui';
 
 interface ContactItemProps {
   contact: Contacts.Contact & { isFriend?: boolean };
@@ -25,32 +26,32 @@ export const ContactItem: React.FC<ContactItemProps> = ({
       onPress={onPress}
       disabled={isFriend}
       testID={`contact-item-${contact.id}`}
-      className={`flex-row items-center justify-between px-4 py-4 bg-background ${
+      className={`flex-row items-center justify-between bg-background p-4 ${
         isFriend ? 'opacity-60' : ''
       }`}
     >
-      <View className="flex-1 mr-3">
+      <View className="mr-3 flex-1">
         <Text
-          className={`text-base font-medium ${isFriend ? 'text-neutral-500' : 'text-black'}`}
+          className={`text-base font-medium ${isFriend ? 'text-neutral-300' : 'text-white'}`}
         >
           {displayName}
         </Text>
         {email && contact.name && (
-          <Text className="text-sm text-neutral-500 mt-1">{email}</Text>
+          <Text className="mt-1 text-sm text-neutral-200">{email}</Text>
         )}
       </View>
 
       <View className="flex-row items-center">
         {isFriend && (
-          <Text className="text-sm text-neutral-500 mr-3">Already invited</Text>
+          <Text className="mr-3 text-sm text-neutral-200">Already invited</Text>
         )}
 
         {!isFriend && (
           <View
-            className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
+            className={`size-6 items-center justify-center rounded-full border-2 ${
               isSelected
-                ? 'bg-primary-500 border-primary-500'
-                : 'border-neutral-500 bg-background'
+                ? 'border-primary-400 bg-primary-400'
+                : 'border-neutral-300 bg-background'
             }`}
           >
             {isSelected && <Check size={14} color="white" strokeWidth={3} />}

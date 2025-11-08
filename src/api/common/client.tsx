@@ -129,9 +129,11 @@ apiClient.interceptors.response.use(
         (exhaustedError as any).attempts = refreshAttempts;
 
         // Try to handle the error through our global handler
-        import('@/lib/hooks/use-token-refresh-error-handler').then(({ handleTokenRefreshExhaustion }) => {
-          handleTokenRefreshExhaustion(exhaustedError);
-        }).catch(console.error);
+        import('@/lib/hooks/use-token-refresh-error-handler')
+          .then(({ handleTokenRefreshExhaustion }) => {
+            handleTokenRefreshExhaustion(exhaustedError);
+          })
+          .catch(console.error);
 
         // Don't sign out immediately - let the UI decide what to do
         return Promise.reject(exhaustedError);

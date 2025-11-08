@@ -66,12 +66,12 @@ export const CombinedQuestInput = ({
     <View className="mb-4 rounded-xl bg-cardBackground p-5">
       <View className="mb-2.5">
         <View className="flex-row items-center">
-          <Text className="text-2xl font-medium text-[#333]">I want to</Text>
+          <Text className="text-2xl font-medium text-white">I want to</Text>
           <TextInput
             value={questName}
             onChangeText={handleQuestNameChange}
             placeholder="go for a run"
-            placeholderTextColor="#999"
+            placeholderTextColor="#5C7380"
             autoCapitalize="none"
             autoComplete="off"
             autoFocus={true}
@@ -80,11 +80,12 @@ export const CombinedQuestInput = ({
               marginLeft: 8,
               height: 40,
               borderBottomWidth: 1,
-              borderBottomColor: '#3B7A57',
+              borderBottomColor: '#36B6D3', // secondary-200 (Emberglow teal)
               backgroundColor: 'transparent',
               paddingHorizontal: 8,
               paddingVertical: 0,
               fontSize: 24,
+              color: '#e8dcc7', // white/cream
               includeFontPadding: false,
               textAlignVertical: 'center',
             }}
@@ -93,7 +94,7 @@ export const CombinedQuestInput = ({
       </View>
 
       <View className="mb-2.5 flex-row items-center">
-        <Text className="text-2xl font-medium text-[#333]">
+        <Text className="text-2xl font-medium text-white">
           for {sliderValue} minutes
         </Text>
       </View>
@@ -110,24 +111,24 @@ export const CombinedQuestInput = ({
             value={duration}
             onValueChange={handleSliderValueChange}
             onSlidingComplete={handleSlidingComplete}
-            minimumTrackTintColor="#3B7A57" // Forest green
-            maximumTrackTintColor="#EAEAE5"
-            thumbTintColor="#3B7A57"
+            minimumTrackTintColor="#36B6D3" // secondary-200 (Emberglow teal)
+            maximumTrackTintColor="#5C7380" // neutral-300 (muted gray)
+            thumbTintColor="#36B6D3" // secondary-200 (Emberglow teal)
           />
         </View>
 
         <View className="mt-4 flex-row justify-between">
-          <View className="w-[48%] items-center rounded-lg bg-[#EAEAE5] p-3">
-            <Text className="mb-1 text-sm text-[#777]">FROM</Text>
-            <Text className="text-2xl font-semibold text-[#333]">
+          <View className="w-[48%] items-center rounded-lg bg-lightBlue-500 p-3">
+            <Text className="mb-1 text-sm text-neutral-200">FROM</Text>
+            <Text className="text-2xl font-semibold text-white">
               {format(now, 'h:mm a')}
             </Text>
           </View>
-          <View className="w-[48%] items-center rounded-lg bg-[#EAEAE5] p-3">
-            <Text className="mb-1 text-sm text-[#777]">TO</Text>
+          <View className="w-[48%] items-center rounded-lg bg-lightBlue-500 p-3">
+            <Text className="mb-1 text-sm text-neutral-200">TO</Text>
             <Text
               testID="end-time"
-              className="text-2xl font-semibold text-[#333]"
+              className="text-2xl font-semibold text-white"
             >
               {format(endTime, 'h:mm a')}
             </Text>

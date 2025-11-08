@@ -8,15 +8,12 @@ import { OneSignal } from 'react-native-onesignal';
 // Import mocked modules
 import {
   createQuestRun,
-  updateQuestRunStatus,
   updatePhoneLockStatus,
-  getQuestRunStatus,
 } from '@/lib/services/quest-run-service';
-import { setItem, removeItem } from '@/lib/storage';
+import { removeItem, setItem } from '@/lib/storage';
+// Import the store for assertions
 // Import types
 import type { StoryQuestTemplate } from '@/store/types';
-// Import the store for assertions
-import { useQuestStore } from '@/store/quest-store';
 
 import QuestTimer from './quest-timer';
 
@@ -62,12 +59,12 @@ jest.mock('@/lib/storage', () => ({
   getItem: jest.fn((key: string) => {
     const value = mockStorage[key];
     if (!value) return null;
-    
+
     // For quest template, return the JSON string since quest-timer expects to parse it
     if (key === 'QUEST_TIMER_TEMPLATE') {
       return value; // Already a string from setItem
     }
-    
+
     // For other values, return as-is since quest-timer expects strings
     return value;
   }),
@@ -141,7 +138,7 @@ describe('QuestTimer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Clear the mock storage
-    Object.keys(mockStorage).forEach(key => delete mockStorage[key]);
+    Object.keys(mockStorage).forEach((key) => delete mockStorage[key]);
     // Reset Platform.OS to ios for most tests
     Platform.OS = 'ios';
   });
@@ -170,10 +167,7 @@ describe('QuestTimer', () => {
         'QUEST_TIMER_TEMPLATE',
         JSON.stringify(mockQuestTemplate)
       );
-      expect(setItem).toHaveBeenCalledWith(
-        'QUEST_RUN_ID',
-        'mock-quest-run-id'
-      );
+      expect(setItem).toHaveBeenCalledWith('QUEST_RUN_ID', 'mock-quest-run-id');
     });
 
     it('continues with quest preparation even if server request fails', async () => {
@@ -296,7 +290,7 @@ describe('QuestTimer', () => {
       // This test is checking that QuestTimer can handle phone unlock events
       // The actual logic of failing quests is complex and depends on timing
       // For now, let's just verify the basic flow works without errors
-      
+
       const mockQuestTemplate: StoryQuestTemplate = {
         id: 'test-quest-id',
         title: 'Test Quest',
@@ -314,7 +308,7 @@ describe('QuestTimer', () => {
 
       // Act - call onPhoneUnlocked
       await expect(QuestTimer.onPhoneUnlocked()).resolves.not.toThrow();
-      
+
       // The test passes if no errors are thrown
       // More detailed testing would require mocking the internal timer state
     });
@@ -322,7 +316,7 @@ describe('QuestTimer', () => {
     it('handles cooperative quest unlock differently than single-player', async () => {
       // This test verifies that cooperative quests can be handled without errors
       // The actual cooperative quest logic is complex and would need more setup
-      
+
       const mockQuestTemplate: StoryQuestTemplate = {
         id: 'test-quest-id',
         title: 'Cooperative Quest',
@@ -337,11 +331,14 @@ describe('QuestTimer', () => {
       };
 
       // For cooperative quests, we need to provide a quest run ID
-      await QuestTimer.prepareQuest(mockQuestTemplate, 'cooperative-quest-run-id');
+      await QuestTimer.prepareQuest(
+        mockQuestTemplate,
+        'cooperative-quest-run-id'
+      );
 
       // Act - call onPhoneUnlocked
       await expect(QuestTimer.onPhoneUnlocked()).resolves.not.toThrow();
-      
+
       // The test passes if no errors are thrown
     });
   });

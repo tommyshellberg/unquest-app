@@ -1,5 +1,5 @@
-import React from 'react';
 import { PostHogProvider } from 'posthog-react-native';
+import React from 'react';
 
 interface PostHogProviderWrapperProps {
   apiKey: string;

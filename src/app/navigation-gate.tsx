@@ -39,7 +39,8 @@ export default function NavigationGate() {
     switch (target.type) {
       case 'pending-quest':
         console.log('[NavigationGate] Redirecting to pending-quest');
-        router.replace('/pending-quest');
+        // Use push instead of replace so cancel button can navigate back
+        router.push('/pending-quest');
         break;
       case 'first-quest-result':
         console.log('[NavigationGate] Redirecting to first-quest-result');

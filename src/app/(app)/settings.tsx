@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import * as Updates from 'expo-updates';
 import { Crown, Flame, Globe } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, Switch } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Switch } from 'react-native';
 import * as Localize from 'react-native-localize';
 import { OneSignal } from 'react-native-onesignal';
 import {
@@ -30,8 +30,8 @@ import { background } from '@/components/ui/colors';
 import { Modal, useModal } from '@/components/ui/modal';
 import { useNotificationSettings } from '@/hooks/use-notification-settings';
 import { useAuth } from '@/lib';
-import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import { TIMEZONES } from '@/lib/constants/timezones';
+import { usePremiumAccess } from '@/lib/hooks/use-premium-access';
 import {
   areNotificationsEnabled,
   cancelDailyReminderNotification,
@@ -39,11 +39,15 @@ import {
   requestNotificationPermissions,
   scheduleDailyReminderNotification,
 } from '@/lib/services/notifications';
-import { revenueCatService } from '@/lib/services/revenuecat-service';
-import { deleteUserAccount, getUserDetails } from '@/lib/services/user';
+import { getUserDetails } from '@/lib/services/user';
 import { getItem, setItem } from '@/lib/storage';
 import { useSettingsStore } from '@/store/settings-store';
 import { useUserStore } from '@/store/user-store';
+
+import {
+  handleDeleteAccount,
+  handleManageSubscription,
+} from '../utils/account';
 
 // Constants
 const APP_VERSION = Env.VERSION || '1.0.0';
@@ -215,8 +219,8 @@ export default function Settings() {
   };
 
   // Define icon colors and backgrounds for consistency with the design
-  const iconBgColor = 'bg-[#E7DBC9]/50';
-  const iconColor = '#3B7A57';
+  const iconBgColor = 'bg-neutral-400';
+  const iconColor = '#36B6D3';
   const contactEmail = 'hello@unquestapp.com';
 
   const handleToggleReminder = async (value: boolean) => {
@@ -271,79 +275,6 @@ export default function Settings() {
     date.setMinutes(dailyReminder.time.minute);
 
     return format(date, 'h:mm a');
-  };
-
-  // Add this handler function
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? Your account will be made inactive and your personal data will be anonymized. This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'View Terms',
-          onPress: () => Linking.openURL('https://unquestapp.com/terms'),
-        },
-        {
-          text: 'Delete Account',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Show loading indicator
-              setIsLoading(true);
-
-              // Call API to delete the account
-              await deleteUserAccount();
-
-              // On success, show confirmation and logout
-              Alert.alert(
-                'Account Scheduled for Deletion',
-                'Your account has been scheduled for deletion. You will now be logged out.',
-                [
-                  {
-                    text: 'OK',
-                    onPress: async () => {
-                      // Log the user out and redirect to login screen
-                      await signOut();
-                      router.replace('/login');
-                    },
-                  },
-                ]
-              );
-            } catch (error) {
-              // On error, show error message
-              setIsLoading(false);
-
-              let errorMessage = 'An unexpected error occurred.';
-              if (error instanceof Error) {
-                errorMessage = error.message;
-              }
-
-              Alert.alert(
-                'Account Deletion Failed',
-                `We couldn't process your deletion request automatically. Please contact hello@unquestapp.com or visit unquestapp.com/contact for assistance with manual account deletion.`,
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Email Support',
-                    onPress: () =>
-                      Linking.openURL(
-                        'mailto:hello@unquestapp.com?subject=Account%20Deletion%20Request'
-                      ),
-                  },
-                  {
-                    text: 'Visit Website',
-                    onPress: () =>
-                      Linking.openURL('https://unquestapp.com/contact'),
-                  },
-                ]
-              );
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
   };
 
   const handleToggleStreakWarning = async (value: boolean) => {
@@ -406,42 +337,19 @@ export default function Settings() {
     updateSettings({ timezone });
   };
 
-  // Handle manage subscription
-  const handleManageSubscription = async () => {
-    try {
-      const managementUrl = await revenueCatService.getManagementURL();
-      if (managementUrl) {
-        Linking.openURL(managementUrl);
-      } else {
-        // Fallback to platform-specific subscription management
-        if (Platform.OS === 'ios') {
-          Linking.openURL('https://apps.apple.com/account/subscriptions');
-        } else {
-          Linking.openURL('https://play.google.com/store/account/subscriptions');
-        }
-      }
-    } catch (error) {
-      console.error('Error opening subscription management:', error);
-      Alert.alert(
-        'Error',
-        'Unable to open subscription management. Please try again later.'
-      );
-    }
-  };
-
   // In your render method, handle loading state
   if (isLoading || isLoadingSettings) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
+      <View className="flex-1 items-center justify-center">
         <FocusAwareStatusBar />
-        <ActivityIndicator size="large" color="#5E8977" />
-        <Text className="mt-4">Loading settings...</Text>
+        <ActivityIndicator size="large" color="#36B6D3" />
+        <Text className="mt-4 text-white">Loading settings...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 flex-col bg-background">
+    <View className="flex-1 flex-col">
       <FocusAwareStatusBar />
 
       <ScreenContainer>
@@ -462,8 +370,10 @@ export default function Settings() {
                   <Feather name="user" size={24} color={iconColor} />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xl font-medium">Account</Text>
-                  <Text className="text-neutral-600">
+                  <Text className="text-xl font-medium text-white">
+                    Account
+                  </Text>
+                  <Text className="text-neutral-200">
                     {user?.email || 'Not signed in'}
                   </Text>
                 </View>
@@ -471,7 +381,7 @@ export default function Settings() {
 
               {user && (
                 <View
-                  className="mx-auto mt-4 rounded-xl bg-red-300 p-2"
+                  className="mx-auto mt-4 rounded-xl bg-primary-300 p-2"
                   style={{ width: '50%' }}
                   onTouchEnd={handleLogout}
                 >
@@ -495,19 +405,23 @@ export default function Settings() {
                     <Crown size={24} color={iconColor} />
                   </View>
                   <View>
-                    <Text className="text-xl font-medium">UnQuest Premium</Text>
-                    <Text className="text-neutral-600">
-                      {hasPremiumAccess ? 'Manage subscription' : 'View subscription options'}
+                    <Text className="text-xl font-medium text-white">
+                      emberglow Premium
+                    </Text>
+                    <Text className="text-neutral-200">
+                      {hasPremiumAccess
+                        ? 'Manage subscription'
+                        : 'View subscription options'}
                     </Text>
                   </View>
                 </View>
-                <Feather name="chevron-right" size={20} color="#888" />
+                <Feather name="chevron-right" size={20} color="#5C7380" />
               </Pressable>
             </View>
 
             {/* Preferences Section */}
             <View className="mb-4">
-              <Text className="mb-2 text-base uppercase text-neutral-500">
+              <Text className="mb-2 text-base uppercase text-neutral-300">
                 PREFERENCES
               </Text>
             </View>
@@ -527,14 +441,16 @@ export default function Settings() {
                   <Globe size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium">Timezone</Text>
-                  <Text className="text-neutral-600">
+                  <Text className="text-xl font-medium text-white">
+                    Timezone
+                  </Text>
+                  <Text className="text-neutral-200">
                     {TIMEZONES.find((tz) => tz.value === selectedTimezone)
                       ?.label || selectedTimezone}
                   </Text>
                 </View>
               </View>
-              <Feather name="chevron-right" size={24} color="#86939e" />
+              <Feather name="chevron-right" size={20} color="#5C7380" />
             </Pressable>
 
             {/* Notifications */}
@@ -546,8 +462,10 @@ export default function Settings() {
                   <Feather name="bell" size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium">Notifications</Text>
-                  <Text className="text-neutral-600">
+                  <Text className="text-xl font-medium text-white">
+                    Notifications
+                  </Text>
+                  <Text className="text-neutral-200">
                     {notificationsEnabled ? 'Enabled' : 'Disabled'}
                   </Text>
                 </View>
@@ -555,7 +473,7 @@ export default function Settings() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotificationsToggle}
-                trackColor={{ false: '#D1D1D6', true: '#5E8977' }}
+                trackColor={{ false: '#2A4754', true: '#36B6D3' }}
               />
             </View>
 
@@ -571,10 +489,10 @@ export default function Settings() {
                       <Feather name="clock" size={24} color={iconColor} />
                     </View>
                     <View>
-                      <Text className="text-xl font-medium">
+                      <Text className="text-xl font-medium text-white">
                         Daily Reminder
                       </Text>
-                      <Text className="text-neutral-600">
+                      <Text className="text-neutral-200">
                         {dailyReminder.enabled ? 'Enabled' : 'Disabled'}
                       </Text>
                     </View>
@@ -582,7 +500,7 @@ export default function Settings() {
                   <Switch
                     value={dailyReminder.enabled}
                     onValueChange={handleToggleReminder}
-                    trackColor={{ false: '#D1D1D6', true: '#5E8977' }}
+                    trackColor={{ false: '#2A4754', true: '#36B6D3' }}
                   />
                 </View>
 
@@ -590,14 +508,14 @@ export default function Settings() {
                 {dailyReminder.enabled && (
                   <View className="mb-6 ml-16">
                     <View className="flex-row items-center justify-between">
-                      <Text className="text-neutral-600">Reminder Time</Text>
+                      <Text className="text-neutral-200">Reminder Time</Text>
 
                       {!showTimePicker && (
                         <Pressable
                           onPress={() => setShowTimePicker(true)}
-                          className="rounded-lg bg-neutral-200 px-4 py-2"
+                          className="rounded-lg bg-neutral-400 px-4 py-2"
                         >
-                          <Text className="text-center font-medium">
+                          <Text className="text-center font-medium text-white">
                             {getReminderTimeDisplay()}
                           </Text>
                         </Pressable>
@@ -632,10 +550,10 @@ export default function Settings() {
                       <Flame size={24} color={iconColor} />
                     </View>
                     <View>
-                      <Text className="text-xl font-medium">
+                      <Text className="text-xl font-medium text-white">
                         Streak Warning
                       </Text>
-                      <Text className="text-neutral-600">
+                      <Text className="text-neutral-200">
                         {streakWarning.enabled ? 'Enabled' : 'Disabled'}
                       </Text>
                     </View>
@@ -643,7 +561,7 @@ export default function Settings() {
                   <Switch
                     value={streakWarning.enabled}
                     onValueChange={handleToggleStreakWarning}
-                    trackColor={{ false: '#D1D1D6', true: '#5E8977' }}
+                    trackColor={{ false: '#2A4754', true: '#36B6D3' }}
                   />
                 </View>
 
@@ -651,14 +569,14 @@ export default function Settings() {
                 {streakWarning.enabled && (
                   <View className="mb-6 ml-16">
                     <View className="flex-row items-center justify-between">
-                      <Text className="text-neutral-600">Reminder Time</Text>
+                      <Text className="text-neutral-200">Reminder Time</Text>
 
                       {!showStreakTimePicker && (
                         <Pressable
                           onPress={() => setShowStreakTimePicker(true)}
-                          className="rounded-lg bg-neutral-200 px-4 py-2"
+                          className="rounded-lg bg-neutral-400 px-4 py-2"
                         >
-                          <Text className="text-center font-medium">
+                          <Text className="text-center font-medium text-white">
                             {getStreakTimeDisplay()}
                           </Text>
                         </Pressable>
@@ -688,7 +606,7 @@ export default function Settings() {
 
             {/* Support Section */}
             <View className="mb-4">
-              <Text className="mb-2 text-base uppercase text-neutral-500">
+              <Text className="mb-2 text-base uppercase text-neutral-300">
                 SUPPORT
               </Text>
             </View>
@@ -705,8 +623,10 @@ export default function Settings() {
                   <Feather name="mail" size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium">Contact Us</Text>
-                  <Text className="text-neutral-600">{contactEmail}</Text>
+                  <Text className="text-xl font-medium text-white">
+                    Contact Us
+                  </Text>
+                  <Text className="text-neutral-200">{contactEmail}</Text>
                 </View>
               </View>
             </View>
@@ -723,15 +643,17 @@ export default function Settings() {
                   <Feather name="help-circle" size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium">Request a Feature</Text>
-                  <Text className="text-neutral-600">{contactEmail}</Text>
+                  <Text className="text-xl font-medium text-white">
+                    Request a Feature
+                  </Text>
+                  <Text className="text-neutral-200">{contactEmail}</Text>
                 </View>
               </View>
             </View>
 
             {/* Legal Section */}
             <View className="mb-4">
-              <Text className="mb-2 text-base uppercase text-neutral-500">
+              <Text className="mb-2 text-base uppercase text-neutral-300">
                 LEGAL
               </Text>
             </View>
@@ -748,27 +670,27 @@ export default function Settings() {
                   <Feather name="shield" size={24} color={iconColor} />
                 </View>
                 <View>
-                  <Text className="text-xl font-medium">
+                  <Text className="text-xl font-medium text-white">
                     Terms of Use & Privacy Policy
                   </Text>
                 </View>
               </View>
-              <Feather name="chevron-right" size={20} color="#888" />
+              <Feather name="chevron-right" size={20} color="#5C7380" />
             </Pressable>
 
             {/* Danger Zone */}
             <View className="mb-4">
-              <Text className="mb-2 text-base uppercase text-neutral-500">
+              <Text className="mb-2 text-base uppercase text-neutral-300">
                 DANGER ZONE
               </Text>
             </View>
 
             <View className="mb-8 px-4">
-              <Text className="mb-4 text-center text-neutral-600">
+              <Text className="mb-4 text-center text-neutral-200">
                 Deleting your account will remove all your personal data.
               </Text>
               <View
-                className="mx-auto rounded-full bg-red-400 p-2"
+                className="mx-auto rounded-full bg-red-500 p-2"
                 style={{ width: '50%' }}
                 onTouchEnd={handleDeleteAccount}
               >
@@ -782,7 +704,7 @@ export default function Settings() {
             {__DEV__ && (
               <>
                 <View className="mb-4">
-                  <Text className="mb-2 text-base uppercase text-neutral-500">
+                  <Text className="mb-2 text-base uppercase text-neutral-300">
                     DEBUG
                   </Text>
                 </View>
@@ -818,15 +740,15 @@ export default function Settings() {
                       <Feather name="code" size={24} color={iconColor} />
                     </View>
                     <View>
-                      <Text className="text-xl font-medium">
+                      <Text className="text-xl font-medium text-white">
                         Check OneSignal ID
                       </Text>
-                      <Text className="text-neutral-600">
+                      <Text className="text-neutral-200">
                         Verify user ID mapping
                       </Text>
                     </View>
                   </View>
-                  <Feather name="chevron-right" size={20} color="#888" />
+                  <Feather name="chevron-right" size={20} color="#5C7380" />
                 </Pressable>
 
                 <Pressable
@@ -871,26 +793,26 @@ export default function Settings() {
                       <Feather name="bell" size={24} color={iconColor} />
                     </View>
                     <View>
-                      <Text className="text-xl font-medium">
+                      <Text className="text-xl font-medium text-white">
                         Check Notification Status
                       </Text>
-                      <Text className="text-neutral-600">
+                      <Text className="text-neutral-200">
                         Debug push subscription
                       </Text>
                     </View>
                   </View>
-                  <Feather name="chevron-right" size={20} color="#888" />
+                  <Feather name="chevron-right" size={20} color="#5C7380" />
                 </Pressable>
               </>
             )}
 
             {/* Version Info */}
             <View className="mb-6 mt-8">
-              <Text className="text-center text-neutral-500">
+              <Text className="text-center text-neutral-300">
                 Version {APP_VERSION}
               </Text>
               {updateId && (
-                <Text className="mt-1 text-center text-xs text-neutral-400">
+                <Text className="mt-1 text-center text-xs text-neutral-300">
                   Update: {updateId.slice(0, 7)}
                 </Text>
               )}
@@ -913,9 +835,9 @@ export default function Settings() {
               className="flex-row items-center justify-between border-b border-neutral-100 p-4"
               onPress={() => handleTimezoneChange(timezone.value)}
             >
-              <Text className="text-base">{timezone.label}</Text>
+              <Text className="text-base text-white">{timezone.label}</Text>
               {selectedTimezone === timezone.value && (
-                <Feather name="check" size={20} color="#5E8977" />
+                <Feather name="check" size={20} color="#36B6D3" />
               )}
             </Pressable>
           ))}

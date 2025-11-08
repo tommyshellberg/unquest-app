@@ -1,6 +1,29 @@
 # Maestro E2E Test Suite
 
-This directory contains comprehensive end-to-end tests for the unQuest app using Maestro.
+This directory contains comprehensive end-to-end tests for the UnQuest app using Maestro.
+
+> ⚠️ **This README is deprecated.** Please see [TESTING_GUIDE.md](./TESTING_GUIDE.md) for the latest comprehensive testing documentation.
+
+## Quick Start
+
+```bash
+# Run full test suite
+pnpm e2e
+
+# Run specific test phases
+pnpm e2e:onboarding     # Guest onboarding only
+pnpm e2e:fresh          # Fresh authenticated user tests
+pnpm e2e:coverage       # Screen coverage tests
+pnpm e2e:regression     # Quick smoke tests
+```
+
+For detailed documentation, see [TESTING_GUIDE.md](./TESTING_GUIDE.md).
+
+---
+
+## Legacy Documentation
+
+This directory contains comprehensive end-to-end tests for the emberglow app using Maestro.
 
 ## Test Organization
 

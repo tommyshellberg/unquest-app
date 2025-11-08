@@ -4,12 +4,12 @@ import { getItem, removeItem, setItem } from '@/lib/storage';
 import {
   ACCESS_TOKEN_EXPIRY_KEY,
   ACCESS_TOKEN_KEY,
-  AuthTokens,
-  REFRESH_TOKEN_EXPIRY_KEY,
-  REFRESH_TOKEN_KEY,
+  type AuthTokens,
   getAccessToken,
   getRefreshToken,
   isTokenExpired,
+  REFRESH_TOKEN_EXPIRY_KEY,
+  REFRESH_TOKEN_KEY,
   removeTokens,
   storeTokens,
 } from './token';

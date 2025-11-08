@@ -10,10 +10,12 @@ import {
   ScreenContainer,
   ScrollView,
   Text,
+  Title,
   TouchableOpacity,
   View,
 } from '@/components/ui';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import colors from '@/components/ui/colors';
 import { useQuestStore } from '@/store/quest-store';
 
@@ -132,27 +134,27 @@ export default function ReflectionScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
       >
-        <ScreenContainer className="flex-1">
+        <ScreenContainer fullScreen className="flex-1">
           <ScrollView
             className="flex-1"
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
             <View className="px-4 py-6">
-              <Text className="mb-2 text-center text-2xl font-bold">
+              <Title variant="centered" className="mb-2">
                 Reflection Time
-              </Text>
-              <Text className="mb-6 text-center text-base text-neutral-600">
+              </Title>
+              <Text className="mb-6 text-base text-neutral-200">
                 How do you feel after this quest? Take a moment to reflect on
                 your time spent away from your phone.
               </Text>
 
               {/* Mood Slider */}
               <View className="mb-6">
-                <Text className="mb-3 text-lg font-semibold">
+                <Text className="mb-3 text-lg font-semibold text-white">
                   How are you feeling?
                 </Text>
-                <View className="items-center rounded-lg bg-white p-4">
+                <Card className="items-center p-4">
                   <currentMoodIcon.Icon
                     size={48}
                     color={currentMoodIcon.color}
@@ -177,17 +179,17 @@ export default function ReflectionScreen() {
                         color={
                           mood.value === Math.round(moodValue)
                             ? mood.color
-                            : colors.neutral[400]
+                            : colors.neutral[200]
                         }
                       />
                     ))}
                   </View>
-                </View>
+                </Card>
               </View>
 
               {/* Activities */}
               <View className="mb-6">
-                <Text className="mb-3 text-lg font-semibold">
+                <Text className="mb-3 text-lg font-semibold text-white">
                   What did you do? (optional)
                 </Text>
                 <View className="flex-row flex-wrap">
@@ -198,14 +200,14 @@ export default function ReflectionScreen() {
                       className={`mb-2 mr-2 rounded-full px-4 py-2 ${
                         selectedActivities.includes(activity.id)
                           ? 'bg-primary-300'
-                          : 'bg-neutral-100'
+                          : 'bg-neutral-400'
                       }`}
                     >
                       <Text
                         className={`text-sm ${
                           selectedActivities.includes(activity.id)
                             ? 'font-semibold text-white'
-                            : 'text-neutral-700'
+                            : 'text-neutral-200'
                         }`}
                       >
                         {activity.label}
@@ -217,29 +219,29 @@ export default function ReflectionScreen() {
 
               {/* Text Input */}
               <View className="mb-6">
-                <Text className="mb-3 text-lg font-semibold">
+                <Text className="mb-3 text-lg font-semibold text-white">
                   Your thoughts (optional)
                 </Text>
-                <View className="rounded-lg border border-neutral-200 bg-white p-3">
+                <Card className="p-3">
                   <TextInput
                     multiline
                     numberOfLines={4}
                     maxLength={maxCharacters}
                     placeholder="Share your experience..."
-                    placeholderTextColor={colors.neutral[400]}
+                    placeholderTextColor={colors.neutral[300]}
                     value={reflectionText}
                     onChangeText={setReflectionText}
                     style={{
                       minHeight: 80,
                       textAlignVertical: 'top',
                       fontSize: 16,
-                      color: colors.neutral[500],
+                      color: colors.white,
                     }}
                   />
-                  <Text className="mt-2 text-right text-sm text-neutral-500">
+                  <Text className="mt-2 text-right text-sm text-neutral-200">
                     {characterCount}/{maxCharacters}
                   </Text>
-                </View>
+                </Card>
               </View>
             </View>
           </ScrollView>
@@ -258,10 +260,10 @@ export default function ReflectionScreen() {
                 !reflectionText.trim() &&
                 selectedActivities.length === 0)
             }
-            className="mb-2"
+            className="mb-2 bg-primary-400"
           />
           <TouchableOpacity onPress={handleSkip} className="py-2">
-            <Text className="text-center text-base text-neutral-600">
+            <Text className="text-center text-base text-neutral-200">
               Skip for now
             </Text>
           </TouchableOpacity>

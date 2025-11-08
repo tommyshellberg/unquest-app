@@ -1,5 +1,6 @@
+import { RotateCcw } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
-import { ImageBackground, View } from 'react-native';
+import { ImageBackground, Pressable, View } from 'react-native';
 
 import { ProgressBar, Text } from '@/components/ui';
 import { Card } from '@/components/ui/card';
@@ -17,12 +18,13 @@ interface QuestCardProps {
   showProgress?: boolean;
   requiresPremium?: boolean;
   isCompleted?: boolean;
+  onRestart?: () => void;
 }
 
 const imageMap = {
-  story: require('@/../assets/images/characters/knight-full.jpg'),
-  custom: require('@/../assets/images/characters/druid-full.jpg'),
-  cooperative: require('@/../assets/images/characters/wizard-full.jpg'),
+  story: require('@/../assets/images/background/card-background-alt.jpg'),
+  custom: require('@/../assets/images/background/custom-quest-background-alt.jpg'),
+  cooperative: require('@/../assets/images/background/coop-quest-background-alt.jpg'),
 };
 
 export default function QuestCard({
@@ -36,6 +38,7 @@ export default function QuestCard({
   showProgress = false,
   requiresPremium = false,
   isCompleted = false,
+  onRestart,
 }: QuestCardProps) {
   // Create a reference to control the progress bar
   const progressBarRef = useRef<ProgressBarRef>(null);
@@ -48,7 +51,7 @@ export default function QuestCard({
   }, [progress]);
 
   return (
-    <Card className="elevation-0 w-full aspect-[3/4]">
+    <Card className="elevation-0 aspect-[3/4] w-full">
       <ImageBackground
         source={imageMap[mode]}
         className="size-full"
@@ -57,21 +60,33 @@ export default function QuestCard({
         <View
           className={`absolute inset-0 opacity-90 ${
             mode === 'custom'
-              ? 'bg-[rgba(47,129,142,0.9)]'
+              ? 'bg-[rgba(47,129,142,0.2)]'
               : mode === 'cooperative'
-                ? 'bg-[rgba(46,148,141,0.9)]'
-                : 'bg-[rgba(151,158,121,0.9)]'
+                ? 'bg-[rgba(46,148,141,0.2)]'
+                : 'bg-[rgba(151,158,121,0.2)]'
           }`}
         />
+
+        {/* Restart Button - Only show for story mode with progress */}
+        {mode === 'story' && onRestart && progress > 0 && (
+          <Pressable
+            onPress={onRestart}
+            className="absolute right-3 top-3 size-10 items-center justify-center rounded-full bg-white/20"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <RotateCcw size={20} color="#ffffff" />
+          </Pressable>
+        )}
+
         <View className="flex-1 p-4">
           <View>
             {/* Mode Pill */}
-            <Chip className="mb-4 bg-white/20" textClassName="text-amber-100">
+            <Chip className="mb-4 bg-white/20" textClassName="text-white">
               {subtitle}
             </Chip>
 
             {/* Quest Title */}
-            <Text className="max-w-[90%] text-xl font-bold text-amber-100">
+            <Text className="max-w-[90%] text-xl font-bold text-white">
               {isCompleted ? 'Quest Complete!' : title}
             </Text>
 
@@ -79,8 +94,8 @@ export default function QuestCard({
             {requiresPremium && (
               <View className="mt-2">
                 <Chip
-                  className="bg-amber-400/30"
-                  textClassName="text-amber-100 font-semibold"
+                  className="bg-white/20"
+                  textClassName="text-white font-semibold"
                 >
                   ⭐ Premium
                 </Chip>
@@ -89,18 +104,20 @@ export default function QuestCard({
 
             {/* Quest Info */}
             <View className="mb-4 mt-2">
-              <Text className="text-base font-bold text-amber-100 opacity-90">
+              <Text className="text-base font-bold text-white opacity-90">
                 {duration} mins • {xp} XP
               </Text>
             </View>
 
             {isCompleted ? (
-              <Text className="text-base text-amber-100 opacity-90">
-                Congratulations! You've completed the entire Vaedros storyline. Your quest history is preserved - start a new adventure to experience different story branches!
+              <Text className="text-base text-white opacity-90">
+                Congratulations! You've completed the entire Vaedros storyline.
+                Your quest history is preserved - start a new adventure to
+                experience different story branches!
               </Text>
             ) : (
               description !== '' && (
-                <Text className="text-base text-amber-100 opacity-90">
+                <Text className="text-base text-white opacity-90">
                   {description}
                 </Text>
               )
@@ -113,13 +130,13 @@ export default function QuestCard({
           <View className="absolute inset-x-4 bottom-4">
             <View className="mb-2 flex-row items-center">
               <Text
-                className="mr-auto text-sm font-semibold text-amber-100"
+                className="mr-auto text-sm font-semibold text-white"
                 style={{ fontWeight: '600' }}
               >
                 Story Progress
               </Text>
               <Text
-                className="text-sm font-semibold text-amber-100"
+                className="text-sm font-semibold text-white"
                 style={{ fontWeight: '600' }}
               >
                 {Math.min(100, Math.round(progress * 100))}%

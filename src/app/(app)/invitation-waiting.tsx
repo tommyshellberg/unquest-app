@@ -2,13 +2,13 @@ import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
 
+import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
 import { Button, FocusAwareStatusBar, Text, View } from '@/components/ui';
-import { useQuestStore } from '@/store/quest-store';
 import {
   useInvitationStatus,
   useQuestRunStatus,
 } from '@/lib/hooks/use-cooperative-quest';
-import { useLazyWebSocket } from '@/components/providers/lazy-websocket-provider';
+import { useQuestStore } from '@/store/quest-store';
 
 export default function InvitationWaitingScreen() {
   const router = useRouter();
@@ -19,8 +19,12 @@ export default function InvitationWaitingScreen() {
   const setCooperativeQuestRun = useQuestStore(
     (state) => state.setCooperativeQuestRun
   );
-  const { on: addListener, off: removeListener, connect: connectWebSocket } = useLazyWebSocket();
-  
+  const {
+    on: addListener,
+    off: removeListener,
+    connect: connectWebSocket,
+  } = useLazyWebSocket();
+
   // Connect WebSocket when entering this screen
   useEffect(() => {
     // Only connect if we have a proper auth context
@@ -109,8 +113,8 @@ export default function InvitationWaitingScreen() {
           console.log(
             '[InvitationWaiting] Navigating to cooperative pending quest...'
           );
-          // Use replace so they can't go back to the waiting screen
-          router.replace('/cooperative-pending-quest');
+          // Use push so cancel button can navigate back
+          router.push('/cooperative-pending-quest');
         } else {
           // All declined or expired, go back home
           router.replace('/(app)');

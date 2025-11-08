@@ -1,6 +1,6 @@
 # Cooperative Quest Flow
 
-This document describes the complete flow of cooperative quests in UnQuest, from invitation creation to quest completion. The flow is designed to be easily converted into a flowchart diagram.
+This document describes the complete flow of cooperative quests in emberglow, from invitation creation to quest completion. The flow is designed to be easily converted into a flowchart diagram.
 
 ## Overview
 

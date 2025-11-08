@@ -16,7 +16,7 @@ When you tap to purchase:
 2. **Purchase Completed**:
    - Log: `[PremiumPaywall] Purchase completed`
    - Log: `[PremiumPaywall] Premium access after purchase: true`
-   - Success toast: "Welcome to the unQuest Circle!"
+   - Success toast: "Welcome to the emberglow Circle!"
    - Paywall closes automatically
    - Premium features immediately accessible
 

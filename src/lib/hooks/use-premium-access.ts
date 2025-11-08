@@ -47,13 +47,15 @@ export function usePremiumAccess() {
   const handlePaywallSuccess = useCallback(async () => {
     console.log('[usePremiumAccess] Paywall success - updating premium status');
     setShowPaywall(false);
-    
+
     // Immediately check and update premium status
     const hasAccess = await checkPremiumAccess();
-    
+
     // If we now have premium access, update the state immediately
     if (hasAccess) {
-      console.log('[usePremiumAccess] Premium access confirmed - updating state');
+      console.log(
+        '[usePremiumAccess] Premium access confirmed - updating state'
+      );
       setHasPremiumAccess(true);
     }
   }, [checkPremiumAccess]);

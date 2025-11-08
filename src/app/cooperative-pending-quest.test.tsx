@@ -1,6 +1,6 @@
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import React from 'react';
-import { render, waitFor, act, fireEvent } from '@testing-library/react-native';
 
 import { useWebSocket } from '@/components/providers/websocket-provider';
 import { useQuestStore } from '@/store/quest-store';

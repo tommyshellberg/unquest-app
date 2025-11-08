@@ -1,12 +1,13 @@
-import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import React from 'react';
+
+import { useLeaderboardStats } from '@/api/stats';
+import { useFriendManagement } from '@/lib/hooks/use-friend-management';
+import { useProfileData } from '@/lib/hooks/use-profile-data';
+import { getItem } from '@/lib/storage';
 
 import LeaderboardScreen from './leaderboard';
-import { useProfileData } from '@/lib/hooks/use-profile-data';
-import { useFriendManagement } from '@/lib/hooks/use-friend-management';
-import { useLeaderboardStats } from '@/api/stats';
-import { getItem } from '@/lib/storage';
 
 // Mock dependencies
 jest.mock('expo-router');
@@ -15,6 +16,103 @@ jest.mock('@/lib/hooks/use-friend-management');
 jest.mock('@/store/character-store');
 jest.mock('@/api/stats');
 jest.mock('@/lib/storage');
+
+// Mock useLeaderboardData hook
+const mockUseLeaderboardData = jest.fn();
+jest.mock('./leaderboard/hooks/use-leaderboard-data', () => ({
+  useLeaderboardData: (...args: any[]) => mockUseLeaderboardData(...args),
+}));
+
+// Mock sub-components with actual rendered content for tests to find
+jest.mock('./leaderboard/components/empty-states', () => ({
+  EmptyStates: 'EmptyStates',
+}));
+jest.mock('./leaderboard/components/leaderboard-header', () => ({
+  LeaderboardHeader: ({ topUser, type }: any) => {
+    const React = jest.requireActual('react');
+    const { View, Text } = jest.requireActual('react-native');
+    const metricLabels: Record<string, string> = {
+      quests: 'Quests Completed',
+      minutes: 'Minutes Off Phone',
+      streak: 'Day Streak',
+    };
+    return React.createElement(View, {}, [
+      React.createElement(Text, { key: 'username' }, topUser.username),
+      React.createElement(Text, { key: 'metric' }, String(topUser.metric)),
+      React.createElement(Text, { key: 'label' }, metricLabels[type]),
+    ]);
+  },
+}));
+jest.mock('./leaderboard/components/leaderboard-item', () => ({
+  LeaderboardItem: ({ entry, type }: any) => {
+    const React = jest.requireActual('react');
+    const { View, Text } = jest.requireActual('react-native');
+
+    // Format metric with units based on type
+    const getMetricLabel = (type: string, value: number) => {
+      switch (type) {
+        case 'quests':
+          return `${value} quests`;
+        case 'minutes':
+          return `${value} mins`;
+        case 'streak':
+          return `${value} days`;
+        default:
+          return String(value);
+      }
+    };
+
+    const metricLabel = getMetricLabel(type, entry.metric);
+
+    return React.createElement(View, {}, [
+      React.createElement(Text, { key: 'username' }, entry.username),
+      React.createElement(Text, { key: 'metric' }, metricLabel),
+      entry.isFriend && !entry.isCurrentUser &&
+        React.createElement(Text, { key: 'friend-label' }, 'Friend'),
+    ]);
+  },
+}));
+jest.mock('./leaderboard/components/leaderboard-tabs', () => ({
+  LeaderboardTabs: ({ selectedType, onTypeChange }: any) => {
+    const React = jest.requireActual('react');
+    const { View, TouchableOpacity, Text } = jest.requireActual('react-native');
+    return React.createElement(View, {}, [
+      React.createElement(
+        TouchableOpacity,
+        { key: 'quests', onPress: () => onTypeChange('quests') },
+        React.createElement(Text, {}, 'Quests')
+      ),
+      React.createElement(
+        TouchableOpacity,
+        { key: 'minutes', onPress: () => onTypeChange('minutes') },
+        React.createElement(Text, {}, 'Minutes')
+      ),
+      React.createElement(
+        TouchableOpacity,
+        { key: 'streak', onPress: () => onTypeChange('streak') },
+        React.createElement(Text, {}, 'Streaks')
+      ),
+    ]);
+  },
+}));
+jest.mock('./leaderboard/components/scope-toggle', () => ({
+  ScopeToggle: ({ scope, onScopeChange }: any) => {
+    const React = jest.requireActual('react');
+    const { View, TouchableOpacity, Text } = jest.requireActual('react-native');
+    return React.createElement(View, {}, [
+      React.createElement(
+        TouchableOpacity,
+        { key: 'friends', onPress: () => onScopeChange('friends') },
+        React.createElement(Text, {}, 'Friends')
+      ),
+      React.createElement(
+        TouchableOpacity,
+        { key: 'global', onPress: () => onScopeChange('global') },
+        React.createElement(Text, {}, 'Global')
+      ),
+    ]);
+  },
+}));
 
 // Mock lucide-react-native icons
 jest.mock('lucide-react-native', () => ({
@@ -55,7 +153,6 @@ jest.mock('@/components/ui', () => {
     ActivityIndicator: RN.ActivityIndicator,
     FlatList: RN.FlatList,
     ScrollView: RN.ScrollView,
-    SafeAreaView: RN.SafeAreaView,
     Pressable: RN.TouchableOpacity, // Add Pressable mock
     Card: ({ children, className, style }: any) =>
       React.createElement(RN.View, { style, className }, children),
@@ -287,13 +384,89 @@ describe('LeaderboardScreen', () => {
       inviteMutation: {
         isPending: false,
       },
+      sendBulkInvites: jest.fn(),
     });
     (useLeaderboardStats as jest.Mock).mockReturnValue({
       data: mockLeaderboardData,
       isLoading: false,
       error: null,
+      refetch: jest.fn(),
     });
     (getItem as jest.Mock).mockReturnValue('current-user');
+
+    // Mock useLeaderboardData hook to return transformed data based on scope
+    mockUseLeaderboardData.mockImplementation(({ scope }: any) => {
+      const globalData = [
+        {
+          rank: 1,
+          userId: '1',
+          username: 'DragonSlayer77',
+          characterType: 'knight',
+          metric: 150,
+          isCurrentUser: false,
+          isFriend: false,
+        },
+        {
+          rank: 2,
+          userId: '2',
+          username: 'MysticWanderer',
+          characterType: 'wizard',
+          metric: 135,
+          isCurrentUser: false,
+          isFriend: false,
+        },
+        {
+          rank: 3,
+          userId: '3',
+          username: 'QuestMaster42',
+          characterType: 'scout',
+          metric: 120,
+          isCurrentUser: false,
+          isFriend: true,
+        },
+        {
+          userId: 'current-user',
+          username: 'test',
+          characterType: 'bard',
+          metric: 105,
+          isCurrentUser: true,
+          isFriend: false,
+          isSeparated: true,
+        },
+      ];
+
+      const friendsData = [
+        {
+          rank: 1,
+          userId: '3',
+          username: 'QuestMaster42',
+          characterType: 'scout',
+          metric: 120,
+          isCurrentUser: false,
+          isFriend: true,
+        },
+        {
+          rank: 2,
+          userId: 'current-user',
+          username: 'test',
+          characterType: 'bard',
+          metric: 105,
+          isCurrentUser: true,
+          isFriend: false,
+        },
+      ];
+
+      const leaderboardData = scope === 'friends' ? friendsData : globalData;
+      const topUser = leaderboardData[0];
+      const restOfUsers = leaderboardData.slice(1);
+
+      return {
+        leaderboardData,
+        topUser,
+        restOfUsers,
+        currentUserPosition: leaderboardData.findIndex((u: any) => u.isCurrentUser) + 1,
+      };
+    });
   });
 
   it('renders leaderboard with global data by default', () => {

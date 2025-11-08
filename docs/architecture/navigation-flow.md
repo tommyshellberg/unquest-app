@@ -2,7 +2,7 @@
 
 ## Navigation Structure
 
-UnQuest uses Expo Router for file-based navigation with a complex state resolver to handle routing logic.
+emberglow uses Expo Router for file-based navigation with a complex state resolver to handle routing logic.
 
 ## Navigation Hierarchy
 

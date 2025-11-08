@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { queryClient } from '@/api/common';
-import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import type { QuestTemplate } from '@/api/quest/types';
+import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import {
   cancelStreakWarningNotification,
   scheduleStreakWarningNotification,
@@ -13,6 +13,7 @@ import { getItem, removeItem, setItem } from '@/lib/storage';
 import { usePOIStore } from '@/store/poi-store';
 
 import { useCharacterStore } from './character-store';
+import { useOnboardingStore } from './onboarding-store';
 import {
   type CooperativeQuestRun,
   type CustomQuestTemplate,
@@ -108,7 +109,8 @@ export const useQuestStore = create<QuestState>()(
       prepareQuest: (quest: CustomQuestTemplate | StoryQuestTemplate) => {
         const currentCooperativeQuestRun = get().cooperativeQuestRun;
         // Only clear cooperative quest data when preparing a non-cooperative quest
-        const shouldClearCooperativeData = quest.mode !== 'custom' || quest.category !== 'cooperative';
+        const shouldClearCooperativeData =
+          quest.mode !== 'custom' || quest.category !== 'cooperative';
 
         set({
           pendingQuest: quest,
@@ -286,8 +288,11 @@ export const useQuestStore = create<QuestState>()(
             currentLiveActivityId: null,
             // Clear cooperative quest run if this was a cooperative quest
             cooperativeQuestRun:
-              (pendingQuest?.mode === 'custom' && pendingQuest?.category === 'cooperative') ||
-              (activeQuest?.mode === 'custom' && 'category' in activeQuest && activeQuest?.category === 'cooperative')
+              (pendingQuest?.mode === 'custom' &&
+                pendingQuest?.category === 'cooperative') ||
+              (activeQuest?.mode === 'custom' &&
+                'category' in activeQuest &&
+                activeQuest?.category === 'cooperative')
                 ? null
                 : cooperativeQuestRun,
           });
@@ -339,13 +344,21 @@ export const useQuestStore = create<QuestState>()(
       },
 
       refreshAvailableQuests: () => {
-        const { activeQuest, completedQuests } = get();
+        const { activeQuest, completedQuests, serverAvailableQuests } = get();
 
         if (activeQuest) {
           // If there is an active quest, don't refresh available quests
           return;
         }
 
+        // If server has provided quests, don't override them with local logic
+        // This allows server to provide previously completed quests for checkpoint scenarios
+        if (serverAvailableQuests && serverAvailableQuests.length > 0) {
+          console.log('🎯 Server quests available, skipping local quest logic');
+          return;
+        }
+
+        // Local quest logic - only used as fallback for unauthenticated users
         // If no quests completed, start with quest-1 (this is the only valid case for showing quest-1)
         if (completedQuests.length === 0) {
           const firstQuest = AVAILABLE_QUESTS.find((q) => q.id === 'quest-1');
@@ -560,6 +573,20 @@ export const useQuestStore = create<QuestState>()(
         hasMore: boolean,
         complete: boolean
       ) => {
+        // Check if we're in onboarding and shouldn't progress past quest-1
+        const onboardingStore = useOnboardingStore.getState();
+        const hasSeenSignupPrompt = onboardingStore.hasSeenSignupPrompt();
+        const isOnboardingComplete = onboardingStore.isOnboardingComplete();
+
+        // If user hasn't signed up yet and has completed quest-1,
+        // don't allow progression to next quests
+        if (!isOnboardingComplete && hasSeenSignupPrompt) {
+          console.log(
+            '🎯 Blocking quest progression - user must complete signup first'
+          );
+          return; // Don't update available quests
+        }
+
         // Convert server quest templates to client format
         const clientQuests = quests.map((quest) => ({
           ...quest,
@@ -570,6 +597,18 @@ export const useQuestStore = create<QuestState>()(
           mode: quest.mode as 'story' | 'custom',
         }));
 
+        console.log(
+          '🎯 Setting server available quests - server has full authority:',
+          {
+            questCount: quests.length,
+            questIds: clientQuests.map((q) => q.id),
+            hasMore,
+            complete,
+          }
+        );
+
+        // Server quests completely override local quest logic
+        // This includes previously completed quests for checkpoint scenarios
         set({
           serverAvailableQuests: quests,
           availableQuests: clientQuests as (

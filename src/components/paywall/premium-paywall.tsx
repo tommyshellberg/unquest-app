@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import RevenueCatUI from 'react-native-purchases-ui';
 import type { CustomerInfo } from 'react-native-purchases';
+import RevenueCatUI from 'react-native-purchases-ui';
 
 import { revenueCatService } from '@/lib/services/revenuecat-service';
 import { refreshPremiumStatus } from '@/lib/services/user';
@@ -18,53 +18,59 @@ export function PremiumPaywall({
   isVisible,
   onClose,
   onSuccess,
-  featureName = 'this feature',
+  featureName: _featureName = 'this feature',
 }: PremiumPaywallProps) {
   console.log('[PremiumPaywall] Component rendered with isVisible:', isVisible);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [hasPresented, setHasPresented] = useState(false);
 
   // Handle purchase started
-  const handlePurchaseStarted = useCallback(() => {
+  const _handlePurchaseStarted = useCallback(() => {
     console.log('[PremiumPaywall] Purchase started');
     setIsPurchasing(true);
   }, []);
 
   // Handle successful purchase
-  const handlePurchaseCompleted = useCallback(async (customerInfo: { customerInfo: CustomerInfo }) => {
-    console.log('[PremiumPaywall] Purchase completed', customerInfo);
-    setIsPurchasing(false);
-    
-    // Immediately refresh premium access from RevenueCat SDK
-    try {
-      const hasAccess = await revenueCatService.hasPremiumAccess();
-      console.log('[PremiumPaywall] Premium access after purchase:', hasAccess);
-      
-      if (hasAccess) {
-        showMessage({
-          message: 'Welcome to the unQuest Circle!',
-          description: 'You now have access to all premium features.',
-          type: 'success',
-          duration: 3000,
-        });
-        
-        // Call success callback to trigger any parent updates
-        if (onSuccess) {
-          onSuccess();
+  const _handlePurchaseCompleted = useCallback(
+    async (customerInfo: { customerInfo: CustomerInfo }) => {
+      console.log('[PremiumPaywall] Purchase completed', customerInfo);
+      setIsPurchasing(false);
+
+      // Immediately refresh premium access from RevenueCat SDK
+      try {
+        const hasAccess = await revenueCatService.hasPremiumAccess();
+        console.log(
+          '[PremiumPaywall] Premium access after purchase:',
+          hasAccess
+        );
+
+        if (hasAccess) {
+          showMessage({
+            message: 'Welcome to the emberglow Circle!',
+            description: 'You now have access to all premium features.',
+            type: 'success',
+            duration: 3000,
+          });
+
+          // Call success callback to trigger any parent updates
+          if (onSuccess) {
+            onSuccess();
+          }
         }
+      } catch (error) {
+        console.error('[PremiumPaywall] Error checking premium access:', error);
       }
-    } catch (error) {
-      console.error('[PremiumPaywall] Error checking premium access:', error);
-    }
-    
-    onClose();
-  }, [onSuccess, onClose]);
+
+      onClose();
+    },
+    [onSuccess, onClose]
+  );
 
   // Handle purchase error
-  const handlePurchaseError = useCallback((error: { error: any }) => {
+  const _handlePurchaseError = useCallback((error: { error: any }) => {
     console.error('[PremiumPaywall] Purchase error:', error);
     setIsPurchasing(false);
-    
+
     Alert.alert(
       'Purchase Error',
       'Unable to complete purchase. Please try again.',
@@ -73,48 +79,51 @@ export function PremiumPaywall({
   }, []);
 
   // Handle purchase cancelled
-  const handlePurchaseCancelled = useCallback(() => {
+  const _handlePurchaseCancelled = useCallback(() => {
     console.log('[PremiumPaywall] Purchase cancelled');
     setIsPurchasing(false);
   }, []);
 
   // Handle restore completed
-  const handleRestoreCompleted = useCallback(async (customerInfo: { customerInfo: CustomerInfo }) => {
-    console.log('[PremiumPaywall] Restore completed', customerInfo);
-    
-    // Check if user now has premium access
-    try {
-      const hasAccess = await revenueCatService.hasPremiumAccess();
-      if (hasAccess) {
-        showMessage({
-          message: 'Premium Access Restored!',
-          description: 'Your premium features have been restored.',
-          type: 'success',
-          duration: 3000,
-        });
-        
-        if (onSuccess) {
-          onSuccess();
+  const _handleRestoreCompleted = useCallback(
+    async (customerInfo: { customerInfo: CustomerInfo }) => {
+      console.log('[PremiumPaywall] Restore completed', customerInfo);
+
+      // Check if user now has premium access
+      try {
+        const hasAccess = await revenueCatService.hasPremiumAccess();
+        if (hasAccess) {
+          showMessage({
+            message: 'Premium Access Restored!',
+            description: 'Your premium features have been restored.',
+            type: 'success',
+            duration: 3000,
+          });
+
+          if (onSuccess) {
+            onSuccess();
+          }
+        } else {
+          showMessage({
+            message: 'No Purchases Found',
+            description: 'No previous purchases were found to restore.',
+            type: 'info',
+            duration: 3000,
+          });
         }
-      } else {
-        showMessage({
-          message: 'No Purchases Found',
-          description: 'No previous purchases were found to restore.',
-          type: 'info',
-          duration: 3000,
-        });
+      } catch (error) {
+        console.error('[PremiumPaywall] Error checking premium access:', error);
       }
-    } catch (error) {
-      console.error('[PremiumPaywall] Error checking premium access:', error);
-    }
-    
-    onClose();
-  }, [onSuccess, onClose]);
+
+      onClose();
+    },
+    [onSuccess, onClose]
+  );
 
   // Handle restore error
-  const handleRestoreError = useCallback((error: { error: any }) => {
+  const _handleRestoreError = useCallback((error: { error: any }) => {
     console.error('[PremiumPaywall] Restore error:', error);
-    
+
     Alert.alert(
       'Restore Error',
       'Unable to restore purchases. Please try again.',
@@ -123,7 +132,7 @@ export function PremiumPaywall({
   }, []);
 
   // Handle paywall dismiss
-  const handleDismiss = useCallback(() => {
+  const _handleDismiss = useCallback(() => {
     console.log('[PremiumPaywall] Paywall dismissed');
     if (!isPurchasing) {
       onClose();
@@ -140,15 +149,20 @@ export function PremiumPaywall({
 
   useEffect(() => {
     if (isVisible && !hasPresented) {
-      console.log('[PremiumPaywall] Attempting to present paywall with event listeners...');
+      console.log(
+        '[PremiumPaywall] Attempting to present paywall with event listeners...'
+      );
       setHasPresented(true);
 
       // Present the paywall immediately when visible
       const presentPaywall = async () => {
         try {
           const paywallResult = await RevenueCatUI.presentPaywall();
-          console.log('[PremiumPaywall] Paywall presentation result:', paywallResult);
-          
+          console.log(
+            '[PremiumPaywall] Paywall presentation result:',
+            paywallResult
+          );
+
           // Handle any immediate presentation errors
           if (paywallResult === RevenueCatUI.PAYWALL_RESULT.ERROR) {
             Alert.alert(
@@ -156,7 +170,9 @@ export function PremiumPaywall({
               'Unable to show subscription options. Please try again later.',
               [{ text: 'OK', onPress: onClose }]
             );
-          } else if (paywallResult === RevenueCatUI.PAYWALL_RESULT.NOT_PRESENTED) {
+          } else if (
+            paywallResult === RevenueCatUI.PAYWALL_RESULT.NOT_PRESENTED
+          ) {
             Alert.alert(
               'Configuration Error',
               'Unable to show paywall. Please ensure you have an active internet connection.',
@@ -165,43 +181,64 @@ export function PremiumPaywall({
           } else if (paywallResult === RevenueCatUI.PAYWALL_RESULT.CANCELLED) {
             console.log('[PremiumPaywall] User cancelled the paywall');
             onClose();
-          } else if (paywallResult === RevenueCatUI.PAYWALL_RESULT.PURCHASED || 
-                     paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED) {
-            console.log('[PremiumPaywall] Purchase/Restore successful:', paywallResult);
-            
+          } else if (
+            paywallResult === RevenueCatUI.PAYWALL_RESULT.PURCHASED ||
+            paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED
+          ) {
+            console.log(
+              '[PremiumPaywall] Purchase/Restore successful:',
+              paywallResult
+            );
+
             // Refresh customer info to ensure we have the latest data
             try {
               await revenueCatService.refreshCustomerInfo();
               const hasAccess = await revenueCatService.hasPremiumAccess();
-              console.log('[PremiumPaywall] Premium access after purchase:', hasAccess);
-              
+              console.log(
+                '[PremiumPaywall] Premium access after purchase:',
+                hasAccess
+              );
+
               if (hasAccess) {
                 showMessage({
-                  message: paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED 
-                    ? 'Premium Access Restored!' 
-                    : 'Welcome to the unQuest Circle!',
-                  description: paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED
-                    ? 'Your premium features have been restored.'
-                    : 'You now have access to all premium features.',
+                  message:
+                    paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED
+                      ? 'Premium Access Restored!'
+                      : 'Welcome to the emberglow Circle!',
+                  description:
+                    paywallResult === RevenueCatUI.PAYWALL_RESULT.RESTORED
+                      ? 'Your premium features have been restored.'
+                      : 'You now have access to all premium features.',
                   type: 'success',
                   duration: 3000,
                 });
-                
+
                 // Sync premium status with server
-                console.log('[PremiumPaywall] Syncing premium status with server...');
+                console.log(
+                  '[PremiumPaywall] Syncing premium status with server...'
+                );
                 try {
                   const serverResponse = await refreshPremiumStatus();
-                  console.log('[PremiumPaywall] Server sync response:', serverResponse);
+                  console.log(
+                    '[PremiumPaywall] Server sync response:',
+                    serverResponse
+                  );
                 } catch (serverError) {
                   // Don't fail the purchase flow if server sync fails
-                  console.error('[PremiumPaywall] Failed to sync with server:', serverError);
+                  console.error(
+                    '[PremiumPaywall] Failed to sync with server:',
+                    serverError
+                  );
                   // The server will eventually sync via webhooks or next API call
                 }
               }
             } catch (error) {
-              console.error('[PremiumPaywall] Error checking premium access after purchase:', error);
+              console.error(
+                '[PremiumPaywall] Error checking premium access after purchase:',
+                error
+              );
             }
-            
+
             // Call success callback
             if (onSuccess) {
               onSuccess();
@@ -226,14 +263,14 @@ export function PremiumPaywall({
                     onPress: async () => {
                       // Enable test mode
                       revenueCatService.enableTestMode();
-                      
+
                       showMessage({
                         message: 'Test Purchase Successful!',
                         description: 'Premium features unlocked (test mode).',
                         type: 'success',
                         duration: 3000,
                       });
-                      
+
                       if (onSuccess) {
                         onSuccess();
                       }

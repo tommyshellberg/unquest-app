@@ -1,5 +1,9 @@
 import React from 'react';
+
 import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
+
+// Import the component
+import CooperativeQuestMenu from './cooperative-quest-menu';
 
 // Mock the router
 const mockPush = jest.fn();
@@ -40,6 +44,17 @@ jest.mock('@/store/user-store', () => ({
   ),
 }));
 
+// Mock premium access hook
+jest.mock('@/lib/hooks/use-premium-access', () => ({
+  usePremiumAccess: jest.fn(() => ({
+    hasPremiumAccess: true,
+    isLoading: false,
+    showPaywall: false,
+    handlePaywallClose: jest.fn(),
+    handlePaywallSuccess: jest.fn(),
+  })),
+}));
+
 // Mock user services
 jest.mock('@/lib/services/user', () => ({
   getUserFriends: jest.fn(() =>
@@ -49,7 +64,7 @@ jest.mock('@/lib/services/user', () => ({
   ),
 }));
 
-// Mock lazy websocket provider
+// Mock lazy websocket provider (both the hook and the component)
 jest.mock('@/components/providers/lazy-websocket-provider', () => ({
   useLazyWebSocket: jest.fn(() => ({
     isConnected: false,
@@ -63,10 +78,8 @@ jest.mock('@/components/providers/lazy-websocket-provider', () => ({
     leaveQuestRoom: jest.fn(),
     forceReconnect: jest.fn(),
   })),
+  LazyWebSocketProvider: ({ children }: { children: any }) => children,
 }));
-
-// Import the component
-import CooperativeQuestMenu from './cooperative-quest-menu';
 
 describe('CooperativeQuestMenu', () => {
   beforeEach(() => {

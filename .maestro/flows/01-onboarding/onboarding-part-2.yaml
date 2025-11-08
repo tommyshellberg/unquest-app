@@ -1,0 +1,78 @@
+appId: com.vaedros.unquest.staging
+---
+# =============================================================================
+# ONBOARDING E2E TEST - PART 2: QUEST COMPLETION VERIFICATION
+# =============================================================================
+# This test verifies quest completion after the 10-second wait:
+#   1. Unlock phone
+#   2. Verify quest completion screen
+#   3. Check exact XP gained (50 XP)
+#   4. Verify level (Level 1)
+#   5. Complete account creation
+#   6. Verify email verification screen
+#
+# Prerequisites:
+#   - Part 1 must have completed successfully
+#   - Shell script must have waited 15 seconds
+#   - Quest should be completed
+# =============================================================================
+
+# =============================================================================
+# UNLOCK PHONE AND VERIFY QUEST COMPLETION
+# =============================================================================
+- pressKey: "Lock"
+
+# Swipe to unlock
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+    duration: 500
+
+# =============================================================================
+# QUEST COMPLETION SCREEN - EXACT VALUE ASSERTIONS
+# =============================================================================
+- extendedWaitUntil:
+    visible: 'Quest Complete'
+    timeout: 10000
+
+# Verify exact XP reward
+- assertVisible:
+    text: '50'
+    below: 'XP Gained'
+
+# Verify level (should still be Level 1 after first quest)
+- assertVisible: 'Level 1'
+
+- tapOn: 'Continue'
+
+# =============================================================================
+# SIGNUP SCREEN
+# =============================================================================
+- assertVisible: 'Create Account'
+- assertVisible: 'Save your progress'
+
+# Generate unique email with timestamp
+- tapOn: 'Email'
+- inputText: 'test-${TEST_EMAIL_TIMESTAMP}@unquest.test'
+- tapOn: 'Create Account'
+
+# =============================================================================
+# EMAIL VERIFICATION SCREEN
+# =============================================================================
+- assertVisible: 'Check your email'
+- assertVisible: 'test-${TEST_EMAIL_TIMESTAMP}@unquest.test'
+
+# =============================================================================
+# ONBOARDING COMPLETE
+# =============================================================================
+# Successfully completed full onboarding flow!
+#
+# User State:
+#   - Provisional user created
+#   - 1 quest completed ("Wake up")
+#   - Level 1
+#   - 50 XP gained
+#   - Day 1 streak started
+#   - Email: test-${TEST_EMAIL_TIMESTAMP}@unquest.test
+#
+# Next Step: Convert provisional user to full user via database script (part of phase 2)

@@ -9,11 +9,6 @@ export type MapId = 'map-1'; // Add more map IDs as needed
 export type MapImages = Record<MapId, number>; // number because require() returns a number
 export type MapName = string;
 
-// Map images with proper typing
-export const MAP_IMAGES: MapImages = {
-  'map-1': require('../../../assets/images/map/vaedros/vaedros-map.jpg'),
-};
-
 export const MAP_NAMES: Record<MapId, MapName> = {
   'map-1': 'Vaedros Kingdom',
 };

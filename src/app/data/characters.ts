@@ -20,12 +20,28 @@ const CHARACTERS: Character[] = [
     profileImage: require('@/../assets/images/characters/alchemist-profile.jpg'),
   },
   {
+    id: 'bard',
+    type: 'Bard',
+    title: 'Voice of Inspiration',
+    description: 'Creates harmony from silence and inspiration from solitude.',
+    image: require('@/../assets/images/characters/bard-full.jpg'),
+    profileImage: require('@/../assets/images/characters/bard-profile.jpg'),
+  },
+  {
     id: 'druid',
     type: 'Druid',
     title: 'Guardian of Nature',
     description: 'Grows stronger through harmony with the natural world.',
     image: require('@/../assets/images/characters/druid-full.jpg'),
     profileImage: require('@/../assets/images/characters/druid-profile.jpg'),
+  },
+  {
+    id: 'knight',
+    type: 'Knight',
+    title: 'Paragon of Discipline',
+    description: 'Builds strength and honor through dedication and restraint.',
+    image: require('@/../assets/images/characters/knight-full.jpg'),
+    profileImage: require('@/../assets/images/characters/knight-profile.jpg'),
   },
   {
     id: 'scout',
@@ -44,22 +60,6 @@ const CHARACTERS: Character[] = [
       'Channels the power of focus into devastating magical abilities.',
     image: require('@/../assets/images/characters/wizard-full.jpg'),
     profileImage: require('@/../assets/images/characters/wizard-profile.jpg'),
-  },
-  {
-    id: 'knight',
-    type: 'Knight',
-    title: 'Paragon of Discipline',
-    description: 'Builds strength and honor through dedication and restraint.',
-    image: require('@/../assets/images/characters/knight-full.jpg'),
-    profileImage: require('@/../assets/images/characters/knight-profile.jpg'),
-  },
-  {
-    id: 'bard',
-    type: 'Bard',
-    title: 'Voice of Inspiration',
-    description: 'Creates harmony from silence and inspiration from solitude.',
-    image: require('@/../assets/images/characters/bard-full.jpg'),
-    profileImage: require('@/../assets/images/characters/bard-profile.jpg'),
   },
 ];
 

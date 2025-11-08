@@ -1,9 +1,11 @@
+import type * as Contacts from 'expo-contacts';
 import React, { useMemo } from 'react';
-import { View, SectionList, SectionListData } from 'react-native';
-import * as Contacts from 'expo-contacts';
+import { SectionList, type SectionListData, View } from 'react-native';
+
 import { Button, Text } from '@/components/ui';
-import { ContactSearchBar } from './ContactSearchBar';
+
 import { ContactItem } from './ContactItem';
+import { ContactSearchBar } from './ContactSearchBar';
 
 interface ContactsListProps {
   contacts: (Contacts.Contact & { isFriend?: boolean })[];
@@ -86,8 +88,8 @@ export const ContactsList: React.FC<ContactsListProps> = ({
       ContactSection
     >;
   }) => (
-    <View className="bg-background px-4 py-2 border-b border-neutral-200">
-      <Text className="text-sm font-semibold text-neutral-500">
+    <View className="border-b border-neutral-300 bg-background px-4 py-2">
+      <Text className="text-sm font-semibold text-neutral-200">
         {section.title}
       </Text>
     </View>
@@ -123,7 +125,7 @@ export const ContactsList: React.FC<ContactsListProps> = ({
         className="bg-background"
       />
 
-      <View className="absolute bottom-0 left-0 right-0 bg-background p-4 border-t border-neutral-200">
+      <View className="absolute inset-x-0 bottom-0 border-t border-neutral-200 bg-background p-4">
         <Button
           label={
             selectedCount > 0
@@ -132,7 +134,7 @@ export const ContactsList: React.FC<ContactsListProps> = ({
           }
           onPress={onInvite}
           disabled={selectedCount === 0}
-          className="w-full mb-2"
+          className="mb-2 w-full"
         />
         <Button
           label="ADD MANUAL CONTACT"

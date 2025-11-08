@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Text, View } from './index';
+import { Title } from './title';
 
 interface ScreenHeaderProps {
   title: string;
@@ -58,12 +59,12 @@ export function ScreenHeader({
       <View className="mb-2 mt-4 flex-row items-center">
         {showBackButton && (
           <TouchableOpacity onPress={handleBackPress} className="mr-3 p-1">
-            <ArrowLeft size={24} color="#333" />
+            <ArrowLeft size={24} color="#F2E5DD" />
           </TouchableOpacity>
         )}
-        <Text className="flex-1 text-3xl font-bold">{title}</Text>
+        <Title text={title} />
       </View>
-      {subtitle && <Text className="text-sm text-neutral-600">{subtitle}</Text>}
+      {subtitle && <Text className="text-md text-neutral-200">{subtitle}</Text>}
     </HeaderWrapper>
   );
 }

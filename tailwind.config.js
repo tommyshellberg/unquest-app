@@ -9,7 +9,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        inter: ['Inter'],
+        erstoria: ['Erstoria-Regular', 'serif'],
       },
       colors,
     },

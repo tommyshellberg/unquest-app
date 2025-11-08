@@ -2,6 +2,13 @@ import * as Localization from 'expo-localization';
 import { AppState } from 'react-native';
 
 import * as notificationAPI from '@/api/notification-settings';
+import { useUserStore } from '@/store/user-store';
+
+import {
+  getDeviceTimezone,
+  initializeTimezoneSync,
+  syncTimezoneWithDevice,
+} from './timezone-service';
 // Mock TIMEZONES before importing the service
 jest.mock('@/lib/constants/timezones', () => ({
   TIMEZONES: [
@@ -10,13 +17,6 @@ jest.mock('@/lib/constants/timezones', () => ({
     { value: 'Europe/London', label: 'London' },
   ],
 }));
-import { useUserStore } from '@/store/user-store';
-
-import {
-  getDeviceTimezone,
-  initializeTimezoneSync,
-  syncTimezoneWithDevice,
-} from './timezone-service';
 
 // Mock dependencies
 jest.mock('expo-localization');

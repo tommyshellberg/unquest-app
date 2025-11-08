@@ -348,8 +348,13 @@ export async function createProvisionalUser(
     // Generate a provisional email using UUID
     const provisionalEmail = `${uuidv4()}@unquestapp.com`;
 
-    // Store the email in local storage
-    setItem('provisionalEmail', provisionalEmail);
+    // Store the email in local storage with error handling
+    try {
+      setItem('provisionalEmail', provisionalEmail);
+    } catch (storageError) {
+      console.error('[createProvisionalUser] Storage failed:', storageError);
+      throw new Error('STORAGE_UNAVAILABLE');
+    }
 
     const response = await apiClient.post('/users/provisional', {
       character,

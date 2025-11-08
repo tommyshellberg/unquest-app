@@ -1,52 +1,82 @@
 module.exports = {
-  white: '#FFF1DC',
-  cardBackground: '#F5F5F0',
-  black: '#1f0f0c',
-  background: '#e7e3d4',
+  // Core colors for emberglow dark theme
+  white: '#e8dcc7', // Warm cream for primary text
+  cardBackground: '#2c456b', // Lighter dark blue for better contrast
+  black: '#00121b', // Very dark midnight blue for main backgrounds
+  background: '#162034', // Very dark midnight blue
+  brown: '#f7a44b', // sandy brown
 
-  primary: {
-    100: '#E0F7F6',
-    200: '#B3E5E3',
-    300: '#77C5BF',
-    400: '#51B1A9',
-    500: '#2E948D',
+  cream: {
+    100: '#faf8f4',
+    300: '#f1eadd',
+    500: '#e8dcc7',
   },
 
-  secondary: {
-    100: '#C8E6E9',
-    200: '#A1D3D8',
-    300: '#6AB1B9',
-    400: '#388D97',
-    500: '#277581',
-  },
-
-  red: {
-    100: '#E9CBC8',
-    200: '#D8A6A1',
-    300: '#B9726A',
-    400: '#974238',
-    500: '#813327',
-  },
-
-  neutral: {
-    50: '#FFF1DC', // App background
-    100: '#F3EADF',
-    200: '#E4DACF',
-    300: '#A08C76',
-    400: '#B2A495',
-    500: '#817164', // for muted buttons, dividers, soft text
-  },
-
-  muted: {
-    100: '#D3DEDA',
-    200: '#B2C4BE',
-    300: '#A9BEB7',
-    400: '#7A8E89',
-    500: '#49645F',
+  lightBlue: {
+    100: '#d5dae1',
+    300: '#808fa6',
+    500: '#2c456b',
   },
 
   blue: {
-    100: '#94B9C7',
-    500: '#2D5679',
+    100: '#d0d2d6',
+    300: '#737985',
+    500: '#162034',
+  },
+
+  lightBrown: {
+    100: '#fdeddb',
+    300: '#fac893',
+    500: '#f7a44b',
+  },
+
+  richBlack: {
+    100: '#ccd0d1',
+    300: '#667176',
+    500: '#00121b',
+  },
+
+  // Sunset orange palette (primary actions, highlights)
+  primary: {
+    100: '#F3B3A5', // Very light peach
+    200: '#EC866F', // Light orange
+    300: '#E8674A', // Medium orange
+    400: '#E55838', // Main sunset orange
+    500: '#C7391A', // Deep orange
+  },
+
+  // Teal/aqua palette (secondary elements)
+  secondary: {
+    100: '#68C8DE', // Very light teal
+    200: '#36B6D3', // Light teal
+    300: '#36B6D3', // Medium teal
+    400: '#258EA6', // Deeper teal
+    500: '#165664', // Deep forest green
+  },
+
+  // Red palette (errors, warnings - adjusted for dark bg)
+  red: {
+    100: '#f7dbd4', // Light coral
+    300: '#e8927e', // Bright coral
+    500: '#d94928', // Deep red
+  },
+
+  // Neutral palette (UI elements, borders, muted text)
+  neutral: {
+    50: '#F2E5DD', // Cream (text on dark)
+    100: '#1F3A47', // Dark card backgrounds
+    200: '#8FA5B2', // Light gray for secondary text
+    300: '#5C7380', // Medium gray for borders
+    400: '#2A4754', // Dark blue-gray
+    500: '#1A3540', // Very dark blue-gray
+  },
+
+  // Muted palette (disabled states, subtle elements)
+  muted: {
+    100: '#B4D0CC', // Light muted teal
+    200: '#8FB0AB', // Medium muted teal
+    300: '#6B8E89', // Darker muted teal
+    400: '#4A6663', // Deep muted teal
+    500: '#2F4442', // Very deep muted teal
   },
 };

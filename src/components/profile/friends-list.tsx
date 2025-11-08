@@ -40,8 +40,14 @@ export function FriendsList({
         <Text className="text-xl font-bold">
           Friends ({combinedData?.length || 0})
         </Text>
-        <Button onPress={onInvite} variant="ghost" className="p-2">
-          <Text className="font-semibold text-primary-500">+ Invite</Text>
+        <Button
+          onPress={onInvite}
+          variant="ghost"
+          className="p-2"
+          accessibilityLabel="Invite friends"
+          accessibilityHint="Tap to invite friends to join Emberglow"
+        >
+          <Text className="font-semibold text-secondary-300">+ Invite</Text>
         </Button>
       </View>
 
@@ -77,7 +83,7 @@ export function FriendsList({
 
         {combinedData.length === 0 && !isLoading && (
           <Card className="items-center p-5">
-            <Text className="mb-3 text-center text-gray-600">
+            <Text className="mb-3 text-center text-base text-neutral-200">
               Don't see someone you want to connect with?
             </Text>
             <Button label="Invite friends" onPress={onInvite} />

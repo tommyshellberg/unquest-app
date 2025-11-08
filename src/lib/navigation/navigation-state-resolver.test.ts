@@ -1,7 +1,12 @@
 import { renderHook } from '@testing-library/react-hooks';
 
+import { useAuth } from '@/lib/auth';
 import { useNavigationTarget } from '@/lib/navigation/navigation-state-resolver';
+// Import mocked modules
+import { getItem } from '@/lib/storage';
+import { useCharacterStore } from '@/store/character-store';
 import { OnboardingStep } from '@/store/onboarding-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { useQuestStore } from '@/store/quest-store';
 
 // Mock modules
@@ -10,12 +15,6 @@ jest.mock('@/lib/auth');
 jest.mock('@/store/onboarding-store');
 jest.mock('@/store/character-store');
 jest.mock('@/store/quest-store');
-
-// Import mocked modules
-import { getItem } from '@/lib/storage';
-import { useAuth } from '@/lib/auth';
-import { useOnboardingStore } from '@/store/onboarding-store';
-import { useCharacterStore } from '@/store/character-store';
 
 // Setup mock implementations
 const mockGetItem = getItem as jest.MockedFunction<typeof getItem>;
@@ -218,7 +217,7 @@ describe('Navigation State Resolver', () => {
     mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
     mockCharacterState.character = {
       name: 'LegacyChar',
-      type: 'warrior',
+      type: 'alchemist',
       level: 5,
       currentXP: 200,
       xpToNextLevel: 300,
@@ -341,7 +340,7 @@ describe('Navigation State Resolver', () => {
     mockOnboardingState.currentStep = OnboardingStep.COMPLETED;
     mockCharacterState.character = {
       name: 'TestChar',
-      type: 'warrior',
+      type: 'alchemist',
       level: 2,
       currentXP: 150,
       xpToNextLevel: 250,
@@ -377,7 +376,7 @@ describe('Navigation State Resolver', () => {
     mockOnboardingState.currentStep = OnboardingStep.NOT_STARTED;
     mockCharacterState.character = {
       name: 'LegacyChar',
-      type: 'warrior',
+      type: 'alchemist',
       level: 5,
       currentXP: 200,
       xpToNextLevel: 300,

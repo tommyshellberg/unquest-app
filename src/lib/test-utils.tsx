@@ -8,6 +8,8 @@ import { render, userEvent } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import React from 'react';
 
+import { LazyWebSocketProvider } from '@/components/providers/lazy-websocket-provider';
+
 // Create a client for testing
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,9 +24,11 @@ const queryClient = new QueryClient({
 const createAppWrapper = () => {
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <BottomSheetModalProvider>
-        <NavigationContainer>{children}</NavigationContainer>
-      </BottomSheetModalProvider>
+      <LazyWebSocketProvider>
+        <BottomSheetModalProvider>
+          <NavigationContainer>{children}</NavigationContainer>
+        </BottomSheetModalProvider>
+      </LazyWebSocketProvider>
     </QueryClientProvider>
   );
 };

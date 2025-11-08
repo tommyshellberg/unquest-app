@@ -1,19 +1,25 @@
 import React from 'react';
-import { router } from 'expo-router';
 
-import { render, fireEvent, waitFor, screen } from '@/lib/test-utils';
+import { fireEvent, render } from '@/lib/test-utils';
 import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
-import { muted, red } from '@/components/ui/colors';
 
 import StreakCelebrationScreen from './streak-celebration';
+
+// Create a shared router mock
+const mockRouterBack = jest.fn();
+const mockRouterPush = jest.fn();
 
 // Mock dependencies
 jest.mock('expo-router', () => ({
   router: {
-    back: jest.fn(),
-    push: jest.fn(),
+    back: mockRouterBack,
+    push: mockRouterPush,
   },
+  useRouter: jest.fn(() => ({
+    back: mockRouterBack,
+    push: mockRouterPush,
+  })),
   useFocusEffect: jest.fn((callback) => {
     // Immediately call the callback to simulate screen focus
     callback();
@@ -43,6 +49,7 @@ const mockCharacterStore = {
 
 const mockQuestStore = {
   lastCompletedQuestTimestamp: Date.now(),
+  setShouldShowStreakCelebration: jest.fn(),
 };
 
 jest.mock('@/store/character-store', () => ({
@@ -87,6 +94,8 @@ describe('StreakCelebrationScreen', () => {
     jest.clearAllMocks();
     // Reset mock functions
     mockCharacterStore.markStreakCelebrationShown.mockClear();
+    mockRouterBack.mockClear();
+    mockRouterPush.mockClear();
 
     mockUseCharacterStore.mockImplementation((selector) =>
       selector(mockCharacterStore as any)
@@ -245,13 +254,30 @@ describe('StreakCelebrationScreen', () => {
   });
 
   describe('Button Interactions', () => {
-    it('should navigate to main app when Continue button is pressed', () => {
+    it('should navigate back when Continue button is pressed', () => {
       const { getByText } = render(<StreakCelebrationScreen />);
 
       const continueButton = getByText('CONTINUE');
       fireEvent.press(continueButton);
 
-      expect(router.push).toHaveBeenCalledWith('/(app)');
+      expect(mockRouterBack).toHaveBeenCalled();
+    });
+
+    it('should call setShouldShowStreakCelebration(false) when Continue is pressed', () => {
+      const mockSetShouldShowStreakCelebration = jest.fn();
+      mockQuestStore.setShouldShowStreakCelebration =
+        mockSetShouldShowStreakCelebration;
+
+      mockUseQuestStore.mockImplementation((selector) =>
+        selector(mockQuestStore as any)
+      );
+
+      const { getByText } = render(<StreakCelebrationScreen />);
+
+      const continueButton = getByText('CONTINUE');
+      fireEvent.press(continueButton);
+
+      expect(mockSetShouldShowStreakCelebration).toHaveBeenCalledWith(false);
     });
   });
 
@@ -261,6 +287,40 @@ describe('StreakCelebrationScreen', () => {
 
       // The useFocusEffect should trigger markStreakCelebrationShown
       expect(mockCharacterStore.markStreakCelebrationShown).toHaveBeenCalled();
+    });
+  });
+
+  describe('Confetti Animation', () => {
+    it('should render LottieView for confetti animation', () => {
+      const { UNSAFE_getByType } = render(<StreakCelebrationScreen />);
+
+      // LottieView should be rendered
+      const lottieView = UNSAFE_getByType('LottieView' as any);
+      expect(lottieView).toBeTruthy();
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have accessible Continue button', () => {
+      const { getByLabelText } = render(<StreakCelebrationScreen />);
+
+      const continueButton = getByLabelText('Continue to home screen');
+      expect(continueButton).toBeTruthy();
+      expect(continueButton.props.accessibilityRole).toBe('button');
+      expect(continueButton.props.accessibilityHint).toBe(
+        'Returns to the main app'
+      );
+    });
+
+    it('should have accessible Share button', () => {
+      const { getByLabelText } = render(<StreakCelebrationScreen />);
+
+      const shareButton = getByLabelText(/Share your \d+ day streak/);
+      expect(shareButton).toBeTruthy();
+      expect(shareButton.props.accessibilityRole).toBe('button');
+      expect(shareButton.props.accessibilityHint).toBe(
+        'Opens sharing options to share your streak progress'
+      );
     });
   });
 });

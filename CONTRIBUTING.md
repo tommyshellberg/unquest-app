@@ -1,10 +1,10 @@
-# Contributing to UnQuest
+# Contributing to emberglow
 
-First off, thank you for considering contributing to UnQuest! It's people like you that make UnQuest such a great tool for promoting digital wellness through gamified real-world adventures.
+First off, thank you for considering contributing to emberglow! It's people like you that make emberglow such a great tool for promoting digital wellness through gamified real-world adventures.
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by the [UnQuest Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
+This project and everyone participating in it is governed by the [emberglow Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
 
 ## How Can I Contribute?
 
@@ -26,10 +26,10 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 * **Use a clear and descriptive title** for the issue to identify the suggestion
 * **Provide a step-by-step description of the suggested enhancement** in as many details as possible
-* **Provide specific examples to demonstrate the steps** or point out the part of UnQuest where the suggestion is related to
+* **Provide specific examples to demonstrate the steps** or point out the part of emberglow where the suggestion is related to
 * **Describe the current behavior** and **explain which behavior you expected to see instead** and why
-* **Include screenshots and animated GIFs** which help demonstrate the steps or point out the part of UnQuest the suggestion is related to
-* **Explain why this enhancement would be useful** to most UnQuest users
+* **Include screenshots and animated GIFs** which help demonstrate the steps or point out the part of emberglow the suggestion is related to
+* **Explain why this enhancement would be useful** to most emberglow users
 
 ### Pull Requests
 
@@ -189,8 +189,8 @@ Feel free to open an issue with your question or reach out to the maintainers. W
 
 ## Recognition
 
-Contributors will be recognized in our README and release notes. Thank you for helping make UnQuest better!
+Contributors will be recognized in our README and release notes. Thank you for helping make emberglow better!
 
 ## License
 
-By contributing to UnQuest, you agree that your contributions will be licensed under the MIT License.
+By contributing to emberglow, you agree that your contributions will be licensed under the MIT License.

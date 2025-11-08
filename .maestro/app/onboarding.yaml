@@ -1,4 +1,4 @@
-appId: com.vaedros.unquest.development
+appId: com.vaedros.unquest.staging
 ---
 - clearState
 - launchApp
@@ -33,20 +33,20 @@ appId: com.vaedros.unquest.development
       - tapOn: 'Go home'
       - waitForAnimationToEnd
 
-# Handle if we're back at Expo home - tap on unQuest in recently opened
+# Handle if we're back at Expo home - tap on Emberglow in recently opened
 - runFlow:
     when:
       visible: 'Recently opened'
     commands:
       - tapOn:
-          text: 'unQuest'
+          text: 'Emberglow'
           below: 'Recently opened'
       - waitForAnimationToEnd
 
 # =============================================================================
 # WELCOME SCREEN
 # =============================================================================
-- assertVisible: 'unQuest'
+- assertVisible: 'emberglow'
 - assertVisible: 'Level Up By Logging Off'
 - assertVisible: 'Begin New Journey'
 
@@ -105,7 +105,7 @@ appId: com.vaedros.unquest.development
 # =============================================================================
 - runFlow:
     when:
-      visible: 'Welcome to unQuest'
+      visible: 'emberglow'
     commands:
       - tapOn: 'Got it'
       - waitForAnimationToEnd

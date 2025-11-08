@@ -1,7 +1,5 @@
 import { Alert } from 'react-native';
 
-import { getItem } from '@/lib/storage';
-
 export function handleQueryError(error: unknown) {
   console.error('[React Query Error]:', error);
 
@@ -12,10 +10,12 @@ export function handleQueryError(error: unknown) {
     (error as any).code === 'TOKEN_REFRESH_EXHAUSTED'
   ) {
     // Import and call the handler dynamically to avoid circular dependencies
-    import('@/lib/hooks/use-token-refresh-error-handler').then(({ handleTokenRefreshExhaustion }) => {
-      handleTokenRefreshExhaustion(error);
-    }).catch(console.error);
-    
+    import('@/lib/hooks/use-token-refresh-error-handler')
+      .then(({ handleTokenRefreshExhaustion }) => {
+        handleTokenRefreshExhaustion(error);
+      })
+      .catch(console.error);
+
     // Don't show additional alerts
     return;
   }

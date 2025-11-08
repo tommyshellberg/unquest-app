@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
-import React, { useEffect, useState } from 'react';
-import { Image } from 'react-native';
+import React, { useEffect } from 'react';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,10 +9,17 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { AVAILABLE_QUESTS } from '@/app/data/quests';
 import { useNextAvailableQuests } from '@/api/quest';
-import { Button, Card, FocusAwareStatusBar, Text, View } from '@/components/ui';
-import { ActivityIndicator } from '@/components/ui';
+import { AVAILABLE_QUESTS } from '@/app/data/quests';
+import {
+  BackgroundImage,
+  Button,
+  Card,
+  FocusAwareStatusBar,
+  Text,
+  Title,
+  View,
+} from '@/components/ui';
 import { audioCacheService } from '@/lib/services/audio-cache.service';
 import QuestTimer from '@/lib/services/quest-timer';
 import { useQuestStore } from '@/store/quest-store';
@@ -75,7 +81,8 @@ export default function FirstQuestScreen() {
       console.log(
         'First quest screen: Already have pending quest, navigating to pending-quest screen'
       );
-      router.replace('/pending-quest');
+      // Use push instead of replace so that canceling the quest can navigate back
+      router.push('/pending-quest');
     }
   }, [pendingQuest, router]);
 
@@ -183,41 +190,31 @@ export default function FirstQuestScreen() {
     <View className="flex-1">
       <FocusAwareStatusBar />
 
-      <View className="absolute inset-0">
-        <Image
-          source={require('@/../assets/images/background/active-quest.jpg')}
-          className="size-full"
-          resizeMode="cover"
-        />
-      </View>
+      <BackgroundImage
+        source={require('@/../assets/images/background/pending-quest-bg-alt.jpg')}
+      />
 
       <View className="flex-1 justify-between p-6">
         <Animated.View style={headerStyle} className="mt-10">
-          <Text className="text-3xl font-bold">Your Journey Begins</Text>
+          <Title variant="centered">Your Journey Begins</Title>
         </Animated.View>
 
         <View className="flex-1 justify-center">
           <Animated.View style={cardStyle}>
             <Card className="p-6">
-              <Text className="mb-4 text-lg font-semibold text-black">
+              <Text className="mb-4 text-lg font-semibold text-white">
                 The Kingdom of Vaedros is in peril.
               </Text>
-              <Text className="mb-4 text-black">
+              <Text className="mb-4 text-white">
                 The balance is broken. The light is trapped. The darkness is
                 growing.
               </Text>
-              <Text className="mb-4 text-black">
+              <Text className="mb-4 text-white">
                 You awaken lying on your back, the earth cold and damp beneath
                 you. The trees stretch high, their gnarled limbs tangled
                 overhead, blotting out the sky.
               </Text>
             </Card>
-          </Animated.View>
-
-          <Animated.View style={hintStyle}>
-            <Text className="mt-10 text-center text-black">
-              Click 'Wake up' to begin your journey.
-            </Text>
           </Animated.View>
         </View>
 

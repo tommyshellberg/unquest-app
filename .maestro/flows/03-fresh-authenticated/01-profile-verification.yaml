@@ -1,0 +1,66 @@
+appId: com.vaedros.unquest.staging
+---
+# =============================================================================
+# PROFILE VERIFICATION TEST - Fresh Authenticated User
+# =============================================================================
+# Verifies the profile screen shows correct values after onboarding + conversion
+#
+# Expected State:
+#   - User is authenticated (not provisional)
+#   - Level: 1
+#   - XP: 50 (from first quest)
+#   - Quests completed: 1
+#   - Streak: Day 1
+#   - Character name: MaestroHero
+# =============================================================================
+
+# Navigate to Profile tab
+- tapOn:
+    text: 'Profile'
+    index: 0  # Tab button
+
+# =============================================================================
+# VERIFY CHARACTER INFORMATION
+# =============================================================================
+# Character name from onboarding
+- assertVisible: 'MaestroHero'
+
+# =============================================================================
+# VERIFY EXACT LEVEL
+# =============================================================================
+- assertVisible:
+    text: 'Level 1'
+
+# =============================================================================
+# VERIFY EXACT XP VALUE
+# =============================================================================
+# Should be 50 XP from completing the first quest
+- assertVisible:
+    text: '50'
+
+# Verify XP label context
+- assertVisible:
+    text: 'XP'
+
+# =============================================================================
+# VERIFY STREAK
+# =============================================================================
+# Should show Day 1 streak
+- assertVisible:
+    text: '1'
+
+# Verify streak context
+- assertVisible:
+    text: 'Day Streak'
+
+# =============================================================================
+# VERIFY PROFILE ACTIONS
+# =============================================================================
+# Verify key profile buttons/sections are present
+- assertVisible: 'Leaderboard'
+- assertVisible: 'Achievements'
+
+# =============================================================================
+# PROFILE VERIFICATION COMPLETE
+# =============================================================================
+# All values match expected state for fresh authenticated user!

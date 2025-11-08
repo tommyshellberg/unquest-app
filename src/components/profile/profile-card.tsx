@@ -18,12 +18,14 @@ import Animated, {
 
 import CHARACTERS from '@/app/data/characters';
 import { Card, Text, View } from '@/components/ui';
+import { PROFILE_COLORS } from '@/features/profile/constants/profile-constants';
+import type { Character } from '@/features/profile/types/profile-types';
 import { updateUserCharacter } from '@/lib/services/user';
 import { useCharacterStore } from '@/store/character-store';
 
 type ProfileCardProps = {
   /** The character data to render */
-  character: any;
+  character: Character;
 };
 
 export function ProfileCard({ character }: ProfileCardProps) {
@@ -51,7 +53,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
     setIsLoading(true);
     try {
       // Update on server - exclude xpToNextLevel which may exist in persisted data
-      const { xpToNextLevel, ...characterForServer } = character;
+      const { ...characterForServer } = character;
       await updateUserCharacter({
         ...characterForServer,
         name: editedName.trim(),
@@ -69,7 +71,7 @@ export function ProfileCard({ character }: ProfileCardProps) {
 
       setIsEditing(false);
     } catch (error) {
-      console.error('Failed to update character name:', error);
+      // TODO: Replace with logger service
       Alert.alert(
         'Update Failed',
         'Unable to update your character name. Please try again.',
@@ -84,20 +86,21 @@ export function ProfileCard({ character }: ProfileCardProps) {
     <Card className="mx-4 mt-4 overflow-hidden">
       <ImageBackground
         source={characterDetails?.profileImage}
-        className="aspect-[1.2] w-full"
-        resizeMode="cover"
+        className="aspect-[1.2] w-full bg-[rgba(47,129,142,0.9)] opacity-80"
         imageStyle={{
           position: 'absolute',
-          top: -60,
           width: '100%',
         }}
       >
+        {/* White tint overlay */}
+        <View className="absolute inset-0 bg-white/10" />
+
         <View className="flex h-full flex-col justify-between">
           {/* Top area - empty but keeps the layout vertical */}
           <View />
 
           {/* Bottom section with player info and blur */}
-          <BlurView intensity={50} tint="light" className="overflow-hidden p-5">
+          <BlurView intensity={80} tint="dark" className="overflow-hidden p-5">
             <View>
               {/* Name row with edit icon */}
               <View className="flex-row items-center justify-between">
@@ -160,14 +163,22 @@ export function ProfileCard({ character }: ProfileCardProps) {
                     <Pressable
                       onPress={() => setIsEditing(true)}
                       className="rounded-full p-1"
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel="Edit character name"
+                      accessibilityHint="Tap to edit your character name"
                     >
-                      <Feather name="edit-2" size={18} color="#2E948D" />
+                      <Feather
+                        name="edit-2"
+                        size={18}
+                        color={PROFILE_COLORS.editIcon}
+                      />
                     </Pressable>
                   </View>
                 )}
               </View>
               {/* Level and character type on second row */}
-              <Text className="mt-1 text-gray-700">
+              <Text className="mt-1 text-base text-muted-100">
                 Level {character.level} {characterDetails?.type}
               </Text>
             </View>

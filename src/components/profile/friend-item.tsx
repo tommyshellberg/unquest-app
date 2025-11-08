@@ -4,9 +4,19 @@ import { Image, Pressable } from 'react-native';
 import { getCharacterAvatar } from '@/app/utils/character-utils';
 import { Card, Text, View } from '@/components/ui';
 
+type Friend = {
+  _id: string;
+  email: string;
+  character: {
+    name: string;
+    type: string;
+    level: number;
+  } | null;
+};
+
 type FriendItemProps = {
-  friend: any;
-  onDelete: (friend: any) => void;
+  friend: Friend;
+  onDelete: (friend: Friend) => void;
 };
 
 export function FriendItem({ friend, onDelete }: FriendItemProps) {
@@ -23,8 +33,10 @@ export function FriendItem({ friend, onDelete }: FriendItemProps) {
       </View>
 
       <View className="ml-3 flex-1">
-        <Text className="font-bold">{friend.character?.name || 'Unknown'}</Text>
-        <Text className="text-gray-600">
+        <Text className="text-base font-bold text-white">
+          {friend.character?.name || 'Unknown'}
+        </Text>
+        <Text className="text-sm text-neutral-200">
           {friend.character?.type || 'Character'}
         </Text>
       </View>
@@ -33,8 +45,12 @@ export function FriendItem({ friend, onDelete }: FriendItemProps) {
         <Pressable
           className="items-center justify-center rounded-full"
           onPress={() => onDelete(friend)}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`Remove ${friend.character?.name || 'friend'}`}
+          accessibilityHint="Tap to remove this friend from your list"
         >
-          <Text className="text-red-500">Remove</Text>
+          <Text className="text-base text-red-500">Remove</Text>
         </Pressable>
       </View>
     </Card>

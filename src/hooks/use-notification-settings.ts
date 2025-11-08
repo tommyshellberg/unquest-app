@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   getNotificationSettings,
-  type NotificationSettings,
   updateNotificationSettings,
 } from '@/api/notification-settings';
 

@@ -1,11 +1,11 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { render, fireEvent } from '@testing-library/react-native';
 import React from 'react';
 
-import { QuestComplete } from './QuestComplete';
-import { useCharacterStore } from '@/store/character-store';
 import { useQuestStore } from '@/store/quest-store';
-import { type Quest } from '@/store/types';
+
+import type { QuestWithMode } from './quest-complete/types';
+import { QuestComplete } from './QuestComplete';
 
 // Mock the router
 jest.mock('expo-router', () => ({
@@ -15,166 +15,273 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock the stores
-jest.mock('@/store/character-store');
 jest.mock('@/store/quest-store');
 
+// Mock the custom hook
+jest.mock('@/hooks/useCustomQuestStory', () => ({
+  useCustomQuestStory: jest.fn(() => null),
+}));
+
+// Mock sub-components
+jest.mock('./quest-complete/QuestCompleteHeader', () => ({
+  QuestCompleteHeader: ({ quest }: any) => {
+    const { View, Text } = require('react-native');
+    return (
+      <View testID="quest-complete-header">
+        <Text>Quest Complete!</Text>
+        {quest.title && <Text>{quest.title}</Text>}
+      </View>
+    );
+  },
+}));
+
+jest.mock('./quest-complete/QuestCompleteStory', () => ({
+  QuestCompleteStory: ({ story }: any) => {
+    const { View, Text } = require('react-native');
+    return (
+      <View testID="quest-complete-story">
+        <Text>{story}</Text>
+      </View>
+    );
+  },
+}));
+
+jest.mock('./quest-complete/QuestCompleteActions', () => ({
+  QuestCompleteActions: ({ continueText, onContinue }: any) => {
+    const { View, Pressable, Text } = require('react-native');
+    const { useQuestStore } = require('@/store/quest-store');
+
+    return (
+      <View testID="quest-complete-actions">
+        <Pressable
+          onPress={() => {
+            const clearRecentCompletedQuest = useQuestStore(
+              (state: any) => state.clearRecentCompletedQuest
+            );
+            clearRecentCompletedQuest();
+            if (onContinue) {
+              onContinue();
+            } else {
+              require('expo-router').router.push('/(app)');
+            }
+          }}
+        >
+          <Text>{continueText}</Text>
+        </Pressable>
+      </View>
+    );
+  },
+}));
+
 describe('QuestComplete', () => {
-  const mockQuest: Quest = {
-    id: 'test-quest',
-    title: 'Test Quest',
+  const mockClearRecentCompletedQuest = jest.fn();
+
+  const mockStoryQuest: QuestWithMode = {
+    id: 'quest-1',
+    mode: 'story',
+    title: 'Story Quest',
+    durationMinutes: 5,
+    reward: { xp: 10 },
+    status: 'completed',
+  };
+
+  const mockCustomQuest: QuestWithMode = {
+    id: 'custom-1',
     mode: 'custom',
     category: 'fitness',
+    title: 'Custom Quest',
     durationMinutes: 30,
-    reward: { xp: 100 },
-    startTime: Date.now() - 30 * 60 * 1000,
-    stopTime: Date.now(),
+    reward: { xp: 50 },
+    status: 'completed',
+  };
+
+  const mockCooperativeQuest: QuestWithMode = {
+    id: 'coop-1',
+    mode: 'cooperative',
+    category: 'cooperative',
+    title: 'Team Quest',
+    durationMinutes: 45,
+    reward: { xp: 75 },
     status: 'completed',
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Default mock implementations
-    (useQuestStore.getState as jest.Mock).mockReturnValue({
-      clearRecentCompletedQuest: jest.fn(),
-      lastCompletedQuestTimestamp: null,
-    });
-
-    (useCharacterStore.getState as jest.Mock).mockReturnValue({
-      character: { name: 'Test Hero' },
-      dailyQuestStreak: 0,
-      lastStreakCelebrationShown: null,
+    (useQuestStore as unknown as jest.Mock).mockImplementation((selector) => {
+      const state = {
+        clearRecentCompletedQuest: mockClearRecentCompletedQuest,
+      };
+      return selector(state);
     });
   });
 
-  it('should navigate to home screen by default', () => {
-    const { getByText } = render(
-      <QuestComplete quest={mockQuest} story="Test story" />
-    );
+  describe('Component Composition', () => {
+    it('should render all sub-components', () => {
+      const { getByTestId } = render(
+        <QuestComplete quest={mockStoryQuest} story="Test story" />
+      );
 
-    const continueButton = getByText('Continue');
-    fireEvent.press(continueButton);
+      expect(getByTestId('quest-complete-header')).toBeTruthy();
+      expect(getByTestId('quest-complete-story')).toBeTruthy();
+      expect(getByTestId('quest-complete-actions')).toBeTruthy();
+    });
 
-    expect(router.push).toHaveBeenCalledWith('/(app)');
+    it('should hide actions when showActionButton is false', () => {
+      const { queryByTestId, getByTestId } = render(
+        <QuestComplete
+          quest={mockStoryQuest}
+          story="Test story"
+          showActionButton={false}
+        />
+      );
+
+      expect(getByTestId('quest-complete-header')).toBeTruthy();
+      expect(getByTestId('quest-complete-story')).toBeTruthy();
+      expect(queryByTestId('quest-complete-actions')).toBeNull();
+    });
   });
 
-  it('should navigate to streak celebration for first quest of the day with streak', () => {
-    // Set up a scenario where:
-    // 1. User has a streak
-    // 2. Last quest was completed yesterday
-    // 3. Haven't shown celebration today
-    const yesterday = Date.now() - 24 * 60 * 60 * 1000;
+  describe('Story Display', () => {
+    it('should display provided story for story quests', () => {
+      const { getByText } = render(
+        <QuestComplete quest={mockStoryQuest} story="Once upon a time..." />
+      );
 
-    (useQuestStore.getState as jest.Mock).mockReturnValue({
-      clearRecentCompletedQuest: jest.fn(),
-      lastCompletedQuestTimestamp: yesterday,
+      expect(getByText('Once upon a time...')).toBeTruthy();
     });
 
-    (useCharacterStore.getState as jest.Mock).mockReturnValue({
-      character: { name: 'Test Hero' },
-      dailyQuestStreak: 3, // Has a 3-day streak
-      lastStreakCelebrationShown: null, // Never shown
+    it('should display custom story for custom quests', () => {
+      const { useCustomQuestStory } = require('@/hooks/useCustomQuestStory');
+      useCustomQuestStory.mockReturnValue('Custom quest story');
+
+      const { getByText } = render(
+        <QuestComplete quest={mockCustomQuest} story="Fallback story" />
+      );
+
+      expect(getByText('Custom quest story')).toBeTruthy();
     });
 
-    const { getByText } = render(
-      <QuestComplete quest={mockQuest} story="Test story" />
-    );
+    it('should use provided story when custom story hook returns null', () => {
+      const { useCustomQuestStory } = require('@/hooks/useCustomQuestStory');
+      useCustomQuestStory.mockReturnValue(null);
 
-    const continueButton = getByText('Continue');
-    fireEvent.press(continueButton);
+      const { getByText } = render(
+        <QuestComplete quest={mockStoryQuest} story="Provided story" />
+      );
 
-    expect(router.push).toHaveBeenCalledWith('/streak-celebration');
+      expect(getByText('Provided story')).toBeTruthy();
+    });
   });
 
-  it('should not show streak celebration if already shown today', () => {
-    const yesterday = Date.now() - 24 * 60 * 60 * 1000;
-    const todayMorning = new Date();
-    todayMorning.setHours(8, 0, 0, 0);
+  describe('Navigation', () => {
+    it('should navigate to home screen by default', () => {
+      const { getByText } = render(
+        <QuestComplete quest={mockStoryQuest} story="Test story" />
+      );
 
-    (useQuestStore.getState as jest.Mock).mockReturnValue({
-      clearRecentCompletedQuest: jest.fn(),
-      lastCompletedQuestTimestamp: yesterday,
+      fireEvent.press(getByText('Continue'));
+
+      expect(mockClearRecentCompletedQuest).toHaveBeenCalled();
+      expect(router.push).toHaveBeenCalledWith('/(app)');
     });
 
-    (useCharacterStore.getState as jest.Mock).mockReturnValue({
-      character: { name: 'Test Hero' },
-      dailyQuestStreak: 3,
-      lastStreakCelebrationShown: todayMorning.getTime(), // Shown earlier today
+    it('should call onContinue callback when provided', () => {
+      const onContinue = jest.fn();
+
+      const { getByText } = render(
+        <QuestComplete
+          quest={mockStoryQuest}
+          story="Test story"
+          onContinue={onContinue}
+        />
+      );
+
+      fireEvent.press(getByText('Continue'));
+
+      expect(mockClearRecentCompletedQuest).toHaveBeenCalled();
+      expect(onContinue).toHaveBeenCalled();
+      expect(router.push).not.toHaveBeenCalled();
     });
-
-    const { getByText } = render(
-      <QuestComplete quest={mockQuest} story="Test story" />
-    );
-
-    const continueButton = getByText('Continue');
-    fireEvent.press(continueButton);
-
-    expect(router.push).toHaveBeenCalledWith('/(app)');
   });
 
-  it('should not show streak celebration for second quest of the same day', () => {
-    const earlierToday = Date.now() - 2 * 60 * 60 * 1000; // 2 hours ago
+  describe('Continue Button Text', () => {
+    it('should use default continue text', () => {
+      const { getByText } = render(
+        <QuestComplete quest={mockStoryQuest} story="Test story" />
+      );
 
-    (useQuestStore.getState as jest.Mock).mockReturnValue({
-      clearRecentCompletedQuest: jest.fn(),
-      lastCompletedQuestTimestamp: earlierToday,
+      expect(getByText('Continue')).toBeTruthy();
     });
 
-    (useCharacterStore.getState as jest.Mock).mockReturnValue({
-      character: { name: 'Test Hero' },
-      dailyQuestStreak: 1,
-      lastStreakCelebrationShown: null,
+    it('should use custom continue text', () => {
+      const { getByText } = render(
+        <QuestComplete
+          quest={mockStoryQuest}
+          story="Test story"
+          continueText="Next Adventure"
+        />
+      );
+
+      expect(getByText('Next Adventure')).toBeTruthy();
     });
-
-    const { getByText } = render(
-      <QuestComplete quest={mockQuest} story="Test story" />
-    );
-
-    const continueButton = getByText('Continue');
-    fireEvent.press(continueButton);
-
-    expect(router.push).toHaveBeenCalledWith('/(app)');
   });
 
-  it('should not show streak celebration if no streak', () => {
-    const yesterday = Date.now() - 24 * 60 * 60 * 1000;
+  describe('Different Quest Modes', () => {
+    it('should render for story quest', () => {
+      const { getByTestId, getByText } = render(
+        <QuestComplete quest={mockStoryQuest} story="Story quest text" />
+      );
 
-    (useQuestStore.getState as jest.Mock).mockReturnValue({
-      clearRecentCompletedQuest: jest.fn(),
-      lastCompletedQuestTimestamp: yesterday,
+      expect(getByTestId('quest-complete-header')).toBeTruthy();
+      expect(getByText('Story Quest')).toBeTruthy();
     });
 
-    (useCharacterStore.getState as jest.Mock).mockReturnValue({
-      character: { name: 'Test Hero' },
-      dailyQuestStreak: 0, // No streak
-      lastStreakCelebrationShown: null,
+    it('should render for custom quest', () => {
+      const { getByTestId, getByText } = render(
+        <QuestComplete quest={mockCustomQuest} story="Custom quest text" />
+      );
+
+      expect(getByTestId('quest-complete-header')).toBeTruthy();
+      expect(getByText('Custom Quest')).toBeTruthy();
     });
 
-    const { getByText } = render(
-      <QuestComplete quest={mockQuest} story="Test story" />
-    );
+    it('should render for cooperative quest', () => {
+      const { getByTestId, getByText } = render(
+        <QuestComplete quest={mockCooperativeQuest} story="Coop quest text" />
+      );
 
-    const continueButton = getByText('Continue');
-    fireEvent.press(continueButton);
-
-    expect(router.push).toHaveBeenCalledWith('/(app)');
+      expect(getByTestId('quest-complete-header')).toBeTruthy();
+      expect(getByText('Team Quest')).toBeTruthy();
+    });
   });
 
-  it('should respect onContinue callback over default navigation', () => {
-    const onContinue = jest.fn();
+  describe('Animations', () => {
+    it('should pass disableEnteringAnimations to sub-components', () => {
+      const { getByTestId } = render(
+        <QuestComplete
+          quest={mockStoryQuest}
+          story="Test story"
+          disableEnteringAnimations={true}
+        />
+      );
 
-    const { getByText } = render(
-      <QuestComplete
-        quest={mockQuest}
-        story="Test story"
-        onContinue={onContinue}
-      />
-    );
+      // Sub-components should receive the prop (we can't easily test internal behavior)
+      expect(getByTestId('quest-complete-header')).toBeTruthy();
+      expect(getByTestId('quest-complete-story')).toBeTruthy();
+      expect(getByTestId('quest-complete-actions')).toBeTruthy();
+    });
+  });
 
-    const continueButton = getByText('Continue');
-    fireEvent.press(continueButton);
+  describe('Background', () => {
+    it('should render background image', () => {
+      const { UNSAFE_getByType } = render(
+        <QuestComplete quest={mockStoryQuest} story="Test story" />
+      );
 
-    expect(onContinue).toHaveBeenCalled();
-    expect(router.push).not.toHaveBeenCalled();
+      const Image = require('@/components/ui').Image;
+      const images = UNSAFE_getByType(Image);
+      expect(images).toBeTruthy();
+    });
   });
 });

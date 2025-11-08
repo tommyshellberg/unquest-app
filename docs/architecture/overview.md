@@ -1,8 +1,8 @@
-# UnQuest Architecture Overview
+# emberglow Architecture Overview
 
 ## System Architecture
 
-UnQuest follows a modern mobile application architecture with clear separation of concerns and modular design principles.
+emberglow follows a modern mobile application architecture with clear separation of concerns and modular design principles.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

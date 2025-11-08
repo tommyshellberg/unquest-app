@@ -1,8 +1,11 @@
 import React from 'react';
+
 import { fireEvent, render, screen, waitFor } from '@/lib/test-utils';
 import { useCooperativeLobbyStore } from '@/store/cooperative-lobby-store';
 import { useUserStore } from '@/store/user-store';
-import { invitationApi } from '@/api/invitation';
+
+// Import the component
+import CooperativeQuestLobby from './[lobbyId]';
 
 // Mock the router
 const mockReplace = jest.fn();
@@ -27,14 +30,20 @@ const mockEmit = jest.fn();
 const mockOn = jest.fn();
 const mockOff = jest.fn();
 
-jest.mock('@/components/providers/websocket-provider', () => ({
-  useWebSocket: () => ({
+jest.mock('@/components/providers/lazy-websocket-provider', () => ({
+  useLazyWebSocket: () => ({
     emit: mockEmit,
     on: mockOn,
     off: mockOff,
     joinQuestRoom: jest.fn(),
     leaveQuestRoom: jest.fn(),
+    isConnected: true,
+    isEnabled: true,
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    forceReconnect: jest.fn(),
   }),
+  LazyWebSocketProvider: ({ children }: { children: any }) => children,
 }));
 
 // Mock the invitation API
@@ -43,9 +52,6 @@ jest.mock('@/api/invitation', () => ({
     respondToInvitation: jest.fn(),
   },
 }));
-
-// Import the component
-import CooperativeQuestLobby from './[lobbyId]';
 
 describe('CooperativeQuestLobby', () => {
   const mockLobby = {
